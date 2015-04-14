@@ -1,0 +1,30 @@
+﻿@import 'form.css';/*-------- IMPORT A las formas ---*/
+html, body{font-family:Calibri, Arial, Helvetica, sans-serif;font-size:13px;}
+body{
+	background:#b8b8b8 url('../images/const/background.jpg') repeat-x top;
+}
+#layer-page{
+	
+	width:1024px;
+	height:auto;
+	margin:10px auto;
+}
+h2{
+	color:#464646;
+	text-transform:uppercase;
+	text-align:center;
+	font-size:40px;
+}
+.col_1{
+	width:49%;
+	/*padding:10px;*/
+}
+.col_1 img{
+	width:99%;
+	height:auto;
+}
+p{
+	font-size:1.3em;
+}
+.left{float:left;}
+.right{float:right;}

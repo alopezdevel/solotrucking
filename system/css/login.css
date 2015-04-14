@@ -1,0 +1,119 @@
+﻿@import '../../css/style.css';/*-------- IMPORT AL CSS GENERAL ---*/
+
+body{
+	margin:0;
+	padding:0;
+	font-family:Calibri, Arial, Helvetica, sans-serif;
+	font-size:13px;
+	border-top:10px solid #2e5aa3;
+}
+.section-phone{
+	
+	background:#2e5aa3;
+	width:100%;
+	height:50px;
+	clear:both;
+}
+.section-phone p{
+	
+	color:#c8dcfe;
+	text-align:center;
+	margin:0px auto;
+	padding: 10px 0px;
+	font-size:1.3em;
+	text-transform:uppercase;
+	
+}
+/*--------------- slider container ---------*/
+#slider-container{height:590px!important;}
+
+.copyright{
+	color:#535353;
+	font-size:0.85em;
+	display:block;
+	text-align:center;
+	height:24px;
+	margin:0;
+	padding:4px 0px;
+	background:url('../images/foot/bg_footer.jpg') repeat-x top;
+}
+.clear{clear:both;}
+/*-----------------------LAYER LOGIN ----------------------------*/
+#layer_login{
+	
+	width:100%;
+	height:auto;
+	margin:0px auto;
+	position:absolute;
+	top:80px;
+	z-index:5000;
+	display:block;
+	text-align:center;
+}
+#layer_login form{
+	
+	width:500px;
+	height:300px;
+	margin:10px auto;
+	background:#ffffff;
+	border:1px solid #a4a4a4;
+	
+	border-radius:10px;
+    -moz-border-radius:10px;
+    -webkit-border-radius:10px;
+    
+    box-shadow:0px 0px 10px rgba(0,0,0,0.7);
+    padding-top:30px;
+
+}
+#layer_login button{
+
+	display:block;
+	border:0;
+	background:url('../../images/home/img_btn_blue.png') center top no-repeat;
+	width:209px;
+	height:71px;
+	margin:20px auto 10px;
+	padding-bottom: 15px;
+	color:#ffffff;
+	text-transform:uppercase;
+	font-size:1.4em;
+	text-shadow:1px 1px 1px rgba(0,0,0,0.6);
+	cursor:pointer;
+	
+}
+input[type=text],input[type=password]{
+
+	border: 0px;
+	background:#ffffff url('../images/login/text-boxes.png') no-repeat left top;
+	color:#888;
+	outline:none;
+	width: 80%;
+    height:44px;
+    margin: 5px auto 15px auto;
+    padding: 0 10px 0 35px;
+   
+    border-radius:6px;
+	-moz-border-radius:6px;
+	-webkit-border-radius:6px;
+	
+	-moz-background-size: 34px 160px;
+	-o-background-size: 34px 160px;
+	-webkit-background-size:34px 160px;
+	background-size:34px 160px;
+	
+	-webkit-box-shadow:inset 0px 0px 10px #c6c6c6;
+	-moz-box-shadow:inset 0px 0px 10px #c6c6c6;
+	box-shadow:inset 0px 0px 10px #c6c6c6;
+	border:1px solid #cdcdcd;
+	opacity:0.70;
+
+}
+input:hover, .frm-login  input:focus{opacity:1;}
+.user {background-position:0px 0;}
+.user:focus{background-position:0px -40px!important;}
+.pass{background-position:0px -80px!important;}
+.pass:focus{background-position:0px -120px!important;}
+.m_inf{color:#bcbcbc;text-align:center;}
+.m_inf a{color:#a6c1dc;text-decoration:none;}
+.m_inf a:hover{color:#4192e2;}
