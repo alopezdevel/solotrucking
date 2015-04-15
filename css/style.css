@@ -1,4 +1,4 @@
-@charset "utf-8";
+﻿/*@charset "utf-8";  */
 /* CSS Document */
 
 /* Float Elements 
@@ -153,6 +153,7 @@ p{line-height:24px;margin:0;}
 	border-radius:5px;
     -moz-border-radius:5px;
     -webkit-border-radius:5px;
+    text-align: center;
 
 
 }
