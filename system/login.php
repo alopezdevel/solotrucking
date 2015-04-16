@@ -2,8 +2,7 @@
 session_start();
 session_unset();
 session_destroy();
-//include("cn_usuarios.php");
-//if ($dbconn && $dbselect) {
+include("cn_usuarios.php");
 ?>
 <script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script> 
 <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
@@ -14,16 +13,19 @@ $(document).ready(inicio);
 function inicio(){    
      var usuario  = $("#loginUser").val();
      var password = $("#loginPassword").val();
-     $("#button_aceptar").click(onValidarAcceso(usuario));
+     $("#button_aceptar").click(onValidarAcceso(usuario,password));
 }
- function onValidarAcceso(usuario){
-     var selectedEffect = "shake";
-      var options = {};
-     if(usuario == "" ){
-         $("#layer_login").shake() ;
-         $( "#layer_login" ).effect( selectedEffect, options, 500, callback );
-     }
+ function onValidarAcceso(u, p){
+    
+     conexion(u,p);
  }
+ function conexion(u, p){
+     $.post("funciones.php", { accion: "conexion", usuario: u , password: p}, function(data){if(data.respuesta == "1"){
+                                                                                                                       //entro correcto 
+                                                                                                                       }else
+                                                                                                                       {// no funciono}   
+                                                                                                                       },"json");
+}
  
 
 </script>
@@ -44,7 +46,7 @@ function inicio(){
     <script type='text/javascript' src='../camera/scripts/script.js'></script>
 
 </head>
-
+<?php if ($dbconn && $dbselect) {    ?>
 <body>
 <div id="layer_login">
     <img alt="" src="images/login/img-logo-login.png" alt="logo">
@@ -73,5 +75,6 @@ function inicio(){
 </section>
 <div class="copyright">SoloTrucking 2015 . © All rights reserved.</div>
 </body>
-
+<?php }else{ ?>
+<?php  } ?>
 </html>
