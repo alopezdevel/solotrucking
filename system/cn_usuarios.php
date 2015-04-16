@@ -1,8 +1,8 @@
 <?php
-  $mysql_host = "127.0.0.1";
-  $mysql_database = "bd_nadtrafico_global";
-  $mysql_username = "pruebas";
-  $mysql_password = "gl0b@l";
+  $mysql_host = "sv25.byethost25.org";
+  $mysql_database = "laredone_solotrucking";
+  $mysql_username = "laredone_wcenter";
+  $mysql_password = "05100248abc";
   
   $conn = mysqli_connect($mysql_host, $mysql_username, $mysql_password);
   if(mysqli_connect_error()){
