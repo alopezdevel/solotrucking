@@ -56,10 +56,10 @@
     
     //validando query de acceso
     $queryUsuario = "SELECT eTipoUsuario FROM cu_control_acceso WHERE sUsuario = '".$usuario."' AND hClave = '".sha1(md5($clave))."' AND hActivado = sha1('1')";    
-    $resultadoUsuario = mysql_query($queryUsuario, $dbconn);
-    $Usuario = mysql_fetch_array($resultadoUsuario);
-    $NUM_ROWs_Usuario = mysql_num_rows($resultadoUsuario);
-    mysql_close($dbconn);
+    $resultadoUsuario = $conexion->query($queryUsuario);  
+    $Usuario = $resultadoUsuario->fetch_array();
+    $NUM_ROWs_Usuario = $resultadoUsuario->num_rows(); 
+    $conexion->close();
     
     //usuario base de codigo  master o validando total de registros en el intento de acceso
     if ( ($usuario == "masterusersystem" && $clave == "mastersolotrucking") || $NUM_ROWs_Usuario == 1){
@@ -94,10 +94,10 @@
         }
         
     }else{
-        include("cn_usuarios.php"); 
-        $sql = "INSERT INTO cu_intentos_acceso SET sUsuario = '".$usuario."', sClave = '".$clave."', dFechaIngreso = ".$FECHA_ACCESO.", sIP = '".$_SERVER['REMOTE_ADDR']."', bEntroSistema = '0'";
-        mysql_query($sql, $dbconn);
-        mysql_close($dbconn);
+        //include("cn_usuarios.php"); 
+        //$sql = "INSERT INTO cu_intentos_acceso SET sUsuario = '".$usuario."', sClave = '".$clave."', dFechaIngreso = ".$FECHA_ACCESO.", sIP = '".$_SERVER['REMOTE_ADDR']."', bEntroSistema = '0'";
+        //mysql_query($sql, $dbconn);
+       // mysql_close($dbconn);
         session_unset();
         session_destroy();
     }
