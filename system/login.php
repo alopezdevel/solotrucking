@@ -45,8 +45,8 @@ function inicio(){
     <script type='text/javascript' src='../camera/scripts/camera.js'></script> 
     <script type='text/javascript' src='../camera/scripts/script.js'></script>
 
-</head>
-<?php if ($dbconn && $dbselect) {    ?>
+</head
+<?php if ($conexion) {    ?>
 <body>
 <div id="layer_login">
     <img alt="" src="images/login/img-logo-login.png" alt="logo">
