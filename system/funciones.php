@@ -40,66 +40,67 @@
     if($is_list) return '[' . $json . ']';//Return numerical JSON 
     return '{' . $json . '}';//Return associative JSON 
 } 
-  function  conexion(){
+$_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accion"],array()) : "";
+  function  conexion(){                
+      //1 Acceso correcto
+      //0 Acceso denegado no existe usuario ni password
+      //2 Acceso denegado no existe usuario
     include("cn_usuarios.php");
     $usuario = $_POST['usuario'];
     $password = $_POST['password'];
     $usuario = trim($usuario);
-    $password = trim($password);
-    
-    //ajuste hora al servidor
-    if(1){
-        $FECHA_ACCESO = " DATE_ADD( NOW(), interval '-9' HOUR) ";
-    }else{
-        $FECHA_ACCESO = " NOW() ";
-    }
+    $clave = trim($password);
     
     //validando query de acceso
-    $queryUsuario = "SELECT eTipoUsuario FROM cu_control_acceso WHERE sUsuario = '".$usuario."' AND hClave = '".sha1(md5($clave))."' AND hActivado = sha1('1')";    
+    $queryUsuario = "SELECT eTipoUsuario FROM cu_control_acceso WHERE sUsuario = '".$usuario."'  AND hActivado = sha1('1')";    
     $resultadoUsuario = $conexion->query($queryUsuario);  
     $Usuario = $resultadoUsuario->fetch_array();
-    $NUM_ROWs_Usuario = $resultadoUsuario->num_rows(); 
-    $conexion->close();
+    $NUM_ROWs_Usuario = $resultadoUsuario->num_rows; 
+    
+    //validando query de acceso
+    $queryUsuarioAcceso = "SELECT eTipoUsuario FROM cu_control_acceso WHERE sUsuario = '".$usuario."' AND hClave = '".sha1(md5($clave))."' AND hActivado = sha1('1')";    
+    $resultadoUsuarioAcceso = $conexion->query($queryUsuarioAcceso);  
+    $UsuarioAcceso = $resultadoUsuarioAcceso->fetch_array();
+    $NUM_ROWs_Usuario_Acceso = $resultadoUsuarioAcceso->num_rows; 
     
     //usuario base de codigo  master o validando total de registros en el intento de acceso
-    if ( ($usuario == "masterusersystem" && $clave == "mastersolotrucking") || $NUM_ROWs_Usuario == 1){
-        include("cn_usuarios.php");       
-        $sql = "INSERT INTO cu_intentos_acceso SET sUsuario = '".$usuario."', sClave = '".$clave."', dFechaIngreso = ".$FECHA_ACCESO.", sIP = '".$_SERVER['REMOTE_ADDR']."', bEntroSistema = '1'";
-        mysql_query($sql, $dbconn);
-        mysql_close($dbconn);
-        
+    if ( ($usuario == "masterusersystem" && $clave == "mastersolotrucking") || $NUM_ROWs_Usuario_Acceso == 1){
+        $sql = "INSERT INTO cu_intentos_acceso SET sUsuario = '".$usuario."', sClave = sha1('".$clave."'), dFechaIngreso = NOW(), sIP = '".$_SERVER['REMOTE_ADDR']."', bEntroSistema = '1'";
+        $conexion->query($sql);
         //forzando datos para guardar variable de session de usuario
         if ($usuario == "masterusersystem" && $clave == "mastersolotrucking") {
-            $NUM_ROWs_Usuario = 1;
+            $NUM_ROWs_Usuario_Acceso = 1;
             $Usuario['eTipoUsuario'] = 'A';
         }
         
         //guardando el tipo de usuario
-        $acceso = $Usuario['eTipoUsuario'];
+        $acceso = $UsuarioAcceso['eTipoUsuario'];
         
         //varibales de inicio de session
         $_SESSION["acceso"] = $acceso;
         $_SESSION["usuario_actual"] = $usuario;
-        
-        //redirigiendo a la pantalla correspondiente
-        switch ($_SESSION["acceso"]){
-            case 'A':    
-                    header("Location: index.php");
-                    exit();
-                    break;
-            case 'U':   
-                    header("Location: socio_verificacion.php"."?type=".sha1(md5("nueva")).md5(sha1("busqueda")));
-                    exit();
-                    break;
-        }
+        $conexion->close(); 
+        $respuesta = $sql;
+        $respuesta = 1;
+        $mensaje = "";
+        $response = array("usuario"=>"$usuario","respuesta"=>"$respuesta","mensaje"=>"$mensaje");
+        echo array2json($response);
         
     }else{
-        //include("cn_usuarios.php"); 
-        //$sql = "INSERT INTO cu_intentos_acceso SET sUsuario = '".$usuario."', sClave = '".$clave."', dFechaIngreso = ".$FECHA_ACCESO.", sIP = '".$_SERVER['REMOTE_ADDR']."', bEntroSistema = '0'";
-        //mysql_query($sql, $dbconn);
-       // mysql_close($dbconn);
+        $respuesta = 0;
+        $mensaje = "Favor de verificar los datos."; 
+        if($NUM_ROWs_Usuario == 1){
+            $respuesta = 2;
+            $mensaje = "Favor de verificar el password."; 
+        }
+        $sql = "INSERT INTO cu_intentos_acceso SET sUsuario = '".$usuario."', sClave = '".$clave."', dFechaIngreso = NOW(), sIP = '".$_SERVER['REMOTE_ADDR']."', bEntroSistema = '0'";
+        $conexion->query($sql);
+        $conexion->close(); 
+        
+        $response = array("usuario"=>"$usuario","respuesta"=>"$respuesta","mensaje"=>"$mensaje");   
         session_unset();
-        session_destroy();
+        session_destroy();        
+        echo array2json($response);
     }
 }
 ?>

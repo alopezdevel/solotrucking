@@ -3,29 +3,22 @@ session_start();
 session_unset();
 session_destroy();
 include("cn_usuarios.php");
-?>
+?>                       
 <script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script> 
 <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 <script>
 var expr = /^[a-zA-Z0-9_\.\-]+@[a-zA-Z0-9\-]+\.[a-zA-Z0-9\-\.]+$/;
 var expr1 = /^[a-zA-Z]*$/;
 $(document).ready(inicio);
-function inicio(){    
-     var usuario  = $("#loginUser").val();
-     var password = $("#loginPassword").val();
-     $("#button_aceptar").click(onValidarAcceso(usuario,password));
+function inicio(){  
+     $("#button_aceptar").click(onValidarAcceso);
 }
- function onValidarAcceso(u, p){
-    
-     conexion(u,p);
+ function onValidarAcceso(){ 
+     conexion($("#loginUser").val(), $("#loginPassword").val());
  }
  function conexion(u, p){
-     $.post("funciones.php", { accion: "conexion", usuario: u , password: p}, function(data){if(data.respuesta == "1"){
-                                                                                                                       //entro correcto 
-                                                                                                                       }else
-                                                                                                                       {// no funciono}   
-                                                                                                                       },"json");
-}
+     $.post("funciones.php", { accion: "conexion", usuario: u , password: p}, function(data){ alert(data.respuesta);  },"json");
+ }
  
 
 </script>
