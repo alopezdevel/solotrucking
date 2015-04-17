@@ -237,12 +237,12 @@
 }
 .frm_quote p{
 	
-	margin:0px auto 20px;
+	margin:0px auto;
 	color:#1d88c5;
 	font-size:1.2em;
 }
 .frm_quote .btn_4{
 	display:block;
-	margin:10px auto;
+	margin:0px auto;
 	width:100%;
 }
