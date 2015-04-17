@@ -1,4 +1,4 @@
-﻿<!doctype html>
+﻿<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -9,8 +9,6 @@
 <link rel="shortcut icon" href="favicon.ico" type="img/x-icon">
 <link href="css/bootstrap.css" rel="stylesheet" type="text/css">
 <link href="css/style.css" rel="stylesheet" type="text/css">
-<link href="css/home.css" rel="stylesheet" type="text/css">
-<link href="css/form.css" rel="stylesheet" type="text/css">
 <link href="css/font-awesome.css" rel="stylesheet" type="text/css">
 <link href="css/responsive.css" rel="stylesheet" type="text/css">
 <link href="css/animate.css" rel="stylesheet" type="text/css">
@@ -46,17 +44,17 @@
 	<div class="container">
 		<a href="#home" class="img-logo"><img  src="images/nav/img-logo.png" alt="logo"></a>
 		<ul class="top-nav">
-			<li><a href="system/index.html" class="login-btn" title="Log In"><span>My Account</span></a></li>
-			<li><a href="#" class="icon facebook" title="aconta.mx" target="_blank"><span></span></a></li>
-			<li><a href="#" class="icon rss" title="Soporte para econta.mx" target="_blank"><span></span></a></li>
-			<li><a href="#" class="icon twitter" title="Twitter"><span></span></a></li>
-			<li><a href="#" class="icon google" title="Google +"><span></span></a></li>
+			<li><a href="system/login.php" class="login-btn" title="Log In"><span>My Account</span></a></li>
+			<li><a href="https://www.facebook.com/" class="icon facebook" title="follow us in Facebook!" target="_blank"><span></span></a></li>
+			<li><a href="https://www.youtube.com/" class="icon youtube" title="follow us in YouTube!" target="_blank"><span></span></a></li>
+			<li><a href="https://twitter.com/" class="icon twitter" title="follow us in Twitter!"><span></span></a></li>
+			<li><a href="https://www.google.com/" class="icon google" title="follow us in Google +!"><span></span></a></li>
 		</ul>
         <ul class="main-nav">
-        	<li><a href="#header">Home</a></li>
-            <li><a href="#aboutus">About Us</a></li>
-            <li><a href="#service">Services</a></li>
-            <li><a href="#quote">Request a Quote</a></li>
+        	<li><a href="#home">Home</a></li>
+            <li><a href="aboutus.html">About Us</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="getaquote/intro.php">Get a Quote</a></li>
             <li><a href="#contact">Contact Us</a></li>
         </ul>
         <a class="res-nav_click right" href="#"><i class="fa-bars"></i></a>
@@ -68,7 +66,7 @@
 		<div class="frm_quote">
 			<h1>GET A QUOTE</h1>
 			<p>Learn about our coverages.</p>
-			<a href="#" type="button" class="btn_4"><span>GO NOW!</span></a>
+			<a href="getaquote/intro.php" type="button" class="btn_4"><span>GO NOW!</span></a>
 		</div>
 	</div>
 	<div class="fluid_container">
@@ -90,7 +88,7 @@
     			<img src="images/home/img-section-a.jpg" alt="">
     			<h3>About Us</h3>
     			<p>SoloTrucking is committed to helping individuals and businesses secure a healthy financial future...</p>
-    			<a href="#" class="btn_1"><span>Read more</span></a>
+    			<a href="aboutus.html" class="btn_1"><span>Read more</span></a>
     		</div>
     	</div>
     	<div class="col_4 left wow fadeInUp delay-03s">
@@ -98,8 +96,8 @@
     			<img src="images/home/img-section-a-lock.jpg" alt="">
     			<h3>Our Coverages</h3>
     			<ul>
-    				<li><strong>» </strong>Physical Damage.</li>
-    				<li><strong>» </strong>Nontrucking Liability.</li>
+    				<li><a href="servises.html#physicaldamage"><strong>» </strong>Physical Damage.</a></li>
+    				<li><a href="servises.html#nontruckingliability"><strong>» </strong>Nontrucking Liability.</a></li>
     			</ul>
     		</div>
     	</div>
@@ -108,7 +106,7 @@
     			<img src="images/home/img-section-a-user.jpg" alt="">
     			<h3>My Account</h3>
     			<br>
-    			<a href="system/index.html" class="btn_2"><span>LOGIN</span></a>
+    			<a href="system/login.php" class="btn_2"><span>LOGIN</span></a>
     			<p style="height:auto!important;text-align:center;margin:10px auto;">You are not a customer yet?</p>
     			<a href="#" class="btn_2"><span>REGISTER</span></a>
     		</div>
@@ -117,7 +115,7 @@
     			<img src="images/home/img-section-a-help.jpg" alt="">
     			<h3>F.A.Q</h3>
     			<p>Want to learn more about insurance for Truckers? Here is a listing of the most frequent questions from our customers.</p>
-    			<a href="#" class="btn_1"><span>Read more</span></a>
+    			<a href="faq.html" class="btn_1"><span>Read more</span></a>
     		</div>
     	</div>
 
@@ -128,7 +126,7 @@
     	<h2>How Can We Help You?</h2>
     	<p>Have a question? Need more info? Just fill out our contact form below and we'll get back to you promptly.
     	<br><br>
-    	<a href="#" class="btn_3"><span>Get a Quote</span></a>
+    	<a href="getaquote/intro.php" class="btn_3"><span>Get a Quote</span></a>
     	</p>
 	</div>
 </section>
@@ -147,8 +145,8 @@
                     <input class="input-text" type="text" name="subject" value="Subject: *" onfocus="if(this.value==this.defaultValue)this.value='';" onblur="if(this.value=='')this.value=this.defaultValue;">
                 	<textarea class="input-text text-area" cols="0" rows="0" onfocus="if(this.value==this.defaultValue)this.value='';" onblur="if(this.value=='')this.value=this.defaultValue;">Message *</textarea>
                     <button class="btn_2 right" type="submit">SEND MESSAGE</button>
-                    	<input name="email" type="hidden" value="celina@globalpc.net">
-						<input name="thanks" type="hidden" value="http://solotrucking.laredo2.net/index-ejemplo.html">
+                    	<input name="email" type="hidden" value="celina@globalpc.net, edwin@solo-trucking.com">
+						<input name="thanks" type="hidden" value="http://solotrucking.laredo2.net">
                     </form>
                 </div>	
             </div>
@@ -164,15 +162,19 @@
                 	<h3><i class="fa-phone"></i>Phone:</h3>
                 	<span>(956) 791.6511 / (956) 568.4340</span>
                 </div>
+                <div class="contact-info-box phone clearfix">
+                	<h3><i class="fa-mobile-phone"></i>Agent Phone:</h3>
+                	<span>(956) 568.4340</span>
+                </div>
             	<div class="contact-info-box hours clearfix">
                 	<h3><i class="fa-clock-o"></i>Hours:</h3>
                 	<span><strong>Monday - Friday:</strong> 10am - 6pm</span>
                 </div>
                 <ul class="social-link">
-                	<li class="twitter"><a href="#"><i class="fa-twitter"></i></a></li>
-                    <li class="facebook"><a href="#"><i class="fa-facebook"></i></a></li>
-                    <li class="gplus"><a href="#"><i class="fa-google-plus"></i></a></li>
-                    <li class="dribbble"><a href="#"><i class="fa-rss"></i></a></li>
+                	<li class="twitter"><a href="https://www.twitter.com/" target="_blank"><i class="fa-twitter"></i></a></li>
+                    <li class="facebook"><a href="https://www.facebook.com/" target="_blank"><i class="fa-facebook"></i></a></li>
+                    <li class="gplus"><a href="https://www.google.com/" target="_blank"><i class="fa-google-plus"></i></a></li>
+                    <li class="youtube"><a href="https://www.youtube.com/" target="_blank"><i class="fa-youtube"></i></a></li>
                 </ul>
             </div>
 
@@ -183,14 +185,16 @@
 <footer class="footer">
     <div class="container">
     	 <div class="nav_foot">
-    	 	<a href="#" class="active">Home</a>    /    
-    	 	<a href="#">About Us</a>    /    
-    	 	<a href="#">Services</a>     /    
-    	 	<a href="#">Location</a>     /    
-    	 	<a href="#">Request a Quote</a>    /    
-    	 	<a href="#">Contact Us</a>    
+    	 	<a href="#home" class="active">Home</a>    /    
+    	 	<a href="aboutus.html">About Us</a>    /    
+    	 	<a href="services.html">Services</a>     /    
+    	 	<a href="getaquote/intro.php">Get a Quote</a>    /    
+    	 	<a href="#contactus">Contact Us</a>    
     	 </div>
-    	 <div class="nav_foot_2"><a href="#"><a href="#">Terms & Conditions</a>  |   <a href="#">Privacy Policy</a>  |   <a href="#">F.A.Q.</a></div>   
+    	 <div class="nav_foot_2"><a href="#">
+    	 <a href="terms_conditions.html">Terms & Conditions</a>  |   
+    	 <a href="pricavypolicy.html">Privacy Policy</a>  |   
+    	 <a href="faq.html">F.A.Q.</a></div>   
     	    
    	</div>
 </footer>
