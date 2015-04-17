@@ -6,19 +6,69 @@ include("cn_usuarios.php");
 ?>                       
 <script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script> 
 <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<style>
+
+</style>
 <script>
 var expr = /^[a-zA-Z0-9_\.\-]+@[a-zA-Z0-9\-]+\.[a-zA-Z0-9\-\.]+$/;
 var expr1 = /^[a-zA-Z]*$/;
 $(document).ready(inicio);
 function inicio(){  
      $("#button_aceptar").click(onValidarAcceso);
+     $("#loginUser").focus(onFocus); 
+     $("#loginPassword").focus(onFocus); 
+     $("#loginUser").blur(onBlur);
+     $("#loginPassword").blur(onBlur);
 }
  function onValidarAcceso(){ 
-     conexion($("#loginUser").val(), $("#loginPassword").val());
+     //validaciones tamano
+     var valid = true; 
+     valid = valid && checkLength( $('#loginUser'), "user", 5, 25 );
+     valid = valid && checkLength( $('#loginPassword'), "password", 6, 25 );
+     
+     //Validaciones de expresion regular
+     valid = valid && checkRegexp( $('#loginUser'), /^[a-z]([0-9a-z_\s])+$/i, "user consiste en datos  de a-z, 0-9, sin espacios." );
+     valid = valid && checkRegexp( $('#loginPassword'), /^[a-z]([0-9a-z_\s])+$/i, "user consiste en datos  de a-z, 0-9, sin espacios." );
+     if ( valid ) {
+        conexion($("#loginUser").val(), $("#loginPassword").val());
+     }
  }
  function conexion(u, p){
-     $.post("funciones.php", { accion: "conexion", usuario: u , password: p}, function(data){ alert(data.respuesta);  },"json");
+     $.post("funciones.php", { accion: "conexion", usuario: u , password: p}, 
+     function(data){ 
+         switch(data.respuesta){
+         case "0":  $("#loginPassword").val("");
+                    $("input:text:visible:first").focus();
+                break;
+         case 1:    
+                break;
+         case 2:    $("#loginPassword").val("");
+                    $("input:text:visible:first").focus();
+                break;  
+         }
+     }
+     ,"json");
  }
+ function onFocus(){
+     $(this).css("background-color","#FFFFC0");
+ }
+ function onBlur(){
+    $(this).css("background-color","#FFFFFF");
+ }
+ function checkRegexp( o, regexp, n ) {
+    if ( !( regexp.test( o.val() ) ) ) {
+        return false;
+    } else {                     
+        return true;        
+    }
+ }
+ function checkLength( o, n, min, max ) {
+    if ( o.val().length > max || o.val().length < min ) {
+        return false;    
+    } else {             
+        return true;                     
+    }                    
+ }  
  
 
 </script>
