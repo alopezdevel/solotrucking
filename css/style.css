@@ -418,15 +418,17 @@ color: #fff;
 	padding:5px 0px 0px 70px;
 }
 .header h3 span{color:#aa1525;}
-/*--- facturacion electronica ---*/
-.header.section-quotes{
+.header{
 	background:url('../images/headers/header-quotes.jpg') center top;
 	-moz-background-size:100% 100%;
 	-o-background-size: 100% 100%;
 	-webkit-background-size: 100% 100%;
 	background-size:100% 100%;	
 }
-
+.header.section-quotes{background:url('../images/headers/header-quotes.jpg') center top!important;}
+.header.section-aboutus{background:url('../images/headers/header-aboutus.jpg') center top!important;}
+.header.section-services{background:url('../images/headers/header-services.jpg') center top!important;}
+.header.section-faq{background:url('../images/headers/header-faq.jpg') center top!important;}
 
 /* Services
 ---------------------------------*/
