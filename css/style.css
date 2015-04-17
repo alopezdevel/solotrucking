@@ -99,6 +99,8 @@ p{line-height:24px;margin:0;}
 	text-decoration:none;
 	padding:10px 15px;
 	border:2px solid #1394be;
+	top: 5px;
+  	position: relative;
 }
 .btn_1:hover{text-decoration:none!important;background:#ffffff;}
 .btn_2{
@@ -420,15 +422,15 @@ color: #fff;
 .header h3 span{color:#aa1525;}
 .header{
 	background:url('../images/headers/header-quotes.jpg') center top;
-	-moz-background-size:100% 100%;
-	-o-background-size: 100% 100%;
-	-webkit-background-size: 100% 100%;
-	background-size:100% 100%;	
+	-moz-background-size:100% 100%!important;
+	-o-background-size: 100% 100%!important;
+	-webkit-background-size: 100% 100%!important;
+	background-size:100% 100%!important;	
 }
-.header.section-quotes{background:url('../images/headers/header-quotes.jpg') center top!important;}
-.header.section-aboutus{background:url('../images/headers/header-aboutus.jpg') center top!important;}
-.header.section-services{background:url('../images/headers/header-services.jpg') center top!important;}
-.header.section-faq{background:url('../images/headers/header-faq.jpg') center top!important;}
+.header.section-quotes{background:url('../images/headers/header-quotes.jpg') center top;}
+.header.section-aboutus{background:url('../images/headers/header-aboutus.jpg') center top;}
+.header.section-services{background:url('../images/headers/header-services.jpg') center top;}
+.header.section-faq{background:url('../images/headers/header-faq.jpg') center top;}
 
 /* Services
 ---------------------------------*/
