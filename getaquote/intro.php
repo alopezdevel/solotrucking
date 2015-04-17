@@ -68,7 +68,7 @@
     		<li>Then, we'll send you into our system to get you a quote.</li>
     		<li>Last, you will be able to activate the quote and bind coverage (assuming you meet underwriting guidelines.)</li>
     	</ul>
-    	<p class="txt-center"><a href="quote.html" class="btn_4">Let's Start!</a></p>
+    	<p class="txt-center"><a href="quote.php" class="btn_4">Let's Start!</a></p>
     </div>
 </section><!--main-section-end-->
 <div class="footer-line"></div>
