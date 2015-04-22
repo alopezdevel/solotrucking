@@ -58,7 +58,7 @@ $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accio
     $NUM_ROWs_Usuario = $resultadoUsuario->num_rows; 
     
     //validando query de acceso
-    $queryUsuarioAcceso = "SELECT eTipoUsuario FROM cu_control_acceso WHERE sUsuario = '".$usuario."' AND hClave = '".sha1(md5($clave))."' AND hActivado = sha1('1')";    
+    $queryUsuarioAcceso = "SELECT eTipoUsuario FROM cu_control_acceso WHERE sUsuario = '".$usuario."' AND hClave = sha1('".$clave."') AND hActivado = sha1('1')";    
     $resultadoUsuarioAcceso = $conexion->query($queryUsuarioAcceso);  
     $UsuarioAcceso = $resultadoUsuarioAcceso->fetch_array();
     $NUM_ROWs_Usuario_Acceso = $resultadoUsuarioAcceso->num_rows; 
