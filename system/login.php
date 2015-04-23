@@ -5,7 +5,7 @@ session_destroy();
 include("cn_usuarios.php");
 ?>                       
 <script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script> 
-<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script src="/../../../code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 <style>
 
 </style>
@@ -92,8 +92,8 @@ function inicio(){
 <?php if ($conexion) {    ?>
 <body>
 <div id="layer_login">
-    <img alt="" src="images/login/img-logo-login.png" alt="logo">
     <form method="post" action="" onSubmit="return Validar_Login()">
+    	<img alt="" src="images/login/img-logo-login.png" alt="logo">
         <input id="loginUser" class="user" name="user" type="text" placeholder="User">
         <input id="loginPassword" class="pass" name="password" type="password" placeholder="Password">
         <button id="button_aceptar" class="btn_login" type="button">LOGIN</button>
@@ -116,7 +116,7 @@ function inicio(){
 <section class="section-phone">
     <p>Need Help? CALL  (956) 791-6511</p>
 </section>
-<div class="copyright">SoloTrucking 2015 . © All rights reserved.</div>
+<div class="copyright">SoloTrucking 2015 . All rights reserved.</div>
 </body>
 <?php }else{ ?>
 <?php  } ?>
