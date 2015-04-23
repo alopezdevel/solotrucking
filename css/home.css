@@ -238,20 +238,24 @@
 	box-shadow: 0px 11px 26px -12px rgba(0,0,0,0.75);
 
 }
-.frm_quote h1{
+.frm_quote h3{
 	color:#16448f;
-	letter-spacing:1px;
 	font-family:Calibri,Arial, Helvetica, sans-serif;
-	font-size:40px;
+	font-size:25px;
+	font-weight:bold;
+	text-align:center;
 }
 .frm_quote p{
 	
 	margin:0px auto;
 	color:#1d88c5;
-	font-size:1.2em;
+	font-size:1.1em;
+	line-height:20px;
+  	padding:10px 0px;
+  	text-align:center;
 }
 .frm_quote .btn_4{
 	display:block;
 	margin:0px auto;
-	width:100%;
+	width:65%;
 }
