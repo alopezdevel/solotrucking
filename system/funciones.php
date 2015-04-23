@@ -1,4 +1,5 @@
-<?php
+<?php 
+
   function array2json($arr) { 
     if(function_exists('json_encode')) return json_encode($arr); //Lastest versions of PHP already has this functionality.
     $parts = array(); 
@@ -106,25 +107,23 @@ $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accio
   function alta_usuario(){
     $usuario = trim($_POST["email"]);
     $nombre = trim($_POST["name"]);
-    $password = sha1(md5(trim($_POST["password"])));
+    $password = $_POST["password"];
     $tipo = strtoupper(trim($_POST["nivel"]));
     $correo = strtoupper(trim($_POST["email"]));
     include("cn_usuarios.php");
-    mysql_query("BEGIN");
+    //$conexion->begin_transaction();
     $conexion->autocommit(FALSE);
     $transaccion_exitosa = true;
-    $sql = "SELECT sUsuario FROM cu_control_accesos WHERE sUsuario = '".$usuario."' LOCK IN SHARE MODE";
+    $sql = "SELECT sUsuario FROM cu_control_acceso WHERE sUsuario = '".$usuario."' LOCK IN SHARE MODE";
     $result = $conexion->query($sql);
     $NUM_ROWs_Usuario = $result->num_rows;
-    $result->close();
     if ($NUM_ROWs_Usuario > 0) {
         $mensaje = "El usuario: $usuario ya existe. Favor de verificar los datos.";
         $error = "1";
         $conexion->rollback();
         $conexion->close();                                                                                                                                                                       
     } else {     
-        mysqli_result::free();
-        $sql = "INSERT INTO cu_control_accesos SET  sUsuario = '".$usuario."',   hClave =sha1('".$password."'), sCorreo ='".$correo."',eTipoUsuario ='".$tipo."', sDescripcion ='".$nombre."', hActivado  ='".sha1('1')."'  ";
+        $sql = "INSERT INTO cu_control_acceso SET  sUsuario = '".$usuario."',   hClave =sha1('".$password."'), sCorreo ='".$correo."',eTipoUsuario ='".$tipo."', sDescripcion ='".$nombre."', hActivado  ='".sha1('1')."'  ";
         $conexion->query($sql);   
         if ($conexion->affected_rows < 1 ) {
             $error = "1";
