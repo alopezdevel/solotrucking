@@ -1,0 +1,991 @@
+﻿/*--------------------- ESTILOS PARA FORMULARIOS GENERALES -----------------------*/
+.data_grid label ,fieldset label{
+    color:#044c8b;
+    font-weight:bold;
+    font-size:12px;
+}
+fieldset input[type="text"], fieldset textarea, fieldset select, input[readonly="readonly"],textarea, select, input[type="text"]{
+
+    height:20px;
+    border-radius:4px;
+    -moz-border-radius:4px;
+    -webkit-border-radius:4px;
+    
+    background: #ffffff;
+    background: -moz-linear-gradient(top, #ffffff, #f7f7f7);
+    background: linear-gradient(to bottom, #ffffff, #f7f7f7);
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#ffffff), to(#f7f7f7));
+    border:1px solid #a9a9a9;
+    padding-left:5px;
+}
+fieldset textarea{height:60px!important;}
+
+/*------------------------------------TITULOS GRIDS----------------------------------------------------------------------------*/
+/*------------------------------------TITULOS GRIDS----------------------------------------------------------------------------*/
+/*------------------------------------TITULOS GRIDS----------------------------------------------------------------------------*/
+.titulo-grid{
+	
+	height:25px;	
+	background:#05518f;
+	background: -moz-linear-gradient(top, #1268ac, #05518f);
+    background: linear-gradient(to bottom, #1268ac, #05518f);
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#1268ac), to(#05518f));
+	border:1px solid #2d7acb;	
+	border-radius:6px 6px 0px 0px;
+	-moz-border-radius:6px 6px 0px 0px;
+	-webkit-border-radius:6px 6px 0px 0px;
+	margin:0px 0px 0px!important;
+    padding:10px 0px 0px 10px;
+	font-size:14px; text-transform:uppercase; color:#ffffff; text-shadow:1px 1px 2px #000000;
+	text-align:left!important;
+    clear: both;
+	
+				
+}
+.titulo-grid span{
+	
+	background:url('../images/img-datagrid/tit-icons.png') no-repeat left top;
+	-moz-background-size: 25px 160px;-o-background-size: 25px 160px;-webkit-background-size: 25px 160px;background-size: 25px 160px;	
+	padding:2px 0px 2px 30px;
+}
+.titulo-grid .administrador{background-position:0 0px;}
+.titulo-grid .catalogo{background-position:0 -20px;}
+.titulo-grid .contabilidad{background-position:0 -40px;}
+.titulo-grid .banco{background-position:0 -60px;}
+.titulo-grid .cliente{background-position:0 -80px;}
+.titulo-grid .proveedor{background-position:0 -100px;}
+.titulo-grid .facturacion{background-position:0 -120px;}
+.titulo-grid .utileria{background-position:0 -140px;}
+
+
+table.data_grid{width:100%;height:200px; padding:0px;border-collapse: collapse;border-spacing: 0;font-family:Arial, Helvetica, sans-serif;}
+/*------------------------- THEAD - 1------------------------------------------*/
+/*------------------------- THEAD - 1------------------------------------------*/
+#grid-head1{
+	
+	height:45px;	
+	background:#05518f;
+	background: -moz-linear-gradient(top, #05518f, #1268ac);
+    background: linear-gradient(to bottom, #05518f, #1268ac);
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#05518f), to(#1268ac));
+	border:1px solid #2d7acb;	
+}
+#grid-head1 input, #grid-head1 select{
+
+	width:90%; height:27px!important;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	background: #ffffff;
+    background: -moz-linear-gradient(top, #ffffff, #f7f7f7);
+    background: linear-gradient(to bottom, #ffffff, #f7f7f7);
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#ffffff), to(#f7f7f7));
+	border:1px solid #5194db;
+	padding-left:5px;
+	
+	opacity:0.92;
+	-webkit-transition: left 0.2s linear;
+	-webkit-transition-property:opacity;
+	-moz-transition: left 0.2s linear;
+	-moz-transition-property:opacity;
+	-o-transition: left 0.2s linear;
+	-o-transition-property:opacity;
+	-ms-transition: left 0.2s linear;
+	-ms-transition-property:opacity;
+	transition: left 0.2s linear;
+	transition-property:opacity;
+
+}
+#grid-head1 select{height:31px!important;}
+#grid-head1 input:hover,#grid-head1 td input:focus, #grid-head1 select:focus, #grid-head1 select:hover{opacity:1;}
+#grid-head1 td, #grid-head2{text-align:center;}
+
+
+/*------------------------- THEAD - 2------------------------------------------*/
+/*------------------------- THEAD - 2------------------------------------------*/
+#grid-head2{
+	
+	height:30px;	
+	background:#dcebf6;
+	background: -moz-linear-gradient(top, #a0d1f5, #dcebf6);
+    background: linear-gradient(to bottom, #a0d1f5, #dcebf6);
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#a0d1f5), to(#dcebf6));
+	border:1px solid #dcebf6;	
+}
+#grid-head2 img{border:0px;}
+#grid-head2 .etiqueta_grid{color:#2b6baf;font-size:13px;text-transform:uppercase;font-weight:bold;text-shadow:1px 2px 3px #daeaf6;}
+#grid-head2 .up, #grid-head2 .down{
+	
+	background:url('../images/img-datagrid/img-up-down.png') no-repeat right top;
+	-moz-background-size: 30px 60px;
+	-o-background-size: 30px 60px;
+	-webkit-background-size: 30px 60px;
+	background-size: 30px 60px;	
+	margin:0px;
+	padding-right:30px;
+}
+#grid-head2 .down{background-position: 100% 0px;}
+#grid-head2 .up{background-position: 100% -30px;}
+/*----------------------------------------- TBODY-----------------------------------------------------------------------------*/
+/*---------------------------------------- TBODY-----------------------------------------------------------------------------*/
+/*--------------------------------------- TBODY-----------------------------------------------------------------------------*/
+/*---------------------------------------- TBODY----------------------------------------------------------------------------*/
+tbody td{
+	
+	font-size:11px!important;
+	text-align:left;
+	color:#424242;
+	padding-left:5px!important;
+}
+.data_grid tbody td{min-height:30px;height:30px;}
+/*------ ALINEACION DE TEXTOS----*/
+td.txt-r{text-align:right!important;}
+td.txt-c{text-align:center!important;}
+tbody .gray, tbody .white{
+	
+	-webkit-transition: left 0.3s linear;
+	-webkit-transition-property:background-color;
+	-moz-transition: left 0.3s linear;
+	-moz-transition-property:background-color;
+	-o-transition: left 0.3s linear;
+	-o-transition-property:background-color;
+	-ms-transition: left 0.3s linear;
+	-ms-transition-property:;
+	transition: left 0.3s linear;
+	transition-property:background-color;
+}
+tbody .gray{background: rgb(247, 247, 247);}
+tbody .white{background: rgb(255, 255, 255);}
+tbody .gray:hover, tbody .white:hover{background-color: rgb(251, 253, 208);cursor:pointer;}
+
+
+/*-------------------------AGREGAR SCROLL BAR -----------------------*/
+.grid-scroll{
+	
+	height: 381px!important;
+    overflow-y: scroll;
+    overflow-x: scroll;
+    display: -webkit-box;
+    border-bottom: 2px solid #b9dcf6;
+    margin-top: 0px;
+}
+.grid-scroll table{
+	/*margin-top:-15px;*/
+}
+/*---- para f-captura Grid ----*/
+.grid-scroll-2{
+	
+	height:150px!important;
+	overflow-y:scroll;
+	display:list-item;
+	border-bottom:2px solid #b9dcf6; 
+}
+.grid-scroll-2 table{
+	margin-top:-15px;
+}
+
+
+/*----------------------------------------- TFOOT-----------------------------------------------------------------------------*/
+/*----------------------------------------- TFOOT-----------------------------------------------------------------------------*/
+/*----------------------------------------- TFOOT-----------------------------------------------------------------------------*/
+tfoot{border-top:2px solid #b9dcf6;}
+#datagrid-pages{
+	
+	margin:10px auto;
+	width:auto;
+	text-align:center;
+	font-size:10px;
+}
+#datagrid-pages label{color:#4c4c4c;}
+#datagrid-pages input{
+	width:30px;
+	text-align:center;
+	border:0px;
+    font-size:1em!important;
+    background: #ffffff;
+}
+#pagina_actual_cliente{color:#4c4c4c!important;}
+#paginas_total_cliente{color:#4c4c4c!important;}
+#datagrid-menu-pages{text-align:center;margin:10px auto;}
+#datagrid-menu-pages button{
+	
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	background: #ebf3fa;
+    background: -moz-linear-gradient(top, #ebf3fa, #d2e7f7);
+    background: linear-gradient(to bottom, #ebf3fa, #d2e7f7);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#ebf3fa), to(#d2e7f7));
+    border:1px solid #aac7dd;
+    cursor:pointer;
+    height:20px;
+    
+    color:#79a3c4;
+    font-weight:bold;
+    
+	height:25px;
+
+}
+#datagrid-menu-pages button:hover{
+	
+	background: #2e90bd;
+    background: -moz-linear-gradient(top, #2e90bd, #1482b4);
+    background: linear-gradient(to bottom, #2e90bd, #1482b4);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#2e90bd), to(#1482b4));
+    border:1px solid #40bdf9; 
+      
+}
+#datagrid-menu-pages button:focus{outline:0px;}
+
+/*----ICONOS PAGINACION------*/
+#datagrid-menu-pages button p{
+	
+	background:url('../images/img-datagrid/btns-pagination.png') no-repeat center top;
+	-moz-background-size: 25px 200px;
+	-o-background-size: 25px 200px;
+	-webkit-background-size: 25px 200px;
+	background-size: 25px 200px;	
+	margin:0px;
+	min-width:40px;
+	height:25px;
+
+
+}
+#pgn-inicio p{background-position: 50% 0px!important;}
+#pgn-inicio:hover p{background-position: 50% -25px!important;}
+#pgn-anterior p{background-position: 50% -50px!important;}
+#pgn-anterior:hover p{background-position: 50% -75px!important;}
+#pgn-siguiente p{background-position: 50% -100px!important;}
+#pgn-siguiente:hover p{background-position: 50% -125px!important;}
+#pgn-final p{background-position: 50% -150px!important;}
+#pgn-final:hover p{background-position: 50% -175px!important;}
+
+
+
+
+/*------------------------------ DATA GRID TOOLS - MENU DE HERRAMIENTAS ----------------------------------------------*/
+/*------------------------------ DATA GRID TOOLS - MENU DE HERRAMIENTAS ----------------------------------------------*/
+/*------------------------------ DATA GRID TOOLS - MENU DE HERRAMIENTAS ----------------------------------------------*/
+/*------------------------------ DATA GRID TOOLS - MENU DE HERRAMIENTAS ----------------------------------------------*/
+#grid-head-tools{
+	
+	height:20px;	
+	background:#ffffff;
+	background: -moz-linear-gradient(top, #ebf3fa, #ffffff);
+    background: linear-gradient(to bottom, #ebf3fa, #ffffff);
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#ebf3fa), to(#ffffff));
+	border:1px solid #ebf3fa;
+}
+#grid-head-tools ul{list-style:none;float:right;margin:2px;}
+#grid-head-tools ul li{float:left;}
+
+
+/*---------------------------------- TAB BUTTONS --------------------------------------------------*/
+
+.tab_button {
+	height:22px;
+	width:auto;
+	min-width:22px;
+	max-height:100px;
+
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+
+	background: #ebf3fa;
+	background: -moz-linear-gradient(top, #ebf3fa, #d2e7f7);
+	background: linear-gradient(to bottom, #ebf3fa, #d2e7f7);
+	background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#ebf3fa), to(#d2e7f7));
+	border:1px solid #aac7dd;
+
+	padding:0px 2px 0px 2px;
+	cursor:pointer;
+	margin:2px;
+}
+
+.tab_button:hover, .tab_button:focus{
+	background: #2e90bd;
+	background: -moz-linear-gradient(top, #1482b4, #2e90bd);
+	background: linear-gradient(to bottom, #1482b4, #2e90bd);
+	background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#1482b4), to(#2e90bd));
+	border:1px solid #23a2c8;
+}
+
+.tab_button p {
+	font-size:11px!important;
+	height:18px;
+	color:#79a3c4;
+	padding:3px;
+	font-weight:bold;
+}
+
+.tab_button:hover p, .tab_button:focus p {
+	color:#ffffff;
+}
+
+
+/*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
+/*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
+/*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
+/*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
+
+div[name=btn]{
+	
+	height:22px;
+    width:auto;
+    min-width:22px;
+    max-height:100px;
+
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	
+	background: #ebf3fa;
+    background: -moz-linear-gradient(top, #ebf3fa, #d2e7f7);
+    background: linear-gradient(to bottom, #ebf3fa, #d2e7f7);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#ebf3fa), to(#d2e7f7));
+    border:1px solid #aac7dd;
+    
+    padding:0px 2px 0px 2px;
+    cursor:pointer;
+    margin:2px;
+   
+}
+div[name=btn]:hover{
+	
+	background: #2e90bd;
+    background: -moz-linear-gradient(top, #1482b4, #2e90bd);
+    background: linear-gradient(to bottom, #1482b4, #2e90bd);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#1482b4), to(#2e90bd));
+    border:1px solid #23a2c8;
+
+}
+div[name=btn] span{
+	
+	border: 1px solid #65c6f5;
+	padding: 5px;
+	position:relative;
+	background: #f7f7f7;
+	color: #5f5f5f;
+	text-align: center;
+	font-size: 0.7em;
+	line-height: 13px;
+	
+	border-radius:3px;
+	-moz-border-radius:3px;
+	-webkit-border-radius:3px;
+	
+	z-index:5000;
+	opacity:0!important;
+	
+	-webkit-transition: left 0.2s linear!important;
+	-webkit-transition-property:opacity!important;
+	-moz-transition: left 0.2s linear!important;
+	-moz-transition-property:opacity!important;
+	-o-transition: left 0.2s linear!important;
+	-o-transition-property:opacity!important;
+	-ms-transition: left 0.2s linear!important;
+	-ms-transition-property:opacity!important;
+	transition: left 0.2s linear!important;
+	transition-property:opacity!important;
+	visibility:hidden;
+	display:none;
+
+
+}
+div[name=btn]:hover  span{
+	
+	visibility: visible;
+	display:inline-block;
+	
+	top: 15px;
+	right:25px;
+	opacity:1!important;
+	
+	-webkit-box-shadow: 1px 1px 3px gray;
+	-moz-box-shadow: 1px 1px 3px gray;
+	box-shadow: 1px 1px 3px gray;
+	
+	clear:both;
+
+}
+div[name=btn] p{font-size:11px!important;height:18px;color:#79a3c4;margin:1px 0px 0px 0px;padding:3px;font-weight:bold;}
+div[name=btn]:hover p{color:#ffffff;}
+div[name=btn] .ico{ /*-------  ASIGANDO ICONOS -------*/
+
+	background:url('../images/img-datagrid/btns-icons.png') no-repeat right top;
+	-moz-background-size: 20px auto;
+	-o-background-size: 20px auto;
+	-webkit-background-size: 20px auto;
+	background-size: 20px auto;
+
+	padding:2px 20px 0px 0px;
+}
+
+/*BTN BUSCAR*/
+div[name=btn].search{width:22px;}
+div[name=btn].search .ico{background-position: 100% 1px;}
+div[name=btn].search:hover .ico{background-position: 100% -18px;}
+div[name=btn].search:hover{
+	
+	background: #2e90bd;
+    background: -moz-linear-gradient(top, #1482b4, #2e90bd);
+    background: linear-gradient(to bottom, #1482b4, #2e90bd);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#1482b4), to(#2e90bd));
+    border:1px solid #23a2c8;
+
+}
+
+/* BTN EDITAR*/
+div[name=btn].edit .ico{background-position: 100% -36px;}
+div[name=btn].edit:hover .ico{background-position: 100% -54px;}
+div[name=btn].edit:hover{
+	background: #daf8ff;
+    background: -moz-linear-gradient(top, #daf8ff, #c0f3fc);
+    background: linear-gradient(to bottom, #daf8ff, #c0f3fc);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#daf8ff), to(#c0f3fc));
+    border:1px solid #5a8d96;        
+}
+
+/* BTN ELIMINAR */
+div[name=btn].delete .ico{background-position: 100% -72px;}
+div[name=btn].delete:hover .ico{background-position: 100% -90px;}
+div[name=btn].delete:hover{
+	
+	background: #fe5b51;
+    background: -moz-linear-gradient(top, #faebeb, #f7d2d2);
+    background: linear-gradient(to bottom, #faebeb, #f7d2d2);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faebeb), to(#f7d2d2));
+    border:1px solid #d59696;
+}
+
+/* BTN AGREGAR*/
+div[name=btn].add .ico{background-position: 100% -108px;}
+div[name=btn].add:hover .ico{background-position: 100% -126px;}
+div[name=btn].add:hover{
+	background: #f3faeb;
+    background: -moz-linear-gradient(top, #f3faeb, #e1f7d2);
+    background: linear-gradient(to bottom, #f3faeb, #e1f7d2);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f3faeb), to(#e1f7d2));
+    border:1px solid #b5d596;       
+}
+
+/* BTN ACEPTAR*/
+div[name=btn].check .ico{background-position: 100% -144px;}
+div[name=btn].check:hover .ico{background-position: 100% -162px;}
+div[name=btn].check:hover{
+	background: #f3faeb;
+    background: -moz-linear-gradient(top, #f3faeb, #e1f7d2);
+    background: linear-gradient(to bottom, #f3faeb, #e1f7d2);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f3faeb), to(#e1f7d2));
+    border:1px solid #b5d596;       
+}
+
+/* BTN REPORTE --- OPCION GENERAL*/
+div[name=btn].report .ico{background-position: 100% -180px;}
+div[name=btn].report:hover .ico{background-position: 100% -198px;}
+div[name=btn].report:hover{
+	background: #faf4eb;
+    background: -moz-linear-gradient(top, #faf4eb, #f8e9c9);
+    background: linear-gradient(to bottom, #faf4eb, #f8e9c9);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faf4eb), to(#f8e9c9));
+    border:1px solid #d7a73e;       
+}
+
+/* BTN REPORTE2 --- OPCION ASIGNAR CUENTAS - CLIENTES */
+div[name=btn].report2 .ico{background-position: 100% -216px;}
+div[name=btn].report2:hover .ico{background-position: 100% -234px;}
+div[name=btn].report2:hover{
+	background: #dcf3fb;
+    background: -moz-linear-gradient(top, #dcf3fb, #aee3f4);
+    background: linear-gradient(to bottom, #dcf3fb, #aee3f4);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#dcf3fb), to(#aee3f4));
+    border:1px solid #62c3e2;       
+}
+
+/* BTN REPORTE3 --- OPCION XLS - EXCEL*/
+div[name=btn].report-xls .ico{background-position: 100% -252px;}
+div[name=btn].report-xls:hover .ico{background-position: 100% -270px;}
+div[name=btn].report-xls:hover{
+	background: #f3faeb;
+    background: -moz-linear-gradient(top, #f3faeb, #e1f7d2);
+    background: linear-gradient(to bottom, #f3faeb, #e1f7d2);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f3faeb), to(#e1f7d2));
+    border:1px solid #b5d596;       
+}
+
+/* BTN REPORTE4 --- OPCION PDF*/
+div[name=btn].report-pdf .ico{background-position: 100% -288px;}
+div[name=btn].report-pdf:hover .ico{background-position: 100% -306px;}
+div[name=btn].report-pdf:hover{
+	background: #fbeeee;
+    background: -moz-linear-gradient(top, #fbeeee, #f8dede);
+    background: linear-gradient(to bottom, #fbeeee, #f8dede);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#fbeeee), to(#f8dede));
+    border:1px solid #b38e8e;       
+}
+
+/* BTN EMAIL - PDF  --- OPCION ENVIAR PDF VIA EMAIL*/
+div[name=btn].email-pdf .ico{background-position: 100% -324px;}
+div[name=btn].email-pdf:hover .ico{background-position: 100% -342px;}
+div[name=btn].email-pdf:hover{
+	background: #fbeeee;
+    background: -moz-linear-gradient(top, #fbeeee, #f8dede);
+    background: linear-gradient(to bottom, #fbeeee, #f8dede);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#fbeeee), to(#f8dede));
+    border:1px solid #c56c6c;       
+}
+/* BTN INTERFACE ACONTA */
+div[name=btn].aconta .ico{background-position: 100% -360px;}
+div[name=btn].aconta:hover .ico{background-position: 100% -378px;}
+div[name=btn].aconta:hover{
+	background: #fbfbfb;
+    background: -moz-linear-gradient(top, #fbfbfb, #e2f5d5);
+    background: linear-gradient(to bottom, #fbfbfb, #e2f5d5);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#fbfbfb), to(#e2f5d5));
+    border:1px solid #b5d596;       
+}
+/* BTN HERRAMIENTAS - UTILERIAS --- TOOLS */
+div[name=btn].tools .ico{background-position: 100% -396px;}
+div[name=btn].tools:hover .ico{background-position: 100% -414px;}
+div[name=btn].tools:hover{
+	background: #fbfbfb;
+    background: -moz-linear-gradient(top, #fbfbfb, #dadada);
+    background: linear-gradient(to bottom, #fbfbfb, #dadada);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#fbfbfb), to(#dadada));
+    border:1px solid #c1c1c1;       
+}
+/* BTN REPORTES  --- REPORT3 */
+div[name=btn].report3 .ico{background-position: 100% -432px;}
+div[name=btn].report3:hover .ico{background-position: 100% -450px;}
+div[name=btn].report3:hover{
+	background: #faf4eb;
+    background: -moz-linear-gradient(top, #faf4eb, #f8e9c9);
+    background: linear-gradient(to bottom, #faf4eb, #f8e9c9);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faf4eb), to(#f8e9c9));
+    border:1px solid #dc951a;       
+}
+/* BTN 	PROVEEDORES  --- TRUCK */
+div[name=btn].truck .ico{background-position: 100% -468px;}
+div[name=btn].truck:hover .ico{background-position: 100% -486px;}
+div[name=btn].truck:hover{
+	background: #e2f8fb;
+    background: -moz-linear-gradient(top, #e2f8fb, #bef3fb);
+    background: linear-gradient(to bottom, #e2f8fb, #bef3fb);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#e2f8fb), to(#bef3fb));
+    border:1px solid #3fbccf;       
+}
+/* BTN 	PLANTAS  --- PLANTS */
+div[name=btn].plants .ico{background-position: 100% -504px;}
+div[name=btn].plants:hover .ico{background-position: 100% -522px;}
+div[name=btn].plants:hover{
+	background: #e7f6fe;
+    background: -moz-linear-gradient(top, #e7f6fe, #bde4fa);
+    background: linear-gradient(to bottom, #e7f6fe, #bde4fa);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#e7f6fe), to(#bde4fa));
+    border:1px solid #3aadef;       
+}
+/* BTN 	TARIFAS  --- CASH */
+div[name=btn].cash .ico{background-position: 100% -540px;}
+div[name=btn].cash:hover .ico{background-position: 100% -558px;}
+div[name=btn].cash:hover{
+	background: #faf8e7;
+    background: -moz-linear-gradient(top, #faf8e7, #f8f4cb);
+    background: linear-gradient(to bottom, #faf8e7, #f8f4cb);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faf8e7), to(#f8f4cb));
+    border:1px solid #e5db6e;       
+}
+
+/* BTN 	CUENTAS BANCARIAS  --- CASH-2 */
+div[name=btn].cash-2 .ico{background-position: 100% -576px;}
+div[name=btn].cash-2:hover .ico{background-position: 100% -594px;}
+div[name=btn].cash-2:hover{
+	background: #faf8e7;
+    background: -moz-linear-gradient(top, #faf8e7, #f8f4cb);
+    background: linear-gradient(to bottom, #faf8e7, #f8f4cb);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faf8e7), to(#f8f4cb));
+    border:1px solid #e5db6e;       
+}
+
+/* BTN 	PARA ORIGENES - ENVIOS - DESTINOS  --- shipp */
+div[name=btn].shipp .ico{background-position: 100% -612px;}
+div[name=btn].shipp:hover .ico{background-position: 100% -630px;}
+div[name=btn].shipp:hover{
+	background: #f2f1e7;
+    background: -moz-linear-gradient(top, #f2f1e7, #dedbcd);
+    background: linear-gradient(to bottom, #f2f1e7, #dedbcd);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f2f1e7), to(#dedbcd));
+    border:1px solid #bab79c;       
+}
+/* BTN 	PARA ORIGENES - ENVIOS - DESTINOS  --- shipp2 */
+div[name=btn].shipp-2 .ico{background-position: 100% -648px;}
+div[name=btn].shipp-2:hover .ico{background-position: 100% -666px;}
+div[name=btn].shipp-2:hover{
+	background: #f2f1e7;
+    background: -moz-linear-gradient(top, #f2f1e7, #dedbcd);
+    background: linear-gradient(to bottom, #f2f1e7, #dedbcd);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f2f1e7), to(#dedbcd));
+    border:1px solid #bab79c;       
+}
+/* BTN 	PARA ORIGENES - ENVIOS - DESTINOS  --- shipp3 */
+div[name=btn].shipp-3 .ico{background-position: 100% -684px;}
+div[name=btn].shipp-3:hover .ico{background-position: 100% -702px;}
+div[name=btn].shipp-3:hover{
+	background: #f2f1e7;
+    background: -moz-linear-gradient(top, #f2f1e7, #dedbcd);
+    background: linear-gradient(to bottom, #f2f1e7, #dedbcd);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f2f1e7), to(#dedbcd));
+    border:1px solid #bab79c;       
+}
+/* BTN REPORTES CON GRAFICAS  --- graphic */
+div[name=btn].graphic .ico{background-position: 100% -720px;}
+div[name=btn].graphic:hover .ico{background-position: 100% -738px;}
+div[name=btn].graphic:hover{
+	background: #dfeefc;
+    background: -moz-linear-gradient(top, #dfeefc, #d8e6f5);
+    background: linear-gradient(to bottom, #dfeefc, #d8e6f5);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#dfeefc), to(#d8e6f5));
+    border:1px solid #93c5f7;       
+}
+/* BTN REPORTES CON GRAFICAS  --- graphic */
+div[name=btn].graphic-2 .ico{background-position: 100% -756px;}
+div[name=btn].graphic-2:hover .ico{background-position: 100% -774px;}
+div[name=btn].graphic-2:hover{
+	background: #dfeefc;
+    background: -moz-linear-gradient(top, #dfeefc, #d8e6f5);
+    background: linear-gradient(to bottom, #dfeefc, #d8e6f5);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#dfeefc), to(#d8e6f5));
+    border:1px solid #93c5f7;       
+}
+
+/* BTN DELETE  --- DELETE-2 */
+div[name=btn].delete-2 .ico{background-position: 100% -792px;}
+div[name=btn].delete-2:hover .ico{background-position: 100% -810px;}
+div[name=btn].delete-2:hover{
+	background: #fe5b51;
+    background: -moz-linear-gradient(top, #faebeb, #f7d2d2);
+    background: linear-gradient(to bottom, #faebeb, #f7d2d2);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faebeb), to(#f7d2d2));
+    border:1px solid #d59696;
+     
+}
+/* BTN IMPORTANTE  --- IMPORTANT */
+div[name=btn].alert .ico{background-position: 100% -828px;}
+div[name=btn].alert:hover .ico{background-position: 100% -846px;}
+div[name=btn].alert:hover{
+	background: #f9f2e4;
+    background: -moz-linear-gradient(top, #f9f2e4, #fbecd0);
+    background: linear-gradient(to bottom, #f9f2e4, #fbecd0);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f9f2e4), to(#fbecd0));
+    border:1px solid #facc73;
+     
+}
+/* BTN INFORMACION  --- INFO */
+div[name=btn].info .ico{background-position: 100% -864px;}
+div[name=btn].info:hover .ico{background-position: 100% -882px;}
+div[name=btn].info:hover{
+	background: #fbfbfb;
+    background: -moz-linear-gradient(top, #fbfbfb, #dadada);
+    background: linear-gradient(to bottom, #fbfbfb, #dadada);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#fbfbfb), to(#dadada));
+    border:1px solid #c1c1c1;       
+}
+
+/* BTN VER-IMAGEN  --- IMG */
+div[name=btn].img .ico{background-position: 100% -900px;}
+div[name=btn].img:hover .ico{background-position: 100% -918px;}
+div[name=btn].img:hover{
+	background: #daf8ff;
+    background: -moz-linear-gradient(top, #daf8ff, #c0f3fc);
+    background: linear-gradient(to bottom, #daf8ff, #c0f3fc);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#daf8ff), to(#c0f3fc));
+    border:1px solid #5a8d96;      
+}
+/* BTN DOWNLOAD ---*/
+div[name=btn].download .ico{background-position: 100% -936px;}
+div[name=btn].download:hover .ico{background-position: 100% -954px;}
+div[name=btn].download:hover{
+	background: #f3faeb;
+    background: -moz-linear-gradient(top, #f3faeb, #e1f7d2);
+    background: linear-gradient(to bottom, #f3faeb, #e1f7d2);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f3faeb), to(#e1f7d2));
+    border:1px solid #b5d596;     
+}
+/* BTN UPLOAD  ---*/
+div[name=btn].upload .ico{background-position: 100% -972px;}
+div[name=btn].upload:hover .ico{background-position: 100% -990px;}
+div[name=btn].upload:hover{
+	background: #f3faeb;
+    background: -moz-linear-gradient(top, #f3faeb, #e1f7d2);
+    background: linear-gradient(to bottom, #f3faeb, #e1f7d2);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f3faeb), to(#e1f7d2));
+    border:1px solid #b5d596;     
+}
+
+/* BTN DELETE-3  ---*/
+div[name=btn].delete-3 .ico{background-position: 100% -1008px;}
+div[name=btn].delete-3:hover .ico{background-position: 100% -1026px;}
+div[name=btn].delete-3:hover{
+	background: #fbfbfb;
+    background: -moz-linear-gradient(top, #fbfbfb, #dadada);
+    background: linear-gradient(to bottom, #fbfbfb, #dadada);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#fbfbfb), to(#dadada));
+    border:1px solid #c1c1c1;      
+}
+/* BTN REPORT-XML  ---*/
+div[name=btn].report-xml .ico{background-position: 100% -1044px;}
+div[name=btn].report-xml:hover .ico{background-position: 100% -1062px;}
+div[name=btn].report-xml:hover{
+	background: #e2f8fb;
+    background: -moz-linear-gradient(top, #e2f8fb, #bef3fb);
+    background: linear-gradient(to bottom, #e2f8fb, #bef3fb);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#e2f8fb), to(#bef3fb));
+    border:1px solid #3fbccf;    
+}
+/* BTN REPORT-XML  ---*/
+div[name=btn].save .ico{background-position: 100% -1080px;}
+div[name=btn].save:hover .ico{background-position: 100% -1098px;}
+div[name=btn].save:hover{
+	background: #e2f8fb;
+    background: -moz-linear-gradient(top, #e2f8fb, #bef3fb);
+    background: linear-gradient(to bottom, #e2f8fb, #bef3fb);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#e2f8fb), to(#bef3fb));
+    border:1px solid #3fbccf;    
+}
+/* BTN REPORT-XML  ---*/
+div[name=btn].attach .ico{background-position: 100% -1116px;}
+div[name=btn].attach:hover .ico{background-position: 100% -1134px;}
+div[name=btn].attach:hover{
+	background: #fbfbfb;
+    background: -moz-linear-gradient(top, #fbfbfb, #dadada);
+    background: linear-gradient(to bottom, #fbfbfb, #dadada);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#fbfbfb), to(#dadada));
+    border:1px solid #c1c1c1;  
+}
+/* BTN CONSULTAR FACTURAS CANCELADAS  --- REPORT3 */
+div[name=btn].report4 .ico{background-position: 100% -1152px;}
+div[name=btn].report4:hover .ico{background-position: 100% -1170px;}
+div[name=btn].report4:hover{
+    background: #faf4eb;
+    background: -moz-linear-gradient(top, #faf4eb, #f8e9c9);
+    background: linear-gradient(to bottom, #faf4eb, #f8e9c9);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faf4eb), to(#f8e9c9));
+    border:1px solid #dc951a;       
+}
+/* BTN     NOTARIO  --- NOTARIO */
+div[name=btn].notario .ico{background-position: 100% -1188px;}
+div[name=btn].notario:hover .ico{background-position: 100% -1206px;}
+div[name=btn].notario:hover{
+    background: #faf8e7;
+    background: -moz-linear-gradient(top, #faf8e7, #f8f4cb);
+    background: linear-gradient(to bottom, #faf8e7, #f8f4cb);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faf8e7), to(#f8f4cb));
+    border:1px solid #e5db6e;       
+}
+
+/* BTN     AGREGAR CFDI --- add-cfdi */
+div[name=btn].add-cfdi .ico{background-position: 100% -1224px;}
+div[name=btn].add-cfdi:hover .ico{background-position: 100% -1242px;}
+div[name=btn].add-cfdi:hover{
+    background: #f3faeb;
+    background: -moz-linear-gradient(top, #f3faeb, #e1f7d2);
+    background: linear-gradient(to bottom, #f3faeb, #e1f7d2);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f3faeb), to(#e1f7d2));
+    border:1px solid #b5d596;      
+}
+/* BTN     ELIMINAR CFDI --- delete-cfdi */
+div[name=btn].delete-cfdi .ico{background-position: 100% -1260px;}
+div[name=btn].delete-cfdi:hover .ico{background-position: 100% -1278px;}
+div[name=btn].delete-cfdi:hover{
+    background: #fe5b51;
+    background: -moz-linear-gradient(top, #faebeb, #f7d2d2);
+    background: linear-gradient(to bottom, #faebeb, #f7d2d2);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faebeb), to(#f7d2d2));
+    border:1px solid #d59696;      
+}
+/* BTN     CALCULAR SUBTOTALES --- calcular */
+div[name=btn].calcular .ico{background-position: 100% -1296px;}
+div[name=btn].calcular:hover .ico{background-position: 100% -1314px;}
+div[name=btn].calcular:hover{
+    background: #e7f6fe;
+    background: -moz-linear-gradient(top, #e7f6fe, #bde4fa);
+    background: linear-gradient(to bottom, #e7f6fe, #bde4fa);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#e7f6fe), to(#bde4fa));
+    border:1px solid #3aadef;       
+}
+/* BTN     EMAIL - DELETE --- SOBRE DE CORREO CON ICONO DE BORRAR */
+div[name=btn].email-delete .ico{background-position: 100% -1332px;}
+div[name=btn].email-delete:hover .ico{background-position: 100% -1350px;}
+div[name=btn].email-delete:hover{
+    background: #fe5b51;
+    background: -moz-linear-gradient(top, #faebeb, #f7d2d2);
+    background: linear-gradient(to bottom, #faebeb, #f7d2d2);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faebeb), to(#f7d2d2));
+    border:1px solid #d59696;       
+}
+/* BTN     EMAIL - check --- SOBRE DE CORREO CON ICONO DE ACEPTAR */
+div[name=btn].email-check .ico{background-position: 100% -1368px;}
+div[name=btn].email-check:hover .ico{background-position: 100% -1386px;}
+div[name=btn].email-check:hover{
+    background: #f3faeb;
+    background: -moz-linear-gradient(top, #f3faeb, #e1f7d2);
+    background: linear-gradient(to bottom, #f3faeb, #e1f7d2);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f3faeb), to(#e1f7d2));
+    border:1px solid #b5d596;      
+}
+/* BTN     FILE-COPY -- copia de un archivo */
+div[name=btn].file-copy .ico{background-position: 100% -1404px;}
+div[name=btn].file-copy:hover .ico{background-position: 100% -1422px;}
+div[name=btn].file-copy:hover{
+    background: #dfeefc;
+    background: -moz-linear-gradient(top, #dfeefc, #d8e6f5);
+    background: linear-gradient(to bottom, #dfeefc, #d8e6f5);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#dfeefc), to(#d8e6f5));
+    border:1px solid #93c5f7;     
+} 
+/* BTN     EMAIL-SEND-- enviar email si registrado */
+div[name=btn].email-send .ico{background-position: 100% -1440px;}
+div[name=btn].email-send:hover .ico{background-position: 100% -1458px;}
+div[name=btn].email-send:hover{
+    background: #dfeefc;
+    background: -moz-linear-gradient(top, #dfeefc, #d8e6f5);
+    background: linear-gradient(to bottom, #dfeefc, #d8e6f5);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#dfeefc), to(#d8e6f5));
+    border:1px solid #93c5f7;     
+}
+/* BTN     app-menu -- menu de opciones */
+div[name=btn].app-menu .ico{background-position: 100% -1476px;}
+div[name=btn].app-menu:hover .ico{background-position: 100% -1494px;}
+div[name=btn].app-menu:hover{
+    background: #fbfbfb;
+    background: -moz-linear-gradient(top, #fbfbfb, #dadada);
+    background: linear-gradient(to bottom, #fbfbfb, #dadada);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#fbfbfb), to(#dadada));
+    border:1px solid #c1c1c1;      
+}
+
+/* BTN     coin-process -- gastos comprobados pendientes */
+div[name=btn].cash-process .ico{background-position: 100% -1512px;}
+div[name=btn].cash-process:hover .ico, div[name=btn].active.cash-process .ico{background-position: 100% -1530px;}
+div[name=btn].cash-process:hover{
+    background: #e7f6fe;
+    background: -moz-linear-gradient(top, #e7f6fe, #bde4fa);
+    background: linear-gradient(to bottom, #e7f6fe, #bde4fa);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#e7f6fe), to(#bde4fa));
+    border:1px solid #3aadef;     
+}
+/* BTN     cash-asign -- gastos comprobados asignados */
+div[name=btn].cash-asign .ico{background-position: 100% -1548px;}
+div[name=btn].cash-asign:hover .ico, div[name=btn].active.cash-asign .ico{background-position: 100% -1566px;}
+div[name=btn].cash-asign:hover{
+    background: #faf8e7;
+    background: -moz-linear-gradient(top, #faf8e7, #f8f4cb);
+    background: linear-gradient(to bottom, #faf8e7, #f8f4cb);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faf8e7), to(#f8f4cb));
+    border:1px solid #e5db6e;      
+}
+/* BTN     cash-file -- gastos comprobados asignados */
+div[name=btn].cash-file .ico{background-position: 100% -1584px;}
+div[name=btn].cash-file:hover .ico, div[name=btn].active.cash-file .ico{background-position: 100% -1602px;}
+div[name=btn].cash-file:hover{
+    background: #faf4eb;
+    background: -moz-linear-gradient(top, #faf4eb, #f8e9c9);
+    background: linear-gradient(to bottom, #faf4eb, #f8e9c9);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faf4eb), to(#f8e9c9));
+    border:1px solid #dc951a;       
+}
+/* BTN     videos -- videos de econta */
+div[name=btn].video{
+    background: #f3faeb;
+    background: -moz-linear-gradient(top, #f3faeb, #d9f6bc);
+    background: linear-gradient(to bottom, #f3faeb, #d9f6bc);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f3faeb), to(#d9f6bc));
+    border:1px solid #aade76;       
+}
+div[name=btn].video .ico{background-position: 100% -1620px;}
+div[name=btn].video:hover .ico{background-position: 100% -1638px;}
+div[name=btn].video:hover{
+    background: #cbf39c;
+    background: -moz-linear-gradient(top, #cbf39c, #a9df74);
+    background: linear-gradient(to bottom, #cbf39c, #a9df74);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#cbf39c), to(#a9df74));
+    border:1px solid #aade76;       
+}
+/* BTN     clock -- Antiguedad de saldos */
+div[name=btn].clock .ico{background-position: 100% -1656px;}
+div[name=btn].clock:hover .ico, div[name=btn].active.cash-file .ico{background-position: 100% -1674px;}
+div[name=btn].clock:hover{
+    background: #faf4eb;
+    background: -moz-linear-gradient(top, #faf4eb, #f8e9c9);
+    background: linear-gradient(to bottom, #faf4eb, #f8e9c9);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faf4eb), to(#f8e9c9));
+    border:1px solid #dc951a;       
+}
+/* BTN     email-n -- Envio masivo de correos */
+div[name=btn].email-n .ico{background-position: 100% -1692px;}
+div[name=btn].email-n:hover .ico, div[name=btn].active.cash-file .ico{background-position: 100% -1710px;}
+div[name=btn].email-n:hover{
+    background: #dfeefc;
+    background: -moz-linear-gradient(top, #dfeefc, #d8e6f5);
+    background: linear-gradient(to bottom, #dfeefc, #d8e6f5);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#dfeefc), to(#d8e6f5));
+    border:1px solid #93c5f7;        
+}
+/* BTN     n-cfdi-- Envio masivo de CFDI */
+div[name=btn].n-cfdi .ico{background-position: 100% -1728px;}
+div[name=btn].n-cfdi:hover .ico, div[name=btn].active.cash-file .ico{background-position: 100% -1746px;}
+div[name=btn].n-cfdi:hover{
+    background: #dfeefc;
+    background: -moz-linear-gradient(top, #dfeefc, #d8e6f5);
+    background: linear-gradient(to bottom, #dfeefc, #d8e6f5);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#dfeefc), to(#d8e6f5));
+    border:1px solid #93c5f7;        
+}
+/* BTN     Intercambio --- Boton para intercambio o replace */
+div[name=btn].replace .ico{background-position: 100% -1764px;}
+div[name=btn].replace:hover .ico{background-position: 100% -1782px;}
+div[name=btn].replace:hover{
+    background: #f3faeb;
+    background: -moz-linear-gradient(top, #f3faeb, #e1f7d2);
+    background: linear-gradient(to bottom, #f3faeb, #e1f7d2);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f3faeb), to(#e1f7d2));
+    border:1px solid #b5d596;      
+}
+
+
+/*-----ALINEACION DE LOS BOTONES ----------- IZQUIERDA - DERECHA ------*/
+.btn-left{float:left;}
+.btn-right{float:right;margin-right:5px!important;}
+
+
+/*----------------- EFECTO AL DAR CLIC EN LOS BOTONES --------------------------*/
+div[name=btn].search:active{
+	
+	background: #25a9e5!important;
+    background: -moz-linear-gradient(top, #25a9e5, #088fcd)!important;
+    background: linear-gradient(to bottom, #25a9e5, #088fcd)!important;
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#25a9e5), to(#088fcd))!important;
+    border:1px solid #77d5f7!important;
+
+}
+div[name=btn]:active,div[name=btn].active{
+	
+	background: #f4f4f4!important;
+    background: -moz-linear-gradient(top, #f4f4f4, #e6e6e6)!important;
+    background: linear-gradient(to bottom, #f4f4f4, #e6e6e6)!important;
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f4f4f4), to(#e6e6e6))!important;
+    border:1px solid #c9c9c9!important;
+
+}
+div[name=btn]:active p{color:#7b7b7b;}
+
+
+
+
+
+/*----------------------cmsm---------------------------*/
+
+
+
+
+
