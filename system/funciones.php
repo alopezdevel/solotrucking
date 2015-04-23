@@ -103,4 +103,46 @@ $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accio
         echo array2json($response);
     }
 }
+  function alta_usuario(){
+    $usuario = trim($_POST["usuario"]);
+    $nombre = trim($_POST["nombre"]);
+    $password = sha1(md5(trim($_POST["password"])));
+    $tipo = strtoupper(trim($_POST["nivel"]));
+    $correo = strtoupper(trim($_POST["correo"]));
+    include("cn_usuarios.php");
+    mysql_query("BEGIN");
+    $conexion->autocommit(FALSE);
+    $transaccion_exitosa = true;
+    $sql = "SELECT sUsuario FROM cu_control_accesos WHERE sUsuario = '".$usuario."' LOCK IN SHARE MODE";
+    $result = $conexion->query($sql);
+    $NUM_ROWs_Usuario = $result->num_rows;
+    $result->close();
+    if ($NUM_ROWs_Usuario > 0) {
+        $mensaje = "El usuario: $usuario ya existe. Favor de verificar los datos.";
+        $error = "1";
+        $conexion->rollback();
+        $conexion->close();                                                                                                                                                                       
+    } else {     
+        mysqli_result::free();
+        $sql = "INSERT INTO cu_control_accesos SET  sUsuario = '".$usuario."',   hClave ='".$password."', sCorreo ='".$correo."',eTipoUsuario ='".$tipo."', sDescripcion ='".$nombre."', hActivado  ='".sha1('1')."'  ";
+        $conexion->query($sql);   
+        if ($conexion->affected_rows < 1 ) {
+            $error = "1";
+        }                
+        if ($transaccion_exitosa) {
+            $mensaje = "El usuario $usuario se registro con exito";
+            $error = "0";
+            $conexion->commit();
+            $conexion->close();
+        } else {
+            $mensaje = "Error al guardar los datos. Favor de verificarlos.";
+            $error = "1";  
+            $conexion->rollback();
+            $conexion->close();           
+        }
+    }
+     $response = array("mensaje"=>"$mensaje","error"=>"$error");   
+     echo array2json($response);
+}
+    
 ?>
