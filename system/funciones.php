@@ -104,11 +104,11 @@ $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accio
     }
 }
   function alta_usuario(){
-    $usuario = trim($_POST["usuario"]);
-    $nombre = trim($_POST["nombre"]);
+    $usuario = trim($_POST["email"]);
+    $nombre = trim($_POST["name"]);
     $password = sha1(md5(trim($_POST["password"])));
     $tipo = strtoupper(trim($_POST["nivel"]));
-    $correo = strtoupper(trim($_POST["correo"]));
+    $correo = strtoupper(trim($_POST["email"]));
     include("cn_usuarios.php");
     mysql_query("BEGIN");
     $conexion->autocommit(FALSE);
@@ -124,7 +124,7 @@ $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accio
         $conexion->close();                                                                                                                                                                       
     } else {     
         mysqli_result::free();
-        $sql = "INSERT INTO cu_control_accesos SET  sUsuario = '".$usuario."',   hClave ='".$password."', sCorreo ='".$correo."',eTipoUsuario ='".$tipo."', sDescripcion ='".$nombre."', hActivado  ='".sha1('1')."'  ";
+        $sql = "INSERT INTO cu_control_accesos SET  sUsuario = '".$usuario."',   hClave =sha1('".$password."'), sCorreo ='".$correo."',eTipoUsuario ='".$tipo."', sDescripcion ='".$nombre."', hActivado  ='".sha1('1')."'  ";
         $conexion->query($sql);   
         if ($conexion->affected_rows < 1 ) {
             $error = "1";
