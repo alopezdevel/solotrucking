@@ -19,6 +19,7 @@
         <ul class="main-nav">
         	<li><a href="#header">Catalogs</a></li>
             <li><a href="#aboutus">Endorsements</a></li>
+            <li><a href="#aboutus">Claims</a></li>  
             <li><a href="#service">Quotes</a></li>
             <li><a href="#quote">Support</a></li>
         </ul>
