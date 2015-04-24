@@ -1,0 +1,9 @@
+﻿@import "form.css";
+.dialog{
+	
+	width:600px;
+	height:auto;
+	min-height:400px;
+	background:#ffffff;
+	
+}

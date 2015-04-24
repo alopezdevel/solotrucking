@@ -133,42 +133,19 @@
 					}
 				});
 
-			/*
-			 *  Open manually
-			 */
-
-			$("#fancybox-manual-a").click(function() {
-				$.fancybox.open('1_b.jpg');
-			});
-
-			$("#fancybox-manual-b").click(function() {
+			/*Open manually*/
+			$('a.fancybox-certificate').bind( "click", function()  {
 				$.fancybox.open({
-					href : 'iframe.html',
+					href : 'http://www.solotrucking.laredo2.net/get_certificate.php',
 					type : 'iframe',
-					padding : 5
+					padding : 5,
+					width: '500px',
+					height: '400px'
 				});
 			});
 
-			$("#fancybox-manual-c").click(function() {
-				$.fancybox.open([
-					{
-						href : '1_b.jpg',
-						title : 'My title'
-					}, {
-						href : '2_b.jpg',
-						title : '2nd title'
-					}, {
-						href : '3_b.jpg'
-					}
-				], {
-					helpers : {
-						thumbs : {
-							width: 75,
-							height: 50
-						}
-					}
-				});
-			});
 
+			
+			
 
 		});
