@@ -1,30 +1,42 @@
-﻿<script type="text/javascript">
-	var fn_UsersClients = {
-		
-		domroot:"#ct_clientusers",
-		data_grid: "#data_grid_clientusers",
-		
-		fillgrid: function(){
-       		$.ajax({ 
-            
-            	type:"POST", 
-            	url:"funciones.php", 
-            	data:{accion:"get_clientusers"},
-            	async : true,
-            	dataType : "json",
-            	success : function(data){                               
-                 	
-                 	$(fn_UsersClients.data_grid+" tbody").empty().append(data.tabla);
-                	$(fn_UsersClients.data_grid+" tbody tr:even").addClass('gray');
-                	$(fn_UsersClients.data_grid+" tbody tr:odd").addClass('white');
-                            	}
-        	}); 
-        }	
-	}
+<script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script> 
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script type="text/javascript">                 
+function llenadoGrid(){      
+        var fn_UsersClients = {
+        domroot:"#ct_clientusers",
+        data_grid: "#data_grid_clientusers",
+        fillgrid: function(){
+               $.ajax({             
+                type:"POST", 
+                url:"funciones.php", 
+                data:{accion:"get_clientusers"},
+                async : true,
+                dataType : "json",
+                success : function(data){                               
+                    $(fn_UsersClients.data_grid+" tbody").empty().append(data.tabla);
+                    $(fn_UsersClients.data_grid+" tbody tr:even").addClass('gray');
+                    $(fn_UsersClients.data_grid+" tbody tr:odd").addClass('white');
+                                }
+            }); 
+        }    
+    }
+    fn_UsersClients.fillgrid();
+}
+
+
+
+
+	
 </script> 
 <!---- HEADER ----->
 <?php include("header.php"); ?> 
+<script> 
+$(document).ready(inicio);
+function inicio(){   
 
+    llenadoGrid();  
+}
+</script>
 <div id="layer_content" class="main-section">
 	<div id="ct_clientusers" class="container">
 		<h2>Catalogs - Client Users</h2>

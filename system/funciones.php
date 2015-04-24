@@ -143,38 +143,55 @@ $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accio
      $response = array("mensaje"=>"$mensaje","error"=>"$error");   
      echo array2json($response);
 }
- 	
-function get_clientusers(){
-      
+  function get_clientusers(){   
+  //error_reporting(E_ALL);
+  //ini_set('display_errors', '1');
+   
     include("cn_usuarios.php");
     //$conexion->begin_transaction();
     $conexion->autocommit(FALSE);
     $transaccion_exitosa = true;
-    $sql = "SELECT sUsuario,hActivado,sDescripcion,sCorreo FROM cu_control_acceso";
+    $sql = "SELECT sUsuario,hActivado,sDescripcion as nombre,sCorreo as correo FROM cu_control_acceso WHERE eTipoUsuario ='C' ";
     $result = $conexion->query($sql);
-    $NUM_ROWs_Usuario = $result->num_rows;
-    
+    $NUM_ROWs_Usuario = $result->num_rows;    
     if ($NUM_ROWs_Usuario > 0) {
-        $items = mysql_fetch_all($result);  
-        $htmlTabla = "";
-        foreach($items as $i => $l){ 
-             if($items[$i]["sUsuario"] != ""){
-                 $htmlTabla .= "<tr>"; 
-                 
-                 
-                 
-             }else{
-                 $htmlTabla .= "</tr>";
-             }     
+        //$items = mysql_fetch_all($result);      
+        while ($usuario = $result->fetch_assoc()) {
+           if($usuario["sUsuario"] != ""){
+                 $htmlTabla .= "<tr>
+                                    <td>".$usuario['nombre']."</td>".
+                                   "<td>".$usuario['correo']."</td>".
+                                   "<td>".$usuario['nombre']."</td>".
+                                   "<td>".$usuario['hActivado']."</td>".
+                                "</tr>"   ;
+             }else{                             
+                 $htmlTabla .="<tr>
+                                    <td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                 "</tr>"   ;
+             }    
         }
+        $htmlTabla .="<tr>
+                                    <td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                 "</tr>"   ;
         
-        //$error = "1";
         $conexion->rollback();
         $conexion->close();                                                                                                                                                                       
-    } else {     
+    } else { 
+    $htmlTabla .="<tr>
+                                    <td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                 "</tr>"   ;    
         
     }
-     $response = array("mensaje"=>"$mensaje","error"=>"$error");   
+     $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
      echo array2json($response);
 }   
 ?>
