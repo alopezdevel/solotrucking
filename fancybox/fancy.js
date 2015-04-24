@@ -139,7 +139,7 @@
 					href : 'http://www.solotrucking.laredo2.net/get_certificate.php',
 					type : 'iframe',
 					padding : 5,
-					width: '500px',
+					width: '630px',
 					height: '400px'
 				});
 			});
