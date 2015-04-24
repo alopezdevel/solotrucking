@@ -143,5 +143,38 @@ $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accio
      $response = array("mensaje"=>"$mensaje","error"=>"$error");   
      echo array2json($response);
 }
+ 	
+function get_clientusers(){
+      
+    include("cn_usuarios.php");
+    //$conexion->begin_transaction();
+    $conexion->autocommit(FALSE);
+    $transaccion_exitosa = true;
+    $sql = "SELECT sUsuario,hActivado,sDescripcion,sCorreo FROM cu_control_acceso";
+    $result = $conexion->query($sql);
+    $NUM_ROWs_Usuario = $result->num_rows;
     
+    if ($NUM_ROWs_Usuario > 0) {
+        $items = mysql_fetch_all($result);  
+        $htmlTabla = "";
+        foreach($items as $i => $l){ 
+             if($items[$i]["sUsuario"] != ""){
+                 $htmlTabla .= "<tr>"; 
+                 
+                 
+                 
+             }else{
+                 $htmlTabla .= "</tr>";
+             }     
+        }
+        
+        //$error = "1";
+        $conexion->rollback();
+        $conexion->close();                                                                                                                                                                       
+    } else {     
+        
+    }
+     $response = array("mensaje"=>"$mensaje","error"=>"$error");   
+     echo array2json($response);
+}   
 ?>
