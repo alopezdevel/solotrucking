@@ -51,11 +51,13 @@ textarea{height:120px!important;padding-top:10px!important;}
 }
 button, .btn-1{
     
-    background-color:#4cafd2;
-    text-shadow:1px 1px 1px #7ecbee;
+    background-color:#5e8bd4;
+    text-shadow:1px 1px 1px rgba(0,0,0,0.8);
     border-radius:4px;
     -moz-border-radius:4px;
     -webkit-border-radius:4px;
+    padding:5px;
+    color:#ffffff;
     
     -webkit-transition: left 0.3s linear;
     -webkit-transition-property:background-color;
@@ -68,9 +70,9 @@ button, .btn-1{
     transition: left 0.3s linear;
     transition-property:background-color;
     
-    border:1px solid #d7d7d7;
+    border:1px solid #61b7df;
 }
-button:hover, .btn-1:hover{background-color:#7ecbee;}
+button:hover, .btn-1:hover{background-color:#61b1df;}
 .msg-success{display:none;}
 .error{
 	border:1px solid #b64141!important;
