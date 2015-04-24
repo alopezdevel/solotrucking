@@ -31,24 +31,25 @@
     -webkit-border-radius:10px;
 
 }
-.bann p, .bann ul{text-align:justify;width:95%;margin:10px auto;clear:both;height:110px;}
+.bann p, .bann ul{text-align:justify;width:95%;margin:10px auto;clear:both;/*min-height:110px;*/}
 .bann h3{
 	
 	color:#1394be;
 	text-transform:uppercase;
 	font-weight:bold;
 }
-.bann h1{
+.bann h2{
 	
 	text-transform:uppercase;
 	color:#3c6bb6;
 	text-shadow: 0px 0px 1px #999999;
 	font-weight:bold;
 	font-size:1.5em;
+	padding:10px 5px;
 
 }
 .bann .btn_2{
-	width:130px;
+	width:180px;
 	display:block;
 	margin:0px auto;
 }
@@ -82,7 +83,7 @@
 }
 .home-section-b p{
 	width:45%;
-	margin:10px auto;
+	margin:5px auto 10px;
 	color:#ffffff;
 	text-align:center;
 }

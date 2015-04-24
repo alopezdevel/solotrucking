@@ -8,6 +8,7 @@
 ---------------------------------*/
 .left {float:left;}
 .right {float:right;}
+.center{margin:0 auto;}
 
 /* Clear Floated Elements
 ---------------------------------*/
@@ -173,12 +174,13 @@ p{line-height:24px;margin:0;}
 	color:#e8feca;
 }
 
-p{line-height:24px;margin:0;padding:15px 0px; font-size: 1.2em;}
+p{line-height:24px;margin:0;padding:10px 0px; font-size: 1.2em;}
 a{	font-family:'FontAwesome','luzsans-bookluzsans-book', Arial, Helvetica, sans-serif;}
 .txt-left{text-align:left!important;}
 .txt-right{text-align:right!important;}
 .txt-center{text-align:center!important;}
 .txt-justify{text-align:justify!important;}
+.txt-center strong{color:#5087ce;}
 
 /*----espacios -----*/
 .left-300{left:300px;}
@@ -188,6 +190,7 @@ a{	font-family:'FontAwesome','luzsans-bookluzsans-book', Arial, Helvetica, sans-
 .back-blue{background:#eff7fa;}
 .p-relative{position:relative;}
 .p-absolute{position:absolute;}
+
 
 /* Header Styles
 
