@@ -4,7 +4,7 @@
     font-weight:bold;
     font-size:12px;
 }
-fieldset input[type="text"], fieldset textarea, fieldset select, input[readonly="readonly"],textarea, select, input[type="text"]{
+/*fieldset input[type="text"], fieldset textarea, fieldset select, input[readonly="readonly"],textarea, select, input[type="text"]{
 
     height:20px;
     border-radius:4px;
@@ -17,7 +17,7 @@ fieldset input[type="text"], fieldset textarea, fieldset select, input[readonly=
     background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#ffffff), to(#f7f7f7));
     border:1px solid #a9a9a9;
     padding-left:5px;
-}
+}   /*
 fieldset textarea{height:60px!important;}
 
 /*------------------------------------TITULOS GRIDS----------------------------------------------------------------------------*/
@@ -140,7 +140,7 @@ tbody .gray, tbody .white{
 	-o-transition: left 0.3s linear;
 	-o-transition-property:background-color;
 	-ms-transition: left 0.3s linear;
-	-ms-transition-property:;
+	-ms-transition-property:background-color;
 	transition: left 0.3s linear;
 	transition-property:background-color;
 }
