@@ -11,7 +11,7 @@ include("cn_usuarios.php");
 </style>
 <script>
 var expr = /^[a-zA-Z0-9_\.\-]+@[a-zA-Z0-9\-]+\.[a-zA-Z0-9\-\.]+$/;
-var expr1 = /^[a-zA-Z]*$/;
+var expr1 = /^[a-zA-Z]*$/;      
 $(document).ready(inicio);
 function inicio(){  
      //variables
