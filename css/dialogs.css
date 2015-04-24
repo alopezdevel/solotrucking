@@ -2,8 +2,8 @@
 .dialog{
 	
 	width:600px;
-	height:auto;
-	min-height:400px;
+	height:500px;
 	background:#ffffff;
+	overflow-x:hidden;
 	
 }
