@@ -22,23 +22,10 @@
 }
 
 .clearfix:before,
-.clearfix:after {
-  content: '\0020';
-  display: block;
-  overflow: hidden;
-  visibility: hidden;
-  width: 0;
-  height: 0;
-}
-
-.clearfix:after {
-  clear: both;
-}
-
+.clearfix:after {content: '\0020';display: block;overflow: hidden;visibility: hidden;width: 0;height: 0;}
+.clearfix:after {clear: both;}
 .figure{ margin:0px;}
-
 img{ max-width:100%;}
-
 a, a:hover, a:active{ outline:0px !important}
 a:hover{text-decoration:none;}
 
@@ -57,7 +44,7 @@ body {
 	font-family:Calibri,Arial, Helvetica, sans-serif!important;
 	font-size:14px;
 	font-weight:normal;
-	color:#888888;
+	color:#676767;
 	margin:0;
 }
 h2{
@@ -74,7 +61,7 @@ h2{
 h3{
 	font-family: 'Montserrat', sans-serif;
 	color:#222222;
-	font-size:16px;
+	font-size:20px;
 	margin:0 0 5px 0;
 	text-transform:uppercase;
 	font-weight:400;
