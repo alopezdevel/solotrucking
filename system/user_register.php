@@ -5,25 +5,30 @@
 <script>
 $(document).ready(inicio);
 function inicio(){
-    $("#btn_register").click(onInsertarUsuario)
+    //variable 
+    mensaje = $( ".mensaje_valido" );
+    $("#btn_register").click(onInsertarUsuario);
 }
 function onInsertarUsuario(){
     //Variables
     var emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-    mensaje = $( ".mensaje_valido" );
-    var name = $("#name").val();
-    var email = $("#email").val();
-    var password = $("#password").val();
-    var re_password = $("#recapturapassword").val();
+    var name = $("#name");
+    var email = $("#email");
+    var password = $("#password");
+    var re_password = $("#recapturapassword");
     todosloscampos = $( [] ).add( name ).add( email ).add( password ).add( re_password );
+    todosloscampos.removeClass( "error" );
+    
+    
     $("#name").focus().css("background-color","#FFFFC0");
+    actualizarMensajeAlerta( "" ); 
     //focus
     $("#name").focus(onFocus);
     $("#email").focus(onFocus);
     $("#password").focus(onFocus);
     $("#recapturapassword").focus(onFocus);
     //blur
-    $("#loginUser").blur(onBlur);
+    $("#name").blur(onBlur);
     $("#email").blur(onBlur);
     $("#password").blur(onBlur);
     $("#recapturapassword").blur(onBlur);
@@ -33,19 +38,26 @@ function onInsertarUsuario(){
     
     //tamano
     valid = valid && checkLength( name, "Company name", 5, 25 );
+    valid = valid && checkRegexp( name, /^[a-z]([0-9a-z_\s])+$/i, "Company name of a-z, 0-9, underscores, spaces and must begin with a letter." );
+    
     valid = valid && checkLength( email, "E-mail", 6, 80 );
+    valid = valid && checkRegexp( email, emailRegex, "eg. ui@solotrucking.com" );
+    
     valid = valid && checkLength( password, "password", 6, 25 );
+    valid = valid && checkRegexp( password, /^([0-9a-zA-Z])+$/, "Password field only allow : a-z 0-9" );
+    
     valid = valid && checkLength( re_password, "password", 6, 25 );
+    valid = valid && checkRegexp( re_password, /^([0-9a-zA-Z])+$/, "Password field only allow : a-z 0-9" );
     
     //exp
-    valid = valid && checkRegexp( name, /^[a-z]([0-9a-z_\s])+$/i, "Company name of a-z, 0-9, underscores, spaces and must begin with a letter." );
-    valid = valid && checkRegexp( email, emailRegex, "eg. ui@test.com" );
-    valid = valid && checkRegexp( password, /^([0-9a-zA-Z])+$/, "Password field only allow : a-z 0-9" );
-    valid = valid && checkRegexp( re_password, /^([0-9a-zA-Z])+$/, "Password field only allow : a-z 0-9" );
+    
+    
+    
+    
  
     
     if ( valid ) {
-        $.post("funciones.php", { accion: "alta_usuario", name: name , email: email, password: password, nivel: "C"},
+        $.post("funciones.php", { accion: "alta_usuario", name: name.val() , email: email.val(), password: password.val(), nivel: "C"},
         function(data){ 
              switch(data.error){
              case "1":   alert('Error');
@@ -61,9 +73,12 @@ function onInsertarUsuario(){
              }
          }
          ,"json"); 
-    }   
+    }          
+   
 }
-function onFocus(){
+
+
+ function onFocus(){
      $(this).css("background-color","#FFFFC0");
  }
  function onBlur(){
@@ -102,7 +117,7 @@ function onFocus(){
 	<div class="container">
 		<h2>User Registration</h2>
 		<form method="post" action="">
-            <p class="mensaje_valido">&nbsp;Favor de llenar todos los campos.</p>
+            <p class="mensaje_valido">&nbsp;All form fields are required.</p>
 			<input  id = "name"   name="name" type="text" placeholder="Company Name:">
 			<input  id = "email"name="email" type="email" placeholder="E-mail:">
 			<input  id = "password"name="password" type="password" placeholder="Password:">
