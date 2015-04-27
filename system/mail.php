@@ -29,12 +29,12 @@ class Mail extends PHPMailer {
     }
 }
 
-$from = "soportetrafico@globalpc.net";
+$from = "support@solotrucking.com";
 if ($_SESSION["opcion_FROM_correo"] == '1') {
     $from_name = $_SESSION["nombre_usuario_actual"];
 } else {
     $from_name = $_SESSION["texto_FROM_correo"];
 }
-$host = "globalpc.net";
+$host = "solotrucking.com";
 $mailer = "sendmail";
 ?>

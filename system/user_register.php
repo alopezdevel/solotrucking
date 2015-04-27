@@ -49,6 +49,13 @@ function onInsertarUsuario(){
     valid = valid && checkLength( re_password, "password", 6, 25 );
     valid = valid && checkRegexp( re_password, /^([0-9a-zA-Z])+$/, "Password field only allow : a-z 0-9" );
     
+    if(password.val() != re_password.val() && valid){
+        actualizarMensajeAlerta( "thats not the same password as the first one" );
+        re_password.addClass( "error" );
+        re_password.focus();
+        valid = false;
+    }
+    
     //exp
     
     

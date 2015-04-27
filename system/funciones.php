@@ -129,10 +129,57 @@ $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accio
             $error = "1";
         }                
         if ($transaccion_exitosa) {
-            $mensaje = "El usuario $usuario se registro con exito";
-            $error = "0";
-            $conexion->commit();
-            $conexion->close();
+            //Proceso para enviar correo                 
+            require_once("./lib/mail.php");
+            $cuerpo = "
+                    <div style=\"font-size:12px;border:1px solid #6191df;border-radius:3px;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">
+                         <h2 style=\"color:#313131;text-transform: uppercase; text-align:center;\">Welcome tu Solo-Trucking Insurance!</h2> \n 
+                         <p style=\"color:#5c5c5c;margin:5px auto; text-align:left;\"><strong>$correo</strong><br>Thank you for joining Solo-Trucking the best option to choose the most convenient for you insurance. Feel protected!</p>\n 
+                         <br><br>
+                         <p style=\"color:#5c5c5c;margin:5px auto; text-align:left;\">Then you remember your login to our system. Keep them in a safe place.</p>
+                         <br><br>
+                         <ul style=\"color:#010101;line-height:15px;\">
+                            <li style=\"line-height:15px;\"><strong style=\"color:#044e8d;\">Login User: </strong>$correo</li>
+                            <li style=\"line-height:15px;\"><strong style=\"color:#044e8d;\">Password: </strong>$password</li>
+                         </ul>
+                         <br><br>
+                         <p style=\"color:#5c5c5c;margin:5px auto; text-align:left;\">If you agree the details are correct and you confirm by clicking the following button:</p><br>
+                         <p style=\"margin:5px auto; text-align:center;\"><a href='AQUIELENLACE' style='color:#ffffff;background:#6191df;padding:5px 8px;border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px;text-decoration:none;'>I agree and wish to confirm my account</a></p>
+                         <br>
+                         <p style=\"color:#5c5c5c;margin:5px auto; text-align:left;\">If you disagree just press on:</p>
+                         <p style=\"margin:5px auto; text-align:center;\"><a href='AQUIELENLACE'' style='color:#ffffff;background:#8d0c0c;padding:5px 8px;border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px;text-decoration:none;'>Cancel</a></p>
+                    </div>";
+             $mail = new Mail();
+             $mail->From = "support@solotrucking.com";
+             $mail->FromName = "solotrucking team";
+             $mail->Host = "solotrucking.com";
+             $mail->Mailer = "sendmail";
+             $mail->Subject = "Your New Account "; 
+             $mail->Body  = $cuerpo;
+             $mail->ContentType ="Content-type: text/html; charset=iso-8859-1";
+             $mail->IsHTML(true);
+             $mail->WordWrap =150;
+             $mail_error = false;
+             $mail->AddAddress(trim($correo));
+             if (!$mail->Send()) {
+                $mail_error = true;
+                $mail->ClearAddresses();
+             }
+
+
+            
+            if(!$mail_error){
+                $mensaje = "El usuario $usuario se registro con exito";
+                $error = "0";
+                $conexion->commit();
+                $conexion->close();
+            }else{
+                $mensaje = "Error e-mail.";
+                $error = "1";  
+                $conexion->rollback();
+                $conexion->close();           
+            }
+            
         } else {
             $mensaje = "Error al guardar los datos. Favor de verificarlos.";
             $error = "1";  
