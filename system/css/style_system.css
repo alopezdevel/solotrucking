@@ -534,7 +534,7 @@ img {max-width:100%;}
 
 /* Footer
 ---------------------------------*/
-.footer{background:#dbdbdb;padding:0px!important;clear:both;position:absolute;width:100%;}
+.footer{background:#dbdbdb;padding:0px!important;clear:both;position:absolute;width:100%;bottom:0px;}
 .footer-logo{margin:15px auto 35px;width: 76px;}
 .nav_foot a{color:#929292}
 .nav_foot a:hover, .nav_foot a.active{color:#d16665;}
