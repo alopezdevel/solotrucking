@@ -18,11 +18,23 @@
 		</ul>
         <ul class="main-nav">
         	<li><a href="inicio.php">Home</a></li>
-        	<li><a href="#header">Catalogs</a></li>
-            <li><a href="#aboutus">Endorsements</a></li>
-            <li><a href="#aboutus">Claims</a></li>  
-            <li><a href="#service">Quotes</a></li>
-            <li><a href="#quote">Support</a></li>
+        	<li class="submenu"><a href="#">Catalogs</a>
+        		<ul>
+        			<li><a href="#">Companies</a></li>
+        			<li><a href="#">Insurers</a></li>
+        			<li><a href="#">Financial</a></li>
+        		</ul>
+        	</li>
+        	<li class="submenu"><a href="#">Users</a>
+        		<ul>
+        			<li><a href="#">New User</a></li>
+        			<li><a href="users_clients.php">Client Users</a></li>
+        		</ul>
+        	</li>
+            <li><a href="#">Endorsements</a></li>
+            <li><a href="#">Claims</a></li>  
+            <li><a href="#">Quotes</a></li>
+            <li><a href="#">Support</a></li>
         </ul>
         <!--<a class="res-nav_click right" href="#"><i class="fa-bars"></i></a>-->
     </div>
