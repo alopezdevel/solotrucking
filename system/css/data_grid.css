@@ -313,8 +313,7 @@ tfoot{border-top:2px solid #b9dcf6;}
 
 div.btn-icon{
 	
-	height:40px;
-    width:50px;
+    width:40px;
 
 	border-radius:4px;
 	-moz-border-radius:4px;
@@ -326,7 +325,7 @@ div.btn-icon{
     background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#d8d5d5), to(#e8e8e8));
     border:1px solid #aeaeae;
     
-    /*padding:0px 2px 0px 2px;*/
+    padding:3px;
     cursor:pointer;
     margin:2px;
    
@@ -340,18 +339,18 @@ div.btn-icon span{ /*-------  ASIGANDO ICONOS -------*/
     height: 30px;
     display: block;
 	background:url('../images/icons/icons.png') no-repeat right top;
-	-moz-background-size: 40px auto;
-	-o-background-size: 40px auto;
-	-webkit-background-size: 40px auto;
-	background-size: 40px auto;
+	-moz-background-size: 33px auto;
+	-o-background-size: 33px auto;
+	-webkit-background-size: 33px auto;
+	background-size: 33px auto;
 
 }
 div.btn-icon:hover span{
     background:url('../images/icons/icons-hover.png') no-repeat right top;
-    -moz-background-size: 40px auto;
-    -o-background-size: 40px auto;
-    -webkit-background-size: 40px auto;
-    background-size: 40px auto;
+    -moz-background-size: 33px auto;
+    -o-background-size: 33px auto;
+    -webkit-background-size: 33px auto;
+    background-size: 33px auto;
 } 
 
 /* BTN ELIMINAR */
@@ -359,8 +358,8 @@ div.btn-icon:hover span{
 .ico-delete:hover span{background-position:50% 0px;}
 
  /* BTN email-forward */
-.ico-email-fwd span{background-position:50% -60px;}
-.ico-email-fwd:hover span{background-position:50% -60px;}
+.ico-email-fwd span{background-position:50% -40px;}
+.ico-email-fwd:hover span{background-position:50% -40px;}
 
 
 /*-----ALINEACION DE LOS BOTONES ----------- IZQUIERDA - DERECHA ------*/
