@@ -1,6 +1,6 @@
 <?php
 session_start();
-require('system/phpmailer/class.phpmailer.php');
+require('phpmailer/class.phpmailer.php');
 #require('lib/phpmailer/class.phpmailer.php');
 
 class Mail extends PHPMailer {
