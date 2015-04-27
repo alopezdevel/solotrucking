@@ -348,6 +348,57 @@ p{line-height:24px;margin:0;}
 	margin:0 auto;
 	
 }
+/*-------- inicio -----*/
+.bann{
+	
+	text-align:center;
+	width:95%;
+	height:350px;
+	margin:0 auto;
+	padding:10px;
+	background: rgba(255,255,255,1);
+	background: -moz-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 40%, rgba(231,231,231,1) 100%);
+	background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(255,255,255,1)), color-stop(40%, rgba(255,255,255,1)), color-stop(100%, rgba(231,231,231,1)));
+	background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 40%, rgba(231,231,231,1) 100%);
+	background: -o-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 40%, rgba(231,231,231,1) 100%);
+	background: -ms-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 40%, rgba(231,231,231,1) 100%);
+	background: linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 40%, rgba(231,231,231,1) 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#e7e7e7', GradientType=0 );
+	border-radius:10px;
+    -moz-border-radius:10px;
+    -webkit-border-radius:10px;
+
+}
+.bann p, .bann ul{text-align:justify;width:95%;margin:10px auto;clear:both;/*min-height:110px;*/}
+.bann h3{
+	
+	color:#1394be;
+	text-transform:uppercase;
+	font-weight:bold;
+}
+.bann h2{
+	
+	text-transform:uppercase;
+	color:#3c6bb6;
+	text-shadow: 0px 0px 1px #999999;
+	font-weight:bold;
+	font-size:1.5em;
+	padding:10px 5px;
+
+}
+.bann .btn_2{
+	width:180px;
+	display:block;
+	margin:0px auto;
+}
+.bann ul {list-style:none;padding:0;}
+.bann ul li{
+	padding:15px 0px;
+	border-bottom:1px solid #d5d5d5;
+	border-top:1px solid #d5d5d5;
+}
+.bann ul li strong{color:#7eb414;}
+
 
 /* Featured Work
 ---------------------------------*/
@@ -408,69 +459,6 @@ p{line-height:24px;margin:0;}
 }
 
 
-/* Portfolio
----------------------------------*/
-.Portfolio-nav{
-	padding:0;
-	margin:0 0 45px 0;
-	list-style:none;
-	text-align:center;
-}
-.Portfolio-nav li{
-	margin:0 10px;
-	display:inline;
-}
-.Portfolio-nav li a{
-	display:inline-block;
-	padding:10px 22px;
-	font-size:12px;
-	line-height:20px;
-	color:#222222;
-	border-radius:4px;
-	text-transform:uppercase;
-	font-family: 'Montserrat', sans-serif;
-	background:#f7f7f7;
-	margin-bottom:5px;
-	transition:all 0.3s ease-in-out;
-	-moz-transition:all 0.3s ease-in-out;
-	-webkit-transition:all 0.3s ease-in-out;
-}
-.Portfolio-nav li a:hover{
-	background:#7cc576;
-	color:#fff;
-	text-decoration:none;
-}
-
-.portfolioContainer{
-	margin:0 auto;
-	padding-left:15px;
-}
-
-.Portfolio-box{
-	text-align:center;
-	margin-bottom:30px;
-	height:350px;
-	width:350px;
-	overflow:hidden;
-	float:left;
-	padding:0;
-}
-.Portfolio-box img{
-	margin-bottom:25px;
-	transition:all 0.3s ease-in-out;
-	-moz-transition:all 0.3s ease-in-out;
-	-webkit-transition:all 0.3s ease-in-out;	
-}
-
-.Portfolio-box img:hover {
-	opacity: 0.6;
-}
-
-.Portfolio-nav li a.current{
-	background:#7cc576;
-	color:#fff;
-	text-decoration:none;
-}
 img {max-width:100%;}
 /* no transition on .isotope container */
 .isotope .isotope-item {
