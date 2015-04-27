@@ -47,6 +47,7 @@ function inicio(){
 				<td class="etiqueta_grid">E-mail</td>
 				<td class="etiqueta_grid">Description</td>
 				<td class="etiqueta_grid">Status</td>
+                <td class="etiqueta_grid"></td>
 			</tr>
 		</thead>
 		<tbody></tbody>
@@ -56,6 +57,7 @@ function inicio(){
 				<td></td>
 				<td></td>
 				<td></td>
+                <td></td>
 			</tr>
 		</tfoot>
 		</table>

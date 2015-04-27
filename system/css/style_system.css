@@ -236,17 +236,18 @@ p{line-height:24px;margin:0;}
 	position:relative;
 }
 .main-nav li a{
-	display:inline-block;
-	color:#8c8c8c;
-	text-shadow:1px 1px 1px #ffffff;
-	text-transform:uppercase;
-	font-family: 'Montserrat', sans-serif;
-	text-decoration: none;
-	line-height:20px;
-	margin:17px 20px;
-	transition:all 0.3s ease-in-out;
-	-moz-transition:all 0.3s ease-in-out;
-	-webkit-transition:all 0.3s ease-in-out;
+	display: inline-block;
+  color: #8c8c8c;
+  text-shadow: 1px 1px 1px #ffffff;
+  text-transform: uppercase;
+  font-family: 'Montserrat', sans-serif;
+  text-decoration: none;
+  line-height: 20px;
+  margin: 17px 20px 0px;
+  transition: all 0.3s ease-in-out;
+  -moz-transition: all 0.3s ease-in-out;
+  -webkit-transition: all 0.3s ease-in-out;
+  padding-top: 8px;
 }
 .main-nav li a:hover, .main-nav li.active a{color:#aa1525;}
 .main-nav li:hover{background:transparent url('../../images/nav/hover_menu.png') center top no-repeat;}

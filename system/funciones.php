@@ -209,6 +209,7 @@ $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accio
                                    "<td>".$usuario['correo']."</td>".
                                    "<td>".$usuario['nombre']."</td>".
                                    "<td>".$usuario['hActivado']."</td>".
+                                   "<td><div class=\"btn ico-delete\"><span></span></div><div class=\"btn-icon ico-email-fwd\"><span></span></div></td>".  
                                 "</tr>"   ;
              }else{                             
                  $htmlTabla .="<tr>
@@ -219,12 +220,12 @@ $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accio
                  "</tr>"   ;
              }    
         }
-        $htmlTabla .="<tr>
-                                    <td>&nbsp;</td>".
-                                   "<td>&nbsp;</td>".
-                                   "<td>&nbsp;</td>".
-                                   "<td>&nbsp;</td>".
-                 "</tr>"   ;
+       // $htmlTabla .="<tr>
+         //                           <td>&nbsp;</td>".
+           //                        "<td>&nbsp;</td>".
+             //                      "<td>&nbsp;</td>".
+               //                    "<td>&nbsp;</td>".
+                 //"</tr>"   ;
         
         $conexion->rollback();
         $conexion->close();                                                                                                                                                                       

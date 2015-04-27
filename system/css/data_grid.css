@@ -103,7 +103,7 @@ table.data_grid{width:100%;height:200px; padding:0px;border-collapse: collapse;b
 	border-bottom:1px solid #d6d6d6;	
 }
 #grid-head2 img{border:0px;}
-#grid-head2 .etiqueta_grid{color:#c70d20;font-size:15px;text-transform:uppercase;font-weight:bold;text-shadow:1px 2px 3px #ffffff;padding: 10px 0px;}
+#grid-head2 .etiqueta_grid{color:#016bba;font-size:15px;text-transform:uppercase;font-weight:bold;text-shadow:1px 2px 3px #ffffff;padding: 10px 0px;}
 #grid-head2 .up, #grid-head2 .down{
 	
 	background:url('../images/img-datagrid/img-up-down.png') no-repeat right top;
@@ -144,9 +144,9 @@ tbody .gray, tbody .white{
 	transition: left 0.3s linear;
 	transition-property:background-color;
 }
-tbody .gray{background: rgb(247, 247, 247);}
+tbody .gray{background: rgb(223, 223, 223);}
 tbody .white{background: rgb(255, 255, 255);}
-tbody .gray:hover, tbody .white:hover{background-color: rgb(251, 253, 208);cursor:pointer;}
+tbody .gray:hover, tbody .white:hover{background-color: rgb(251, 253, 198);cursor:pointer;}
 
 
 /*-------------------------AGREGAR SCROLL BAR -----------------------*/
@@ -173,8 +173,6 @@ tbody .gray:hover, tbody .white:hover{background-color: rgb(251, 253, 208);curso
 .grid-scroll-2 table{
 	margin-top:-15px;
 }
-
-
 /*----------------------------------------- TFOOT-----------------------------------------------------------------------------*/
 /*----------------------------------------- TFOOT-----------------------------------------------------------------------------*/
 /*----------------------------------------- TFOOT-----------------------------------------------------------------------------*/
@@ -268,10 +266,7 @@ tfoot{border-top:2px solid #b9dcf6;}
 }
 #grid-head-tools ul{list-style:none;float:right;margin:2px;}
 #grid-head-tools ul li{float:left;}
-
-
 /*---------------------------------- TAB BUTTONS --------------------------------------------------*/
-
 .tab_button {
 	height:22px;
 	width:auto;
@@ -292,7 +287,6 @@ tfoot{border-top:2px solid #b9dcf6;}
 	cursor:pointer;
 	margin:2px;
 }
-
 .tab_button:hover, .tab_button:focus{
 	background: #2e90bd;
 	background: -moz-linear-gradient(top, #1482b4, #2e90bd);
@@ -300,7 +294,6 @@ tfoot{border-top:2px solid #b9dcf6;}
 	background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#1482b4), to(#2e90bd));
 	border:1px solid #23a2c8;
 }
-
 .tab_button p {
 	font-size:11px!important;
 	height:18px;
@@ -308,7 +301,6 @@ tfoot{border-top:2px solid #b9dcf6;}
 	padding:3px;
 	font-weight:bold;
 }
-
 .tab_button:hover p, .tab_button:focus p {
 	color:#ffffff;
 }
@@ -319,628 +311,49 @@ tfoot{border-top:2px solid #b9dcf6;}
 /*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
 /*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
 
-div[name=btn]{
+div.btn-icon{
 	
-	height:22px;
-    width:auto;
-    min-width:22px;
-    max-height:100px;
+	height:40px;
+    width:50px;
 
 	border-radius:4px;
 	-moz-border-radius:4px;
 	-webkit-border-radius:4px;
 	
-	background: #ebf3fa;
-    background: -moz-linear-gradient(top, #ebf3fa, #d2e7f7);
-    background: linear-gradient(to bottom, #ebf3fa, #d2e7f7);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#ebf3fa), to(#d2e7f7));
-    border:1px solid #aac7dd;
+	background: #d8d5d5;
+    background: -moz-linear-gradient(top, #d8d5d5, #e8e8e8);
+    background: linear-gradient(to bottom, #d8d5d5, #e8e8e8);
+    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#d8d5d5), to(#e8e8e8));
+    border:1px solid #aeaeae;
     
-    padding:0px 2px 0px 2px;
+    /*padding:0px 2px 0px 2px;*/
     cursor:pointer;
     margin:2px;
    
 }
-div[name=btn]:hover{
-	
-	background: #2e90bd;
-    background: -moz-linear-gradient(top, #1482b4, #2e90bd);
-    background: linear-gradient(to bottom, #1482b4, #2e90bd);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#1482b4), to(#2e90bd));
-    border:1px solid #23a2c8;
-
-}
-div[name=btn] span{
-	
-	border: 1px solid #65c6f5;
-	padding: 5px;
-	position:relative;
-	background: #f7f7f7;
-	color: #5f5f5f;
-	text-align: center;
-	font-size: 0.7em;
-	line-height: 13px;
-	
-	border-radius:3px;
-	-moz-border-radius:3px;
-	-webkit-border-radius:3px;
-	
-	z-index:5000;
-	opacity:0!important;
-	
-	-webkit-transition: left 0.2s linear!important;
-	-webkit-transition-property:opacity!important;
-	-moz-transition: left 0.2s linear!important;
-	-moz-transition-property:opacity!important;
-	-o-transition: left 0.2s linear!important;
-	-o-transition-property:opacity!important;
-	-ms-transition: left 0.2s linear!important;
-	-ms-transition-property:opacity!important;
-	transition: left 0.2s linear!important;
-	transition-property:opacity!important;
-	visibility:hidden;
-	display:none;
-
-
-}
-div[name=btn]:hover  span{
-	
-	visibility: visible;
-	display:inline-block;
-	
-	top: 15px;
-	right:25px;
-	opacity:1!important;
-	
-	-webkit-box-shadow: 1px 1px 3px gray;
-	-moz-box-shadow: 1px 1px 3px gray;
-	box-shadow: 1px 1px 3px gray;
-	
-	clear:both;
-
-}
+div.btn-icon:hover{background: #e8e8e8;background: -moz-linear-gradient(top, #e8e8e8, #d8d5d5);background: linear-gradient(to bottom, #e8e8e8, #d8d5d5);background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#e8e8e8), to(#d8d5d5));}
 div[name=btn] p{font-size:11px!important;height:18px;color:#79a3c4;margin:1px 0px 0px 0px;padding:3px;font-weight:bold;}
 div[name=btn]:hover p{color:#ffffff;}
-div[name=btn] .ico{ /*-------  ASIGANDO ICONOS -------*/
+div.btn-icon span{ /*-------  ASIGANDO ICONOS -------*/
 
-	background:url('../images/img-datagrid/btns-icons.png') no-repeat right top;
-	-moz-background-size: 20px auto;
-	-o-background-size: 20px auto;
-	-webkit-background-size: 20px auto;
-	background-size: 20px auto;
+    width:40px;
+    height: 30px;
+    display: block;
+	background:url('../images/icons/icons.png') no-repeat right top;
+	-moz-background-size: 40px auto;
+	-o-background-size: 40px auto;
+	-webkit-background-size: 40px auto;
+	background-size: 40px auto;
 
-	padding:2px 20px 0px 0px;
-}
-
-/*BTN BUSCAR*/
-div[name=btn].search{width:22px;}
-div[name=btn].search .ico{background-position: 100% 1px;}
-div[name=btn].search:hover .ico{background-position: 100% -18px;}
-div[name=btn].search:hover{
-	
-	background: #2e90bd;
-    background: -moz-linear-gradient(top, #1482b4, #2e90bd);
-    background: linear-gradient(to bottom, #1482b4, #2e90bd);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#1482b4), to(#2e90bd));
-    border:1px solid #23a2c8;
-
-}
-
-/* BTN EDITAR*/
-div[name=btn].edit .ico{background-position: 100% -36px;}
-div[name=btn].edit:hover .ico{background-position: 100% -54px;}
-div[name=btn].edit:hover{
-	background: #daf8ff;
-    background: -moz-linear-gradient(top, #daf8ff, #c0f3fc);
-    background: linear-gradient(to bottom, #daf8ff, #c0f3fc);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#daf8ff), to(#c0f3fc));
-    border:1px solid #5a8d96;        
 }
 
 /* BTN ELIMINAR */
-div[name=btn].delete .ico{background-position: 100% -72px;}
-div[name=btn].delete:hover .ico{background-position: 100% -90px;}
-div[name=btn].delete:hover{
-	
-	background: #fe5b51;
-    background: -moz-linear-gradient(top, #faebeb, #f7d2d2);
-    background: linear-gradient(to bottom, #faebeb, #f7d2d2);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faebeb), to(#f7d2d2));
-    border:1px solid #d59696;
-}
+.ico-delete span{background-position:50% 0px;}
+.ico-delete:hover span{background-position:50% -30px;}
 
-/* BTN AGREGAR*/
-div[name=btn].add .ico{background-position: 100% -108px;}
-div[name=btn].add:hover .ico{background-position: 100% -126px;}
-div[name=btn].add:hover{
-	background: #f3faeb;
-    background: -moz-linear-gradient(top, #f3faeb, #e1f7d2);
-    background: linear-gradient(to bottom, #f3faeb, #e1f7d2);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f3faeb), to(#e1f7d2));
-    border:1px solid #b5d596;       
-}
-
-/* BTN ACEPTAR*/
-div[name=btn].check .ico{background-position: 100% -144px;}
-div[name=btn].check:hover .ico{background-position: 100% -162px;}
-div[name=btn].check:hover{
-	background: #f3faeb;
-    background: -moz-linear-gradient(top, #f3faeb, #e1f7d2);
-    background: linear-gradient(to bottom, #f3faeb, #e1f7d2);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f3faeb), to(#e1f7d2));
-    border:1px solid #b5d596;       
-}
-
-/* BTN REPORTE --- OPCION GENERAL*/
-div[name=btn].report .ico{background-position: 100% -180px;}
-div[name=btn].report:hover .ico{background-position: 100% -198px;}
-div[name=btn].report:hover{
-	background: #faf4eb;
-    background: -moz-linear-gradient(top, #faf4eb, #f8e9c9);
-    background: linear-gradient(to bottom, #faf4eb, #f8e9c9);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faf4eb), to(#f8e9c9));
-    border:1px solid #d7a73e;       
-}
-
-/* BTN REPORTE2 --- OPCION ASIGNAR CUENTAS - CLIENTES */
-div[name=btn].report2 .ico{background-position: 100% -216px;}
-div[name=btn].report2:hover .ico{background-position: 100% -234px;}
-div[name=btn].report2:hover{
-	background: #dcf3fb;
-    background: -moz-linear-gradient(top, #dcf3fb, #aee3f4);
-    background: linear-gradient(to bottom, #dcf3fb, #aee3f4);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#dcf3fb), to(#aee3f4));
-    border:1px solid #62c3e2;       
-}
-
-/* BTN REPORTE3 --- OPCION XLS - EXCEL*/
-div[name=btn].report-xls .ico{background-position: 100% -252px;}
-div[name=btn].report-xls:hover .ico{background-position: 100% -270px;}
-div[name=btn].report-xls:hover{
-	background: #f3faeb;
-    background: -moz-linear-gradient(top, #f3faeb, #e1f7d2);
-    background: linear-gradient(to bottom, #f3faeb, #e1f7d2);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f3faeb), to(#e1f7d2));
-    border:1px solid #b5d596;       
-}
-
-/* BTN REPORTE4 --- OPCION PDF*/
-div[name=btn].report-pdf .ico{background-position: 100% -288px;}
-div[name=btn].report-pdf:hover .ico{background-position: 100% -306px;}
-div[name=btn].report-pdf:hover{
-	background: #fbeeee;
-    background: -moz-linear-gradient(top, #fbeeee, #f8dede);
-    background: linear-gradient(to bottom, #fbeeee, #f8dede);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#fbeeee), to(#f8dede));
-    border:1px solid #b38e8e;       
-}
-
-/* BTN EMAIL - PDF  --- OPCION ENVIAR PDF VIA EMAIL*/
-div[name=btn].email-pdf .ico{background-position: 100% -324px;}
-div[name=btn].email-pdf:hover .ico{background-position: 100% -342px;}
-div[name=btn].email-pdf:hover{
-	background: #fbeeee;
-    background: -moz-linear-gradient(top, #fbeeee, #f8dede);
-    background: linear-gradient(to bottom, #fbeeee, #f8dede);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#fbeeee), to(#f8dede));
-    border:1px solid #c56c6c;       
-}
-/* BTN INTERFACE ACONTA */
-div[name=btn].aconta .ico{background-position: 100% -360px;}
-div[name=btn].aconta:hover .ico{background-position: 100% -378px;}
-div[name=btn].aconta:hover{
-	background: #fbfbfb;
-    background: -moz-linear-gradient(top, #fbfbfb, #e2f5d5);
-    background: linear-gradient(to bottom, #fbfbfb, #e2f5d5);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#fbfbfb), to(#e2f5d5));
-    border:1px solid #b5d596;       
-}
-/* BTN HERRAMIENTAS - UTILERIAS --- TOOLS */
-div[name=btn].tools .ico{background-position: 100% -396px;}
-div[name=btn].tools:hover .ico{background-position: 100% -414px;}
-div[name=btn].tools:hover{
-	background: #fbfbfb;
-    background: -moz-linear-gradient(top, #fbfbfb, #dadada);
-    background: linear-gradient(to bottom, #fbfbfb, #dadada);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#fbfbfb), to(#dadada));
-    border:1px solid #c1c1c1;       
-}
-/* BTN REPORTES  --- REPORT3 */
-div[name=btn].report3 .ico{background-position: 100% -432px;}
-div[name=btn].report3:hover .ico{background-position: 100% -450px;}
-div[name=btn].report3:hover{
-	background: #faf4eb;
-    background: -moz-linear-gradient(top, #faf4eb, #f8e9c9);
-    background: linear-gradient(to bottom, #faf4eb, #f8e9c9);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faf4eb), to(#f8e9c9));
-    border:1px solid #dc951a;       
-}
-/* BTN 	PROVEEDORES  --- TRUCK */
-div[name=btn].truck .ico{background-position: 100% -468px;}
-div[name=btn].truck:hover .ico{background-position: 100% -486px;}
-div[name=btn].truck:hover{
-	background: #e2f8fb;
-    background: -moz-linear-gradient(top, #e2f8fb, #bef3fb);
-    background: linear-gradient(to bottom, #e2f8fb, #bef3fb);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#e2f8fb), to(#bef3fb));
-    border:1px solid #3fbccf;       
-}
-/* BTN 	PLANTAS  --- PLANTS */
-div[name=btn].plants .ico{background-position: 100% -504px;}
-div[name=btn].plants:hover .ico{background-position: 100% -522px;}
-div[name=btn].plants:hover{
-	background: #e7f6fe;
-    background: -moz-linear-gradient(top, #e7f6fe, #bde4fa);
-    background: linear-gradient(to bottom, #e7f6fe, #bde4fa);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#e7f6fe), to(#bde4fa));
-    border:1px solid #3aadef;       
-}
-/* BTN 	TARIFAS  --- CASH */
-div[name=btn].cash .ico{background-position: 100% -540px;}
-div[name=btn].cash:hover .ico{background-position: 100% -558px;}
-div[name=btn].cash:hover{
-	background: #faf8e7;
-    background: -moz-linear-gradient(top, #faf8e7, #f8f4cb);
-    background: linear-gradient(to bottom, #faf8e7, #f8f4cb);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faf8e7), to(#f8f4cb));
-    border:1px solid #e5db6e;       
-}
-
-/* BTN 	CUENTAS BANCARIAS  --- CASH-2 */
-div[name=btn].cash-2 .ico{background-position: 100% -576px;}
-div[name=btn].cash-2:hover .ico{background-position: 100% -594px;}
-div[name=btn].cash-2:hover{
-	background: #faf8e7;
-    background: -moz-linear-gradient(top, #faf8e7, #f8f4cb);
-    background: linear-gradient(to bottom, #faf8e7, #f8f4cb);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faf8e7), to(#f8f4cb));
-    border:1px solid #e5db6e;       
-}
-
-/* BTN 	PARA ORIGENES - ENVIOS - DESTINOS  --- shipp */
-div[name=btn].shipp .ico{background-position: 100% -612px;}
-div[name=btn].shipp:hover .ico{background-position: 100% -630px;}
-div[name=btn].shipp:hover{
-	background: #f2f1e7;
-    background: -moz-linear-gradient(top, #f2f1e7, #dedbcd);
-    background: linear-gradient(to bottom, #f2f1e7, #dedbcd);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f2f1e7), to(#dedbcd));
-    border:1px solid #bab79c;       
-}
-/* BTN 	PARA ORIGENES - ENVIOS - DESTINOS  --- shipp2 */
-div[name=btn].shipp-2 .ico{background-position: 100% -648px;}
-div[name=btn].shipp-2:hover .ico{background-position: 100% -666px;}
-div[name=btn].shipp-2:hover{
-	background: #f2f1e7;
-    background: -moz-linear-gradient(top, #f2f1e7, #dedbcd);
-    background: linear-gradient(to bottom, #f2f1e7, #dedbcd);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f2f1e7), to(#dedbcd));
-    border:1px solid #bab79c;       
-}
-/* BTN 	PARA ORIGENES - ENVIOS - DESTINOS  --- shipp3 */
-div[name=btn].shipp-3 .ico{background-position: 100% -684px;}
-div[name=btn].shipp-3:hover .ico{background-position: 100% -702px;}
-div[name=btn].shipp-3:hover{
-	background: #f2f1e7;
-    background: -moz-linear-gradient(top, #f2f1e7, #dedbcd);
-    background: linear-gradient(to bottom, #f2f1e7, #dedbcd);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f2f1e7), to(#dedbcd));
-    border:1px solid #bab79c;       
-}
-/* BTN REPORTES CON GRAFICAS  --- graphic */
-div[name=btn].graphic .ico{background-position: 100% -720px;}
-div[name=btn].graphic:hover .ico{background-position: 100% -738px;}
-div[name=btn].graphic:hover{
-	background: #dfeefc;
-    background: -moz-linear-gradient(top, #dfeefc, #d8e6f5);
-    background: linear-gradient(to bottom, #dfeefc, #d8e6f5);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#dfeefc), to(#d8e6f5));
-    border:1px solid #93c5f7;       
-}
-/* BTN REPORTES CON GRAFICAS  --- graphic */
-div[name=btn].graphic-2 .ico{background-position: 100% -756px;}
-div[name=btn].graphic-2:hover .ico{background-position: 100% -774px;}
-div[name=btn].graphic-2:hover{
-	background: #dfeefc;
-    background: -moz-linear-gradient(top, #dfeefc, #d8e6f5);
-    background: linear-gradient(to bottom, #dfeefc, #d8e6f5);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#dfeefc), to(#d8e6f5));
-    border:1px solid #93c5f7;       
-}
-
-/* BTN DELETE  --- DELETE-2 */
-div[name=btn].delete-2 .ico{background-position: 100% -792px;}
-div[name=btn].delete-2:hover .ico{background-position: 100% -810px;}
-div[name=btn].delete-2:hover{
-	background: #fe5b51;
-    background: -moz-linear-gradient(top, #faebeb, #f7d2d2);
-    background: linear-gradient(to bottom, #faebeb, #f7d2d2);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faebeb), to(#f7d2d2));
-    border:1px solid #d59696;
-     
-}
-/* BTN IMPORTANTE  --- IMPORTANT */
-div[name=btn].alert .ico{background-position: 100% -828px;}
-div[name=btn].alert:hover .ico{background-position: 100% -846px;}
-div[name=btn].alert:hover{
-	background: #f9f2e4;
-    background: -moz-linear-gradient(top, #f9f2e4, #fbecd0);
-    background: linear-gradient(to bottom, #f9f2e4, #fbecd0);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f9f2e4), to(#fbecd0));
-    border:1px solid #facc73;
-     
-}
-/* BTN INFORMACION  --- INFO */
-div[name=btn].info .ico{background-position: 100% -864px;}
-div[name=btn].info:hover .ico{background-position: 100% -882px;}
-div[name=btn].info:hover{
-	background: #fbfbfb;
-    background: -moz-linear-gradient(top, #fbfbfb, #dadada);
-    background: linear-gradient(to bottom, #fbfbfb, #dadada);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#fbfbfb), to(#dadada));
-    border:1px solid #c1c1c1;       
-}
-
-/* BTN VER-IMAGEN  --- IMG */
-div[name=btn].img .ico{background-position: 100% -900px;}
-div[name=btn].img:hover .ico{background-position: 100% -918px;}
-div[name=btn].img:hover{
-	background: #daf8ff;
-    background: -moz-linear-gradient(top, #daf8ff, #c0f3fc);
-    background: linear-gradient(to bottom, #daf8ff, #c0f3fc);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#daf8ff), to(#c0f3fc));
-    border:1px solid #5a8d96;      
-}
-/* BTN DOWNLOAD ---*/
-div[name=btn].download .ico{background-position: 100% -936px;}
-div[name=btn].download:hover .ico{background-position: 100% -954px;}
-div[name=btn].download:hover{
-	background: #f3faeb;
-    background: -moz-linear-gradient(top, #f3faeb, #e1f7d2);
-    background: linear-gradient(to bottom, #f3faeb, #e1f7d2);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f3faeb), to(#e1f7d2));
-    border:1px solid #b5d596;     
-}
-/* BTN UPLOAD  ---*/
-div[name=btn].upload .ico{background-position: 100% -972px;}
-div[name=btn].upload:hover .ico{background-position: 100% -990px;}
-div[name=btn].upload:hover{
-	background: #f3faeb;
-    background: -moz-linear-gradient(top, #f3faeb, #e1f7d2);
-    background: linear-gradient(to bottom, #f3faeb, #e1f7d2);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f3faeb), to(#e1f7d2));
-    border:1px solid #b5d596;     
-}
-
-/* BTN DELETE-3  ---*/
-div[name=btn].delete-3 .ico{background-position: 100% -1008px;}
-div[name=btn].delete-3:hover .ico{background-position: 100% -1026px;}
-div[name=btn].delete-3:hover{
-	background: #fbfbfb;
-    background: -moz-linear-gradient(top, #fbfbfb, #dadada);
-    background: linear-gradient(to bottom, #fbfbfb, #dadada);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#fbfbfb), to(#dadada));
-    border:1px solid #c1c1c1;      
-}
-/* BTN REPORT-XML  ---*/
-div[name=btn].report-xml .ico{background-position: 100% -1044px;}
-div[name=btn].report-xml:hover .ico{background-position: 100% -1062px;}
-div[name=btn].report-xml:hover{
-	background: #e2f8fb;
-    background: -moz-linear-gradient(top, #e2f8fb, #bef3fb);
-    background: linear-gradient(to bottom, #e2f8fb, #bef3fb);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#e2f8fb), to(#bef3fb));
-    border:1px solid #3fbccf;    
-}
-/* BTN REPORT-XML  ---*/
-div[name=btn].save .ico{background-position: 100% -1080px;}
-div[name=btn].save:hover .ico{background-position: 100% -1098px;}
-div[name=btn].save:hover{
-	background: #e2f8fb;
-    background: -moz-linear-gradient(top, #e2f8fb, #bef3fb);
-    background: linear-gradient(to bottom, #e2f8fb, #bef3fb);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#e2f8fb), to(#bef3fb));
-    border:1px solid #3fbccf;    
-}
-/* BTN REPORT-XML  ---*/
-div[name=btn].attach .ico{background-position: 100% -1116px;}
-div[name=btn].attach:hover .ico{background-position: 100% -1134px;}
-div[name=btn].attach:hover{
-	background: #fbfbfb;
-    background: -moz-linear-gradient(top, #fbfbfb, #dadada);
-    background: linear-gradient(to bottom, #fbfbfb, #dadada);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#fbfbfb), to(#dadada));
-    border:1px solid #c1c1c1;  
-}
-/* BTN CONSULTAR FACTURAS CANCELADAS  --- REPORT3 */
-div[name=btn].report4 .ico{background-position: 100% -1152px;}
-div[name=btn].report4:hover .ico{background-position: 100% -1170px;}
-div[name=btn].report4:hover{
-    background: #faf4eb;
-    background: -moz-linear-gradient(top, #faf4eb, #f8e9c9);
-    background: linear-gradient(to bottom, #faf4eb, #f8e9c9);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faf4eb), to(#f8e9c9));
-    border:1px solid #dc951a;       
-}
-/* BTN     NOTARIO  --- NOTARIO */
-div[name=btn].notario .ico{background-position: 100% -1188px;}
-div[name=btn].notario:hover .ico{background-position: 100% -1206px;}
-div[name=btn].notario:hover{
-    background: #faf8e7;
-    background: -moz-linear-gradient(top, #faf8e7, #f8f4cb);
-    background: linear-gradient(to bottom, #faf8e7, #f8f4cb);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faf8e7), to(#f8f4cb));
-    border:1px solid #e5db6e;       
-}
-
-/* BTN     AGREGAR CFDI --- add-cfdi */
-div[name=btn].add-cfdi .ico{background-position: 100% -1224px;}
-div[name=btn].add-cfdi:hover .ico{background-position: 100% -1242px;}
-div[name=btn].add-cfdi:hover{
-    background: #f3faeb;
-    background: -moz-linear-gradient(top, #f3faeb, #e1f7d2);
-    background: linear-gradient(to bottom, #f3faeb, #e1f7d2);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f3faeb), to(#e1f7d2));
-    border:1px solid #b5d596;      
-}
-/* BTN     ELIMINAR CFDI --- delete-cfdi */
-div[name=btn].delete-cfdi .ico{background-position: 100% -1260px;}
-div[name=btn].delete-cfdi:hover .ico{background-position: 100% -1278px;}
-div[name=btn].delete-cfdi:hover{
-    background: #fe5b51;
-    background: -moz-linear-gradient(top, #faebeb, #f7d2d2);
-    background: linear-gradient(to bottom, #faebeb, #f7d2d2);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faebeb), to(#f7d2d2));
-    border:1px solid #d59696;      
-}
-/* BTN     CALCULAR SUBTOTALES --- calcular */
-div[name=btn].calcular .ico{background-position: 100% -1296px;}
-div[name=btn].calcular:hover .ico{background-position: 100% -1314px;}
-div[name=btn].calcular:hover{
-    background: #e7f6fe;
-    background: -moz-linear-gradient(top, #e7f6fe, #bde4fa);
-    background: linear-gradient(to bottom, #e7f6fe, #bde4fa);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#e7f6fe), to(#bde4fa));
-    border:1px solid #3aadef;       
-}
-/* BTN     EMAIL - DELETE --- SOBRE DE CORREO CON ICONO DE BORRAR */
-div[name=btn].email-delete .ico{background-position: 100% -1332px;}
-div[name=btn].email-delete:hover .ico{background-position: 100% -1350px;}
-div[name=btn].email-delete:hover{
-    background: #fe5b51;
-    background: -moz-linear-gradient(top, #faebeb, #f7d2d2);
-    background: linear-gradient(to bottom, #faebeb, #f7d2d2);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faebeb), to(#f7d2d2));
-    border:1px solid #d59696;       
-}
-/* BTN     EMAIL - check --- SOBRE DE CORREO CON ICONO DE ACEPTAR */
-div[name=btn].email-check .ico{background-position: 100% -1368px;}
-div[name=btn].email-check:hover .ico{background-position: 100% -1386px;}
-div[name=btn].email-check:hover{
-    background: #f3faeb;
-    background: -moz-linear-gradient(top, #f3faeb, #e1f7d2);
-    background: linear-gradient(to bottom, #f3faeb, #e1f7d2);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f3faeb), to(#e1f7d2));
-    border:1px solid #b5d596;      
-}
-/* BTN     FILE-COPY -- copia de un archivo */
-div[name=btn].file-copy .ico{background-position: 100% -1404px;}
-div[name=btn].file-copy:hover .ico{background-position: 100% -1422px;}
-div[name=btn].file-copy:hover{
-    background: #dfeefc;
-    background: -moz-linear-gradient(top, #dfeefc, #d8e6f5);
-    background: linear-gradient(to bottom, #dfeefc, #d8e6f5);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#dfeefc), to(#d8e6f5));
-    border:1px solid #93c5f7;     
-} 
-/* BTN     EMAIL-SEND-- enviar email si registrado */
-div[name=btn].email-send .ico{background-position: 100% -1440px;}
-div[name=btn].email-send:hover .ico{background-position: 100% -1458px;}
-div[name=btn].email-send:hover{
-    background: #dfeefc;
-    background: -moz-linear-gradient(top, #dfeefc, #d8e6f5);
-    background: linear-gradient(to bottom, #dfeefc, #d8e6f5);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#dfeefc), to(#d8e6f5));
-    border:1px solid #93c5f7;     
-}
-/* BTN     app-menu -- menu de opciones */
-div[name=btn].app-menu .ico{background-position: 100% -1476px;}
-div[name=btn].app-menu:hover .ico{background-position: 100% -1494px;}
-div[name=btn].app-menu:hover{
-    background: #fbfbfb;
-    background: -moz-linear-gradient(top, #fbfbfb, #dadada);
-    background: linear-gradient(to bottom, #fbfbfb, #dadada);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#fbfbfb), to(#dadada));
-    border:1px solid #c1c1c1;      
-}
-
-/* BTN     coin-process -- gastos comprobados pendientes */
-div[name=btn].cash-process .ico{background-position: 100% -1512px;}
-div[name=btn].cash-process:hover .ico, div[name=btn].active.cash-process .ico{background-position: 100% -1530px;}
-div[name=btn].cash-process:hover{
-    background: #e7f6fe;
-    background: -moz-linear-gradient(top, #e7f6fe, #bde4fa);
-    background: linear-gradient(to bottom, #e7f6fe, #bde4fa);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#e7f6fe), to(#bde4fa));
-    border:1px solid #3aadef;     
-}
-/* BTN     cash-asign -- gastos comprobados asignados */
-div[name=btn].cash-asign .ico{background-position: 100% -1548px;}
-div[name=btn].cash-asign:hover .ico, div[name=btn].active.cash-asign .ico{background-position: 100% -1566px;}
-div[name=btn].cash-asign:hover{
-    background: #faf8e7;
-    background: -moz-linear-gradient(top, #faf8e7, #f8f4cb);
-    background: linear-gradient(to bottom, #faf8e7, #f8f4cb);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faf8e7), to(#f8f4cb));
-    border:1px solid #e5db6e;      
-}
-/* BTN     cash-file -- gastos comprobados asignados */
-div[name=btn].cash-file .ico{background-position: 100% -1584px;}
-div[name=btn].cash-file:hover .ico, div[name=btn].active.cash-file .ico{background-position: 100% -1602px;}
-div[name=btn].cash-file:hover{
-    background: #faf4eb;
-    background: -moz-linear-gradient(top, #faf4eb, #f8e9c9);
-    background: linear-gradient(to bottom, #faf4eb, #f8e9c9);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faf4eb), to(#f8e9c9));
-    border:1px solid #dc951a;       
-}
-/* BTN     videos -- videos de econta */
-div[name=btn].video{
-    background: #f3faeb;
-    background: -moz-linear-gradient(top, #f3faeb, #d9f6bc);
-    background: linear-gradient(to bottom, #f3faeb, #d9f6bc);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f3faeb), to(#d9f6bc));
-    border:1px solid #aade76;       
-}
-div[name=btn].video .ico{background-position: 100% -1620px;}
-div[name=btn].video:hover .ico{background-position: 100% -1638px;}
-div[name=btn].video:hover{
-    background: #cbf39c;
-    background: -moz-linear-gradient(top, #cbf39c, #a9df74);
-    background: linear-gradient(to bottom, #cbf39c, #a9df74);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#cbf39c), to(#a9df74));
-    border:1px solid #aade76;       
-}
-/* BTN     clock -- Antiguedad de saldos */
-div[name=btn].clock .ico{background-position: 100% -1656px;}
-div[name=btn].clock:hover .ico, div[name=btn].active.cash-file .ico{background-position: 100% -1674px;}
-div[name=btn].clock:hover{
-    background: #faf4eb;
-    background: -moz-linear-gradient(top, #faf4eb, #f8e9c9);
-    background: linear-gradient(to bottom, #faf4eb, #f8e9c9);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#faf4eb), to(#f8e9c9));
-    border:1px solid #dc951a;       
-}
-/* BTN     email-n -- Envio masivo de correos */
-div[name=btn].email-n .ico{background-position: 100% -1692px;}
-div[name=btn].email-n:hover .ico, div[name=btn].active.cash-file .ico{background-position: 100% -1710px;}
-div[name=btn].email-n:hover{
-    background: #dfeefc;
-    background: -moz-linear-gradient(top, #dfeefc, #d8e6f5);
-    background: linear-gradient(to bottom, #dfeefc, #d8e6f5);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#dfeefc), to(#d8e6f5));
-    border:1px solid #93c5f7;        
-}
-/* BTN     n-cfdi-- Envio masivo de CFDI */
-div[name=btn].n-cfdi .ico{background-position: 100% -1728px;}
-div[name=btn].n-cfdi:hover .ico, div[name=btn].active.cash-file .ico{background-position: 100% -1746px;}
-div[name=btn].n-cfdi:hover{
-    background: #dfeefc;
-    background: -moz-linear-gradient(top, #dfeefc, #d8e6f5);
-    background: linear-gradient(to bottom, #dfeefc, #d8e6f5);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#dfeefc), to(#d8e6f5));
-    border:1px solid #93c5f7;        
-}
-/* BTN     Intercambio --- Boton para intercambio o replace */
-div[name=btn].replace .ico{background-position: 100% -1764px;}
-div[name=btn].replace:hover .ico{background-position: 100% -1782px;}
-div[name=btn].replace:hover{
-    background: #f3faeb;
-    background: -moz-linear-gradient(top, #f3faeb, #e1f7d2);
-    background: linear-gradient(to bottom, #f3faeb, #e1f7d2);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f3faeb), to(#e1f7d2));
-    border:1px solid #b5d596;      
-}
+ /* BTN email-forward */
+.ico-email-fwd span{background-position:50% -60px;}
+.ico-email-fwd:hover span{background-position:50% -90px;}
 
 
 /*-----ALINEACION DE LOS BOTONES ----------- IZQUIERDA - DERECHA ------*/
