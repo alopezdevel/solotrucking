@@ -513,14 +513,7 @@ img {max-width:100%;}
 
 /* Footer
 ---------------------------------*/
-.footer-line{
-	background:url('../../images/foot/img_bg_footer.png') no-repeat right;
-	width:100%;
-	margin:0;
-	padding:0;
-	height:44px;
-}
-.footer{background:#232323;padding:10px 0 25px;}
+.footer{background:#dbdbdb;padding:10px!important;}
 .footer-logo{margin:15px auto 35px;width: 76px;}
 .nav_foot a{color:#929292}
 .nav_foot a:hover, .nav_foot a.active{color:#d16665;}
@@ -529,13 +522,11 @@ img {max-width:100%;}
 .nav_foot_2 a:hover{color:#ffffff;}
 .copyright{
 	color:#535353;
-	font-size:0.85em;
+	font-size:0.9em;
 	display:block;
 	text-align:center;
-	height:24px;
+	height:30px;
 	margin:0;
-	padding:4px 0px;
-	background:url('../../images/foot/bg_footer.jpg') repeat-x top;
 }
 .copyright a{
 	color:#7cc576;
