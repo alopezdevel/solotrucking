@@ -209,7 +209,7 @@ $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accio
                                    "<td>".$usuario['correo']."</td>".
                                    "<td>".$usuario['nombre']."</td>".
                                    "<td>".$usuario['hActivado']."</td>".
-                                   "<td><div class=\"btn-icon ico-delete\"><span></span></div><div class=\"btn-icon ico-email-fwd\"><span></span></div></td>".  
+                                   "<td><div class=\"btn-icon ico-email-fwd\" title=\"Forward e-mail\"><span></span></div><div class=\"btn-icon ico-delete\" title=\"Delete Register\"><span></span></div></td>".  
                                 "</tr>"   ;
              }else{                             
                  $htmlTabla .="<tr>

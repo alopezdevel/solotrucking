@@ -306,7 +306,7 @@ color: #fff;
 	-webkit-transition:all 0.3s ease-in-out;
 }
 .main-nav li a:hover, .main-nav li.active a{color:#aa1525;}
-.main-nav li:hover{background:transparent url('../images/nav/hover_menu.png') center top no-repeat;}
+.main-nav li:hover, .main-nav li.active{background:transparent url('../images/nav/hover_menu.png') center top no-repeat;}
 .img-logo{float: left;position: absolute;}
 .img-logo img{ padding:12px 32px 0px;}
 .res-nav_click {

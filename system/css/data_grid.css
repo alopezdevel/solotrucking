@@ -331,7 +331,7 @@ div.btn-icon{
     margin:2px;
    
 }
-div.btn-icon:hover{background: #e8e8e8;background: -moz-linear-gradient(top, #e8e8e8, #d8d5d5);background: linear-gradient(to bottom, #e8e8e8, #d8d5d5);background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#e8e8e8), to(#d8d5d5));}
+div.btn-icon:hover{background: #e8e8e8;background: -moz-linear-gradient(top, #e8e8e8, #d8d5d5);background: linear-gradient(to bottom, #e8e8e8, #d8d5d5);background: -webkit-gradient(linear, 0% 50%, 0% 0%, from(#e8e8e8), to(#d8d5d5));}
 div[name=btn] p{font-size:11px!important;height:18px;color:#79a3c4;margin:1px 0px 0px 0px;padding:3px;font-weight:bold;}
 div[name=btn]:hover p{color:#ffffff;}
 div.btn-icon span{ /*-------  ASIGANDO ICONOS -------*/
