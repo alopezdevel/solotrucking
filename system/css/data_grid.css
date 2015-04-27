@@ -320,11 +320,11 @@ div.btn-icon{
 	-moz-border-radius:4px;
 	-webkit-border-radius:4px;
 	
-	background: #d8d5d5;
-    background: -moz-linear-gradient(top, #d8d5d5, #e8e8e8);
-    background: linear-gradient(to bottom, #d8d5d5, #e8e8e8);
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#d8d5d5), to(#e8e8e8));
-    border:1px solid #aeaeae;
+	background: #ececec;
+    background: -moz-linear-gradient(top, #ececec, #e8e8e8);
+    background: linear-gradient(to bottom, #ececec, #e8e8e8);
+    background: -webkit-gradient(linear, 0% 50%, 0% 0%, from(#ececec), to(#e8e8e8));
+    border:1px solid #c3c3c3;
     
     padding:3px;
     cursor:pointer;
@@ -359,8 +359,8 @@ div.btn-icon:hover span{
 .ico-delete:hover span{background-position:50% 0px;}
 
  /* BTN email-forward */
-.ico-email-fwd span{background-position:50% -40px;}
-.ico-email-fwd:hover span{background-position:50% -40px;}
+.ico-email-fwd span{background-position:50% -25px!important;}
+.ico-email-fwd:hover span{background-position:50% -25px!important;}
 
 
 /*-----ALINEACION DE LOS BOTONES ----------- IZQUIERDA - DERECHA ------*/
