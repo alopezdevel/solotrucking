@@ -143,11 +143,11 @@
             		<form method="POST" action="http://nlaredo.globalpc.net/cgi-bin/mailform" onsubmit="return FrontPage_Form1_Validator(this)">                	
             		<input class="input-text" type="text" name="Name" value="Full Name: *" onfocus="if(this.value==this.defaultValue)this.value='';" onblur="if(this.value=='')this.value=this.defaultValue;">
                     <input class="input-text" type="text" name="mailto" value="E-mail Address: *" onfocus="if(this.value==this.defaultValue)this.value='';" onblur="if(this.value=='')this.value=this.defaultValue;">
-                    <input class="input-text" type="text" name="subject" value="Subject: *" onfocus="if(this.value==this.defaultValue)this.value='';" onblur="if(this.value=='')this.value=this.defaultValue;">
                 	<textarea class="input-text text-area" cols="0" rows="0" onfocus="if(this.value==this.defaultValue)this.value='';" onblur="if(this.value=='')this.value=this.defaultValue;">Message *</textarea>
                     <button class="btn_2 right" type="submit">SEND MESSAGE</button>
                     	<input name="email" type="hidden" value="celina@globalpc.net, edwin@solo-trucking.com">
 						<input name="thanks" type="hidden" value="http://solotrucking.laredo2.net">
+                    	<input name="subject" type="hidden" value="Solo-Trucking - Contact Us">
                     </form>
                 </div>	
             </div>
@@ -297,5 +297,6 @@ $(window).load(function(){
 });
 
 </script>
+</div>
 </body>
 </html>
