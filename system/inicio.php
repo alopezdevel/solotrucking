@@ -1,10 +1,10 @@
 ﻿<!---- HEADER ----->
 <?php include("header.php"); ?> 
 
-<div id="layer_content" class="main-section" style="height:500px;">
+<div id="layer_content" class="main-section" style="height:350px;">
 	<div class="container">
 		<h2>Welcome to Solo-Trucking System</h2>
-		<div style="clear:both;">
+		<div style="clear:both;padding-top: 40px;">
         <div class="col_3 left">
             <div class="bann">
                 <h3>Certificates</h3>
