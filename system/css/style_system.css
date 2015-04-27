@@ -89,7 +89,7 @@ h6{
 p{line-height:24px;margin:0;}
 /*-----COLUMNAS PARA CONTENIDOS -------*/
 .col_2{width:49%;}
-.col_3{width:33%;}
+.col_3{width:30%;}
 .col_4{width:25%;}
 /*----- BOTONES --------------*/
 .btn_1{
@@ -503,7 +503,7 @@ img {max-width:100%;}
 
 /* Footer
 ---------------------------------*/
-.footer{background:#dbdbdb;padding:10px!important;}
+.footer{background:#dbdbdb;padding:10px!important;margin-top:20px;clear:both;}
 .footer-logo{margin:15px auto 35px;width: 76px;}
 .nav_foot a{color:#929292}
 .nav_foot a:hover, .nav_foot a.active{color:#d16665;}
