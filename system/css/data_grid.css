@@ -313,7 +313,8 @@ tfoot{border-top:2px solid #b9dcf6;}
 
 div.btn-icon{
 	
-    width:40px;
+    width:35px;
+    float: left;
 
 	border-radius:4px;
 	-moz-border-radius:4px;
@@ -335,8 +336,8 @@ div[name=btn] p{font-size:11px!important;height:18px;color:#79a3c4;margin:1px 0p
 div[name=btn]:hover p{color:#ffffff;}
 div.btn-icon span{ /*-------  ASIGANDO ICONOS -------*/
 
-    width:40px;
-    height: 30px;
+    width:33px;
+    height:25px;
     display: block;
 	background:url('../images/icons/icons.png') no-repeat right top;
 	-moz-background-size: 33px auto;
