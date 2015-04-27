@@ -1,7 +1,7 @@
 ﻿<!---- HEADER ----->
 <?php include("header.php"); ?> 
 
-<div id="layer_content" class="main-section" style="height:350px;">
+<div id="layer_content" class="main-section" style="height:490px;">
 	<div class="container">
 		<h2>Welcome to Solo-Trucking System</h2>
 		<div style="clear:both;padding-top: 40px;">
