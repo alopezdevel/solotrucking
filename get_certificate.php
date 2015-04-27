@@ -17,7 +17,7 @@
 			<input name="email" type="text" placeholder="E-mail:">
 			<input name="name" type="text" placeholder="Certificate Holder:">
 			<textarea name="description" cols="20" rows="4" placeholder="Description of operations/locations/vehicles:"></textarea>
-			<button type="button" class="btn_2 right">SEND MESSAGE</button>
+			<button type="submit" class="btn_2 right">SEND MESSAGE</button>
 				<input name="email" type="hidden" value="celina@globalpc.net, edwin@solo-trucking.com">
 				<input name="thanks" type="hidden" value="http://solotrucking.laredo2.net/thanks_certificate.html">
                 <input name="subject" type="hidden" value="Solo-Trucking - Request of Certificate from WEB">
