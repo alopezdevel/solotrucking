@@ -17,6 +17,7 @@
 			<li><a href="#" class="icon logout"title="Log Out"><span>Log Out</span></a></li>
 		</ul>
         <ul class="main-nav">
+        	<li><a href="inicio.php">Home</a></li>
         	<li><a href="#header">Catalogs</a></li>
             <li><a href="#aboutus">Endorsements</a></li>
             <li><a href="#aboutus">Claims</a></li>  
