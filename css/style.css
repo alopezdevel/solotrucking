@@ -178,35 +178,8 @@ a{	font-family:'FontAwesome','luzsans-bookluzsans-book', Arial, Helvetica, sans-
 .p-relative{position:relative;}
 .p-absolute{position:absolute;}
 
-
-/* Header Styles
-
-
-.header{
-	text-align:center;
-	background:url("../img/pw_maze_black_2X.png") left top repeat;
-	padding:280px 0;
-}
-.logo{
-	width:130px;
-	margin:0 auto 35px;
-}
-.header h1{
-	font-family: 'Montserrat',sans-serif;
-	font-size:50px;
-	font-weight:400;
-	letter-spacing: -1px;
-	margin:0 0 22px 0 ;
-	color:#fff;
-}*/
-
-.we-create{
-	padding:0;
-	margin:35px 0 55px;
-}
-.wp-pic{
-	margin-bottom:20px;
-}
+.we-create{padding:0;margin:35px 0 55px;}
+.wp-pic{margin-bottom:20px;}
 .we-create li{
 	display:inline-block;
 	font-family: 'Montserrat',sans-serif;
@@ -217,19 +190,9 @@ a{	font-family:'FontAwesome','luzsans-bookluzsans-book', Arial, Helvetica, sans-
 	margin:0 5px 0 0;
 	padding:0 0 0 15px;
 }
-.we-create li:first-child{
-	background:none;
-}
-
-.start-button {
-	padding-left: 0px;
-}
-
-.start-button li a{
-color: #fff;
-}
-
-
+.we-create li:first-child{background:none;}
+.start-button {padding-left: 0px;}
+.start-button li a{color: #fff;}
 .link{
 	padding:15px 35px;
 	background:#7cc576;
@@ -426,10 +389,14 @@ color: #fff;
 .header.section-aboutus{background:url('../images/headers/header-aboutus.jpg') center top;}
 .header.section-services{background:url('../images/headers/header-services.jpg') center top;}
 .header.section-faq{background:url('../images/headers/header-faq.jpg') center top;}
-
+/* Providers
+---------------------------------*/
+.container-prodivers img{
+	
+	margin:5px 10px;
+}
 /* Services
 ---------------------------------*/
-
 .service-list{
 	padding:0 0 0 0;
 	font-size:14px;
