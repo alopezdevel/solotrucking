@@ -1,4 +1,43 @@
-﻿<!DOCTYPE html>
+﻿<script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script> 
+<script src="/../../../code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+<script type="text/javascript">                 
+$(document).ready(function() {
+	    
+	$('#btn_getcertificate').click(function(){
+		var fn_UsersClients = {
+        domroot:"#fn_getcertificate",
+           send_email: function(){
+               $.ajax({             
+                type:"POST", 
+                url:"funciones_form.php", 
+                data:{
+                	accion:"get_certificate",
+                	insuredname: $('.insuredname').val(),
+                	emailfax: $('.email-fax').val(),
+                	cholder: $('.cholder').val(),
+                	description: $('.description').val(), 
+                },
+                async : true,
+                dataType : "json",
+                success : function(data){                               
+                    $(fn_getcertificate +" form").hide('slow');
+                    $(fn_getcertificate +" #msg-thanks").show('slow');                                
+                                                    
+                                        }
+            }); 
+        }    
+    	}
+    	fn_UsersClients.send_email();
+	} 
+}
+
+
+
+
+	
+</script> 
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -13,17 +52,18 @@
 <body>
 	<div id="fn_getcertificate" class="dialog">
        <form method="POST" action="http://nlaredo.globalpc.net/cgi-bin/mailform" onsubmit="return FrontPage_Form1_Validator(this)">                	
-			<input name="companyname" type="text" placeholder="Company name of certificate:">
-			<input name="email" type="text" placeholder="E-mail:">
-			<input name="name" type="text" placeholder="Certificate Holder:">
-			<textarea name="description" cols="20" rows="4" placeholder="Description of operations/locations/vehicles:"></textarea>
-			<button type="submit" class="btn_2 right">SEND MESSAGE</button>
-				<input name="email" type="hidden" value="celina@globalpc.net, edwin@solo-trucking.com">
-				<input name="thanks" type="hidden" value="http://solotrucking.laredo2.net/thanks_certificate.html">
-                <input name="subject" type="hidden" value="Solo-Trucking - Request of Certificate from WEB">
-
+			<input class="insuredname" name="insuredname" type="text" placeholder="Insured Name:">
+			<input class="email-fax" name="text" type="email" placeholder="E-mail or Fax:">
+			<textarea class="cholder" name="cholder" cols="20" rows="4" placeholder="Certificate Holder:"></textarea>
+			<textarea class="description" name="description" cols="20" rows="4" placeholder="Description of Operations / Locations / Vehicles / Additional Remarks:" style="height:70px;"></textarea>
+			<button id="btn_getcertificate" type="button" class="btn_2 right">SEND MESSAGE</button>
 		</form>
 	</div>
+	<div id="msg-thanks" class="dialog">
+		<p class="txt-center"><strong>Thank you for submitting your request.</strong></p>
+		<p class="txt-center">Within a short time we will send the certificate you requested your email.</p>
+    </div>
+
 </body>
 
 </html>
