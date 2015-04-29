@@ -11,7 +11,7 @@
 		$description = trim($_POST["description"]);
 		
 		//Proceso para enviar correo                 
-            require_once("./lib/mail.php");
+            require_once("system/lib/mail.php");
             $cuerpo = "
                     <div style=\"font-size:13px;border:1px solid #6191df;border-radius:3px;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">
                          <h2 style=\"color:#313131;text-transform: uppercase; text-align:center;\">Certificate Request from the Website</h2> \n 
