@@ -59,16 +59,17 @@ body {
 	margin:0;
 }
 h2{
-	font-size:34px;
+	font-size:30px;
 	color:#464646;
 	font-family:Calibri,Arial, Helvetica, sans-serif;
 	text-shadow:1px 1px 1px #ffffff;
-	font-weight:700;
-	letter-spacing: -1px;
-	margin:0 0 15px 0;
+	font-weight:bolder;
+	/*letter-spacing: -1px;*/
+	margin:10px 0 50px 0;
 	text-align:left;
 	text-transform:uppercase;
 	border-bottom:1px solid #e6e6e6;
+    padding-bottom: 5px;
 }
 h3{
 	font-family: 'Montserrat', sans-serif;

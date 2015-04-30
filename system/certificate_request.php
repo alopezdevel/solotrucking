@@ -52,7 +52,7 @@ function inicio(){
                 <td class="etiqueta_grid">Insured Name</td>
                 <td class="etiqueta_grid">E-mail</td>
                 <td class="etiqueta_grid">Certificate Holder</td>
-                <td class="etiqueta_grid">Description of Operations / Locations / Vehicles / Additional Remarks</td>
+                <td class="etiqueta_grid">Description of Operations</td>
                 <td class="etiqueta_grid">Status</td>
             </tr>
         </thead>
