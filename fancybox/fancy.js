@@ -140,7 +140,7 @@
 					type : 'iframe',
 					padding : 5,
 					width: '630px',
-					height: '400px'
+					height: '550px'
 				});
 			});
 
