@@ -1,38 +1,29 @@
-﻿<script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script> 
+﻿<script src="js/jquery.1.8.3.min.js" type="text/javascript"></script> 
 <script src="/../../../code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 
-<script type="text/javascript">                 
-$(document).ready(function() {
-	    
-	$('#btn_getcertificate').click(function(){
-		var fn_UsersClients = {
+<script type="text/javascript">       
+$(document).ready(inicio);
+function inicio(){
+    $('#btn_getcertificate').click(onSendMessage);       
+    
+}                        
+function onSendMessage(){    
+    var fn_UsersClients = {
         domroot:"#fn_getcertificate",
            send_email: function(){
-               $.ajax({             
-                type:"POST", 
-                url:"funciones_form.php", 
-                data:{
-                	accion:"get_certificate",
-                	insuredname: $('.insuredname').val(),
-                	emailfax: $('.email-fax').val(),
-                	cholder: $('.cholder').val(),
-                	description: $('.description').val(), 
-                },
-                async : true,
-                dataType : "json",
-                success : function(data){                               
-                    $(fn_getcertificate +" form").hide('slow');
-                    $(fn_getcertificate +" #msg-thanks").show('slow');                                
-                                                    
-                                        }
-            }); 
-        }    
-    	}
-    	fn_UsersClients.send_email();
-});
-
-
-
+               $.post("system/funciones.php", { accion:"get_certificate", insuredname: $('.insuredname').val(), emailfax: $('.email-fax').val(),cholder: $('.cholder').val(),
+                                                description: $('.description').val()},
+               function(data){
+                   alert('1');
+                   $(fn_getcertificate +" form").hide('slow');
+                   $(fn_getcertificate +" #msg-thanks").show('slow');
+               },"json");
+               
+           }    
+        }
+        fn_UsersClients.send_email();
+} 
+  
 
 	
 </script> 
