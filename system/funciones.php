@@ -335,7 +335,7 @@ $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accio
         $error = "1";
      }
 }
-function get_request_certificate(){   
+function get_clientusers(){   
   //error_reporting(E_ALL);
   //ini_set('display_errors', '1');
    
