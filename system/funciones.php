@@ -386,6 +386,7 @@ $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accio
                  "</tr>"   ;    
         
     }
+    $html_tabla = utf8_encode($html_tabla); 
      $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
      echo array2json($response);
 }     
