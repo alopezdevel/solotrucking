@@ -3,9 +3,10 @@
 <script type="text/javascript"> 
 $(document).ready(inicio);
 function inicio(){
+    llenadoGrid();
 }                
 function llenadoGrid(){      
-        var fn_UsersClients = {
+     var fn_UsersClients = {
         domroot:"#ct_clientusers",
         data_grid: "#data_grid_clientusers",
         fillgrid: function(){
@@ -19,19 +20,19 @@ function llenadoGrid(){
                     $(fn_UsersClients.data_grid+" tbody").empty().append(data.tabla);
                     $(fn_UsersClients.data_grid+" tbody tr:even").addClass('gray');
                     $(fn_UsersClients.data_grid+" tbody tr:odd").addClass('white');
-                                }
+                }
             }); 
         }    
     }
-    fn_UsersClients.fillgrid();
+    fn_UsersClients.fillgrid();    
 }
 function borrarClient(cliente_borrar){
     $.post("funciones.php",{
-                               accion : "borrar_cliete", 
+                               accion : "borrar_cliente", 
                                id : cliente_borrar
                                }, 
                                onRespuestaBorrado);
-                               fn_UsersClients.fillgrid();  
+                               llenadoGrid();   
 }
 function onRespuestaBorrado(respuesta, estado, xhr ){
     if(estado == "success"){                         

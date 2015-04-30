@@ -40,7 +40,7 @@
     if($is_list) return '[' . $json . ']';//Return numerical JSON 
     return '{' . $json . '}';//Return associative JSON 
 } 
-$_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accion"],array()) : "";
+  $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accion"],array()) : "";
   function  conexion(){                
       //1 Acceso correcto
       //0 Acceso denegado no existe usuario ni password
@@ -320,7 +320,7 @@ $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accio
      include("cn_usuarios.php");
      $conexion->autocommit(FALSE);
      $transaccion_exitosa = true;
-     $sql = "DELETE FROM cu_control_accesos WHERE iConsecutivo = '".$id."'";
+     $sql = "DELETE FROM cu_control_acceso WHERE iConsecutivo = '".$id."'";
      $conexion->query($sql);   
      if ($conexion->affected_rows < 1 ) {
         $transaccion_exitosa =false;
