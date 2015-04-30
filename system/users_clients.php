@@ -66,7 +66,10 @@ function inicio(){
 </script>
 <div id="layer_content" class="main-section">
 	<div id="ct_clientusers" class="container">
-		<h2>Catalogs - Client Users</h2>
+        <div class="page-title">
+            <h1>Catalogs</h1>
+		    <h2>Client Users</h2>
+        </div>
 		<table id="data_grid_clientusers" class="data_grid">
 		<thead id="grid-head2">
 			<tr>
