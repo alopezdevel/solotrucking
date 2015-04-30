@@ -1,6 +1,11 @@
 ﻿<!---- HEADER ----->
 <?php include("header.php"); ?> 
-
+    
+    <!---- Fancybox -------->
+    <script type="text/javascript" src="../fancybox/source/jquery.fancybox.js"></script>
+    <link rel="stylesheet" type="text/css" href="../fancybox/source/jquery.fancybox.css" media="screen">
+    <script type="text/javascript" src="../fancybox/fancy.js"></script>
+     
 <div id="layer_content" class="main-section">
 	<div class="container">
 		<h2>Welcome to Solo-Trucking System</h2>
@@ -9,7 +14,7 @@
             <div class="bann">
                 <h3>Certificates</h3>
                 <br>
-                <a href="#" class="btn_2"><span>Request One</span></a>
+                <a class="fancybox-certificate" href="javascript:;"><span><img src="../images/cont/btn_certificate_a.gif" border="0"  alt="btn_certificate_a.gif (5,626 bytes)"></span></a>
             </div>
         </div>
         <div class="col_3 left">
