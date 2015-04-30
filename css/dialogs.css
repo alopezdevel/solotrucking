@@ -8,7 +8,7 @@
 	margin:0px auto;
 	
 }
-div#msg-thanks{display:none!important;}
+#msg-thanks{display:none;}
 .txt-center{text-align:center;}
 .txt-left{text-align:left;}
 strong{color:#43aae0;}
