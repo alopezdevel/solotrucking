@@ -122,7 +122,10 @@ function onInsertarUsuario(){
 </script>
 <div id="layer_content" class="main-section">
 	<div class="container">
-		<h2>User Registration</h2>
+		<div class="page-title">
+            <h1>Users</h1>
+            <h2>New User</h2>
+        </div>
 		<form method="post" action="">
             <p class="mensaje_valido">&nbsp;All form fields are required.</p>
 			<input  id = "name"   name="name" type="text" placeholder="Company Name:">

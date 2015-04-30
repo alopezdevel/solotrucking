@@ -9,7 +9,7 @@
      
 <div id="layer_content" class="main-section">
 	<div class="container">
-		<h2>Welcome to Solo-Trucking System</h2>
+		<h2 class="txt-center">Welcome to Solo-Trucking System</h2>
 		<div style="clear:both;padding-top: 40px;">
         <div class="col_3 left">
             <div class="bann">
