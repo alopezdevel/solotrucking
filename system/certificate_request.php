@@ -45,7 +45,7 @@ function inicio(){
 </script>
 <div id="layer_content" class="main-section">
     <div id="fn_request_certificate" class="container">
-        <h2>Catalogs - Client Users</h2>
+        <h2>Certificates - Certificate Request</h2>
         <table id="data_grid_certificate" class="data_grid">
         <thead id="grid-head2">
             <tr>
