@@ -27,11 +27,16 @@
         	</li>
         	<li class="submenu"><a href="#">Users</a>
         		<ul>
-        			<li><a href="#">New User</a></li>
+        			<li><a href="user_register.php">New User</a></li>
         			<li><a href="users_clients.php">Client Users</a></li>
         		</ul>
         	</li>
             <li><a href="#">Endorsements</a></li>
+            <li class="submenu"><a href="#">Certificates</a>
+                <ul>
+                    <li><a href="certificate_request.php">Requests to Certificates</a></li>
+                </ul>
+            </li> 
             <li><a href="#">Claims</a></li>  
             <li><a href="#">Quotes</a></li>
             <li><a href="#">Support</a></li>
