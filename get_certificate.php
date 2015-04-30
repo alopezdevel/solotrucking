@@ -1,11 +1,24 @@
 ﻿<script src="js/jquery.1.8.3.min.js" type="text/javascript"></script> 
 <script src="/../../../code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-
+<style>
+    .mensaje_valido { border: .5px solid transparent; padding: 0.1em; }
+</style>
 <script type="text/javascript">       
 $(document).ready(inicio);
 function inicio(){
-    //Variables
-    mensaje = $( ".mensaje_valido" );        
+    //Variables     
+        mensaje = $( ".mensaje_valido" );        
+    //eventos
+        //focus
+        $("#insuredname").focus(onFocus);
+        $("#email-fax").focus(onFocus);
+        $("#cholder").focus(onFocus);
+        $("#description").focus(onFocus);
+        //blur
+        $("#insuredname").blur(onBlur);
+        $("#email-fax").blur(onBlur);
+        $("#cholder").blur(onBlur);
+        $("#description").blur(onBlur);
     $('#btn_getcertificate').click(onSendMessage);       
 }                        
 function onSendMessage(){ 
@@ -18,30 +31,29 @@ function onSendMessage(){
      todosloscampos = $( [] ).add( insuredname ).add( email ).add( cholder ).add( description );
      todosloscampos.removeClass( "error" ); 
      $("#name").focus().css("background-color","#FFFFC0");
-     actualizarMensajeAlerta( "" );        
+     actualizarMensajeAlerta( "" );                                                                                              
     var fn_UsersClients = {
         domroot:"#fn_getcertificate",
            send_email: function(){
                $.post("system/funciones.php", { accion:"get_certificate", insuredname: $('.insuredname').val(), emailfax: $('.email-fax').val(),cholder: $('.cholder').val(),
                                                 description: $('.description').val()},
                function(data){
-                   $(fn_getcertificate +" form").hide('slow');
-                   $(fn_getcertificate +" #msg-thanks").show('slow');
+                   if(data.error == "0"){
+                       $(fn_getcertificate).hide('slow');
+                       $("#msg-thanks").show('slow');   
+                       $("#insuredname").val("");
+                       $("#email-fax").val("");
+                       $("#cholder").val("");
+                       $("#description").val("");
+                   }else{
+                       alert(data.mensaje);
+                       $("#insuredname").focus();
+                   }
+                   
                },"json");
                
            }    
-        }
-        //eventos
-        //focus
-        $("#insuredname").focus(onFocus);
-        $("#email").focus(onFocus);
-        $("#cholder").focus(onFocus);
-        $("#description").focus(onFocus);
-        //blur
-        $("#insuredname").blur(onBlur);
-        $("#email").blur(onBlur);
-        $("#cholder").blur(onBlur);
-        $("#description").blur(onBlur);
+        }        
         //validaciones
         var valid = true;
         //validaciones expre y tamano
@@ -51,7 +63,7 @@ function onSendMessage(){
         valid = valid && checkLength( email, "E-mail or Fax", 6, 80 );
         valid = valid && checkRegexp( email, emailRegex, "eg. ui@solotrucking.com" );
     
-        valid = valid && checkLength( cholder, "Certificate Holder", 20, 100 );
+        valid = valid && checkLength( cholder, "Certificate Holder", 5, 100 );
         valid = valid && checkRegexp( cholder, /^[a-z]([0-9a-z_\s])+$/i, "Certificate Holder of a-z, 0-9, underscores, spaces and must begin with a letter." );
 
         valid = valid && checkLength( description, "Description of Operations / Locations / Vehicles / Additional Remarks", 6, 25 );
@@ -95,10 +107,7 @@ function onFocus(){
     } else {             
         return true;                     
     }                    
- }
-  
-
-	
+ }  	
 </script> 
 <!DOCTYPE html>
 <html>
@@ -115,6 +124,7 @@ function onFocus(){
 <body>
 	<div id="fn_getcertificate" class="dialog">
        <form method="POST" action="http://nlaredo.globalpc.net/cgi-bin/mailform" onsubmit="return FrontPage_Form1_Validator(this)">                	
+            <p class="mensaje_valido">&nbsp;All form fields are required.</p>
 			<input id = "insuredname" class="insuredname" name="insuredname" type="text" placeholder="Insured Name:">
 			<input id = "email-fax" class="email-fax" name="text" type="email" placeholder="E-mail or Fax:">
 			<textarea id = "cholder" class="cholder" name="cholder" cols="20" rows="4" placeholder="Certificate Holder:"></textarea>
