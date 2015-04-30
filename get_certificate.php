@@ -132,7 +132,7 @@ function onFocus(){
 			<button id="btn_getcertificate" type="button" class="btn_2 right">SEND MESSAGE</button>
 		</form>
 	</div>
-	<div id="msg-thanks" style="display: none;">
+	<div id="msg-thanks">
 		<p class="txt-center"><strong>Thank you for submitting your request.</strong></p>
 		<p class="txt-center">Within a short time we will send the certificate you requested your email.</p>
     </div>
