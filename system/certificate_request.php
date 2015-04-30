@@ -19,9 +19,9 @@ function llenadoGrid(){
                 async : true,
                 dataType : "json",
                 success : function(data){                               
-                    $(fn_UsersClients.data_grid+" tbody").empty().append(data.tabla);
-                    $(fn_UsersClients.data_grid+" tbody tr:even").addClass('gray');
-                    $(fn_UsersClients.data_grid+" tbody tr:odd").addClass('white');
+                    $(fn_request_certificate.data_grid+" tbody").empty().append(data.tabla);
+                    $(fn_request_certificate.data_grid+" tbody tr:even").addClass('gray');
+                    $(fn_request_certificate.data_grid+" tbody tr:odd").addClass('white');
                                 }
             }); 
         }    
