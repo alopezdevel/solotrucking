@@ -278,7 +278,7 @@ img {max-width:100%;}
 .res-nav_click:hover, .res-nav_click:active, .res-nav_click:focus {color: #588cb0 !important;}
 /* SUBMENU */
 	.submenu ul{
-   		width:199px;
+   		width:240px;
 		margin: 7px 0px 0px 0px;       
 		z-index: 1000;
         float:left;
