@@ -14,7 +14,6 @@ function onSendMessage(){
                $.post("system/funciones.php", { accion:"get_certificate", insuredname: $('.insuredname').val(), emailfax: $('.email-fax').val(),cholder: $('.cholder').val(),
                                                 description: $('.description').val()},
                function(data){
-                   alert('1');
                    $(fn_getcertificate +" form").hide('slow');
                    $(fn_getcertificate +" #msg-thanks").show('slow');
                },"json");
