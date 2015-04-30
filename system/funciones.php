@@ -197,7 +197,7 @@ $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accio
     //$conexion->begin_transaction();
     $conexion->autocommit(FALSE);
     $transaccion_exitosa = true;
-    $sql = "SELECT sUsuario,hActivado,sDescripcion as nombre,sCorreo as correo FROM cu_control_acceso WHERE eTipoUsuario ='C' ";
+    $sql = "SELECT iConsecutivo as id, sUsuario,hActivado,sDescripcion as nombre,sCorreo as correo FROM cu_control_acceso WHERE eTipoUsuario ='C' ";
     $result = $conexion->query($sql);
     $NUM_ROWs_Usuario = $result->num_rows;    
     if ($NUM_ROWs_Usuario > 0) {
@@ -208,8 +208,9 @@ $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accio
                                     <td>".$usuario['nombre']."</td>".
                                    "<td>".$usuario['correo']."</td>".
                                    "<td>".$usuario['nombre']."</td>".
-                                   "<td>".$usuario['hActivado']."</td>".
-                                   "<td><div class=\"btn-icon ico-email-fwd\" title=\"Forward e-mail\"><span></span></div><div class=\"btn-icon ico-delete\" title=\"Delete Register\"><span></span></div></td>".  
+                                   "<td>".$usuario['hActivado']."</td>".     
+                                   "<td><div id='f_".$usuario['id']."' class=\"btn-icon ico-email-fwd\" title=\"Forward e-mail\"><span></span></div>
+                                        <div ".'Onclick=" if (confirmarBorrar(\''.$usuario['nombre'].'\')) {    borrarUsuario(\''.$usuario['id'].'\')};" '. "   id='d_".$usuario['id']."' class=\"btn-icon ico-delete\" title=\"Delete Register\"><span></span></div></td>".  
                                 "</tr>"   ;
              }else{                             
                  $htmlTabla .="<tr>
@@ -313,7 +314,27 @@ $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accio
                 }
                 $response = array("mensaje"=>"$mensaje","error"=>"$error");   
                 echo array2json($response);                       
-    }
+    }    
+  function borrar_cliente(){    
+     $id = $_POST['id'];
+     include("cn_usuarios.php");
+     $conexion->autocommit(FALSE);
+     $transaccion_exitosa = true;
+     $sql = "DELETE FROM cu_control_accesos WHERE iConsecutivo = '".$id."'";
+     $conexion->query($sql);   
+     if ($conexion->affected_rows < 1 ) {
+        $transaccion_exitosa =false;
+     }
+     if($transaccion_exitosa){
+        $conexion->commit();
+        $conexion->close();
+     }else{
+        $conexion->rollback();
+        $conexion->close();
+        $mensaje = "A general system error ocurred : internal error";
+        $error = "1";
+     }
+}
 function get_clientusers(){   
   //error_reporting(E_ALL);
   //ini_set('display_errors', '1');

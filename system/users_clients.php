@@ -1,6 +1,9 @@
 <script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script> 
 <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-<script type="text/javascript">                 
+<script type="text/javascript"> 
+$(document).ready(inicio);
+function inicio(){
+}                
 function llenadoGrid(){      
         var fn_UsersClients = {
         domroot:"#ct_clientusers",
@@ -21,6 +24,30 @@ function llenadoGrid(){
         }    
     }
     fn_UsersClients.fillgrid();
+}
+function borrarClient(cliente_borrar){
+    $.post("funciones.php",{
+                               accion : "borrar_cliete", 
+                               id : cliente_borrar
+                               }, 
+                               onRespuestaBorrado);
+                               fn_UsersClients.fillgrid();  
+}
+function onRespuestaBorrado(respuesta, estado, xhr ){
+    if(estado == "success"){                         
+    }                                                    
+    if(estado == "error"){
+        alert('Error');
+
+    }
+    fillListado();
+}
+function confirmarBorrar(registro) {
+
+    confirmacion = confirm ("Are you sure you want  to delete  " + registro + "? This action cannot be undone");
+
+    return confirmacion;
+
 }
 
 
