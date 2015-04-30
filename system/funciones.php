@@ -343,18 +343,19 @@ $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accio
     //$conexion->begin_transaction();
     $conexion->autocommit(FALSE);
     $transaccion_exitosa = true;
-    $sql = "SELECT sInnsuredName as insuredname,email,sCholder as cholder, sDescription as description FROM cb_certificate ";
+    $sql = "SELECT sInnsuredName as insuredname,email,sCholder as cholder, sDescription as description, eEstatus FROM cb_certificate ";
     $result = $conexion->query($sql);
     $NUM_ROWs_Certificates = $result->num_rows;    
     if ($NUM_ROWs_Certificates > 0) {
         //$items = mysql_fetch_all($result);      
         while ($certificates = $result->fetch_assoc()) {
-           if($certificate["insuredname"] != ""){
+           if($certificates["insuredname"] != ""){
                  $htmlTabla .= "<tr>
                                     <td>".$certificates['insuredname']."</td>".
                                    "<td>".$certificates['email']."</td>".
                                    "<td>".$certificates['cholder']."</td>".
-                                   "<td>".$certificates['description']."</td>".
+                                   "<td>".$certificates['description']."</td>".  
+                                   "<td>".$certificates['eEstatus']."</td>". 
                                    "<td><div class=\"btn-icon ico-email-fwd\" title=\"Send Certificate\"><span></span></div>".
                                    "<div class=\"btn-icon ico-delete\" title=\"Delete Request\"><span></span></div></td>".  
                                 "</tr>"   ;
