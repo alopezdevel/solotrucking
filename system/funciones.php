@@ -142,7 +142,7 @@
             $error = "1";
         }  
              
-         $ruta = "http://solotrucking.laredo2.net/system/confirm_mail_user.php?cuser=$codigoconfirm";
+         $ruta = "solotrucking.laredo2.net/system/confirm_mail_user.php?cuser=$codigoconfirm";
         if ($transaccion_exitosa) {
             //Proceso para enviar correo                 
             require_once("./lib/mail.php");
