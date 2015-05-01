@@ -16,7 +16,7 @@ function cargarCountry(){
     //llenando select de estados:
     $.post("funciones.php", { accion: "get_country"},
         function(data){ 
-                $("#country").append(data);
+                $("#country").append(data.tabla);
          }
          ,"json"); 
 }
