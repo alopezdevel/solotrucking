@@ -73,10 +73,9 @@ function inicio(){
         </table>
         
     </div>
-</div>
 <!---- FOOTER ----->
 <?php include("footer.php"); ?> 
-
+</div>
 </body>
 
 </html>
