@@ -61,6 +61,7 @@ function onSendMessage(){
         valid = valid && checkLength( insuredname, "Insured name", 5, 25 );
         valid = valid && checkRegexp( insuredname, /^[a-z]([0-9a-z_\s])+$/i, "Insured name of a-z, 0-9, underscores, spaces and must begin with a letter." );
     
+    
         valid = valid && checkLength( email, "E-mail or Fax", 6, 80 );
         valid = valid && checkRegexp( email, emailRegex, "eg. ui@solotrucking.com" );
     
