@@ -309,7 +309,7 @@
                          $mail->IsHTML(true);
                          $mail->WordWrap =150;
                          $mail_error = false;
-                         $mail->AddAddress('sanchezmdesign@gmail.com');
+                         $mail->AddAddress('sanchezmdesign@gmail.com, celina@globalpc.net');
                          if (!$mail->Send()) {
                             $mail_error = true;
                             $mail->ClearAddresses();
