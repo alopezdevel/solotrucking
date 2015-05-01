@@ -10,13 +10,16 @@ function inicio(){
     mensaje = $( ".mensaje_valido" );
     $("#btn_register").click(onInsertarCompania);
     
+    
+    
+}
+function cargarCountry(){
     //llenando select de estados:
     $.post("funciones.php", { accion: "get_country"},
         function(data){ 
                 $("#country").append(data);
          }
          ,"json"); 
-    
 }
 function onInsertarCompania(){
     //Variables
