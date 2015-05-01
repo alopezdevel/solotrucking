@@ -1,6 +1,7 @@
 <script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script> 
-<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
 <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 <script type="text/javascript"> 
 $(document).ready(inicio);
 
@@ -41,23 +42,28 @@ function borrarClient(cliente_borrar){
 function onRespuestaBorrado(respuesta, estado, xhr ){
     llenadoGrid();   
 }
-function confirmarBorrar(registro) {
+function confirmarBorrar(registro,id) {
     $( "#dialog-confirm" ).dialog({
       resizable: false,
-      height:140,
+      height:200,
+      width:500,
+      show: {effect: 'fade', speed: 2000},
       modal: true,
       buttons: {
-        "Delete all items": function() {
+        "Delete item": function() {
+          
+          borrarClient(id) ;
           $( this ).dialog( "close" );
+           
         },
         Cancel: function() {
           $( this ).dialog( "close" );
+          return false;
         }
       }
     });
-    confirmacion = confirm ("These items will be permanently deleted and cannot be recovered. Are you sure?");
-
-    return confirmacion;
+    
+    //return confirmacion;
 
 }
 
@@ -105,8 +111,8 @@ function inicio(){
 		
 	</div>
 </div>
-<div id="dialog-confirm" title="alert">
-  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
+<div id="dialog-confirm" title="Delete item">
+  <p><span class="ui-icon ui-icon-alert" ></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
 </div>
 <!---- FOOTER ----->
 <?php include("footer.php"); ?> 

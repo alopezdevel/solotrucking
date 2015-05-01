@@ -209,7 +209,7 @@
                                    "<td>".$usuario['correo']."</td>".
                                    "<td>".$usuario['nombre']."</td>".
                                    "<td>".$usuario['hActivado']."</td>".     
-                                   "<td><div ".'Onclick=" if (confirmarBorrar(\''.$usuario['nombre'].'\')) {    borrarClient(\''.$usuario['id'].'\')};" '. "   id='f_".$usuario['id']."' class=\"btn-icon ico-delete\" title=\"Forward e-mail\"><span></span></div>
+                                   "<td><div ".'Onclick=" if (confirmarBorrar(\''.$usuario['nombre'].'\',\''.$usuario['id'].'\')) {    borrarClient(\''.$usuario['id'].'\')};" '. "   id='f_".$usuario['id']."' class=\"btn-icon ico-delete\" title=\"Forward e-mail\"><span></span></div>
                                    </td>".  
                                 "</tr>"   ;
              }else{                             
