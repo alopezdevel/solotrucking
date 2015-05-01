@@ -186,10 +186,10 @@ function onInsertarCompania(){
         </fieldset>
         </form>
     </div>
-</div>
+
 <!---- FOOTER ----->
 <?php include("footer.php"); ?> 
-
+ </div> 
 </body>
 
 </html>
