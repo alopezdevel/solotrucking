@@ -21,37 +21,8 @@ function cargarCountry(){
          }
          ,"json"); 
 }
-function cargarUserdata(){
-    
-    //tomando valores de la url:
-    (function($) {  
-    $.get = function(key)   {  
-        key = key.replace(/[\[]/, '\\[');  
-        key = key.replace(/[\]]/, '\\]');  
-        var pattern = "[\\?&]" + key + "=([^&#]*)";  
-        var regex = new RegExp(pattern);  
-        var url = unescape(window.location.href);  
-        var results = regex.exec(url);  
-        if (results === null) {  
-            return null;  
-        } else {  
-            return results[1];  
-        }  
-    }  
-    })(jQuery);
-    //asignando valores:
-    //var userid = $.get("usrid");
-    var username  = "Celina Sanchez";
-    var useremail = "sanchezmdesign@gmail.com";
-    $("#name").val(username);
-    $("#email").val(useremail);  
-    
-    
-}
 function onInsertarCompania(){
     //Variables
-    var emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-    
     var address = $("#address");
     var city = $("#city");
     var zipcode = $("#zipcode");
@@ -63,7 +34,7 @@ function onInsertarCompania(){
     todosloscampos.removeClass( "error" );
     
     
-    $("#name").focus().css("background-color","#FFFFC0");
+    $("#address").focus().css("background-color","#FFFFC0");
     actualizarMensajeAlerta( "" ); 
     //focus
     $("#address").focus(onFocus);
@@ -104,7 +75,7 @@ function onInsertarCompania(){
     if ( valid ) {
         $.post("funciones.php", { 
             accion: "add_company", 
-            userid: userid.val() ,  
+            userid:"1",  
             address: address.val(),
             city: city.val(),
             zipcode: zipcode.val(),
@@ -117,7 +88,7 @@ function onInsertarCompania(){
              case "1":   alert('Error');
                     break;
              case "0":    
-                         alert("Se han guardado correctamente los cambios.");
+                         alert("Your information has been successfully registered.");
                     break;  
              }
          }
