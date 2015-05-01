@@ -424,10 +424,12 @@ img {max-width:100%;}
     border-top:1px solid #d5d5d5;
 }
 .bann ul li strong{color:#7eb414;}  
-
+.bann ul li a:hover{color:#1394be;}
 .bann h3{
 	
-	color:#1394be;
+	color:#0a66a5;
+    text-shadow:1px 1px 0px #ffffff;
+    letter-spacing: 1px;
 	text-transform:uppercase;
 	font-weight:bold;
 }
