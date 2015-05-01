@@ -32,12 +32,13 @@ function inicio(){
      $("#loginUser").removeClass( "error" );
      $("#loginPassword").removeClass( "error" );
      var valid = true; 
-     valid = valid && checkLength( $('#loginUser'), "user", 5, 25 );
-     valid = valid && checkLength( $('#loginPassword'), "password", 6, 25 );
      
-     //Validaciones de expresion regular
-     valid = valid && checkRegexp( $('#loginUser'), /^[a-z]([0-9a-z_\s])+$/i, "user consiste en datos  de a-z, 0-9, sin espacios." );
-     valid = valid && checkRegexp( $('#loginPassword'), /^[a-z]([0-9a-z_\s])+$/i, "password consiste en datos  de a-z, 0-9, sin espacios." );     
+     valid = valid && checkLength( $('#loginUser'), "E-mail", 6, 80 );
+     valid = valid && checkRegexp( $('#loginUser'), emailRegex, "eg. ui@solotrucking.com" );
+     
+     valid = valid && checkLength( $("#loginPassword"), "password", 6, 25 );
+     valid = valid && checkRegexp( $("#loginPassword"), /^([0-9a-zA-Z])+$/, "Password field only allow : a-z 0-9" );
+     
      if ( valid ) {
         conexion($("#loginUser").val(), $("#loginPassword").val());
      }
@@ -50,14 +51,14 @@ function inicio(){
                     $("#loginPassword").focus();
                     $("#loginUser").addClass( "error" );
                     $("#loginPassword").addClass( "error" );
-                    actualizarMensajeAlerta("El usuario con el que se desea acceder no existe. Favor de verificar los datos" );
+                    actualizarMensajeAlerta("Error: The User " +  $("#loginUser").val() + " does not exist" );
                 break;
          case "1":   location.href= "inicio.php?type=88e5542d2cd5b7f86cd6c204dc77fb523fb719071b2b08cfd7cbfbcadb365af1c8c9ba63";
                 break;
          case "2":    $("#loginPassword").val("");
                     $("#loginPassword").focus();
                     $("#loginPassword").addClass( "error" );
-                    actualizarMensajeAlerta("El password de el usuario: " + $("#loginUser").val() + "no es correcto.Favor de verificar los datos"  );
+                    actualizarMensajeAlerta("The Password you typed is incorrect"  );
                 break;  
          }
      }
@@ -123,7 +124,7 @@ function inicio(){
 <div id="layer_login">
     <img alt="" src="images/login/img-logo-login.png" alt="logo">
     <form method="post" action="" >
-        <p class="mensaje_valido">&nbsp;Favor de llenar todos los campos.</p>
+        <p class="mensaje_valido">&nbsp;All form fields are required.</p>
         <input id="loginUser" class="user" name="user" type="text" placeholder="User">
         <input id="loginPassword" class="pass" name="password" type="password" placeholder="Password">
         <button id="button_aceptar" class="btn_login" type="button">LOGIN</button>
