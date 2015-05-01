@@ -6,7 +6,7 @@
 <script>
 $(document).ready(inicio);
 function inicio(){
-    var code = $.get("cuser");
+    
     $.get = function(key)   {  
         key = key.replace(/[\[]/, '\\[');  
         key = key.replace(/[\]]/, '\\]');  
@@ -20,6 +20,8 @@ function inicio(){
             return results[1];  
         }  
     }  
+    var code = $.get("cuser");
+    alert(code);
     confirmarUser(code);
     
 }
