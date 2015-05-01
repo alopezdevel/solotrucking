@@ -56,7 +56,7 @@ function onInsertarCompania(){
     
     //tamano
     valid = valid && checkLength( address, "", 6, 25 );
-    valid = valid && checkRegexp( address, /^[0-9]([0-9a-z_\s])+$/i, "Company name of a-z, 0-9, underscores, spaces and must begin with a letter." );
+    //valid = valid && checkRegexp( address, /^[0-9]([0-9a-z_\s])+$/i, "Address of a-z, 0-9, underscores, spaces and must begin with a letter." );
     
     valid = valid && checkLength( city, "City", 6, 25 );
     valid = valid && checkRegexp( city, /^[a-z]([0-9a-z_\s])+$/i, "City name of a-z, 0-9, underscores, spaces and must begin with a letter." );
