@@ -104,11 +104,25 @@
     }
 }
   function alta_usuario(){
+    function generaPass(){
+        $cadena = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
+        $longitudCadena=strlen($cadena);     
+        $pass = "";
+        $longitudPass=10;
+        for($i=1 ; $i<=$longitudPass ; $i++){
+            $pos=rand(0,$longitudCadena-1);             
+            $pass .= substr($cadena,$pos,1);
+        }
+        return $pass;
+    }  
+    $codigo1 = generaPass();
+    $codigo2 = substr( md5(microtime()), 1, 8).$codigo1.substr( md5(microtime()), 1, 5);
+    $codigoconfirm = $codigo1.$codigo2;
     $usuario = trim($_POST["email"]);
     $nombre = trim($_POST["name"]);
     $password = $_POST["password"];
     $tipo = strtoupper(trim($_POST["nivel"]));
-    $correo = strtoupper(trim($_POST["email"]));
+    $correo = strtoupper(trim($_POST["email"]));    
     include("cn_usuarios.php");
     //$conexion->begin_transaction();
     $conexion->autocommit(FALSE);
@@ -122,11 +136,12 @@
         $conexion->rollback();
         $conexion->close();                                                                                                                                                                       
     } else {     
-        $sql = "INSERT INTO cu_control_acceso SET  sUsuario = '".$usuario."',   hClave =sha1('".$password."'), sCorreo ='".$correo."',eTipoUsuario ='".$tipo."', sDescripcion ='".$nombre."', hActivado  ='0'  ";
+        $sql = "INSERT INTO cu_control_acceso SET  sUsuario = '".$usuario."',   hClave =sha1('".$password."'), sCorreo ='".$correo."',eTipoUsuario ='".$tipo."', sDescripcion ='".$nombre."', hActivado  ='0', sCodigoVal = '".$codigoconfirm."'  ";
         $conexion->query($sql);   
         if ($conexion->affected_rows < 1 ) {
             $error = "1";
-        }                
+        }      
+                  
         if ($transaccion_exitosa) {
             //Proceso para enviar correo                 
             require_once("./lib/mail.php");
@@ -143,7 +158,7 @@
                          </ul>
                          <br><br>
                          <p style=\"color:#5c5c5c;margin:5px auto; text-align:left;\">If you agree the details are correct and you confirm by clicking the following button:</p><br>
-                         <p style=\"margin:5px auto; text-align:center;\"><a href='AQUIELENLACE' style='color:#ffffff;background:#6191df;padding:5px 8px;border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px;text-decoration:none;'>I agree and wish to confirm my account</a></p>
+                         <p style=\"margin:5px auto; text-align:center;\"><a href='http://solotrucking.laredo2.net/system/confirm_mail_user.php?cuser=".$codigoconfirm." style='color:#ffffff;background:#6191df;padding:5px 8px;border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px;text-decoration:none;'>I agree and wish to confirm my account</a></p>
                          <br>
                          <p style=\"color:#5c5c5c;margin:5px auto; text-align:left;\">If you disagree just press on:</p>
                          <p style=\"margin:5px auto; text-align:center;\"><a href='AQUIELENLACE'' style='color:#ffffff;background:#8d0c0c;padding:5px 8px;border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px;text-decoration:none;'>Cancel</a></p>
@@ -163,10 +178,7 @@
              if (!$mail->Send()) {
                 $mail_error = true;
                 $mail->ClearAddresses();
-             }
-
-
-            
+             }        
             if(!$mail_error){
                 $mensaje = "El usuario $usuario se registro con exito";
                 $error = "0";
@@ -177,8 +189,7 @@
                 $error = "1";  
                 $conexion->rollback();
                 $conexion->close();           
-            }
-            
+            }            
         } else {
             $mensaje = "Error al guardar los datos. Favor de verificarlos.";
             $error = "1";  
@@ -390,8 +401,7 @@
      $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
      echo array2json($response);
 }  
-//GET COUNTRIES
-function get_country(){   
+  function get_country(){   
   //error_reporting(E_ALL);
   //ini_set('display_errors', '1');
    
