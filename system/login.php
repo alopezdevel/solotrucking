@@ -26,14 +26,15 @@ function inicio(){
      $("#loginUser").blur(onBlur);
      $("#loginPassword").blur(onBlur);
 }
- function onValidarAcceso(){ 
-     actualizarMensajeAlerta( "Favor de llenar todos los campos." ); 
+ function onValidarAcceso(){   
+     var emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+     actualizarMensajeAlerta( "All form fields are required." ); 
      todosloscampos.removeClass( "error" );
      $("#loginUser").removeClass( "error" );
      $("#loginPassword").removeClass( "error" );
      var valid = true; 
      
-     valid = valid && checkLength( $('#loginUser'), "E-mail", 6, 80 );
+     valid = valid && checkLength( $('#loginUser'), "user", 6, 80 );
      valid = valid && checkRegexp( $('#loginUser'), emailRegex, "eg. ui@solotrucking.com" );
      
      valid = valid && checkLength( $("#loginPassword"), "password", 6, 25 );
@@ -72,7 +73,7 @@ function inicio(){
  }
  function checkRegexp( o, regexp, n ) {
     if ( !( regexp.test( o.val() ) ) ) {
-        actualizarMensajeAlerta( "El " + n );
+        actualizarMensajeAlerta( n );
         o.addClass( "error" );
         o.focus();
         return false;
@@ -82,7 +83,7 @@ function inicio(){
  }
  function checkLength( o, n, min, max ) {
     if ( o.val().length > max || o.val().length < min ) {
-        actualizarMensajeAlerta( "El campo " + n + " debe contener entre " + min + " y " + max + " digitos." );
+        actualizarMensajeAlerta( "Length of " + n + " must be between " + min + " and " + max + "."  );
         o.addClass( "error" );
         o.focus();
         return false;    
