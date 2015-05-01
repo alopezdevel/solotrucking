@@ -433,7 +433,7 @@
      $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
      echo array2json($response);
 }    
-function add_company(){
+  function add_company(){
        $userid = trim($_POST["userid"]);
        $address = trim($_POST["address"]);
        $city = trim($_POST["city"]);
@@ -485,4 +485,29 @@ function add_company(){
      echo array2json($response);
                        
 } 
+  function confirm_user(){
+      $code = trim($_POST["code"]);
+      include("cn_usuarios.php");
+      //$conexion->begin_transaction();
+      $conexion->autocommit(FALSE);
+      $transaccion_exitosa = true;
+      $sql = "SELECT sUsuario, hActivado, iConsecutivo FROM cu_control_acceso WHERE sCodigoVal = '".$code."' AND hActivado = '0' LOCK IN SHARE MODE";
+      $result = $conexion->query($sql);
+      $NUM_ROWs_Usuario = $result->num_rows;
+      if ($NUM_ROWs_Usuario > 0) {
+           while ($usuario = $result->fetch_assoc()) {
+               if($usuario['hActivado']  == "0"){
+               }else{
+                   $mensaje = "Error: user does not exist";
+                   $error = "1";
+               }
+               
+           }
+          
+      }else{
+          $mensaje = "Error: user does not exist";
+          $error = "1";
+      }
+      
+  }
 ?>
