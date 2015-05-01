@@ -20,8 +20,7 @@ function inicio(){
             return results[1];  
         }  
     }  
-    var code = $.get("cuser");
-    alert(code);
+    var code = $.get("cuser");    
     confirmarUser(code);
     
 }
@@ -29,7 +28,7 @@ function confirmarUser(code){
      $.post("funciones.php", { accion: "confirm_user", code: code },
         function(data){ 
              switch(data.error){
-             case "1":  alert(data.mensaje);
+             case "1":  
                     break;
              case "0":  
                         alert(data.mensaje);
