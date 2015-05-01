@@ -65,10 +65,10 @@ function onSendMessage(){
         valid = valid && checkLength( email, "E-mail or Fax", 6, 80 );
         valid = valid && checkRegexp( email, emailRegex, "eg. ui@solotrucking.com" );
     
-        valid = valid && checkLength( cholder, "Certificate Holder", 5, 100 );
+        valid = valid && checkLength( cholder, "Certificate Holder", 5, 200 );
         //valid = valid && checkRegexp( cholder, /^[a-z]([0-9a-z_\s])+$/i, "Certificate Holder of a-z, 0-9, underscores, spaces and must begin with a letter." );
 
-        valid = valid && checkLength( description, "Description of Operations / Locations / Vehicles / Additional Remarks", 6, 25 );
+        valid = valid && checkLength( description, "Description of Operations / Locations / Vehicles / Additional Remarks", 6, 200 );
         //valid = valid && checkRegexp( description, /^([0-9a-zA-Z])+$/, "Description of Operations / Locations / Vehicles / Additional Remarks of a-z, 0-9, underscores, spaces and must begin with a letter." );
         if(valid){
             //invocando evento del correo
