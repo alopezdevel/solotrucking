@@ -111,7 +111,7 @@ function inicio(){
 		
 	</div>
 </div>
-<div id="dialog-confirm" title="Delete item">
+<div id="dialog-confirm" title="Delete">
   <p><span class="ui-icon ui-icon-alert" ></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
 </div>
 <!---- FOOTER ----->

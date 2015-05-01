@@ -117,7 +117,7 @@
     $result = $conexion->query($sql);
     $NUM_ROWs_Usuario = $result->num_rows;
     if ($NUM_ROWs_Usuario > 0) {
-        $mensaje = "El usuario: $usuario ya existe. Favor de verificar los datos.";
+        $mensaje = "Error: $usuario already exist.";
         $error = "1";
         $conexion->rollback();
         $conexion->close();                                                                                                                                                                       

@@ -8,6 +8,16 @@ function inicio(){
     //variable 
     mensaje = $( ".mensaje_valido" );
     $("#btn_register").click(onInsertarUsuario);
+    //focus
+    $("#name").focus(onFocus);
+    $("#email").focus(onFocus);
+    $("#password").focus(onFocus);
+    $("#recapturapassword").focus(onFocus);
+    //blur
+    $("#name").blur(onBlur);
+    $("#email").blur(onBlur);
+    $("#password").blur(onBlur);
+    $("#recapturapassword").blur(onBlur);
 }
 function onInsertarUsuario(){
     //Variables
@@ -21,17 +31,7 @@ function onInsertarUsuario(){
     
     
     $("#name").focus().css("background-color","#FFFFC0");
-    actualizarMensajeAlerta( "" ); 
-    //focus
-    $("#name").focus(onFocus);
-    $("#email").focus(onFocus);
-    $("#password").focus(onFocus);
-    $("#recapturapassword").focus(onFocus);
-    //blur
-    $("#name").blur(onBlur);
-    $("#email").blur(onBlur);
-    $("#password").blur(onBlur);
-    $("#recapturapassword").blur(onBlur);
+    actualizarMensajeAlerta( "" );     
     
     //validaciones
     var valid = true;
@@ -67,7 +67,7 @@ function onInsertarUsuario(){
         $.post("funciones.php", { accion: "alta_usuario", name: name.val() , email: email.val(), password: password.val(), nivel: "C"},
         function(data){ 
              switch(data.error){
-             case "1":   alert('Error');
+             case "1":   actualizarMensajeAlerta( "thats not the same password as the first one" );
                     break;
              case "0":    
                          alert("correcto");
