@@ -28,11 +28,15 @@ function confirmarUser(code){
      $.post("funciones.php", { accion: "confirm_user", code: code },
         function(data){ 
              switch(data.error){
-             case "1":  
+             case "0": $("#correct").show();
                     break;
-             case "0":  
-                        alert(data.mensaje);
+             case "1":  
+                       $("#error").show();
+                                             
                     break;  
+             case "2":
+                       $("#error").show();
+                       break;
              }
          }
          ,"json");
@@ -49,12 +53,21 @@ function confirmarUser(code){
 </head>
 
 <body>
-  <div class="container txt-center">
+  <div id="correct" class="container txt-center" style='display:none;'>
         <img src="/system/images/nav/img-logo.png" border="0" alt="img-logo.png (6,517 bytes)">
         <h1>Registration Completed!</h1>
         <p>Hello <strong id="usarname"></strong>,</p>
         <p>Thanks for signing in the Control System Single-Trucking. Now you can make your requests and track them more easily and quickly.</p>
         <p>To continue with this procedure You MUST fill out a form with your data and so this'll be part of our database.</p>
+        <br /><br />
+        <p><a href="login.php" class="btn_4">Continue</a></p>
+  </div>
+  
+  
+  <div id="error" class="container txt-center" style='display:none;'>
+        <img src="/system/images/nav/img-logo.png" border="0" alt="img-logo.png (6,517 bytes)">
+        <h1>User certification code is invalid</h1>
+        <p>This operation cannot be accepted. User certification is invalid or expired </p>
         <br /><br />
         <p><a href="login.php" class="btn_4">Continue</a></p>
   </div>

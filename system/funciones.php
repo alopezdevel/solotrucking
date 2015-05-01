@@ -492,7 +492,7 @@
       $conexion->autocommit(FALSE);
       $transaccion_exitosa = true;
       $error = "0";
-      $sql = "SELECT sUsuario, hActivado, iConsecutivo FROM cu_control_acceso WHERE sCodigoVal = '".$code."' AND hActivado = '0' LOCK IN SHARE MODE";
+      $sql = "SELECT sUsuario, hActivado, iConsecutivo, sDescripcion FROM cu_control_acceso WHERE sCodigoVal = '".$code."'  LOCK IN SHARE MODE";
       $result = $conexion->query($sql);
       $NUM_ROWs_Usuario = $result->num_rows;
       if ($NUM_ROWs_Usuario > 0) {
@@ -506,11 +506,13 @@
                    }else{
                        $conexion->commit();
                        $mensaje = "1"; //correct
+                       $usuario = $usuario['sDescripcion'];
+                       $correo =  $usuario['sUsuario'];
                    }
                    
                }else{                     
                    $mensaje = "Error: your code confirmation has expired ";
-                   $error = "1";
+                   $error = "2";
                }
                
            }
