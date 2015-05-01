@@ -416,7 +416,7 @@ img {max-width:100%;}
     -webkit-border-radius:10px;
 
 }
-.bann.center{border-right: 1px solid #eeeeee;border-left: 1px solid #eeeeee;}
+.bann{border-right: 1px solid #9c9c9c;border-left: 1px solid #9c9c9c;}
 .bann p, .bann ul{text-align:justify;width:95%;margin:10px auto;clear:both;/*min-height:110px;*/}
 .bann ul li{
     padding:15px 0px;

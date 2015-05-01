@@ -19,7 +19,7 @@
             </div>
         </div>
         <div class="col_3 left">
-            <div class="bann center">
+            <div class="bann">
                 <h3>Quotes</h3>
                 <br>
                 <ul>
