@@ -433,5 +433,55 @@
      $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
      echo array2json($response);
 }    
-  
+function add_company(){
+       $userid = trim($_POST["userid"]);
+       $address = trim($_POST["address"]);
+       $city = trim($_POST["city"]);
+       $zipcode = trim($_POST["zipcode"]); 
+       $country = trim($_POST["country"]);  
+       $phone = trim($_POST["phone"]); 
+       $usdot = trim($_POST["usdot"]);   
+        
+       $error = "0";
+       $mensaje = "";
+    //VERIFICANDO REGISTRO DE USUARIO
+    include("cn_usuarios.php");
+    //$conexion->begin_transaction();
+    $conexion->autocommit(FALSE);
+    $transaccion_exitosa = true;
+    $sql = "SELECT iConsecutivo FROM cu_control_acceso WHERE iConsecutivo = '".$userid."' LOCK IN SHARE MODE";
+    $result = $conexion->query($sql);
+    $NUM_ROWs_Usuario = $result->num_rows;
+    if ($NUM_ROWs_Usuario > 0) {
+        
+        $sql = "INSERT INTO ct_companias SET  sDireccion = '".$address."', sCiudad = '".$city."', sEstado = '".$country."', sCodigoPostal = '".$zipcode."', sTelefonoPrincipal = '".$phone."', sUsdot = '".$usdot."', iConsecutivoAcceso = '".$userid."'";
+        $conexion->query($sql);   
+        if ($conexion->affected_rows < 1 ) {
+            $error = "1";
+        }                
+        if ($transaccion_exitosa) {
+            
+            $mensaje = "Your information has been successfully registered.";
+            $error = "0";
+            $conexion->commit();
+            $conexion->close();
+            
+        } else {
+            $mensaje = "Error: Failed to save the information. Please verify..";
+            $error = "1";  
+            $conexion->rollback();
+            $conexion->close();           
+        }
+                                                                                                                                                                              
+    } else {     
+        
+        $mensaje = "Error: The user does not exist.";
+        $error = "1";
+        $conexion->rollback();
+        $conexion->close(); 
+    }
+     $response = array("mensaje"=>"$mensaje","error"=>"$error");   
+     echo array2json($response);
+                       
+} 
 ?>
