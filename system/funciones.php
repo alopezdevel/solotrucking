@@ -210,7 +210,7 @@
                                    "<td>".$usuario['nombre']."</td>".
                                    "<td>".$usuario['hActivado']."</td>".     
                                    "<td><div id='f_".$usuario['id']."' class=\"btn-icon ico-email-fwd\" title=\"Forward e-mail\"><span></span></div>
-                                        <div ".'Onclick=" if (confirmarBorrar(\''.$usuario['nombre'].'\')) {    borrarUsuario(\''.$usuario['id'].'\')};" '. "   id='d_".$usuario['id']."' class=\"btn-icon ico-delete\" title=\"Delete Register\"><span></span></div></td>".  
+                                        <div ".'Onclick=" if (confirmarBorrar(\''.$usuario['nombre'].'\')) {    borrarClient(\''.$usuario['id'].'\')};" '. "   id='d_".$usuario['id']."' class=\"btn-icon ico-delete\" title=\"Delete Register\"><span></span></div></td>".  
                                 "</tr>"   ;
              }else{                             
                  $htmlTabla .="<tr>
