@@ -8,8 +8,16 @@ function inicio(){
     //variable 
     mensaje = $( ".mensaje_valido" );
     $("#btn_register").click(onInsertarUsuario);
+    
+    //llenando select de estados:
+    $.post("funciones.php", { accion: "get_country"},
+        function(data){ 
+                $("#country").append(data);
+         }
+         ,"json"); 
+    
 }
-function onInsertarUsuario(){
+function onInsertarCompania(){
     //Variables
     var emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     var name = $("#name");
@@ -56,28 +64,35 @@ function onInsertarUsuario(){
     valid = valid && checkLength( email, "E-mail", 6, 80 );
     valid = valid && checkRegexp( email, emailRegex, "eg. ui@solotrucking.com" );
     
-    valid = valid && checkLength( password, "password", 6, 25 );
-    valid = valid && checkRegexp( password, /^([0-9a-zA-Z])+$/, "Password field only allow : a-z 0-9" );
+    valid = valid && checkLength( address, "", 6, 25 );
+    valid = valid && checkRegexp( address, /^[0-9]([0-9a-z_\s])+$/i, "Company name of a-z, 0-9, underscores, spaces and must begin with a letter." );
     
-    valid = valid && checkLength( re_password, "password", 6, 25 );
-    valid = valid && checkRegexp( re_password, /^([0-9a-zA-Z])+$/, "Password field only allow : a-z 0-9" );
+    valid = valid && checkLength( city, "City", 6, 25 );
+    valid = valid && checkRegexp( city, /^[a-z]([0-9a-z_\s])+$/i, "City name of a-z, 0-9, underscores, spaces and must begin with a letter." );
     
-    if(password.val() != re_password.val() && valid){
-        actualizarMensajeAlerta( "thats not the same password as the first one" );
-        re_password.addClass( "error" );
-        re_password.focus();
-        valid = false;
-    }
+    valid = valid && checkLength( zipcode, "Zip Code", 1, 5 );
+    valid = valid && checkRegexp( zipcode, /^([1-9]{2}|[0-9][1-9]|[1-9][0-9])[0-9]{3}$/, "The zip code is not valid." );
     
+    valid = valid && checkLength( phone, "Phone", 10, 10 );
+    valid = valid && checkRegexp( phone, /^[0-9-()+]{3,20}/, "Phone of 0-9." );
+    
+    valid = valid && checkLength( usdot, "US DOT", 5, 6 );
+    valid = valid && checkRegexp( usdot, /^[0-9-()+]{3,20}/, "US DOT of 0-9." );
     //exp
     
     
-    
-    
- 
-    
     if ( valid ) {
-        $.post("funciones.php", { accion: "alta_usuario", name: name.val() , email: email.val(), password: password.val(), nivel: "C"},
+        $.post("funciones.php", { 
+            accion: "add_company", 
+            name: name.val() , 
+            email: email.val(), 
+            address: address.val(),
+            city: city.val(),
+            zipcode: zipcode.val(),
+            country: country.val(),
+            phone: phone.val(),
+            usdot: usdot.val()
+        },
         function(data){ 
              switch(data.error){
              case "1":   alert('Error');
@@ -86,8 +101,8 @@ function onInsertarUsuario(){
                          alert("correcto");
                          $("#name").val("");
                          $("#email").val("");
-                         $("#password").val("");
-                         $("#recapturapassword").val("");
+                         $("#address").val("");
+                         $("#city").val("");
                          $("#name").focus();
                     break;  
              }

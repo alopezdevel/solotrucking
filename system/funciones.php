@@ -389,6 +389,38 @@
     $html_tabla = utf8_encode($html_tabla); 
      $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
      echo array2json($response);
-}     
+}  
+//GET COUNTRIES
+function get_country(){   
+  //error_reporting(E_ALL);
+  //ini_set('display_errors', '1');
+   
+    include("cn_usuarios.php");
+    //$conexion->begin_transaction();
+    $conexion->autocommit(FALSE);
+    $transaccion_exitosa = true;
+    $sql = "SELECT sCveEntidad as clave, sDescEntidad as descripcion FROM ct_entidad";
+    $result = $conexion->query($sql);
+    $NUM_ROWs_Country = $result->num_rows;    
+    if ($NUM_ROWs_Country > 0) {
+        //$items = mysql_fetch_all($result);      
+        while ($country = $result->fetch_assoc()) {
+           if($country["clave"] != ""){
+                 $htmlTabla .= "<option value=\"".$country['clave']."\">".$country['descripcion']."</option>";
+             }else{                             
+                 $htmlTabla .="";
+             }    
+        } 
+        $conexion->rollback();
+        $conexion->close();                                                                                                                                                                       
+    } else { 
+        
+        $htmlTabla .="";    
+        
+    }
+    $html_tabla = utf8_encode($html_tabla); 
+     $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
+     echo array2json($response);
+}    
   
 ?>
