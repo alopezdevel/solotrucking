@@ -160,6 +160,7 @@ function onInsertarCompania(){
         <form method="post" action="">
         <fieldset name="CompanyInformation">
         <legend>Company Information</legend>
+            <p class="mensaje_valido">&nbsp;All form fields are required.</p>
             <div class="field_item"> 
                 <input tabindex="1" id="name" name="companyname" type="text" placeholder="* Company Name:" maxlength="100">
             </div>
