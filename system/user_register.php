@@ -67,7 +67,8 @@ function onInsertarUsuario(){
         $.post("funciones.php", { accion: "alta_usuario", name: name.val() , email: email.val(), password: password.val(), nivel: "C"},
         function(data){ 
              switch(data.error){
-             case "1":   actualizarMensajeAlerta( "thats not the same password as the first one" );
+             case "1":   actualizarMensajeAlerta( data.mensaje);
+                         $("#email").focus();
                     break;
              case "0":    
                          alert("correcto");
