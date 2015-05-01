@@ -75,7 +75,7 @@ function onInsertarCompania(){
     if ( valid ) {
         $.post("funciones.php", { 
             accion: "add_company", 
-            userid:"1",  
+            userid:"15",  
             address: address.val(),
             city: city.val(),
             zipcode: zipcode.val(),
@@ -85,7 +85,7 @@ function onInsertarCompania(){
         },
         function(data){ 
              switch(data.error){
-             case "1":   alert('Error');
+             case "1":   alert('Error', data.mensaje);
                     break;
              case "0":    
                          alert("Your information has been successfully registered.");
@@ -163,7 +163,7 @@ function onInsertarCompania(){
                 <input tabindex="7" id="phone" class="numb" name="phone1" type="tel" placeholder="* Primary Phone:" maxlength="10">
             </div>
             <div class="field_item"> 
-                <input tabindex="8" id="usdot" class="numb" name="usdot" type="text" placeholder="* USDOT#:" maxlength="100">
+                <input tabindex="8" id="usdot" class="numb" name="usdot" type="text" placeholder="* USDOT#:" maxlength="10">
             </div>
             <button id="btn_register" type="button" class="btn-1">Create Account</button>
         </fieldset>

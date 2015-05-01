@@ -458,6 +458,7 @@ function add_company(){
         $conexion->query($sql);   
         if ($conexion->affected_rows < 1 ) {
             $error = "1";
+            $mensaje= "Internal Error, Failed to verify the account. Please report to Administrator";
         }                
         if ($transaccion_exitosa) {
             
