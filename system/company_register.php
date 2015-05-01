@@ -4,6 +4,8 @@
 <script>
 $(document).ready(inicio);
 function inicio(){
+    
+    alert ("ENTRO A INICIO");
     //variable 
     mensaje = $( ".mensaje_valido" );
     $("#btn_register").click(onInsertarCompania);
