@@ -69,9 +69,9 @@ function onInsertarUsuario(){
              switch(data.error){
              case "1":   actualizarMensajeAlerta( data.mensaje);
                          $("#email").focus();
+                         email.addClass( "error" ); 
                     break;
-             case "0":    
-                         alert("correcto");
+             case "0":   actualizarMensajeAlerta("All form fields are required.");
                          $("#name").val("");
                          $("#email").val("");
                          $("#password").val("");

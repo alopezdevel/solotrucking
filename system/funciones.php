@@ -122,7 +122,7 @@
         $conexion->rollback();
         $conexion->close();                                                                                                                                                                       
     } else {     
-        $sql = "INSERT INTO cu_control_acceso SET  sUsuario = '".$usuario."',   hClave =sha1('".$password."'), sCorreo ='".$correo."',eTipoUsuario ='".$tipo."', sDescripcion ='".$nombre."', hActivado  =sha1('1')  ";
+        $sql = "INSERT INTO cu_control_acceso SET  sUsuario = '".$usuario."',   hClave =sha1('".$password."'), sCorreo ='".$correo."',eTipoUsuario ='".$tipo."', sDescripcion ='".$nombre."', hActivado  ='0'  ";
         $conexion->query($sql);   
         if ($conexion->affected_rows < 1 ) {
             $error = "1";
