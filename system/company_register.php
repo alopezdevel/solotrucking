@@ -8,6 +8,7 @@ function inicio(){
     mensaje = $( ".mensaje_valido" );
     $("#btn_register").click(onInsertarCompania);
     cargarCountry();
+    cargarUserdata();
     
     
     
@@ -20,11 +21,37 @@ function cargarCountry(){
          }
          ,"json"); 
 }
+function cargarUserdata(){
+    
+    //tomando valores de la url:
+    (function($) {  
+    $.get = function(key)   {  
+        key = key.replace(/[\[]/, '\\[');  
+        key = key.replace(/[\]]/, '\\]');  
+        var pattern = "[\\?&]" + key + "=([^&#]*)";  
+        var regex = new RegExp(pattern);  
+        var url = unescape(window.location.href);  
+        var results = regex.exec(url);  
+        if (results === null) {  
+            return null;  
+        } else {  
+            return results[1];  
+        }  
+    }  
+    })(jQuery);
+    //asignando valores:
+    //var userid = $.get("usrid");
+    var username  = "Celina Sanchez";
+    var useremail = "sanchezmdesign@gmail.com";
+    $("#name").val(username);
+    $("#email").val(useremail);  
+    
+    
+}
 function onInsertarCompania(){
     //Variables
     var emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-    var name = $("#name");
-    var email = $("#email");
+    
     var address = $("#address");
     var city = $("#city");
     var zipcode = $("#zipcode");
@@ -32,15 +59,13 @@ function onInsertarCompania(){
     var phone = $("#phone");
     var usdot = $("#usdot");  
     
-    todosloscampos = $( [] ).add( name ).add( email ).add( address ).add( city ).add(zipcode).add(country).add(phone).add(usdot);
+    todosloscampos = $( [] ).add( address ).add( city ).add(zipcode).add(country).add(phone).add(usdot);
     todosloscampos.removeClass( "error" );
     
     
     $("#name").focus().css("background-color","#FFFFC0");
     actualizarMensajeAlerta( "" ); 
     //focus
-    $("#name").focus(onFocus);
-    $("#email").focus(onFocus);
     $("#address").focus(onFocus);
     $("#city").focus(onFocus);
     $("#zipcode").focus(onFocus);
@@ -48,8 +73,6 @@ function onInsertarCompania(){
     $("#phone").focus(onFocus);
     $("#usdot").focus(onFocus);
     //blur
-    $("#name").blur(onBlur);
-    $("#email").blur(onBlur);
     $("#address").blur(onBlur);
     $("#city").blur(onBlur);
     $("#zipcode").blur(onBlur);
@@ -61,12 +84,6 @@ function onInsertarCompania(){
     var valid = true;
     
     //tamano
-    valid = valid && checkLength( name, "Company name", 5, 25 );
-    valid = valid && checkRegexp( name, /^[a-z]([0-9a-z_\s])+$/i, "Company name of a-z, 0-9, underscores, spaces and must begin with a letter." );
-    
-    valid = valid && checkLength( email, "E-mail", 6, 80 );
-    valid = valid && checkRegexp( email, emailRegex, "eg. ui@solotrucking.com" );
-    
     valid = valid && checkLength( address, "", 6, 25 );
     valid = valid && checkRegexp( address, /^[0-9]([0-9a-z_\s])+$/i, "Company name of a-z, 0-9, underscores, spaces and must begin with a letter." );
     
@@ -77,18 +94,17 @@ function onInsertarCompania(){
     valid = valid && checkRegexp( zipcode, /^([1-9]{2}|[0-9][1-9]|[1-9][0-9])[0-9]{3}$/, "The zip code is not valid." );
     
     valid = valid && checkLength( phone, "Phone", 10, 10 );
-    valid = valid && checkRegexp( phone, /^[0-9-()+]{3,20}/, "Phone of 0-9." );
+    valid = valid && checkRegexp( phone, /^[0-9-()+]{3,20}/, "Please enter a Phone number Valid: Must contain 0-9." );
     
     valid = valid && checkLength( usdot, "US DOT", 5, 6 );
-    valid = valid && checkRegexp( usdot, /^[0-9-()+]{3,20}/, "US DOT of 0-9." );
+    valid = valid && checkRegexp( usdot, /^[0-9-()+]{3,20}/, "Please enter a US DOT number Valid: Must contain 0-9." );
     //exp
     
     
     if ( valid ) {
         $.post("funciones.php", { 
             accion: "add_company", 
-            name: name.val() , 
-            email: email.val(), 
+            userid: userid.val() ,  
             address: address.val(),
             city: city.val(),
             zipcode: zipcode.val(),
@@ -101,12 +117,7 @@ function onInsertarCompania(){
              case "1":   alert('Error');
                     break;
              case "0":    
-                         alert("correcto");
-                         $("#name").val("");
-                         $("#email").val("");
-                         $("#address").val("");
-                         $("#city").val("");
-                         $("#name").focus();
+                         alert("Se han guardado correctamente los cambios.");
                     break;  
              }
          }
@@ -162,20 +173,20 @@ function onInsertarCompania(){
         <legend>Company Information</legend>
             <p class="mensaje_valido">&nbsp;All form fields are required.</p>
             <div class="field_item"> 
-                <input tabindex="1" id="name" name="companyname" type="text" placeholder="* Company Name:" maxlength="100">
+                <input tabindex="1" id="name" name="companyname" type="text" placeholder="* Company Name:" maxlength="100" readonly>
             </div>
             <div class="field_item"> 
-                <input tabindex="2" id="address" name="address" type="text" placeholder="* Address:" maxlength="100">
+                <input tabindex="2" id="email" name="Email" type="email" placeholder="* E-mail:" maxlength="100" readonly>
             </div>
             <div class="field_item"> 
-                <input tabindex="3" id="city" name="city" type="text"  placeholder="* City:" maxlength="100" style="width:33%;float:left;clear:none;" required>    
-                <input tabindex="4" id="zipcode" class="numb" name="ZipCode" type="text" maxlength="5" placeholder="Zip Code:" style="width:32%;float:right;clear:none;">                
-                <select tabindex="5" id="country" name="contry" style="width:33%!important;float:right;clear:none;margin-right:5px;">
+                <input tabindex="3" id="address" name="address" type="text" placeholder="* Address:" maxlength="100">
+            </div>
+            <div class="field_item"> 
+                <input tabindex="4" id="city" name="city" type="text"  placeholder="* City:" maxlength="100" style="width:33%;float:left;clear:none;" required>    
+                <input tabindex="5" id="zipcode" class="numb" name="ZipCode" type="text" maxlength="5" placeholder="Zip Code:" style="width:32%;float:right;clear:none;">                
+                <select tabindex="6" id="country" name="contry" style="width:33%!important;float:right;clear:none;margin-right:5px;">
                     <option value="">Select a Country</option> 
                 </select>
-            </div>
-            <div class="field_item"> 
-                <input tabindex="6" id="email" name="Email" type="email" placeholder="* E-mail:" maxlength="100">
             </div>
             <div class="field_item"> 
                 <input tabindex="7" id="phone" class="numb" name="phone1" type="tel" placeholder="* Primary Phone:" maxlength="10">
