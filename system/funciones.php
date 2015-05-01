@@ -162,7 +162,7 @@
                          <p style=\"margin:5px auto; text-align:center;\"><a href='$ruta' style='color:#ffffff;background:#6191df;padding:5px 8px;border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px;text-decoration:none;'>I agree and wish to confirm my account</a></p>
                          <br>
                          <p style=\"color:#5c5c5c;margin:5px auto; text-align:left;\">If you disagree just press on:</p>
-                         <p style=\"margin:5px auto; text-align:center;\"><a href='AQUIELENLACE' style='color:#ffffff;background:#8d0c0c;padding:5px 8px;border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px;text-decoration:none;'>Cancel</a></p>
+                         <p style=\"margin:5px auto; text-align:center;\"><a href='solotrucking.laredo2.net' style='color:#ffffff;background:#8d0c0c;padding:5px 8px;border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px;text-decoration:none;'>Cancel</a></p>
                     </div>";
              $mail = new Mail();
              $mail->From = "support@solotrucking.com";
