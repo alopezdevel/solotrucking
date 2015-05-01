@@ -19,18 +19,22 @@
             </div>
         </div>
         <div class="col_3 left">
-            <div class="bann">
+            <div class="bann center">
                 <h3>Quotes</h3>
                 <br>
-                <a href="#" class="btn_2"><span>Get a Quote</span></a>
-                <a href="#" class="btn_2"><span>Consult One</span></a>
+                <ul>
+                    <li><a href="#"><span>»</span>Get a Quote</a> </li>
+                    <li><a href="#" class="btn_2"><span>»</span>Consult One</a></li>
+                </ul>
             </div>
         </div>
         <div class="col_3 left">
             <div class="bann">
                 <h3>Endorsements</h3>
                 <br>
-                <a href="#" class="btn_2"><span>Request One</span></a>
+                <ul>
+                    <li><a href="#"><span>»</span>Request One</a></li>
+                </ul>
             </div>
         </div>
         </div>
