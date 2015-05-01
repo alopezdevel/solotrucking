@@ -520,6 +520,7 @@
           $error = "1";
       }
       $conexion->close();
+      
       $response = array("mensaje"=>"$mensaje","error"=>"$error");   
       echo array2json($response);
       
