@@ -309,7 +309,7 @@
                          $mail->IsHTML(true);
                          $mail->WordWrap =150;
                          $mail_error = false;
-                         $mail->AddAddress('sanchezmdesign@gmail.com, edwin@solo-trucking.com, customerservice@solo-trucking.com, 19564674440@messages.efax.com');
+                         $mail->AddAddress('sanchezmdesign@gmail.com, 19564674440@messages.efax.com');
                          if (!$mail->Send()) {
                             $mail_error = true;
                             $mail->ClearAddresses();
