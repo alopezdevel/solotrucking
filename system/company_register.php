@@ -7,7 +7,7 @@ $(document).ready(inicio);
 function inicio(){
     //variable 
     mensaje = $( ".mensaje_valido" );
-    $("#btn_register").click(onInsertarUsuario);
+    $("#btn_register").click(onInsertarCompania);
     
     //llenando select de estados:
     $.post("funciones.php", { accion: "get_country"},
