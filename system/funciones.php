@@ -299,9 +299,9 @@
                                      <p style=\"color:#5c5c5c;margin:5px auto; text-align:center;\">Please follow up this customer request and send your file.</p><br>
                                 </div>";
                          $mail = new Mail();
-                         $mail->From = "support@solotrucking.com";
+                         $mail->From = "support@solo-trucking.com";
                          $mail->FromName = "solotrucking team";
-                         $mail->Host = "solotrucking.com";
+                         $mail->Host = "solo-trucking.com";
                          $mail->Mailer = "sendmail";
                          $mail->Subject = "Certificate Request from the Website "; 
                          $mail->Body  = $cuerpo;
@@ -309,7 +309,7 @@
                          $mail->IsHTML(true);
                          $mail->WordWrap =150;
                          $mail_error = false;
-                         $mail->AddAddress('alopez@globalpc.net');
+                         $mail->AddAddress('sanchezmdesign@gmail.com');
                          if (!$mail->Send()) {
                             $mail_error = true;
                             $mail->ClearAddresses();
