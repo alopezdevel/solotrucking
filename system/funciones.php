@@ -135,7 +135,7 @@
         $error = "1";
         $conexion->rollback();
         $conexion->close();                                                                                                                                                                       
-    } else {     
+    } else {                        
         $sql = "INSERT INTO cu_control_acceso SET  sUsuario = '".$usuario."',   hClave =sha1('".$password."'), sCorreo ='".$correo."',eTipoUsuario ='".$tipo."', sDescripcion ='".$nombre."', hActivado  ='0', sCodigoVal = '".$codigoconfirm."'  ";
         $conexion->query($sql);   
         if ($conexion->affected_rows < 1 ) {
@@ -491,14 +491,25 @@
       //$conexion->begin_transaction();
       $conexion->autocommit(FALSE);
       $transaccion_exitosa = true;
+      $error = "0";
       $sql = "SELECT sUsuario, hActivado, iConsecutivo FROM cu_control_acceso WHERE sCodigoVal = '".$code."' AND hActivado = '0' LOCK IN SHARE MODE";
       $result = $conexion->query($sql);
       $NUM_ROWs_Usuario = $result->num_rows;
       if ($NUM_ROWs_Usuario > 0) {
            while ($usuario = $result->fetch_assoc()) {
                if($usuario['hActivado']  == "0"){
-               }else{
-                   $mensaje = "Error: your code has expired ";
+                   $sql = "UPDATE cu_control_acceso SET  hActivado = '1' WHERE sCodigoVal = '".$code."'";
+                   $conexion->query($sql);   
+                   if ($conexion->affected_rows < 1 ) {
+                        $error = "1";
+                        $mensaje = "A general system error ocurred : internal error";                        
+                   }else{
+                       $conexion->commit();
+                       $mensaje = "1"; //correct
+                   }
+                   
+               }else{                     
+                   $mensaje = "Error: your code confirmation has expired ";
                    $error = "1";
                }
                
@@ -508,6 +519,9 @@
           $mensaje = "Error: user does not exist";
           $error = "1";
       }
+      $conexion->close();
+      $response = array("mensaje"=>"$mensaje","error"=>"$error");   
+      echo array2json($response);
       
   }
 ?>
