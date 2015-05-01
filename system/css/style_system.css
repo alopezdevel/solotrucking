@@ -37,7 +37,7 @@
 
 img{ max-width:100%;}
 
-a, a:hover, a:active{ outline:0px !important}
+a, a:hover, a:active{ outline:0px !important; color:#727272;text-decoration: none;}
 a:hover{text-decoration:none;}
 
 @font-face {
@@ -418,6 +418,13 @@ img {max-width:100%;}
 }
 .bann.center{border-right: 1px solid #eeeeee;border-left: 1px solid #eeeeee;}
 .bann p, .bann ul{text-align:justify;width:95%;margin:10px auto;clear:both;/*min-height:110px;*/}
+.bann ul li{
+    padding:15px 0px;
+    border-bottom:1px solid #d5d5d5;
+    border-top:1px solid #d5d5d5;
+}
+.bann ul li strong{color:#7eb414;}  
+
 .bann h3{
 	
 	color:#1394be;
