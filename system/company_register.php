@@ -161,26 +161,26 @@ function onInsertarCompania(){
         <fieldset name="CompanyInformation">
         <legend>Company Information</legend>
             <div class="field_item"> 
-                <input id="name" name="companyname" type="text" placeholder="* Company Name:" maxlength="100">
+                <input tabindex="1" id="name" name="companyname" type="text" placeholder="* Company Name:" maxlength="100">
             </div>
             <div class="field_item"> 
-                <input id="address" name="address" type="text" placeholder="* Address:" maxlength="100">
+                <input tabindex="2" id="address" name="address" type="text" placeholder="* Address:" maxlength="100">
             </div>
             <div class="field_item"> 
-                <input id="city" name="city" type="text"  placeholder="* City:" maxlength="100" style="width:33%;float:left;clear:none;" required>    
-                <input id="zipcode" class="numb" name="ZipCode" type="text" maxlength="5" placeholder="Zip Code:" style="width:33%;float:right;clear:none;">                
-                <select id="country" name="contry" style="width:33%!important;float:right;clear:none;margin-right:5px;">
+                <input tabindex="3" id="city" name="city" type="text"  placeholder="* City:" maxlength="100" style="width:33%;float:left;clear:none;" required>    
+                <input tabindex="4" id="zipcode" class="numb" name="ZipCode" type="text" maxlength="5" placeholder="Zip Code:" style="width:32%;float:right;clear:none;">                
+                <select tabindex="5" id="country" name="contry" style="width:33%!important;float:right;clear:none;margin-right:5px;">
                     <option value="">Select a Country</option> 
                 </select>
             </div>
             <div class="field_item"> 
-                <input id="email" name="Email" type="email" placeholder="* E-mail:" maxlength="100">
+                <input tabindex="6" id="email" name="Email" type="email" placeholder="* E-mail:" maxlength="100">
             </div>
             <div class="field_item"> 
-                <input id="phone" class="numb" name="phone1" type="tel" placeholder="* Primary Phone:" maxlength="10">
+                <input tabindex="7" id="phone" class="numb" name="phone1" type="tel" placeholder="* Primary Phone:" maxlength="10">
             </div>
             <div class="field_item"> 
-                <input id="usdot" class="numb" name="usdot" type="text" placeholder="* USDOT#:" maxlength="100">
+                <input tabindex="8" id="usdot" class="numb" name="usdot" type="text" placeholder="* USDOT#:" maxlength="100">
             </div>
             <button id="btn_register" type="button" class="btn-1">Create Account</button>
         </fieldset>
