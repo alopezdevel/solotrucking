@@ -87,7 +87,7 @@ function onInsertarCompania(){
         },
         function(data){ 
              switch(data.error){
-             case "1":   alert('Error' + data.mensaje);
+             case "1":   alert(data.mensaje);
                     break;
              case "0":    
                          alert("Your information has been successfully registered.");
