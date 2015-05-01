@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, maximum-scale=1">
 
-<title>SoloTrucking Insurance - Commercial Truck Insurance</title>
+<title>SoloTrucking - Commercial Truck Insurance</title>
 <link rel="icon" href="images/favicon.png" type="image/png">
 <link rel="shortcut icon" href="favicon.ico" type="img/x-icon">
 <link href="css/bootstrap.css" rel="stylesheet" type="text/css">
@@ -21,12 +21,6 @@
 <script type="text/javascript" src="js/wow.js"></script>
 <script type="text/javascript" src="js/classie.js"></script>
 
-    <!---- Fancybox -------->
-	<script type="text/javascript" src="fancybox/lib/jquery.mousewheel-3.0.6.pack.js"></script>
-	<script type="text/javascript" src="fancybox/source/jquery.fancybox.js"></script>
-	<link rel="stylesheet" type="text/css" href="fancybox/source/jquery.fancybox.css" media="screen">
- 	<script type="text/javascript" src="fancybox/fancy.js"></script>
-
 	<!-----SLIDER HOMEPAGE----->
 	<link rel='stylesheet' id='camera-css'  href='camera/css/camera.css' type='text/css' media='all'>     
     <script type='text/javascript' src='camera/scripts/jquery.min.js'></script>
@@ -34,13 +28,14 @@
     <script type='text/javascript' src='camera/scripts/jquery.easing.1.3.js'></script> 
     <script type='text/javascript' src='camera/scripts/camera.js'></script> 
     <script type='text/javascript' src='camera/scripts/script.js'></script>
-    
+
+
 </head>
 <body>
 <div style="overflow:hidden;" id="home">
 <nav class="main-nav-outer" id="test"><!--main-nav-start-->
 	<div class="container">
-		<a href="#home" class="img-logo"><img  src="images/nav/img-logo.png" alt="logo"></a>
+		<a href="index2.html" class="img-logo"><img  src="images/nav/img-logo.png" alt="logo"></a>
 		<ul class="top-nav">
 			<li><a href="system/login.php" class="login-btn" title="Log In"><span>My Account</span></a></li>
 			<li><a href="https://www.facebook.com/" class="icon facebook" title="follow us in Facebook!" target="_blank"><span></span></a></li>
@@ -49,55 +44,43 @@
 			<li><a href="https://www.google.com/" class="icon google" title="follow us in Google +!"><span></span></a></li>
 		</ul>
         <ul class="main-nav">
-        	<li class="active"><a href="#home">Home</a></li>
+        	<li><a href="index2.html">Home</a></li>
             <li><a href="aboutus.html">About Us</a></li>
             <li><a href="products.html">Products</a></li>
             <li><a href="system/login.php">Claims</a></li>
             <li><a href="providers.html">Providers</a></li>
             <li><a href="getaquote/intro.php">Get a Quote</a></li>
-            <li><a href="#contact">Contact Us</a></li>
+            <li><a href="index2.html#contact">Contact Us</a></li>
         </ul>
         <a class="res-nav_click right" href="#"><i class="fa-bars"></i></a>
     </div>
 </nav><!--main-nav-end-->
-<!--- SLIDER ----->
-<div id="slider-container">
-	<div class="cont">
-		<div class="frm_quote">
-			<h3>My Account</h3>
-			<a href="getaquote/intro.php" class="btn_4"><span>LOGIN</span></a>
-			<p>You are not a customer yet?</p>
-			<a href="getaquote/intro.php" class="btn_4"><span>GET A QUOTE</span></a>
-		</div>
-	</div>
-	<div class="fluid_container">
-        <div class="camera_wrap camera_emboss" id="camera_wrap_3">
-            <div data-src="camera/images/slides/1.jpg"></div>
-            <div data-src="camera/images/slides/2.jpg"></div>
-            <div data-src="camera/images/slides/3.jpg"></div>
-            <div data-src="camera/images/slides/4.jpg"></div>
-        </div><!-- #camera_wrap_3 -->
-    </div><!-- .fluid_container -->
+<!--- HEADER----->
+<div class="header section-econta">
+	<h1 class="wow animated fadeInLeft delay-02s">Titulo</h1>
+	<h3 class="wow animated fadeInRight delay-03s">Frase de subtitulo</h3>
 </div>
-<!--- TERMINA SLIDER ----->
+<!--- TERMINA HEADER----->
 <section class="main-section home-section-a"><!--main-section-start-->
 	<div class="container">
     	<h2>Commercial Truck Insurance</h2>
     	<h6>The Trucker's Insurance Company</h6>
     	<div class="col_4 left wow fadeInUp delay-02s">
     		<div class="bann">
-    			<img src="images/home/img-section-a-certificates.jpg" alt="">
-    			<h3>Certificates</h3>
-    			<p>You need to request a Certificate?</p>
-    			<a class="fancybox-certificate" href="javascript:;"><span><img src="images/cont/btn_certificate_a.gif" border="0"  alt="btn_certificate_a.gif (5,626 bytes)"></span></a>
+    			<img src="images/home/img-section-a.jpg" alt="">
+    			<h3>About Us</h3>
+    			<p>SoloTrucking is committed to helping individuals and businesses secure a healthy financial future...</p>
+    			<a href="aboutus.html" class="btn_1"><span>Read more</span></a>
     		</div>
     	</div>
     	<div class="col_4 left wow fadeInUp delay-03s">
     		<div class="bann">
     			<img src="images/home/img-section-a-lock.jpg" alt="">
     			<h3>Our Coverages</h3>
-    			<p>Know the products you offer, the best in all of Texas.</p>
-                <a href="products.html" class="btn_1"><span>Read more</span></a>  
+    			<ul>
+    				<li><a href="servises.html#physicaldamage"><strong>» </strong>Physical Damage.</a></li>
+    				<li><a href="servises.html#nontruckingliability"><strong>» </strong>Nontrucking Liability.</a></li>
+    			</ul>
     		</div>
     	</div>
     	<div class="col_4 left wow fadeInUp delay-04s">
@@ -106,8 +89,8 @@
     			<h3>My Account</h3>
     			<br>
     			<a href="system/login.php" class="btn_2"><span>LOGIN</span></a>
-    			<p style="height:auto!important;text-align:center;margin:0px auto;">You are not a customer yet?</p>
-    			<a href="getaquote/" class="btn_2"><span>GET A QUOTE</span></a>
+    			<p style="height:auto!important;text-align:center;margin:10px auto;">You are not a customer yet?</p>
+    			<a href="#" class="btn_2"><span>REGISTER</span></a>
     		</div>
     	</div><div class="col_4 left wow fadeInUp delay-05s">
     		<div class="bann">
@@ -131,72 +114,22 @@
 </section>
 
 
-<div class="container">
-<section class="main-section contact" id="contact">
-		<h2>Contact Us</h2>
-		<h6>Ask a question, tell a tale, or just say Hello!</h6>
-        <div class="row">
-        	<div class="col-lg-6 col-sm-5 wow fadeInUp delay-05s">
-            	<div class="form">
-            		<form method="POST" action="http://nlaredo.globalpc.net/cgi-bin/mailform" onsubmit="return FrontPage_Form1_Validator(this)">                	
-            		<input class="input-text" type="text" name="Name" value="Full Name: *" onfocus="if(this.value==this.defaultValue)this.value='';" onblur="if(this.value=='')this.value=this.defaultValue;">
-                    <input class="input-text" type="text" name="mailto" value="E-mail Address: *" onfocus="if(this.value==this.defaultValue)this.value='';" onblur="if(this.value=='')this.value=this.defaultValue;">
-                    <input class="input-text" type="text" name="Phone" value="Phone: *" onfocus="if(this.value==this.defaultValue)this.value='';" onblur="if(this.value=='')this.value=this.defaultValue;">   
-                	<textarea class="input-text text-area" cols="0" rows="0" onfocus="if(this.value==this.defaultValue)this.value='';" onblur="if(this.value=='')this.value=this.defaultValue;">Message *</textarea>
-                    <button class="btn_2 right" type="submit">SEND MESSAGE</button>
-                    	<input name="email" type="hidden" value="celina@globalpc.net, edwin@solo-trucking.com">
-						<input name="thanks" type="hidden" value="http://solotrucking.laredo2.net">
-                    	<input name="subject" type="hidden" value="Solo-Trucking - Contact Us">
-                    </form>
-                </div>	
-            </div>
-            <div class="col-lg-6 col-sm-7 wow fadeInLeft">
-            	<div class="contact-info-box">
-            		<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.908791946539!2d-99.49764990000003!3d27.56534099999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x866120f774ff0a3d%3A0x1a364af6872f3146!2s6909+Springfield+Ave+%23104%2C+Laredo%2C+TX+78041%2C+USA!5e0!3m2!1sen!2smx!4v1428645881060" width="400" height="200" frameborder="0" style="border:0"></iframe>
-            	</div>
-            	<div class="contact-info-box address clearfix">
-                	<h3><i class=" icon-map-marker"></i>Address:</h3>
-                	<span>6909 Springfield Ave., Ste. 104, Laredo TX.</span>
-                </div>
-                <div class="contact-info-box phone clearfix">
-                	<h3><i class="fa-phone"></i>Phone:</h3>
-                	<span>(956) 791.6511 / (956) 568.4340</span>
-                </div>
-                <div class="contact-info-box phone clearfix">
-                	<h3><i class="fa-mobile-phone"></i>Agent Phone:</h3>
-                	<span>(956) 568.4340</span>
-                </div>
-            	<div class="contact-info-box hours clearfix">
-                	<h3><i class="fa-clock-o"></i>Hours:</h3>
-                	<span><strong>Monday - Friday:</strong> 10am - 6pm</span>
-                </div>
-                <ul class="social-link">
-                	<li class="twitter"><a href="https://www.twitter.com/" target="_blank"><i class="fa-twitter"></i></a></li>
-                    <li class="facebook"><a href="https://www.facebook.com/" target="_blank"><i class="fa-facebook"></i></a></li>
-                    <li class="gplus"><a href="https://www.google.com/" target="_blank"><i class="fa-google-plus"></i></a></li>
-                    <li class="youtube"><a href="https://www.youtube.com/" target="_blank"><i class="fa-youtube"></i></a></li>
-                </ul>
-            </div>
-
-        </div>
-</section>
-</div>
 <div class="footer-line"></div>
 <footer class="footer">
     <div class="container">
     	 <div class="nav_foot">
-    	 	<a href="index.html" class="active">Home</a>    /    
+    	 	<a href="index2.html" class="active">Home</a>    /    
     	 	<a href="aboutus.html">About Us</a>    /    
     	 	<a href="products.html">Products</a>     /    
-    	 	<a href="system/login.php">Claims</a>     /    
-    	 	<a href="providers.html">Providers</a>     /    
+            <a href="system/login.php">Claims</a>     /    
+             <a href="providers.html">Providers</a>     /    
     	 	<a href="getaquote/intro.php">Get a Quote</a>    /    
-    	 	<a href="#contact">Contact Us</a>    
+    	 	<a href="index2.html#contact">Contact Us</a>    
     	 </div>
     	 <div class="nav_foot_2">
     	 <a href="terms_conditions.html">Terms & Conditions</a>  |   
     	 <a href="privacypolicy.html">Privacy Policy</a>  |   
-    	 <a href="faq.html">F.A.Q.</a></div>    
+    	 <a href="faq.html">F.A.Q.</a></div>   
     	    
    	</div>
 </footer>
@@ -296,6 +229,5 @@ $(window).load(function(){
 });
 
 </script>
-</div>
 </body>
 </html>
