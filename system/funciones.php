@@ -498,7 +498,7 @@
            while ($usuario = $result->fetch_assoc()) {
                if($usuario['hActivado']  == "0"){
                }else{
-                   $mensaje = "Error: user does not exist";
+                   $mensaje = "Error: your code has expired ";
                    $error = "1";
                }
                
