@@ -24,7 +24,7 @@
                 <br>
                 <ul>
                     <li><a href="#"><span>»</span>Get a Quote</a> </li>
-                    <li><a href="#" class="btn_2"><span>»</span>Consult One</a></li>
+                    <li><a href="#"><span>»</span>Consult One</a></li>
                 </ul>
             </div>
         </div>
@@ -39,10 +39,9 @@
         </div>
         </div>
 	</div>
-</div>
 <!---- FOOTER ----->
 <?php include("footer.php"); ?> 
-
+</div>
 </body>
 
 </html>
