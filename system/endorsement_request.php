@@ -90,7 +90,7 @@ function onInsertarCompania(){
              case "1":   alert(data.mensaje);
                     break;
              case "0":    
-                         alert("Your information has been successfully registered.");
+                         alert("The application for endorsement been performed successfully.");
                     break;  
              }
          }
@@ -154,6 +154,7 @@ function onInsertarCompania(){
             </div>
         </legend>
         <button id="add_chofer" class="btn_3 right">Add Chofer +</button> 
+        <br>
         <legend>Information for Units</legend>   
             <div class="field_item unit"> 
                 <input tabindex="1" id="year" name="UnitYear" type="text" placeholder="* Year:" maxlength="100">
