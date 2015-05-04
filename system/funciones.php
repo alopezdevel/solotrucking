@@ -1,4 +1,5 @@
 <?php 
+session_start();
   function array2json($arr) { 
     if(function_exists('json_encode')) return json_encode($arr); //Lastest versions of PHP already has this functionality.
     $parts = array(); 
@@ -524,6 +525,39 @@
       $conexion->close();
       
       $response = array("mensaje"=>"$mensaje","error"=>"$error");   
+      echo array2json($response);
+      
+  }
+  function validar_cliente_acceso(){
+      $correo = trim($_POST["usuario"]);
+      include("cn_usuarios.php");
+      //$conexion->begin_transaction();
+      $estatus = "";
+      $usuario = "";
+      $consecutivo = "";
+      $descripcion = "";
+      $conexion->autocommit(FALSE);
+      $transaccion_exitosa = true;
+      $error = "0";
+      $sql = "SELECT sUsuario, hActivado, iConsecutivo,  FROM cu_control_acceso WHERE sUsuario = '".$correo."' AND eTipoUsuario = 'C'   LOCK IN SHARE MODE";
+      $result = $conexion->query($sql);
+      $NUM_ROWs_Usuario = $result->num_rows;
+      if ($NUM_ROWs_Usuario > 0) {
+           while ($usuario = $result->fetch_assoc()) {
+               $estatus = $usuario['hActivado'];   
+               $usuario = $usuario['sUsuario'];
+               $consecutivo = $usuario['iConsecutivo'];
+               $descripcion = $usuario['sDescripcion'];             
+              
+           }
+          
+      }else{
+          $mensaje = "Error: user does not exist";
+          $error = "1";
+      }
+      $conexion->close();
+      
+      $response = array("mensaje"=>"$mensaje","error"=>"$error","descripcion"=>"$descripcion","consecutivo"=>"$consecutivo","usuario"=>"$usuario","estatus"=>"$estatus");   
       echo array2json($response);
       
   }

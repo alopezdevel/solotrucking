@@ -1,4 +1,4 @@
-﻿<!---- HEADER ----->
+<!---- HEADER ----->
 <?php include("header.php"); ?> 
     
     <!---- Fancybox -------->
@@ -6,6 +6,40 @@
     <script type="text/javascript" src="/fancybox/source/jquery.fancybox.js"></script>
     <link rel="stylesheet" type="text/css" href="/fancybox/source/jquery.fancybox.css" media="screen">
     <script type="text/javascript" src="/fancybox/fancy.js"></script>
+    <script> 
+    $(document).ready(inicio);
+    function inicio(){                                       
+        var usuario_actual = <?php echo json_encode($_SESSION['usuario_actual']);?>        
+        var tipo_usuario = <?php echo json_encode($_SESSION['eTipoUsuario']);?> 
+        if(tipo_usuario == "C"){
+            validarLoginCliente(usuario_actual);
+        }       
+        
+    }
+    function validarLoginCliente(usuario){
+        $.post("funciones.php", { accion: "validar_cliente_acceso", usuario: usuario},
+        function(data){ 
+            
+         if(data.error == "0"){
+             switch(data.estatus){                                                                                                
+                case "0":  
+                                    location.href= "login.php?";
+                                    break;
+                case "1":           location.href= "company_register.php?type=88e5542d2cd5b7f86cd6c204dc77fb523fb719071b2b08cfd7cbfbcadb365af1c8c9ba63";
+                                    break;
+                case "2":           
+                                    break;  
+             }
+         }else{
+             //error
+         }   
+         
+     }
+     ,"json");
+        
+        
+    }
+    </script>
      
 <div id="layer_content" class="main-section">
 	<div class="container">
