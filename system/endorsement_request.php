@@ -165,6 +165,7 @@ function onInsertarCompania(){
         </fieldset>  
             <br><br> 
             <button id="btn_register" type="button" class="btn_2" style="margin: 15px auto 0px;left: 50%;position: absolute;margin-left: -100px;">Create Endorsement</button>
+            <br><br> 
         </form>
     </div>
 
