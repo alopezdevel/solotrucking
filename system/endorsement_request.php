@@ -153,7 +153,7 @@ function onInsertarCompania(){
                 <div class="uploadfile"><label>Upload license copy (.PDF)</label><input id="copylicense" tabindex="5" name="CopyLicense" type="file"></div>     
             </div>
         </legend>
-        <button id="add_chofer" class="btn_2 right">Add Chofer +</button> 
+        <button id="add_chofer" class="btn_3 right">Add Chofer +</button> 
         <legend>Information for Units</legend>   
             <div class="field_item unit"> 
                 <input tabindex="1" id="year" name="UnitYear" type="text" placeholder="* Year:" maxlength="100">
@@ -162,8 +162,8 @@ function onInsertarCompania(){
                 <div class="uploadfile"><label>Upload Unit title copy (.PDF)</label><input id="copytitle" tabindex="5" name="CopyTitle" type="file"></div>
             </div>
         </fieldset>  
-            <button id="add_unit" class="btn_2 right">Add Unit +</button> 
-            <button id="btn_register" type="button" class="btn_3 center">Create Endorsement</button>
+            <button id="add_unit" class="btn_3 right">Add Unit +</button> 
+            <button id="btn_register" type="button" class="btn_2" style="margin: 15px auto 0px;left: 50%;position: absolute;margin-left: -100px;">Create Endorsement</button>
         </form>
     </div>
 
