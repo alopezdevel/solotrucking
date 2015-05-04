@@ -149,22 +149,21 @@ function onInsertarCompania(){
                 <input tabindex="1" id="chofer" name="Chofer" type="text" placeholder="* Chofer Name:" maxlength="100">
                 <input tabindex="2" id="fdn" name="Fdn" type="text" placeholder="* FDN:" maxlength="100"> 
                 <input tabindex="3" id="exp" name="Exp" type="text" placeholder="* EXP:" maxlength="100">  
-                <input tabindex="4" id="license" name="License" type="text" placeholder="* License number:" maxlength="100"> 
-                <label>Upload license copy (.PDF)</label><input id="copylicense" tabindex="5" name="CopyLicense" type="file">
-                
+                <input tabindex="4" id="license" name="License" type="text" placeholder="* License number:" maxlength="100">
+                <div class="uploadfile"><label>Upload license copy (.PDF)</label><input id="copylicense" tabindex="5" name="CopyLicense" type="file"></div>     
             </div>
         </legend>
-        <button id="add_chofer" class="btn_1">Add Chofer +</button> 
+        <button id="add_chofer" class="btn_2 right">Add Chofer +</button> 
         <legend>Information for Units</legend>   
             <div class="field_item unit"> 
                 <input tabindex="1" id="year" name="UnitYear" type="text" placeholder="* Year:" maxlength="100">
                 <input tabindex="2" id="model" name="Model" type="text" placeholder="* Model:" maxlength="100"> 
                 <input tabindex="3" id="vin" name="Vin" type="text" placeholder="* VIN Number:" maxlength="100">  
-                <label>Upload Unit title copy (.PDF)</label><input id="copytitle" tabindex="5" name="CopyTitle" type="file">
+                <div class="uploadfile"><label>Upload Unit title copy (.PDF)</label><input id="copytitle" tabindex="5" name="CopyTitle" type="file"></div>
             </div>
         </fieldset>  
-            <button id="add_unit" class="btn_1">Add Unit +</button> 
-            <button id="btn_register" type="button" class="btn-1">Create Endorsement</button>
+            <button id="add_unit" class="btn_2 right">Add Unit +</button> 
+            <button id="btn_register" type="button" class="btn_3 center">Create Endorsement</button>
         </form>
     </div>
 
