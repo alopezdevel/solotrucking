@@ -199,4 +199,11 @@ button:hover, .btn-1:hover{background-color:#61b1df;}
 	color:#ffffff;
 	background: #af0a0b;
 }
-
+.uploadfile{width:auto;}
+.uploadfile label{float: left;margin-right: 20px;vertical-align: middle;position: relative;top: 12px;}
+.uploadfile input{  
+    height: auto;
+    float: left;
+    width: auto;
+    clear: none;
+}
