@@ -53,13 +53,13 @@ session_start();
     $clave = trim($password);
     
     //validando query de acceso
-    $queryUsuario = "SELECT eTipoUsuario FROM cu_control_acceso WHERE sUsuario = '".$usuario."'  AND hActivado = '1' ";    
+    $queryUsuario = "SELECT eTipoUsuario FROM cu_control_acceso WHERE sUsuario = '".$usuario."'  AND hActivado in ( '1','2') ";    
     $resultadoUsuario = $conexion->query($queryUsuario);  
     $Usuario = $resultadoUsuario->fetch_array();
     $NUM_ROWs_Usuario = $resultadoUsuario->num_rows; 
     
     //validando query de acceso
-    $queryUsuarioAcceso = "SELECT eTipoUsuario FROM cu_control_acceso WHERE sUsuario = '".$usuario."' AND hClave = sha1('".$clave."') AND hActivado = '1' ";    
+    $queryUsuarioAcceso = "SELECT eTipoUsuario FROM cu_control_acceso WHERE sUsuario = '".$usuario."' AND hClave = sha1('".$clave."') AND hActivado in ( '1','2') ";    
     $resultadoUsuarioAcceso = $conexion->query($queryUsuarioAcceso);  
     $UsuarioAcceso = $resultadoUsuarioAcceso->fetch_array();
     $NUM_ROWs_Usuario_Acceso = $resultadoUsuarioAcceso->num_rows; 
