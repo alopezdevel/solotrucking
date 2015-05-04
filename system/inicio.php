@@ -1,3 +1,8 @@
+<?php session_start();    
+if ( !($_SESSION["acceso"] == 'C'  && $_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  )  ){ //No ha iniciado session, redirecciona a la pagina de login
+    header("Location: login.php");
+    exit;
+}else{ ?>
 <!---- HEADER ----->
 <?php include("header.php"); ?> 
     
@@ -8,18 +13,12 @@
     
     <script type="text/javascript" src="/fancybox/fancy.js"></script> 
     <script src="/js/jquery.blockUI.js" type="text/javascript"></script>
-    <script>              
+    <script>    
+            
     $(document).ready(inicio);
     function inicio(){ 
-        $("#layer_content").block({ message: $('#domMessage') ,css:{ 
-            border: 'none', 
-            padding: '15px', 
-            backgroundColor: '#000', 
-            '-webkit-border-radius': '10px', 
-            '-moz-border-radius': '10px', 
-            opacity: .5, 
-            color: '#fff' 
-        }});   
+       $.blockUI();
+        
         var usuario_actual = <?php echo json_encode($_SESSION['usuario_actual']);?>        
         var tipo_usuario = <?php echo json_encode($_SESSION['acceso']);?> 
         validapantalla(usuario_actual);
@@ -104,3 +103,4 @@
 </body>
 
 </html>
+<?php } ?>

@@ -3,7 +3,7 @@ session_start();
 session_unset();
 session_destroy();
 include("cn_usuarios.php");
-?>                       
+?>                     
 <script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script> 
 <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 <style>
@@ -53,8 +53,20 @@ function inicio(){
                     $("#loginUser").addClass( "error" );
                     $("#loginPassword").addClass( "error" );
                     actualizarMensajeAlerta("Error: The User " +  $("#loginUser").val() + " does not exist" );
+                   
+                     
+                     
+                     
+                     
+                     
+                     
+                     
+                     
+                     
+                     
                 break;
-         case "1":   location.href= "inicio.php?type=88e5542d2cd5b7f86cd6c204dc77fb523fb719071b2b08cfd7cbfbcadb365af1c8c9ba63";
+         case "1":   
+                     location.href= "inicio.php?type=88e5542d2cd5b7f86cd6c204dc77fb523fb719071b2b08cfd7cbfbcadb365af1c8c9ba63";
                 break;
          case "2":    $("#loginPassword").val("");
                     $("#loginPassword").focus();

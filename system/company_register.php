@@ -1,20 +1,29 @@
-﻿<!---- HEADER ----->
-<?php include("header.php"); ?> 
-<script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script> 
+<?php 
+session_start();    
+if ( !($_SESSION["acceso"] == 'C'  && $_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  )  ){ //No ha iniciado session, redirecciona a la pagina de login
+    header("Location: login.php");
+    exit;
+}else{
+?>
+<!---- HEADER ----->    
+<?php include("header.php"); ?>    
+<script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script>  
+ <script src="/js/jquery.blockUI.js" type="text/javascript"></script>       
 <script>
+$(window).load(inicioLoad);
+    function inicioLoad(){
+         //$.blockUI();                         
+    }  
 $(document).ready(inicio);
-function inicio(){
+function inicio(){    
     //variable 
     mensaje = $( ".mensaje_valido" );
     $("#btn_register").click(onInsertarCompania);
     cargarCountry();
-    cargarUserdata();
-    
-    
-    
+    //cargarUserdata();
 }
 function cargarCountry(){
-    //llenando select de estados:
+    //llenando select de estados:     
     $.post("funciones.php", { accion: "get_country"},
         function(data){ 
                 $("#country").append(data.tabla);
@@ -134,7 +143,7 @@ function onInsertarCompania(){
         return true;                     
     }                    
  }
-</script>
+</script>    
 <div id="layer_content" class="main-section">
     <div class="container">
         <div class="page-title">
@@ -178,3 +187,4 @@ function onInsertarCompania(){
 </body>
 
 </html>
+<?php }?>

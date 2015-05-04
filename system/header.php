@@ -10,7 +10,7 @@ session_start();
 <link rel="stylesheet" href="css/style_system.css" type="text/css">
 <link rel="shortcut icon" href="images/favicon.png" type="img/x-icon">
 </head>
-
+ 
 <body>
 <nav class="main-nav-outer" id="layer_menu"><!--main-nav-start-->
 	<div class="container">
