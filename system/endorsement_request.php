@@ -161,8 +161,9 @@ function onInsertarCompania(){
                 <input tabindex="3" id="vin" name="Vin" type="text" placeholder="* VIN Number:" maxlength="100">  
                 <div class="uploadfile"><label>Upload Unit title copy (.PDF)</label><input id="copytitle" tabindex="5" name="CopyTitle" type="file"></div>
             </div>
-        </fieldset>  
             <button id="add_unit" class="btn_3 right">Add Unit +</button> 
+        </fieldset>  
+            <br><br> 
             <button id="btn_register" type="button" class="btn_2" style="margin: 15px auto 0px;left: 50%;position: absolute;margin-left: -100px;">Create Endorsement</button>
         </form>
     </div>
