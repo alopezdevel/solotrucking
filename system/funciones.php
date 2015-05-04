@@ -539,7 +539,7 @@ session_start();
       $conexion->autocommit(FALSE);
       $transaccion_exitosa = true;
       $error = "0";
-      $sql = "SELECT sUsuario, hActivado, iConsecutivo,  FROM cu_control_acceso WHERE sUsuario = '".$correo."' AND eTipoUsuario = 'C'   LOCK IN SHARE MODE";
+      $sql = "SELECT sUsuario, hActivado, iConsecutivo  FROM cu_control_acceso WHERE sUsuario = '".$correo."' AND eTipoUsuario = 'C'   LOCK IN SHARE MODE";
       $result = $conexion->query($sql);
       $NUM_ROWs_Usuario = $result->num_rows;
       if ($NUM_ROWs_Usuario > 0) {

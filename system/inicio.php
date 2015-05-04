@@ -2,18 +2,30 @@
 <?php include("header.php"); ?> 
     
     <!---- Fancybox -------->
-    <script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script>   
+    <script src="/js/jquery.blockUI.js" type="text/javascript"></script>   
     <script type="text/javascript" src="/fancybox/source/jquery.fancybox.js"></script>
     <link rel="stylesheet" type="text/css" href="/fancybox/source/jquery.fancybox.css" media="screen">
+    <script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script>
     <script type="text/javascript" src="/fancybox/fancy.js"></script>   
-    <script> 
+    <script>          
+    $(document).ajaxStop($.unblockUI);           
     $(document).ready(inicio);
-    function inicio(){                                       
+    function inicio(){  
+        $.blockUI({ message: $('#domMessage') });                                     
         var usuario_actual = <?php echo json_encode($_SESSION['usuario_actual']);?>        
         var tipo_usuario = <?php echo json_encode($_SESSION['acceso']);?> 
         if(tipo_usuario == "C"){
             validarLoginCliente(usuario_actual);
-        }       
+        }  
+        $.blockUI({ css: { 
+            border: 'none', 
+            padding: '15px', 
+            backgroundColor: '#000', 
+            '-webkit-border-radius': '10px', 
+            '-moz-border-radius': '10px', 
+            opacity: .5, 
+            color: '#fff' 
+        } });      
         
     }
     function validarLoginCliente(usuario){
@@ -76,6 +88,9 @@
 <!---- FOOTER ----->
 <?php include("footer.php"); ?> 
 </div>
+<div id="domMessage" style="display:none;"> 
+    <h1>We are processing your request.  Please be patient.</h1> 
+</div> 
 </body>
 
 </html>
