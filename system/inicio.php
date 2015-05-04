@@ -5,12 +5,12 @@
     <script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script>   
     <script type="text/javascript" src="/fancybox/source/jquery.fancybox.js"></script>
     <link rel="stylesheet" type="text/css" href="/fancybox/source/jquery.fancybox.css" media="screen">
-    <script type="text/javascript" src="/fancybox/fancy.js"></script>
+    <script type="text/javascript" src="/fancybox/fancy.js"></script>   
     <script> 
     $(document).ready(inicio);
     function inicio(){                                       
         var usuario_actual = <?php echo json_encode($_SESSION['usuario_actual']);?>        
-        var tipo_usuario = <?php echo json_encode($_SESSION['eTipoUsuario']);?> 
+        var tipo_usuario = <?php echo json_encode($_SESSION['acceso']);?> 
         if(tipo_usuario == "C"){
             validarLoginCliente(usuario_actual);
         }       
