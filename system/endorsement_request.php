@@ -143,24 +143,28 @@ function onInsertarCompania(){
         </div>
         <form method="post" action="">
         <fieldset name="CompanyInformation">
-        <legend>Company Information</legend>
+        <legend>Information for drivers</legend>
             <p class="mensaje_valido">&nbsp;All form fields are required.</p>
             <div class="field_item chofer"> 
-                <input tabindex="1" id="chofer" name="ChoferName" type="text" placeholder="* Chofer Name:" maxlength="100">
+                <input tabindex="1" id="chofer" name="Chofer" type="text" placeholder="* Chofer Name:" maxlength="100">
                 <input tabindex="2" id="fdn" name="Fdn" type="text" placeholder="* FDN:" maxlength="100"> 
                 <input tabindex="3" id="exp" name="Exp" type="text" placeholder="* EXP:" maxlength="100">  
                 <input tabindex="4" id="license" name="License" type="text" placeholder="* License number:" maxlength="100"> 
                 <label>Upload license copy (.PDF)</label><input id="copylicense" tabindex="5" name="CopyLicense" type="file">
+                
             </div>
-            <button id="add_chofer" class="btn_1">Add Chofer +</button>    
-            <div class="field_item"> 
-                <input tabindex="7" id="phone" class="numb" name="phone1" type="tel" placeholder="* Primary Phone:" maxlength="10">
+        </legend>
+        <button id="add_chofer" class="btn_1">Add Chofer +</button> 
+        <legend>Information for Units</legend>   
+            <div class="field_item unit"> 
+                <input tabindex="1" id="year" name="UnitYear" type="text" placeholder="* Year:" maxlength="100">
+                <input tabindex="2" id="model" name="Model" type="text" placeholder="* Model:" maxlength="100"> 
+                <input tabindex="3" id="vin" name="Vin" type="text" placeholder="* VIN Number:" maxlength="100">  
+                <label>Upload Unit title copy (.PDF)</label><input id="copytitle" tabindex="5" name="CopyTitle" type="file">
             </div>
-            <div class="field_item"> 
-                <input tabindex="8" id="usdot" class="numb" name="usdot" type="text" placeholder="* USDOT#:" maxlength="10">
-            </div>
-            <button id="btn_register" type="button" class="btn-1">Create Account</button>
-        </fieldset>
+        </fieldset>  
+            <button id="add_unit" class="btn_1">Add Unit +</button> 
+            <button id="btn_register" type="button" class="btn-1">Create Endorsement</button>
         </form>
     </div>
 
