@@ -55,17 +55,22 @@ function inicio(){
         //variable 
         mensaje = $( ".mensaje_valido" );
         cargarCountry();
-        var accion = cargarUserdata(id_var , usuario_actual);
-        
-        if( accion == "C"){//create
+        cargarUserdata(id_var , usuario_actual);     
+       // $("#btn_register").click(onclick); 
+        $("#btn_register").click(function() { onInsertarCompania(id_var,$(this).val()); });        
+       /* if(  respuesta== "C"){//create
             //$("#btn_register").click(onInsertarCompania);
             $("#btn_register").bind("click",function() { onInsertarCompania(id_var); });
-        }else if(accion == "U"){//update
+        }else if(respuesta == "U"){//update
             //$("#btn_register").click(onActualizar);
             $("#btn_register").bind("click",function() { onActualizarCompania(id_var); });
-        }
+        }*/
         
         
+}
+function onclick(id,accion){
+    alert(accion);
+    
 }
 function cargarCountry(){
     //llenando select de estados:     
@@ -86,7 +91,6 @@ function cargarUserdata(id,usuario){
                         $("#mensaje_valido").text("CREATE");
                         $("#btn_register").val('C');
                         $("#address").focus(); 
-                        return "C"; 
                     }else if(data.estatus == "2"){
                         $("#name").val(data.user);
                         $("#email").val(data.correo);
@@ -99,9 +103,7 @@ function cargarUserdata(id,usuario){
                         $("#country").val(data.estado);
                         $("#address").focus();
                         $("#mensaje_valido").text("UPDATE")
-                        $("#btn_register").val('U');
-                        return "U";
-                        
+                        $("#btn_register").val('U');                        
                     }
                     
                     
@@ -113,14 +115,19 @@ function cargarUserdata(id,usuario){
          }
          ,"json"); 
 }
-function onInsertarCompania(id){
+function onInsertarCompania(id,accion){
     //Variables
     var address = $("#address");
     var city = $("#city");
     var zipcode = $("#zipcode");
     var country = $("#country");
     var phone = $("#phone");
-    var usdot = $("#usdot");  
+    var usdot = $("#usdot");
+    if(accion == "U"){
+        accion = "update_company"
+    }else if(accion = "C"){
+        accion = "add_company"
+    }  
     
     todosloscampos = $( [] ).add( address ).add( city ).add(zipcode).add(country).add(phone).add(usdot);
     todosloscampos.removeClass( "error" );
@@ -155,7 +162,7 @@ function onInsertarCompania(id){
     
     if ( valid ) {
         $.post("funciones.php", { 
-            accion: "add_company", 
+            accion: accion, 
             userid:id,  
             address: address.val(),
             city: city.val(),
@@ -177,71 +184,6 @@ function onInsertarCompania(id){
     }          
    
 }
-function onActualizarCompania(id){
-    //Variables
-    var address = $("#address");
-    var city = $("#city");
-    var zipcode = $("#zipcode");
-    var country = $("#country");
-    var phone = $("#phone");
-    var usdot = $("#usdot");  
-    
-    todosloscampos = $( [] ).add( address ).add( city ).add(zipcode).add(country).add(phone).add(usdot);
-    todosloscampos.removeClass( "error" );
-    
-    
-    $("#address").focus().css("background-color","#FFFFC0");
-    actualizarMensajeAlerta( "" ); 
-   
-    
-    //validaciones
-    var valid = true;
-    
-    //tamano
-    valid = valid && checkLength( address, "", 6, 25 );
-    //valid = valid && checkRegexp( address, /^[0-9]([0-9a-z_\s])+$/i, "Address of a-z, 0-9, underscores, spaces and must begin with a letter." );
-    
-    valid = valid && checkLength( country, ""); 
-    
-    valid = valid && checkLength( city, "City", 6, 25 );
-    valid = valid && checkRegexp( city, /^[a-z]([0-9a-z_\s])+$/i, "City name of a-z, 0-9, underscores, spaces and must begin with a letter." );
-    
-    valid = valid && checkLength( zipcode, "Zip Code", 1, 5 );
-    valid = valid && checkRegexp( zipcode, /^([1-9]{2}|[0-9][1-9]|[1-9][0-9])[0-9]{3}$/, "The zip code is not valid." );
-    
-    valid = valid && checkLength( phone, "Phone", 10, 10 );
-    valid = valid && checkRegexp( phone, /^[0-9-()+]{3,20}/, "Please enter a Phone number Valid: Must contain 0-9." );
-    
-    valid = valid && checkLength( usdot, "US DOT", 5, 6 );
-    valid = valid && checkRegexp( usdot, /^[0-9-()+]{3,20}/, "Please enter a US DOT number Valid: Must contain 0-9." );
-    //exp
-    
-    
-    if ( valid ) {
-        $.post("funciones.php", { 
-            accion: "update_company", 
-            userid:id,  
-            address: address.val(),
-            city: city.val(),
-            zipcode: zipcode.val(),
-            country: country.val(),
-            phone: phone.val(),
-            usdot: usdot.val()
-        },
-        function(data){ 
-             switch(data.error){
-             case "1":   alert(data.mensaje);
-                    break;
-             case "0":    
-                         alert("Your information has been successfully registered.");
-                    break;  
-             }
-         }
-         ,"json"); 
-    }          
-   
-}
-
 
  function onFocus(){
      $(this).css("background-color","#FFFFC0");
