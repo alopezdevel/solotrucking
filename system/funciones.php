@@ -539,15 +539,16 @@ session_start();
       $conexion->autocommit(FALSE);
       $transaccion_exitosa = true;
       $error = "0";
-      $sql = "SELECT sUsuario, hActivado, iConsecutivo  FROM cu_control_acceso WHERE sUsuario = '".$correo."' AND eTipoUsuario = 'C'   LOCK IN SHARE MODE";
+      $sql = "SELECT sUsuario, hActivado, iConsecutivo, sCodigoVal  FROM cu_control_acceso WHERE sUsuario = '".$correo."' AND eTipoUsuario = 'C'   LOCK IN SHARE MODE";
       $result = $conexion->query($sql);
       $NUM_ROWs_Usuario = $result->num_rows;
       if ($NUM_ROWs_Usuario > 0) {
            while ($usuario = $result->fetch_assoc()) {
                $estatus = $usuario['hActivado'];   
-               $usuario = $usuario['sUsuario'];
-               $consecutivo = $usuario['iConsecutivo'];
+               $user = $usuario['sUsuario'];
+               $consecutivo = $usuario['iConsecutivo'];  
                $descripcion = $usuario['sDescripcion'];             
+               $codigo = $usuario['sCodigoVal'];             
               
            }
           
@@ -555,9 +556,94 @@ session_start();
           $mensaje = "Error: user does not exist";
           $error = "1";
       }
-      $conexion->close();
+      $conexion->close();                                                                                                                           
       
-      $response = array("mensaje"=>"$mensaje","error"=>"$error","descripcion"=>"$descripcion","consecutivo"=>"$consecutivo","usuario"=>"$usuario","estatus"=>"$estatus");   
+      $response = array("mensaje"=>"$mensaje","error"=>"$error","consecutivo"=>"$consecutivo","estatus"=>"$estatus","codigo"=>"$codigo");   
+      echo array2json($response);
+      
+  }
+  function get_usuario(){
+      $correo = trim($_POST["usuario"]);
+      $id = trim($_POST["id"]);
+      include("cn_usuarios.php");
+      //$conexion->begin_transaction();
+      $estatus = "";
+      $usuario = "";
+      $consecutivo = "";
+      $descripcion = "";
+      $conexion->autocommit(FALSE);
+      $transaccion_exitosa = true;
+      $error = "0";
+      $sql = "SELECT sUsuario as correo, sDescripcion as 'user', hActivado as estatus  FROM cu_control_acceso  WHERE sUsuario = '".$correo."' AND eTipoUsuario = 'C' AND iConsecutivo = '".$id."'  LOCK IN SHARE MODE";
+      $result = $conexion->query($sql);
+      $NUM_ROWs_Usuario = $result->num_rows;
+      if ($NUM_ROWs_Usuario > 0) {
+          
+           while ($usuario = $result->fetch_assoc()) {
+               $correo = $usuario['correo'];   
+               $user = $usuario['user'];              
+               $estatus = $usuario['estatus'];
+               $direccion = "";
+               $ciudad = "";
+               $estado = "";                  
+               $codigo_postal = ""; 
+               $telefono_principal = "";
+               $usdot = "";              
+              
+           }
+          
+      }else{
+          $mensaje = "Error: user does not exist";
+          $error = "1";
+      }
+      if($estatus == "2" && $error == "0"){
+          $sql = "";
+          $sql = "SELECT sUsuario as correo, 
+                         sDescripcion as 'user',
+                         hActivado as estatus_actual,
+                         ct_companias.sDireccion as 'direccion',    
+                         ct_companias.sCiudad as 'ciudad',    
+                         ct_companias.sEstado as 'estado',    
+                         ct_companias.sCodigoPostal as 'codigo_postal',    
+                         ct_companias.sTelefonoPrincipal as 'telefono_principal',    
+                         ct_companias.sUsdot as 'usdot'    
+                  FROM cu_control_acceso LEFT JOIN  ct_companias ON  cu_control_acceso.iConsecutivo = ct_companias.iConsecutivoAcceso WHERE sUsuario = '".$correo."' AND eTipoUsuario = 'C' AND cu_control_acceso.iConsecutivo = '".$id."'  LOCK IN SHARE MODE";
+          $resultGeneral = $conexion->query($sql);
+          $NUM_ROWs_Usuario_General = $resultGeneral->num_rows;
+          if ($NUM_ROWs_Usuario_General > 0) {   
+          $usuario = NULL;    
+           while ($usuario = $resultGeneral->fetch_assoc()) {
+               $correo = $usuario['correo'];   
+               $user = $usuario['user'];              
+               $estatus = $usuario['estatus_actual'];  
+               //compania
+               $direccion = $usuario['direccion'];
+               $ciudad = $usuario['ciudad'];
+               $estado = $usuario['estado'];                  
+               $codigo_postal = $usuario['codigo_postal']; 
+               $telefono_principal = $usuario['telefono_principal'];
+               $usdot = $usuario['usdot'];                                      
+           }          
+          }else{
+            $mensaje = "Error: user does not exist";
+            $error = "1";
+          }
+      }
+      
+      $conexion->close();                                                                                                                           
+      
+      $response = array("mensaje"=>"$mensaje",
+                        "error"=>"$error",
+                        "correo"=>"$correo",
+                        "user"=>"$user",
+                        "estatus"=>"$estatus",
+                        "direccion"=>"$direccion",
+                        "ciudad"=>"$ciudad",
+                        "estado"=>"$estado",
+                        "codigo_postal"=>"$codigo_postal",
+                        "telefono_principal"=>"$telefono_principal",
+                        "usdot"=>"$usdot",
+                        );   
       echo array2json($response);
       
   }

@@ -10,23 +10,88 @@ if ( !($_SESSION["acceso"] == 'C'  && $_SESSION["usuario_actual"] != "" && $_SES
 <script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script>  
  <script src="/js/jquery.blockUI.js" type="text/javascript"></script>       
 <script>
-$(window).load(inicioLoad);
-    function inicioLoad(){
-         //$.blockUI();                         
-    }  
 $(document).ready(inicio);
-function inicio(){    
-    //variable 
-    mensaje = $( ".mensaje_valido" );
-    $("#btn_register").click(onInsertarCompania);
-    cargarCountry();
-    //cargarUserdata();
+function inicio(){ 
+        //focus
+        $("#address").focus(onFocus);
+        $("#city").focus(onFocus);
+        $("#zipcode").focus(onFocus);
+        $("#country").focus(onFocus);
+        $("#phone").focus(onFocus);
+        $("#usdot").focus(onFocus);
+        //blur
+        $("#address").blur(onBlur);
+        $("#city").blur(onBlur);
+        $("#zipcode").blur(onBlur);
+        $("#country").blur(onBlur);
+        $("#phone").blur(onBlur);
+        $("#usdot").blur(onBlur); 
+        //codigo
+         var usuario_actual = <?php echo json_encode($_SESSION['usuario_actual']);?>  
+        $.get = function(key)   {  
+            key = key.replace(/[\[]/, '\\[');  
+            key = key.replace(/[\]]/, '\\]');  
+            var pattern = "[\\?&]" + key + "=([^&#]*)";  
+            var regex = new RegExp(pattern);  
+            var url = unescape(window.location.href);  
+            var results = regex.exec(url);  
+            if (results === null) {  
+                return null;  
+            } else {  
+                return results[1];  
+            }  
+        }  
+        var code = $.get("ref");
+       
+        var div = code.indexOf("_");  
+        var total_ref = code.substring(0, div); 
+        var total_suma = 10 + total_ref; 
+        var codigo_bruto = code.substring(div+1);    
+        var id_var = codigo_bruto.substring(10); 
+        
+        //variable 
+        mensaje = $( ".mensaje_valido" );
+        $("#btn_register").click(onInsertarCompania);
+        cargarCountry();
+        cargarUserdata(id_var , usuario_actual);
 }
 function cargarCountry(){
     //llenando select de estados:     
     $.post("funciones.php", { accion: "get_country"},
         function(data){ 
                 $("#country").append(data.tabla);
+         }
+         ,"json"); 
+}
+function cargarUserdata(id,usuario){
+    //llenando select de estados:     
+    $.post("funciones.php", { accion: "get_usuario", usuario: usuario, id: id},
+        function(data){
+                if(data.error == "0"){
+                    if(data.estatus == "1"){
+                        $("#name").val(data.user);
+                        $("#email").val(data.correo);
+                        $("#address").focus();
+                    }else if(data.estatus == "2"){
+                        $("#name").val(data.user);
+                        $("#email").val(data.correo);
+                        //compania
+                        $("#address").val(data.direccion);
+                        $("#city").val(data.ciudad);
+                        $("#phone").val(data.telefono_principal);
+                        $("#zipcode").val(data.codigo_postal);
+                        $("#usdot").val(data.usdot);
+                        $("#country").val(data.estado);
+                        $("#address").focus();
+                        
+                    }
+                    
+                    
+                }else{
+                    location.href= "login.php";
+                } 
+                
+                
          }
          ,"json"); 
 }
@@ -45,20 +110,7 @@ function onInsertarCompania(){
     
     $("#address").focus().css("background-color","#FFFFC0");
     actualizarMensajeAlerta( "" ); 
-    //focus
-    $("#address").focus(onFocus);
-    $("#city").focus(onFocus);
-    $("#zipcode").focus(onFocus);
-    $("#country").focus(onFocus);
-    $("#phone").focus(onFocus);
-    $("#usdot").focus(onFocus);
-    //blur
-    $("#address").blur(onBlur);
-    $("#city").blur(onBlur);
-    $("#zipcode").blur(onBlur);
-    $("#country").blur(onBlur);
-    $("#phone").blur(onBlur);
-    $("#usdot").blur(onBlur);
+   
     
     //validaciones
     var valid = true;

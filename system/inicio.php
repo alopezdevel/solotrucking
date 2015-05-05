@@ -45,10 +45,18 @@ if ( !($_SESSION["acceso"] == 'C'  && $_SESSION["usuario_actual"] != "" && $_SES
                 case "0":  
                                     //location.href= "login.php";
                                     break;
-                case "1":           location.href= "company_register.php?type=88e5542d2cd5b7f86cd6c204dc77fb523fb719071b2b08cfd7cbfbcadb365af1c8c9ba63";
-                                    $("#layer_content").unblock(); 
+                                    
+                case "1":           $.unblockUI();                          
+                                    codigo_1 = data.codigo.substring(0, 10);
+                                    codigo_2 = data.codigo.substring(5, 15);
+                                    total_len = data.consecutivo.length;
+                                    location.href= "company_register.php?ref="+ total_len + '_'  +  codigo_1 +  data.consecutivo;                                    
                                     break;
-                case "2":          $("#layer_content").unblock();  
+                case "2":          $.unblockUI();                          
+                                    /*codigo_1 = data.codigo.substring(0, 10);
+                                    codigo_2 = data.codigo.substring(5, 15);
+                                    total_len = data.consecutivo.length;
+                                    location.href= "company_register.php?ref="+ total_len + '_'  +  codigo_1 +  data.consecutivo;  */
                                     break;  
              }
          }else{
