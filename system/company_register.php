@@ -8,7 +8,10 @@ if ( !($_SESSION["acceso"] == 'C'  && $_SESSION["usuario_actual"] != "" && $_SES
 <!---- HEADER ----->    
 <?php include("header.php"); ?>    
 <script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script>  
- <script src="/js/jquery.blockUI.js" type="text/javascript"></script>       
+ <script src="/js/jquery.blockUI.js" type="text/javascript"></script> 
+ <style>
+    .mensaje_valido { border: .5px solid transparent; padding: 0.1em; }
+</style>      
 <script>
 $(document).ready(inicio);
 function inicio(){ 
@@ -51,9 +54,18 @@ function inicio(){
         
         //variable 
         mensaje = $( ".mensaje_valido" );
-        $("#btn_register").click(onInsertarCompania);
         cargarCountry();
-        cargarUserdata(id_var , usuario_actual);
+        var accion = cargarUserdata(id_var , usuario_actual);
+        
+        if( accion == "C"){//create
+            //$("#btn_register").click(onInsertarCompania);
+            $("#btn_register").bind("click",function() { onInsertarCompania(id_var); });
+        }else if(accion == "U"){//update
+            //$("#btn_register").click(onActualizar);
+            $("#btn_register").bind("click",function() { onActualizarCompania(id_var); });
+        }
+        
+        
 }
 function cargarCountry(){
     //llenando select de estados:     
@@ -71,7 +83,10 @@ function cargarUserdata(id,usuario){
                     if(data.estatus == "1"){
                         $("#name").val(data.user);
                         $("#email").val(data.correo);
-                        $("#address").focus();
+                        $("#mensaje_valido").text("CREATE");
+                        $("#btn_register").val('C');
+                        $("#address").focus(); 
+                        return "C"; 
                     }else if(data.estatus == "2"){
                         $("#name").val(data.user);
                         $("#email").val(data.correo);
@@ -83,6 +98,9 @@ function cargarUserdata(id,usuario){
                         $("#usdot").val(data.usdot);
                         $("#country").val(data.estado);
                         $("#address").focus();
+                        $("#mensaje_valido").text("UPDATE")
+                        $("#btn_register").val('U');
+                        return "U";
                         
                     }
                     
@@ -95,7 +113,7 @@ function cargarUserdata(id,usuario){
          }
          ,"json"); 
 }
-function onInsertarCompania(){
+function onInsertarCompania(id){
     //Variables
     var address = $("#address");
     var city = $("#city");
@@ -138,7 +156,71 @@ function onInsertarCompania(){
     if ( valid ) {
         $.post("funciones.php", { 
             accion: "add_company", 
-            userid:"15",  
+            userid:id,  
+            address: address.val(),
+            city: city.val(),
+            zipcode: zipcode.val(),
+            country: country.val(),
+            phone: phone.val(),
+            usdot: usdot.val()
+        },
+        function(data){ 
+             switch(data.error){
+             case "1":   alert(data.mensaje);
+                    break;
+             case "0":    
+                         alert("Your information has been successfully registered.");
+                    break;  
+             }
+         }
+         ,"json"); 
+    }          
+   
+}
+function onActualizarCompania(id){
+    //Variables
+    var address = $("#address");
+    var city = $("#city");
+    var zipcode = $("#zipcode");
+    var country = $("#country");
+    var phone = $("#phone");
+    var usdot = $("#usdot");  
+    
+    todosloscampos = $( [] ).add( address ).add( city ).add(zipcode).add(country).add(phone).add(usdot);
+    todosloscampos.removeClass( "error" );
+    
+    
+    $("#address").focus().css("background-color","#FFFFC0");
+    actualizarMensajeAlerta( "" ); 
+   
+    
+    //validaciones
+    var valid = true;
+    
+    //tamano
+    valid = valid && checkLength( address, "", 6, 25 );
+    //valid = valid && checkRegexp( address, /^[0-9]([0-9a-z_\s])+$/i, "Address of a-z, 0-9, underscores, spaces and must begin with a letter." );
+    
+    valid = valid && checkLength( country, ""); 
+    
+    valid = valid && checkLength( city, "City", 6, 25 );
+    valid = valid && checkRegexp( city, /^[a-z]([0-9a-z_\s])+$/i, "City name of a-z, 0-9, underscores, spaces and must begin with a letter." );
+    
+    valid = valid && checkLength( zipcode, "Zip Code", 1, 5 );
+    valid = valid && checkRegexp( zipcode, /^([1-9]{2}|[0-9][1-9]|[1-9][0-9])[0-9]{3}$/, "The zip code is not valid." );
+    
+    valid = valid && checkLength( phone, "Phone", 10, 10 );
+    valid = valid && checkRegexp( phone, /^[0-9-()+]{3,20}/, "Please enter a Phone number Valid: Must contain 0-9." );
+    
+    valid = valid && checkLength( usdot, "US DOT", 5, 6 );
+    valid = valid && checkRegexp( usdot, /^[0-9-()+]{3,20}/, "Please enter a US DOT number Valid: Must contain 0-9." );
+    //exp
+    
+    
+    if ( valid ) {
+        $.post("funciones.php", { 
+            accion: "update_company", 
+            userid:id,  
             address: address.val(),
             city: city.val(),
             zipcode: zipcode.val(),
@@ -228,7 +310,7 @@ function onInsertarCompania(){
             <div class="field_item"> 
                 <input tabindex="8" id="usdot" class="numb" name="usdot" type="text" placeholder="* USDOT#:" maxlength="10">
             </div>
-            <button id="btn_register" type="button" class="btn-1">Create Account</button>
+            <button id="btn_register" type="button" class="btn-1" ><p id="mensaje_valido" font size="6" ></p></button>
         </fieldset>
         </form>
     </div>
