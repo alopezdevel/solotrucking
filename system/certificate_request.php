@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 <script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script> 
 <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
     <!---- Fancybox -------->
@@ -5,9 +6,29 @@
     <script type="text/javascript" src="../fancybox/source/jquery.fancybox.js"></script>
     <link rel="stylesheet" type="text/css" href="../fancybox/source/jquery.fancybox.css" media="screen">
      <script type="text/javascript" src="../fancybox/fancy.js"></script>
-     
+     <link rel="stylesheet" href="/resources/demos/style.css">
 <script type="text/javascript">                 
-function llenadoGrid(){      
+function llenadoGrid(){
+    var filtro = "";  //DATE_FORMAT(dFechaIngreso,  '%m/%d/%Y')         
+    if($('#filtro_CreatedDate').val() !=""){     
+        filtro += "DATE_FORMAT(dFechaIngreso,  '%m/%d/%Y')|" + $("#filtro_CreatedDate").val() + ",*"
+    }
+    if($('#filtro_InsuredName').val() !=""){     
+        filtro += "sInnsuredName|" + $("#filtro_InsuredName").val() + ",*"
+    }
+    if($('#filtro_email').val() !=""){     
+        filtro += "email|" + $("#filtro_email").val() + ",*"
+    }
+    if($('#filtro_CertificateHolder').val() !=""){     
+        filtro += "sCholder|" + $("#filtro_CertificateHolder").val() + ",*"
+    }     
+    if($('#filtro_DescriptionOperations').val() !=""){     
+        filtro += "sDescription|" + $("#filtro_DescriptionOperations").val() + ",*"
+    }
+    if($('#filtro_SendingDate').val() !=""){     
+        filtro += "DATE_FORMAT(dFechaArchivo,  '%m/%d/%Y')|" + $("#filtro_SendingDate").val() + ",*"
+    }
+    
         var fn_request_certificate = {
         domroot:"#fn_request_certificate",
         data_grid: "#data_grid_certificate",
@@ -15,7 +36,7 @@ function llenadoGrid(){
                $.ajax({             
                 type:"POST", 
                 url:"funciones.php", 
-                data:{accion:"get_request_certificate"},
+                data:{accion:"get_request_certificate", filtroInformacion : filtro},
                 async : true,
                 dataType : "json",
                 success : function(data){                               
@@ -38,9 +59,27 @@ function llenadoGrid(){
 <?php include("header.php"); ?> 
 <script> 
 $(document).ready(inicio);
-function inicio(){   
-
+function inicio(){    
+    
+    $(".date").datepicker({
+  onSelect: function() {
+    $(this).change();
+  }
+});                                                                                    
+    //fechas
+    $( "#filtro_CreatedDate" ).datepicker({onSelect: function(){ onkeyup()}});
+    $( "#filtro_SendingDate" ).datepicker({onSelect: function(){ onkeyup()}});
+    //filtros
+    $( "#filtro_CreatedDate" ).keyup(onkeyup);
+    $( "#filtro_SendingDate" ).keyup(onkeyup);
+    $("#filtro_InsuredName").keyup(onkeyup);
+    $("#filtro_email").keyup(onkeyup);           
+    $("#filtro_CertificateHolder").keyup(onkeyup);
+    $("#filtro_DescriptionOperations").keyup(onkeyup);
     llenadoGrid();  
+}
+function onkeyup(){
+    llenadoGrid();
 }
 </script>
 <div id="layer_content" class="main-section">
@@ -50,13 +89,25 @@ function inicio(){
             <h2>Requests of Certificates</h2>
         </div>
         <table id="data_grid_certificate" class="data_grid">
-        <thead id="grid-head2">
-            <tr>
-                <td class="etiqueta_grid">Insured Name</td>
-                <td class="etiqueta_grid">E-mail</td>
-                <td class="etiqueta_grid">Certificate Holder</td>
-                <td class="etiqueta_grid">Description of Operations</td>
-                <td class="etiqueta_grid">Status</td>
+        <thead id="grid-head2">                                                                                       
+            <tr>                            
+                <td align="center" class="etiqueta_grid" nowrap="nowrap" ><input class="inp"  id="filtro_CreatedDate" type="text"></td>
+                <td align="center" class="etiqueta_grid"><input class="inp"  id="filtro_InsuredName" type="text"></td>
+                <td align="center" class="etiqueta_grid"><input class="inp"  id="filtro_email" type="text"></td>
+                <td align="center" class="etiqueta_grid"><input class="inp"  id="filtro_CertificateHolder" type="text"></td>
+                <td align="center" class="etiqueta_grid"><input class="inp"  id="filtro_DescriptionOperations" type="text"></td>
+                <td align="center" class="etiqueta_grid"><input class="inp"  id="filtro_Status" type="text"></td>
+                <td align="center" class="etiqueta_grid" nowrap="nowrap"><input class="inp"  id="filtro_SendingDate" type="text"></td>
+                <td></td> 
+            </tr>
+            <tr>                            
+                <td align="center" class="etiqueta_grid" nowrap="nowrap" >Created Date</td>
+                <td align="center" class="etiqueta_grid">Insured Name</td>
+                <td align="center" class="etiqueta_grid">E-mail</td>
+                <td align="center" class="etiqueta_grid">Certificate Holder</td>
+                <td align="center" class="etiqueta_grid">Description of Operations</td>
+                <td align="center" class="etiqueta_grid">Status</td>
+                <td align="center" class="etiqueta_grid" nowrap="nowrap">Sending Date </td>
                 <td></td> 
             </tr>
         </thead>

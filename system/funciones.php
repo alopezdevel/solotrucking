@@ -348,27 +348,46 @@ session_start();
         $error = "1";
      }
 }
-  function get_request_certificate(){   
-  //error_reporting(E_ALL);
-  //ini_set('display_errors', '1');
-   
+  function get_request_certificate(){    
     include("cn_usuarios.php");
     //$conexion->begin_transaction();
     $conexion->autocommit(FALSE);
     $transaccion_exitosa = true;
-    $sql = "SELECT sInnsuredName as insuredname,email,sCholder as cholder, sDescription as description, eEstatus FROM cb_certificate ";
+    $array_filtros = explode(",*",$_POST["filtroInformacion"]); 
+    $filtroQuery .= " WHERE cb_certificate.iConsecutivo != '' ";  
+    foreach($array_filtros as $key => $valor){
+        if($array_filtros[$key] != ""){
+            $campo_valor = explode("|",$array_filtros[$key]);
+            if ($campo_valor[0] =='iConsecutivo'){
+                    $filtroQuery.= " AND  ".$campo_valor[0]."='".$campo_valor[1]."' ";
+            }else{
+                    $filtroQuery == "" ? $filtroQuery.= " AND  ".$campo_valor[0]." LIKE '%".$campo_valor[1]."%'": $filtroQuery.= " AND ".$campo_valor[0]." LIKE '%".$campo_valor[1]."%'";
+            }
+        }
+    }
+    
+    $sql = "SELECT sInnsuredName as insuredname,
+            email,
+            sCholder as cholder, 
+            sDescription as description,
+            CASE WHEN  eEstatus = '0' THEN 'In Process'  ELSE 'Complete' END  as eEstatus,
+            DATE_FORMAT(dFechaIngreso,  '%m/%d/%Y')    as dFechaIngreso, 
+            DATE_FORMAT(dFechaArchivo,  '%m/%d/%Y')    as dFechaArchivo 
+            FROM cb_certificate ".$filtroQuery;
     $result = $conexion->query($sql);
     $NUM_ROWs_Certificates = $result->num_rows;    
     if ($NUM_ROWs_Certificates > 0) {
         //$items = mysql_fetch_all($result);      
         while ($certificates = $result->fetch_assoc()) {
            if($certificates["insuredname"] != ""){
-                 $htmlTabla .= "<tr>
-                                    <td>".$certificates['insuredname']."</td>".
+                 $htmlTabla .= "<tr>                            
+                                    <td>".$certificates['dFechaIngreso']."</td>".
+                                   "<td>".$certificates['insuredname']."</td>".
                                    "<td>".$certificates['email']."</td>".
                                    "<td>".$certificates['cholder']."</td>".
-                                   "<td>".$certificates['description']."</td>".  
-                                   "<td>".$certificates['eEstatus']."</td>". 
+                                   "<td >".$certificates['description']."</td>".  
+                                   "<td nowrap='nowrap'>".$certificates['eEstatus']."</td>". 
+                                   "<td nowrap='nowrap'>".$certificates['dFechaArchivo']."</td>". 
                                    "<td><div class=\"btn-icon ico-email-fwd\" title=\"Send Certificate\"><span></span></div>".
                                    "<div class=\"btn-icon ico-delete\" title=\"Delete Request\"><span></span></div></td>".  
                                 "</tr>"   ;
@@ -400,7 +419,7 @@ session_start();
         
     }
     $html_tabla = utf8_encode($html_tabla); 
-     $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
+     $response = array("mensaje"=>"$sql","error"=>"$error","tabla"=>"$htmlTabla");   
      echo array2json($response);
 }  
   function get_country(){   
@@ -456,6 +475,12 @@ session_start();
     if ($NUM_ROWs_Usuario > 0) {
         
         $sql = "INSERT INTO ct_companias SET  sDireccion = '".$address."', sCiudad = '".$city."', sEstado = '".$country."', sCodigoPostal = '".$zipcode."', sTelefonoPrincipal = '".$phone."', sUsdot = '".$usdot."', iConsecutivoAcceso = '".$userid."'";
+        $conexion->query($sql);   
+        if ($conexion->affected_rows < 1 ) {
+            $error = "1";
+            $mensaje= "Internal Error, Failed to verify the account. Please report to Administrator";
+        } 
+        $sql = "UPDATE cu_control_acceso SET hActivado = '2' WHERE iConsecutivo = '".$userid."'  ";
         $conexion->query($sql);   
         if ($conexion->affected_rows < 1 ) {
             $error = "1";

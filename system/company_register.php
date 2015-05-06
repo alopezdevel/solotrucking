@@ -51,21 +51,12 @@ function inicio(){
         var total_suma = 10 + total_ref; 
         var codigo_bruto = code.substring(div+1);    
         var id_var = codigo_bruto.substring(10); 
-        
-        //variable 
+        aUpdateAccount
+        //variable    
         mensaje = $( ".mensaje_valido" );
         cargarCountry();
         cargarUserdata(id_var , usuario_actual);     
-       // $("#btn_register").click(onclick); 
-        $("#btn_register").click(function() { onInsertarCompania(id_var,$(this).val()); });        
-       /* if(  respuesta== "C"){//create
-            //$("#btn_register").click(onInsertarCompania);
-            $("#btn_register").bind("click",function() { onInsertarCompania(id_var); });
-        }else if(respuesta == "U"){//update
-            //$("#btn_register").click(onActualizar);
-            $("#btn_register").bind("click",function() { onActualizarCompania(id_var); });
-        }*/
-        
+        $("#btn_register").click(function() { onInsertarCompania(id_var,$(this).val()); });         
         
 }
 function onclick(id,accion){
@@ -109,6 +100,7 @@ function cargarUserdata(id,usuario){
                     
                 }else{
                     location.href= "login.php";
+                    $.blockUI();
                 } 
                 
                 
@@ -177,6 +169,8 @@ function onInsertarCompania(id,accion){
                     break;
              case "0":    
                          alert("Your information has been successfully registered.");
+                         location.href= "inicio.php";
+                         $.blockUI();
                     break;  
              }
          }

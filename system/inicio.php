@@ -18,14 +18,13 @@ if ( !($_SESSION["acceso"] == 'C'  && $_SESSION["usuario_actual"] != "" && $_SES
     $(document).ready(inicio);
     function inicio(){ 
        $.blockUI();
-        
         var usuario_actual = <?php echo json_encode($_SESSION['usuario_actual']);?>        
         var tipo_usuario = <?php echo json_encode($_SESSION['acceso']);?> 
         validapantalla(usuario_actual);
         if(tipo_usuario == "C"){
             validarLoginCliente(usuario_actual);
         }  
-        
+        $("#aUpdateAccount").click(function() { actualizarCliente(usuario_actual); });         
         
     }                                                                              
     function validapantalla(usuario){
@@ -35,6 +34,24 @@ if ( !($_SESSION["acceso"] == 'C'  && $_SESSION["usuario_actual"] != "" && $_SES
         }
         
     }
+    
+    function actualizarCliente(usuario){
+        $.post("funciones.php", { accion: "validar_cliente_acceso", usuario: usuario},
+        function(data){ 
+                                // 
+         if(data.error == "0"){
+             codigo_1 = data.codigo.substring(0, 10);
+             codigo_2 = data.codigo.substring(5, 15);
+             total_len = data.consecutivo.length;
+             location.href= "company_register.php?ref="+ total_len + '_'  +  codigo_1 +  data.consecutivo;
+         }else{
+             //error
+         }   
+         
+     }
+     ,"json");
+    }
+    
     function validarLoginCliente(usuario){
         //$.blockUI({ message: $('#domMessage') });
         $.post("funciones.php", { accion: "validar_cliente_acceso", usuario: usuario},
@@ -57,7 +74,8 @@ if ( !($_SESSION["acceso"] == 'C'  && $_SESSION["usuario_actual"] != "" && $_SES
                                     codigo_2 = data.codigo.substring(5, 15);
                                     total_len = data.consecutivo.length;
                                     location.href= "company_register.php?ref="+ total_len + '_'  +  codigo_1 +  data.consecutivo;  */
-                                    break;  
+                                    break;
+                 
              }
          }else{
              //error

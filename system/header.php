@@ -19,10 +19,10 @@ session_start();
 			<li class="top-submenu"><a href="#" class="icon user" title="Log In"><span><?php echo $_SESSION["usuario_actual"]?></span></a>
                 <ul>
                     <li><a href="#">Change password</a></li>
-                    <li><a href="#">Update account Information</a></li>
+                    <li><a  id="aUpdateAccount" href="#">Update account Information</a></li>
                 </ul>
             </li>
-			<li><a href="#" class="icon logout"title="Log Out"><span>Log Out</span></a></li>
+			<li><a href="login.php" class="icon logout"title="Log Out"><span>Log Out</span></a></li>
 		</ul>
         <ul class="main-nav">
         	<li><a href="inicio.php">Home</a></li>
