@@ -41,7 +41,7 @@ session_start();
         	</li>
             <li class="submenu"><a href="#">Endorsements</a>
             	<ul>
-        			<li><a href=endorsement_request.php">Request an Endorsement</a></li>
+        			<li><a href="endorsement_request.php">Request an Endorsement</a></li>
         		</ul>
             </li>
             <li class="submenu"><a href="#">Certificates</a>
