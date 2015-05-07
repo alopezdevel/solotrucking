@@ -146,9 +146,9 @@ function onInsertarCompania(){
         <fieldset name="DriversInformation">
         <legend>Type of insurance policy</legend>
         <div class="center txt-center">
-        	<div class="left col_3"><input name="policytype" type="radio" value="1"><label>Physical Damage</label></div>
-        	<div class="left col_3"><input name="policytype" type="radio" value="2"><label>Motor Truck Cargo</label></div>
-			<div class="left col_3"><input name="policytype" type="radio" value="3"><label>Auto Liability</label></div>
+        	<div class="left col_3"><input name="policytype" type="radio" value="1"><label class="lbl-radio">Physical Damage</label></div>
+        	<div class="left col_3"><input name="policytype" type="radio" value="2"><label class="lbl-radio">Motor Truck Cargo</label></div>
+			<div class="left col_3"><input name="policytype" type="radio" value="3"><label class="lbl-radio">Auto Liability</label></div>
         </div>
         </fieldset>
         <fieldset name="DriversInformation">
