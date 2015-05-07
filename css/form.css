@@ -70,7 +70,7 @@ textarea{height:120px!important;padding-top:10px!important;}
 button, .btn-1{
     
     background-color:#5e8bd4;
-    text-shadow:1px 1px 1px rgba(0,0,0,0.8);
+    text-shadow:1px 1px 1px rgba(0,0,0,0.3);
     border-radius:4px;
     -moz-border-radius:4px;
     -webkit-border-radius:4px;
