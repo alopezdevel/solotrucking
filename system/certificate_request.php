@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/cupertino/jquery-ui.css">
 <script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script> 
 <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
     <!---- Fancybox -------->
@@ -6,7 +6,9 @@
     <script type="text/javascript" src="../fancybox/source/jquery.fancybox.js"></script>
     <link rel="stylesheet" type="text/css" href="../fancybox/source/jquery.fancybox.css" media="screen">
      <script type="text/javascript" src="../fancybox/fancy.js"></script>
-     <link rel="stylesheet" href="/resources/demos/style.css">
+     <link rel="stylesheet" href="/resources/demos/style.css">      
+     <script src="/js/jquery.form.js" type="text/javascript"></script>  
+       
 <script type="text/javascript">                 
 function llenadoGrid(){
     var filtro = "";  //DATE_FORMAT(dFechaIngreso,  '%m/%d/%Y')         
@@ -22,11 +24,14 @@ function llenadoGrid(){
     if($('#filtro_CertificateHolder').val() !=""){     
         filtro += "sCholder|" + $("#filtro_CertificateHolder").val() + ",*"
     }     
-    if($('#filtro_DescriptionOperations').val() !=""){     
+    if($('#filtro_DescriptionOperations').val() !=""){                                             
         filtro += "sDescription|" + $("#filtro_DescriptionOperations").val() + ",*"
     }
     if($('#filtro_SendingDate').val() !=""){     
         filtro += "DATE_FORMAT(dFechaArchivo,  '%m/%d/%Y')|" + $("#filtro_SendingDate").val() + ",*"
+    }
+    if($('#filtro_Status').val() !=""){     
+        filtro += "eEstatus|" + $("#filtro_Status").val() + ",*"
     }
     
         var fn_request_certificate = {
@@ -49,23 +54,18 @@ function llenadoGrid(){
     }
     fn_request_certificate.fillgrid();
 }
-
-
-
-
-    
 </script> 
-<!---- HEADER ----->
-<?php include("header.php"); ?> 
+
 <script> 
 $(document).ready(inicio);
-function inicio(){    
-    
+function inicio(){       
+                  
+    $( "#filtro_Status" ).selectmenu();
     $(".date").datepicker({
-  onSelect: function() {
-    $(this).change();
-  }
-});                                                                                    
+        onSelect: function() {
+            $(this).change();
+        }
+    });                                                                                    
     //fechas
     $( "#filtro_CreatedDate" ).datepicker({onSelect: function(){ onkeyup()}});
     $( "#filtro_SendingDate" ).datepicker({onSelect: function(){ onkeyup()}});
@@ -76,12 +76,64 @@ function inicio(){
     $("#filtro_email").keyup(onkeyup);           
     $("#filtro_CertificateHolder").keyup(onkeyup);
     $("#filtro_DescriptionOperations").keyup(onkeyup);
+    $("#filtro_Status" ).selectmenu({ change: function( event, ui ) { onkeyup(); }});
+    $( "#boton_uploadFile" ).click(onAbrirDialog); 
     llenadoGrid();  
+    
 }
 function onkeyup(){
     llenadoGrid();
 }
-</script>
+function  uploadFile(){                           
+}
+function  onAbrirDialog(){    
+    var dialogo;
+    var div =  $("fn_request_certificate");
+    dialogo = $( "#dialog-certificate" ).dialog({
+      autoOpen: false,
+      height: 300,
+      width: 350,                                 
+      modal: true,
+      buttons: {
+        "Upload": uploadFile,
+        Cancel: function() {
+          dialogo.dialog( "close" );
+        }
+      },
+      close: function() {
+        //form[ 0 ].reset();
+        //allFields.removeClass( "ui-state-error" );
+      }
+    });
+   
+    dialogo.dialog("open");
+}
+$(function() {
+
+    var bar = $('.bar');
+    var percent = $('.percent');
+    var status = $('#status');
+
+    $('formUpload').ajaxForm({
+        beforeSend: function() {
+            status.empty();
+            var percentVal = '0%';
+            bar.width(percentVal);
+            percent.html(percentVal);
+        },
+        uploadProgress: function(event, position, total, percentComplete) {
+            var percentVal = percentComplete + '%';
+            bar.width(percentVal);
+            percent.html(percentVal);
+        },
+        complete: function(xhr) {
+            status.html(xhr.responseText);
+        }
+    });
+}); 
+</script> 
+<!---- HEADER ----->
+<?php include("header.php"); ?> 
 <div id="layer_content" class="main-section">
     <div id="fn_request_certificate" class="container">
         <div class="page-title">
@@ -95,9 +147,9 @@ function onkeyup(){
                 <td align="center" class="etiqueta_grid"><input class="inp"  id="filtro_InsuredName" type="text"></td>
                 <td align="center" class="etiqueta_grid"><input class="inp"  id="filtro_email" type="text"></td>
                 <td align="center" class="etiqueta_grid"><input class="inp"  id="filtro_CertificateHolder" type="text"></td>
-                <td align="center" class="etiqueta_grid"><input class="inp"  id="filtro_DescriptionOperations" type="text"></td>
-                <td align="center" class="etiqueta_grid"><input class="inp"  id="filtro_Status" type="text"></td>
-                <td align="center" class="etiqueta_grid" nowrap="nowrap"><input class="inp"  id="filtro_SendingDate" type="text"></td>
+                <td align="center" class="etiqueta_grid"><input class="inp"  align="center" id="filtro_DescriptionOperations" type="text"></td>
+                <td align="center" class="etiqueta_grid" nowrap="nowrap"><select   id="filtro_Status" ><option value="">Select<option value="0">IN PROCESS</option><option value="1">COMPLETE</option></td>
+                <td align="center" class="etiqueta_grid"><input class="inp"   id="filtro_SendingDate" type="text"></td>
                 <td></td> 
             </tr>
             <tr>                            
@@ -105,7 +157,7 @@ function onkeyup(){
                 <td align="center" class="etiqueta_grid">Insured Name</td>
                 <td align="center" class="etiqueta_grid">E-mail</td>
                 <td align="center" class="etiqueta_grid">Certificate Holder</td>
-                <td align="center" class="etiqueta_grid">Description of Operations</td>
+                <td align="center" class="etiqueta_grid"  nowrap="nowrap" >Description of Operations</td>
                 <td align="center" class="etiqueta_grid">Status</td>
                 <td align="center" class="etiqueta_grid" nowrap="nowrap">Sending Date </td>
                 <td></td> 
@@ -123,6 +175,23 @@ function onkeyup(){
         </tfoot>
         </table>
         
+    </div>   
+    
+    <div id="dialog-certificate" title="Send Certificate" class="dlgfixed">
+        <p class="validateTips">&nbsp;</p>
+        <form id="formUpload">
+            <fieldset>
+             <label>File:</label>
+                <input id="archivo" type="file" name="archivo" />
+                <input type="hidden" name="MAX_FILE_SIZE" value="20000" />
+                <input class="boton" type="submit" name="enviar" value="Send" />
+            </fieldset>
+        </form>
+        <div class="progress">
+    <div class="bar"></div >
+    <div class="percent">0%</div >
+</div>
+<div id="status"></div>
     </div>
 <!---- FOOTER ----->
 <?php include("footer.php"); ?> 

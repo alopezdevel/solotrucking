@@ -370,7 +370,7 @@ session_start();
             email,
             sCholder as cholder, 
             sDescription as description,
-            CASE WHEN  eEstatus = '0' THEN 'In Process'  ELSE 'Complete' END  as eEstatus,
+            CASE WHEN  eEstatus = '0' THEN 'IN PROCESS'  ELSE 'COMPLETE' END  as eEstatus,
             DATE_FORMAT(dFechaIngreso,  '%m/%d/%Y')    as dFechaIngreso, 
             DATE_FORMAT(dFechaArchivo,  '%m/%d/%Y')    as dFechaArchivo 
             FROM cb_certificate ".$filtroQuery;
@@ -388,7 +388,7 @@ session_start();
                                    "<td >".$certificates['description']."</td>".  
                                    "<td nowrap='nowrap'>".$certificates['eEstatus']."</td>". 
                                    "<td nowrap='nowrap'>".$certificates['dFechaArchivo']."</td>". 
-                                   "<td><div class=\"btn-icon ico-email-fwd\" title=\"Send Certificate\"><span></span></div>".
+                                   "<td nowrap='nowrap' ><div id= 'boton_uploadFile' onclick='onAbrirDialog();' class=\"btn-icon ico-email-fwd\" title=\"Send Certificate\"><span></span></div>".
                                    "<div class=\"btn-icon ico-delete\" title=\"Delete Request\"><span></span></div></td>".  
                                 "</tr>"   ;
              }else{                             
