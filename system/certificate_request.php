@@ -59,7 +59,7 @@ function llenadoGrid(){
 <script> 
 $(document).ready(inicio);
 function inicio(){       
-                  
+       
     $( "#filtro_Status" ).selectmenu();
     $(".date").datepicker({
         onSelect: function() {
@@ -84,8 +84,7 @@ function inicio(){
 function onkeyup(){
     llenadoGrid();
 }
-function  uploadFile(){                           
-}
+
 function  onAbrirDialog(){    
     var dialogo;
     var div =  $("fn_request_certificate");
@@ -95,7 +94,7 @@ function  onAbrirDialog(){
       width: 350,                                 
       modal: true,
       buttons: {
-        "Upload": uploadFile,
+        "Send": uploadFile,
         Cancel: function() {
           dialogo.dialog( "close" );
         }
@@ -107,6 +106,12 @@ function  onAbrirDialog(){
     });
    
     dialogo.dialog("open");
+}
+function  uploadFile(){  
+var file = $("#archivo").prop("files")[0];
+var fileName = file.name;
+var fileSize = file.size;
+alert("Uploading: "+fileName+" @ "+fileSize+"bytes");                         
 }
 $(function() {
 
@@ -127,7 +132,7 @@ $(function() {
             percent.html(percentVal);
         },
         complete: function(xhr) {
-            status.html(xhr.responseText);
+           alert('termino');
         }
     });
 }); 
@@ -183,13 +188,10 @@ $(function() {
             <fieldset>
              <label>File:</label>
                 <input id="archivo" type="file" name="archivo" />
-                <input type="hidden" name="MAX_FILE_SIZE" value="20000" />
-                <input class="boton" type="submit" name="enviar" value="Send" />
             </fieldset>
         </form>
         <div class="progress">
     <div class="bar"></div >
-    <div class="percent">0%</div >
 </div>
 <div id="status"></div>
     </div>
