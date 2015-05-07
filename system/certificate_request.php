@@ -90,8 +90,8 @@ function  onAbrirDialog(){
     var div =  $("fn_request_certificate");
     dialogo = $( "#dialog-certificate" ).dialog({
       autoOpen: false,
-      height: 300,
-      width: 350,                                 
+      height: 700,
+      width: 800,                                 
       modal: true,
       buttons: {
         "Send": uploadFile,
@@ -108,10 +108,11 @@ function  onAbrirDialog(){
     dialogo.dialog("open");
 }
 function  uploadFile(){  
-var file = $("#archivo").prop("files")[0];
-var fileName = file.name;
-var fileSize = file.size;
-alert("Uploading: "+fileName+" @ "+fileSize+"bytes");                         
+    var file = $("#archivo").prop("files")[0];
+    var fileName = file.name;
+    var fileSize = file.size;   
+    var fileType = file.type;                                                 
+                       
 }
 $(function() {
 
@@ -182,22 +183,23 @@ $(function() {
         
     </div>   
     
-    <div id="dialog-certificate" title="Send Certificate" class="dlgfixed">
-        <p class="validateTips">&nbsp;</p>
-        <form id="formUpload">
-            <fieldset>
-             <label>File:</label>
-                <input id="archivo" type="file" name="archivo" />
-            </fieldset>
-        </form>
-        <div class="progress">
-    <div class="bar"></div >
-</div>
-<div id="status"></div>
-    </div>
+   
 <!---- FOOTER ----->
 <?php include("footer.php"); ?> 
 </div>
+ <div id="dialog-certificate" title="Send Certificate" class="dlgfixed">
+        <fieldset id="sendEmail">
+            <legend>Send Mail</legend>
+            <form name="emailForm" id="emailForm" method="POST" action="enviar.php"  enctype="multipart/form-data">
+                <div class="row"><label>subject:</label> <input type="text" name="asunto" id="asunto" size="66" /> *</div>
+                <div class="row"><label>to:</label> <input type="text" name="para" id="para" size="56" /> *</div>
+                <div class="row"><label>text:</label> <textarea  name="mensaje" id="mensaje" rows="7" cols="70"></textarea> *</div>
+                <div class="row"><label>File:</label> <input type="file" id="adjunto" name="adjunto"> *</div>
+                <div align="center"><input type="submit" value="Enviar Correo" class="button"></div>
+            </form>
+            <div id="loading"></div>
+            </fieldset>
+    </div>
 </body>
 
 </html>
