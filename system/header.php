@@ -39,7 +39,11 @@ session_start();
         			<li><a href="users_clients.php">Client Users</a></li>
         		</ul>
         	</li>
-            <li><a href="#">Endorsements</a></li>
+            <li class="submenu"><a href="#">Endorsements</a>
+            	<ul>
+        			<li><a href=endorsement_request.php">Request an Endorsement</a></li>
+        		</ul>
+            </li>
             <li class="submenu"><a href="#">Certificates</a>
                 <ul>
                     <li><a href="certificate_request.php">Requests to Certificates</a></li>
