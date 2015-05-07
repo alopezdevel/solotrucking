@@ -142,7 +142,13 @@ function onInsertarCompania(){
             <h2>Request for endorsement</h2>
         </div>
         <form method="post" action="">
-        <fieldset name="CompanyInformation">
+        <label>Type of insurance policy</label>
+        <div class="center txt-center">
+        	<div class="left"><input name="policytype" type="radio" value="1"><label>Physical Damage</label></div>
+        	<div class="left"><input name="policytype" type="radio" value="2"><label>Motor Truck Cargo</label></div>
+			<div class="left"><input name="policytype" type="radio" value="3"><label>Auto Liability</label></div>
+        </div>
+        <fieldset name="DriversInformation">
         <legend>Information for drivers</legend>
             <p class="mensaje_valido">&nbsp;All form fields are required.</p>
             <div class="field_item chofer"> 
@@ -152,9 +158,10 @@ function onInsertarCompania(){
                 <input tabindex="4" id="license" name="License" type="text" placeholder="* License number:" maxlength="100">
                 <div class="uploadfile"><label>Upload license copy (.PDF)</label><input id="copylicense" tabindex="5" name="CopyLicense" type="file"></div>     
             </div>
-        </legend>
+        </fieldset>
         <button id="add_chofer" class="btn_3 right">Add Chofer +</button> 
         <br>
+        <fieldset name="UnitsInformation">
         <legend>Information for Units</legend>   
             <div class="field_item unit"> 
                 <input tabindex="1" id="year" name="UnitYear" type="text" placeholder="* Year:" maxlength="100">
