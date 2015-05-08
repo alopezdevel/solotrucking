@@ -146,18 +146,23 @@ function onInsertarCompania(){
         <fieldset name="DriversInformation">
         <legend>Type of insurance policy</legend>
         <div class="center txt-center">
-        	<div class="left col_3"><input name="policytype" type="radio" value="1"><label class="lbl-radio">Physical Damage</label></div>
-        	<div class="left col_3"><input name="policytype" type="radio" value="2"><label class="lbl-radio">Motor Truck Cargo</label></div>
-			<div class="left col_3"><input name="policytype" type="radio" value="3"><label class="lbl-radio">Auto Liability</label></div>
+        	<div class="left col_3"><input name="PD" type="checkbox" value="1"><label class="lbl-radio">Physical Damage</label></div>
+        	<div class="left col_3"><input name="Cargo" type="checkbox" value="2"><label class="lbl-radio">Motor Truck Cargo</label></div>
+			<div class="left col_3"><input name="Auto" type="checkbox" value="3"><label class="lbl-radio">Auto Liability</label></div>
         </div>
         </fieldset>
         <fieldset name="DriversInformation">
         <legend>Information for drivers</legend>
             <div class="field_item chofer"> 
                 <input tabindex="1" id="chofer" name="Chofer" type="text" placeholder="* Chofer Name:" maxlength="100">
-                <input tabindex="2" id="fdn" name="Fdn" type="text" placeholder="* FDN:" maxlength="100"> 
-                <input tabindex="3" id="exp" name="Exp" type="text" placeholder="* EXP:" maxlength="100">  
-                <input tabindex="4" id="license" name="License" type="text" placeholder="* License number:" maxlength="100">
+                <input tabindex="2" id="fdn" name="Fdn" type="date" placeholder="* Birth Date:" maxlength="100"> 
+                <input tabindex="3" id="exp" name="Exp" type="date" placeholder="* Expiration Date:" maxlength="100">  
+                <input tabindex="4" class="number" id="license" name="License" type="text" placeholder="* License number:" maxlength="100">
+                <select tabindex="5">
+                	<option value="">Select a Option...</option>
+                	<option value="added">Added</option>
+                	<option value="delete">Delete</option>
+                </select>
                 <div class="uploadfile"><label>Upload license copy (.PDF)</label><input id="copylicense" tabindex="5" name="CopyLicense" type="file"></div>     
             </div>
         </fieldset>
