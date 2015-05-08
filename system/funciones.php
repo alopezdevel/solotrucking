@@ -168,9 +168,9 @@ if($_POST["accion"] == ""){
                          <p style=\"color:#5c5c5c;margin:5px auto; text-align:left;\">If you disagree just press on:</p>
                          <p style=\"margin:5px auto; text-align:center;\"><a href='solotrucking.laredo2.net' style='color:#ffffff;background:#8d0c0c;padding:5px 8px;border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px;text-decoration:none;'>Cancel</a></p>
                     </div>";
-             $mail = new Mail();
-             $mail->From = "support@solotrucking.com";
-             $mail->FromName = "solotrucking team";
+             $mail = new Mail();                                    
+             $mail->From = "support@solo-trucking.com";
+             $mail->FromName = "solo-trucking team";
              $mail->Host = "solotrucking.com";
              $mail->Mailer = "sendmail";
              $mail->Subject = "Your New Account "; 
@@ -213,7 +213,7 @@ if($_POST["accion"] == ""){
     //$conexion->begin_transaction();
     $conexion->autocommit(FALSE);
     $transaccion_exitosa = true;
-    $sql = "SELECT iConsecutivo as id, sUsuario,hActivado,sDescripcion as nombre,sCorreo as correo FROM cu_control_acceso WHERE eTipoUsuario ='C' ";
+    $sql = "SELECT iConsecutivo as id, sUsuario,CASE WHEN hActivado = '0' then 'Pending' Else 'Confirmed' END AS  hActivado,sDescripcion as nombre,sCorreo as correo FROM cu_control_acceso WHERE eTipoUsuario ='C' ";
     $result = $conexion->query($sql);
     $NUM_ROWs_Usuario = $result->num_rows;    
     if ($NUM_ROWs_Usuario > 0) {
@@ -304,7 +304,7 @@ if($_POST["accion"] == ""){
                                 </div>";
                          $mail = new Mail();
                          $mail->From = "support@solo-trucking.com";
-                         $mail->FromName = "solotrucking team";
+                         $mail->FromName = "solo-trucking team";
                          $mail->Host = "solo-trucking.com";
                          $mail->Mailer = "sendmail";
                          $mail->Subject = "Certificate Request from the Website "; 
@@ -313,7 +313,8 @@ if($_POST["accion"] == ""){
                          $mail->IsHTML(true);
                          $mail->WordWrap =150;
                          $mail_error = false;
-                         $mail->AddAddress('sanchezmdesign@gmail.com, 19564674440@messages.efax.com');
+                         //$mail->AddAddress('sanchezmdesign@gmail.com, 19564674440@messages.efax.com');
+                         $mail->AddAddress('alopez@globalpc.net');
                          if (!$mail->Send()) {
                             $mail_error = true;
                             $mail->ClearAddresses();
@@ -730,11 +731,11 @@ if($_POST["accion"] == ""){
 } 
   function enviar_certificado(){        
       //Almacenando los valores recibidos
-    $sAsunto = "support@solo-trucking.com - CERTIFICATE";
+    $sAsunto = "solo-trucking team - CERTIFICATE";
     $sPara   = $_POST['para'];
     $mensaje = $_POST['mensaje'];
     $sDe     = "support@solo-trucking.com";
-
+                
 
     $bHayFicheros = 0;
     $sCabeceraTexto = "";

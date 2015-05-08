@@ -19,13 +19,17 @@ session_start();
 			<li class="top-submenu"><a href="#" class="icon user" title="Log In"><span><?php echo $_SESSION["usuario_actual"]?></span></a>
                 <ul>
                     <li><a href="#">Change password</a></li>
+                    <?php if($_SESSION['acceso'] == "C"){ ?>
                     <li><a  id="aUpdateAccount" href="#">Update account Information</a></li>
+                    <?php }?>
                 </ul>
             </li>
+            
 			<li><a href="login.php" class="icon logout"title="Log Out"><span>Log Out</span></a></li>
 		</ul>
         <ul class="main-nav">
         	<li><a href="inicio.php">Home</a></li>
+            <?php if($_SESSION['acceso'] == "U"){ ?>
         	<li class="submenu"><a href="#">Catalogs</a>
         		<ul>
         			<li><a href="#">Insured Companies</a></li>
@@ -39,6 +43,7 @@ session_start();
         			<li><a href="users_clients.php">Insured Company Users</a></li>
         		</ul>
         	</li>
+            <?php } ?>
             <li class="submenu"><a href="#">Endorsements</a>
             	<ul>
         			<li><a href="endorsement_request.php">Request an Endorsement</a></li>
@@ -50,7 +55,9 @@ session_start();
                 </ul>
             </li> 
             <li><a href="#">Claims</a></li>  
+            <?php if($_SESSION['acceso'] == "U"){ ?>
             <li><a href="#">Quotes</a></li>
+            <?php }?>
             <li><a href="#">Support</a></li>
         </ul>
         <!--<a class="res-nav_click right" href="#"><i class="fa-bars"></i></a>-->

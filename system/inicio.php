@@ -1,5 +1,5 @@
 <?php session_start();    
-if ( !($_SESSION["acceso"] == 'C'  && $_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  )  ){ //No ha iniciado session, redirecciona a la pagina de login
+if ( !(($_SESSION["acceso"] == 'C' || $_SESSION["acceso"] == 'U')  && $_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  )  ){ //No ha iniciado session, redirecciona a la pagina de login
     header("Location: login.php");
     exit;
 }else{ ?>
@@ -17,9 +17,12 @@ if ( !($_SESSION["acceso"] == 'C'  && $_SESSION["usuario_actual"] != "" && $_SES
             
     $(document).ready(inicio);
     function inicio(){ 
-       $.blockUI();
+       
         var usuario_actual = <?php echo json_encode($_SESSION['usuario_actual']);?>        
         var tipo_usuario = <?php echo json_encode($_SESSION['acceso']);?> 
+        if(tipo_usuario == "C"){
+        $.blockUI();
+        }
         validapantalla(usuario_actual);
         if(tipo_usuario == "C"){
             validarLoginCliente(usuario_actual);

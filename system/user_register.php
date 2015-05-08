@@ -1,4 +1,9 @@
-﻿<!---- HEADER ----->
+<?php session_start();    
+if ( !($_SESSION["acceso"] == 'U'  && $_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  )  ){ //No ha iniciado session, redirecciona a la pagina de login
+    header("Location: login.php");
+    exit;
+}else{ ?>
+<!---- HEADER ----->
 <?php include("header.php"); ?> 
 <script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script> 
 <script src="/../../../code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
@@ -77,6 +82,9 @@ function onInsertarUsuario(){
                          $("#password").val("");
                          $("#recapturapassword").val("");
                          $("#name").focus();
+                         alert("Thank you. The user has been successfully registered.");
+                         actualizarMensajeAlerta("Thank you.the user has been successfully registered.Please check the email you to confirm your account registration.");
+                         location.href= "inicio.php";
                     break;  
              }
          }
@@ -143,3 +151,4 @@ function onInsertarUsuario(){
 </body>
 
 </html>
+<?php }?>

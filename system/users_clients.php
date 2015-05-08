@@ -1,14 +1,37 @@
+<?php session_start();    
+if ( !($_SESSION["acceso"] == 'U'  && $_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  )  ){ //No ha iniciado session, redirecciona a la pagina de login
+    header("Location: login.php");
+    exit;
+}else{ ?>
 <script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script> 
 
 <link rel="stylesheet" href="/../../../code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 <script src="/../../../code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script src="/js/jquery.blockUI.js" type="text/javascript"></script>
 <script type="text/javascript"> 
 $(document).ready(inicio);
 
-function inicio(){   
-    llenadoGrid();
+function inicio(){  
+        $.blockUI();
+        var usuario_actual = <?php echo json_encode($_SESSION['usuario_actual']);?>        
+        var tipo_usuario = <?php echo json_encode($_SESSION['acceso']);?> 
+        validapantalla(usuario_actual);
+        if(tipo_usuario == "C"){
+            validarLoginCliente(usuario_actual);
+        }  
+        $("#aUpdateAccount").click(function() { actualizarCliente(usuario_actual); }); 
+        llenadoGrid();  
+        $.unblockUI();
     
-}                
+}  
+
+function validapantalla(usuario){
+        
+        if(usuario == ""  || usuario == null){
+            location.href= "login.php";
+        }
+        
+    }              
 function llenadoGrid(){      
      var fn_UsersClients = {
         domroot:"#ct_clientusers",
@@ -66,8 +89,57 @@ function confirmarBorrar(registro,id) {
     //return confirmacion;
 
 }
+function validarLoginCliente(usuario){
+        //$.blockUI({ message: $('#domMessage') });
+        $.post("funciones.php", { accion: "validar_cliente_acceso", usuario: usuario},
+        function(data){ 
+                                // 
+         if(data.error == "0"){  
+             switch(data.estatus){                                                                                                
+                case "0":  
+                                    //location.href= "login.php";
+                                    break;
+                                    
+                case "1":           $.unblockUI();                          
+                                    codigo_1 = data.codigo.substring(0, 10);
+                                    codigo_2 = data.codigo.substring(5, 15);
+                                    total_len = data.consecutivo.length;
+                                    location.href= "company_register.php?ref="+ total_len + '_'  +  codigo_1 +  data.consecutivo;                                    
+                                    break;
+                case "2":          $.unblockUI();                          
+                                    /*codigo_1 = data.codigo.substring(0, 10);
+                                    codigo_2 = data.codigo.substring(5, 15);
+                                    total_len = data.consecutivo.length;
+                                    location.href= "company_register.php?ref="+ total_len + '_'  +  codigo_1 +  data.consecutivo;  */
+                                    break;
+                 
+             }
+         }else{
+             //error
+         }   
+         
+     }
+     ,"json");
+        
+        
+    }
 
-
+  function actualizarCliente(usuario){
+        $.post("funciones.php", { accion: "validar_cliente_acceso", usuario: usuario},
+        function(data){ 
+                                // 
+         if(data.error == "0"){
+             codigo_1 = data.codigo.substring(0, 10);
+             codigo_2 = data.codigo.substring(5, 15);
+             total_len = data.consecutivo.length;
+             location.href= "company_register.php?ref="+ total_len + '_'  +  codigo_1 +  data.consecutivo;
+         }else{
+             //error
+         }   
+         
+     }
+     ,"json");
+    }
 
 
 	
@@ -120,3 +192,4 @@ function inicio(){
 </body>
 
 </html>
+<?php } ?>
