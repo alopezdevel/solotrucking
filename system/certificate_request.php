@@ -58,7 +58,25 @@ function llenadoGrid(){
 
 <script> 
 $(document).ready(inicio);
-function inicio(){       
+function inicio(){ 
+//archivo 
+$('#emailForm').ajaxForm({
+            beforeSubmit: validate,
+            success: function(data, statusText, xhr, form) {
+                $('#loading').html('El email se envio correctamente');
+                alert("El email se envio correctamente");
+                $('#loading').hide();
+                $("#asunto").val("");
+                $("#para").val("");
+                $("#mensaje").val("");
+                $("#adjunto").val("");
+            }
+    });     
+    
+    function validate(formData, jqForm, options) {
+            var form =  jqForm[0]; 
+            $('#loading').html('Loading...').show();
+        }   
        
     $( "#filtro_Status" ).selectmenu();
     $(".date").datepicker({
@@ -90,53 +108,20 @@ function  onAbrirDialog(){
     var div =  $("fn_request_certificate");
     dialogo = $( "#dialog-certificate" ).dialog({
       autoOpen: false,
-      height: 700,
-      width: 800,                                 
-      modal: true,
-      buttons: {
-        "Send": uploadFile,
-        Cancel: function() {
-          dialogo.dialog( "close" );
-        }
-      },
+      height: 300,
+      width: 400,                                 
+      modal: true,      
       close: function() {
         //form[ 0 ].reset();
         //allFields.removeClass( "ui-state-error" );
       }
     });
-   
+    $("#para").val("alopez@globalpc.net");
     dialogo.dialog("open");
-}
-function  uploadFile(){  
-    var file = $("#archivo").prop("files")[0];
-    var fileName = file.name;
-    var fileSize = file.size;   
-    var fileType = file.type;                                                 
-                       
-}
-$(function() {
+}    
 
-    var bar = $('.bar');
-    var percent = $('.percent');
-    var status = $('#status');
 
-    $('formUpload').ajaxForm({
-        beforeSend: function() {
-            status.empty();
-            var percentVal = '0%';
-            bar.width(percentVal);
-            percent.html(percentVal);
-        },
-        uploadProgress: function(event, position, total, percentComplete) {
-            var percentVal = percentComplete + '%';
-            bar.width(percentVal);
-            percent.html(percentVal);
-        },
-        complete: function(xhr) {
-           alert('termino');
-        }
-    });
-}); 
+
 </script> 
 <!---- HEADER ----->
 <?php include("header.php"); ?> 
@@ -187,17 +172,19 @@ $(function() {
 <!---- FOOTER ----->
 <?php include("footer.php"); ?> 
 </div>
- <div id="dialog-certificate" title="Send Certificate" class="dlgfixed">
+ <div id="dialog-certificate" title="Send Certificate" >
         <fieldset id="sendEmail">
-            <legend>Send Mail</legend>
-            <form name="emailForm" id="emailForm" method="POST" action="enviar.php"  enctype="multipart/form-data">
-                <div class="row"><label>subject:</label> <input type="text" name="asunto" id="asunto" size="66" /> *</div>
-                <div class="row"><label>to:</label> <input type="text" name="para" id="para" size="56" /> *</div>
-                <div class="row"><label>text:</label> <textarea  name="mensaje" id="mensaje" rows="7" cols="70"></textarea> *</div>
-                <div class="row"><label>File:</label> <input type="file" id="adjunto" name="adjunto"> *</div>
-                <div align="center"><input type="submit" value="Enviar Correo" class="button"></div>
+            <form name="emailForm" id="emailForm" method="POST" action="funciones.php"  enctype="multipart/form-data">
+                <p class="mensaje_valido">&nbsp;All form fields are required.</p>
+                <br />
+                <br />
+                <label>to:</label><input  id="para" class="user" name="para" type="text" placeholder="to:" readonly="readonly">
+                <label>Description:</label><textarea  name="mensaje" id="mensaje" rows="3" cols="15" placeholder="Description" ></textarea>
+                <div ><label>File:</label> <input type="file" id="adjunto" name="adjunto" size="25" class="etiqueta_grid" > *</div>  
+                <div align="center"><input type="submit" value="Enviar Correo" id="button_submit"  class="btn_2" ></div>
+                <input type="hidden" name="accion" id="accion" value="enviar_certificado"  />                    
             </form>
-            <div id="loading"></div>
+            <div id="loading"></div>                                                                                
             </fieldset>
     </div>
 </body>

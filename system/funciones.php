@@ -41,6 +41,9 @@ session_start();
     if($is_list) return '[' . $json . ']';//Return numerical JSON 
     return '{' . $json . '}';//Return associative JSON 
 } 
+if($_POST["accion"] == ""){
+    //$_POST["accion"] = "enviar_certificado";
+}
   $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accion"],array()) : "";
   function  conexion(){                
       //1 Acceso correcto
@@ -105,7 +108,7 @@ session_start();
     }
 }
   function alta_usuario(){
-    function generaPass(){
+  function generaPass(){
         $cadena = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
         $longitudCadena=strlen($cadena);     
         $pass = "";
@@ -724,4 +727,58 @@ session_start();
      echo array2json($response);
                        
 } 
+  function enviar_certificado(){        
+      //Almacenando los valores recibidos
+    $sAsunto = "support@solo-trucking.com - CERTIFICATE";
+    $sPara   = $_POST['para'];
+    $mensaje = $_POST['mensaje'];
+    $sDe     = "support@solo-trucking.com";
+
+
+    $bHayFicheros = 0;
+    $sCabeceraTexto = "";
+    $sAdjuntos = "";
+
+    if ($sDe)$sCabeceras = "From:".$sDe."\n";
+    else $sCabeceras = "";
+    $sCabeceras .= "MIME-version: 1.0\n";
+    $sTexto =  "
+                        <div style=\"font-size:12px;border:1px solid #6191df;border-radius:3px;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">
+                             <h2 style=\"color:#313131;text-transform: uppercase; text-align:center;\">Solo-Trucking Insurance</h2> \n 
+                             <p style=\"color:#5c5c5c;margin:5px auto; text-align:left;\">His request has already been processed, attached to this email we send the certificate file.</p>\n 
+                             <br><br> 
+                             <p style=\"color:#5c5c5c;margin:5px auto; text-align:left;\">Thank you</p>
+                        </div>";
+
+
+    if ($bHayFicheros == 0)
+    {
+    $bHayFicheros = 1;
+    $sCabeceras .= "Content-type: multipart/mixed;";
+    $sCabeceras .= "boundary=\"--_Separador-de-mensajes_--\"\n";
+
+    $sCabeceraTexto = "----_Separador-de-mensajes_--\n";
+    $sCabeceraTexto .= "Content-type: text/html; text/plain;charset=iso-8859-1\n";
+    $sCabeceraTexto .= "Content-transfer-encoding: 7BIT\n";
+
+    $sTexto = $sCabeceraTexto.$sTexto;
+    }
+    if ($_FILES['adjunto']['size'] > 0)
+    {
+    $sAdjuntos .= "\n\n----_Separador-de-mensajes_--\n";
+    $sAdjuntos .= "Content-type: ".$_FILES['adjunto']['type'].";name=\"".$_FILES['adjunto']['name']."\"\n";;
+    $sAdjuntos .= "Content-Transfer-Encoding: BASE64\n";
+    $sAdjuntos .= "Content-disposition: attachment;filename=\"".$_FILES['adjunto']['name']."\"\n\n";
+
+    $oFichero = fopen($_FILES['adjunto']["tmp_name"], 'r');
+    $sContenido = fread($oFichero, filesize($_FILES['adjunto']["tmp_name"]));
+    $sAdjuntos .= chunk_split(base64_encode($sContenido));
+    fclose($oFichero);
+    }
+
+    if ($bHayFicheros)
+    $sTexto .= $sAdjuntos."\n\n----_Separador-de-mensajes_----\n";
+
+    @mail($sPara, $sAsunto,$sTexto, $sCabeceras);
+  }
 ?>
