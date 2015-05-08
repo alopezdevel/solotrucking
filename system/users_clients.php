@@ -1,7 +1,7 @@
 <script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script> 
 
-<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<link rel="stylesheet" href="/../../../code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="/../../../code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 <script type="text/javascript"> 
 $(document).ready(inicio);
 
@@ -85,7 +85,7 @@ function inicio(){
 	<div id="ct_clientusers" class="container">
         <div class="page-title">
             <h1>Catalogs</h1>
-		    <h2>Client Users</h2>
+		    <h2>Insured Company Users</h2>
         </div>
 		<table id="data_grid_clientusers" class="data_grid">
 		<thead id="grid-head2">

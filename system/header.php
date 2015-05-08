@@ -35,8 +35,8 @@ session_start();
         	</li>
         	<li class="submenu"><a href="#">Users</a>
         		<ul>
-        			<li><a href="user_register.php">New Client User</a></li>
-        			<li><a href="users_clients.php">Client Users</a></li>
+        			<li><a href="user_register.php">New Insured Company User</a></li>
+        			<li><a href="users_clients.php">Insured Company Users</a></li>
         		</ul>
         	</li>
             <li class="submenu"><a href="#">Endorsements</a>
