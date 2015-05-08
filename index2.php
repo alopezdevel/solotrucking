@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -50,10 +50,10 @@
 		</ul>
         <ul class="main-nav">
         	<li class="active"><a href="#home">Home</a></li>
-            <li><a href="aboutus.html">About Us</a></li>
-            <li><a href="products.html">Products</a></li>
-            <li><a href="system/login.php">Claims</a></li>
-            <li><a href="providers.html">Providers</a></li>
+            <li><a href="aboutus.php">About Us</a></li>
+            <li><a href="products.php">Products</a></li>
+            <li><a href="system/login.php" target="_blank">Claims</a></li>
+            <li><a href="providers.php">Providers</a></li>
             <li><a href="getaquote/intro.php">Get a Quote</a></li>
             <li><a href="#contact">Contact Us</a></li>
         </ul>
@@ -97,7 +97,7 @@
     			<img src="images/home/img-section-a-lock.jpg" alt="">
     			<h3>Our Coverages</h3>
     			<p>Know the products you offer, the best in all of Texas.</p>
-                <a href="products.html" class="btn_1"><span>Read more</span></a>  
+                <a href="products.php" class="btn_1"><span>Read more</span></a>  
     		</div>
     	</div>
     	<div class="col_4 left wow fadeInUp delay-04s">
@@ -105,7 +105,7 @@
     			<img src="images/home/img-section-a-user.jpg" alt="">
     			<h3>My Account</h3>
     			<br>
-    			<a href="system/login.php" class="btn_2"><span>LOGIN</span></a>
+    			<a href="system/login.php" class="btn_2" target="_blank"><span>LOGIN</span></a>
     			<p style="height:auto!important;text-align:center;margin:0px auto;">You are not a customer yet?</p>
     			<a href="getaquote/" class="btn_2"><span>GET A QUOTE</span></a>
     		</div>
@@ -114,7 +114,7 @@
     			<img src="images/home/img-section-a-help.jpg" alt="">
     			<h3>F.A.Q</h3>
     			<p>Want to learn more about insurance for Truckers? Here is a listing of the most frequent questions from our customers.</p>
-    			<a href="faq.html" class="btn_1"><span>Read more</span></a>
+    			<a href="faq.php" class="btn_1"><span>Read more</span></a>
     		</div>
     	</div>
 
@@ -185,18 +185,18 @@
 <footer class="footer">
     <div class="container">
     	 <div class="nav_foot">
-    	 	<a href="index.html" class="active">Home</a>    /    
-    	 	<a href="aboutus.html">About Us</a>    /    
-    	 	<a href="products.html">Products</a>     /    
-    	 	<a href="system/login.php">Claims</a>     /    
-    	 	<a href="providers.html">Providers</a>     /    
+    	 	<a href="index.php" class="active">Home</a>    /    
+    	 	<a href="aboutus.php">About Us</a>    /    
+    	 	<a href="products.php">Products</a>     /    
+    	 	<a href="system/login.php" target="_blank">Claims</a>     /    
+    	 	<a href="providers.php">Providers</a>     /    
     	 	<a href="getaquote/intro.php">Get a Quote</a>    /    
     	 	<a href="#contact">Contact Us</a>    
     	 </div>
     	 <div class="nav_foot_2">
-    	 <a href="terms_conditions.html">Terms & Conditions</a>  |   
-    	 <a href="privacypolicy.html">Privacy Policy</a>  |   
-    	 <a href="faq.html">F.A.Q.</a></div>    
+    	 <a href="terms_conditions.php">Terms & Conditions</a>  |   
+    	 <a href="privacypolicy.php">Privacy Policy</a>  |   
+    	 <a href="faq.php">F.A.Q.</a></div>    
     	    
    	</div>
 </footer>

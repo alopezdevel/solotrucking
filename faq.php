@@ -34,22 +34,22 @@
 <div style="overflow:hidden;" id="home">
 <nav class="main-nav-outer" id="test"><!--main-nav-start-->
 	<div class="container">
-		<a href="index2.html" class="img-logo"><img  src="images/nav/img-logo.png" alt="logo"></a>
+		<a href="index2.php" class="img-logo"><img  src="images/nav/img-logo.png" alt="logo"></a>
 		<ul class="top-nav">
-			<li><a href="system/login.php" class="login-btn" title="Log In"><span>My Account</span></a></li>
+			<li><a href="system/login.php" class="login-btn" title="Log In" target="_blank"><span>My Account</span></a></li>
 			<li><a href="https://www.facebook.com/" class="icon facebook" title="follow us in Facebook!" target="_blank"><span></span></a></li>
 			<li><a href="https://www.youtube.com/" class="icon youtube" title="follow us in YouTube!" target="_blank"><span></span></a></li>
 			<li><a href="https://twitter.com/" class="icon twitter" title="follow us in Twitter!"><span></span></a></li>
 			<li><a href="https://www.google.com/" class="icon google" title="follow us in Google +!"><span></span></a></li>
 		</ul>
         <ul class="main-nav">
-        	<li><a href="index2.html">Home</a></li>
-            <li><a href="aboutus.html">About Us</a></li>
-            <li><a href="products.html">Products</a></li>
-            <li><a href="system/login.php">Claims</a></li>
-            <li><a href="providers.html">Providers</a></li>
+        	<li><a href="index2.php">Home</a></li>
+            <li><a href="aboutus.php">About Us</a></li>
+            <li><a href="products.php">Products</a></li>
+            <li><a href="system/login.php" target="_blank">Claims</a></li>
+            <li><a href="providers.php">Providers</a></li>
             <li><a href="getaquote/intro.php">Get a Quote</a></li>
-            <li><a href="index2.html#contact">Contact Us</a></li>
+            <li><a href="index2.php#contact">Contact Us</a></li>
         </ul>
         <a class="res-nav_click right" href="#"><i class="fa-bars"></i></a>
     </div>
@@ -96,18 +96,18 @@
 <footer class="footer">
     <div class="container">
     	 <div class="nav_foot">
-    	 	<a href="index2.html" class="active">Home</a>    /    
-    	 	<a href="aboutus.html">About Us</a>    /    
-    	 	<a href="products.html">Products</a>     /    
-            <a href="system/login.php">Claims</a>     /    
-            <a href="providers.html">Providers</a>     /    
+    	 	<a href="index2.php" class="active">Home</a>    /    
+    	 	<a href="aboutus.php">About Us</a>    /    
+    	 	<a href="products.php">Products</a>     /    
+            <a href="system/login.php" target="_blank">Claims</a>     /    
+            <a href="providers.php">Providers</a>     /    
     	 	<a href="getaquote/intro.php">Get a Quote</a>    /    
-    	 	<a href="index2.html#contact">Contact Us</a>    
+    	 	<a href="index2.php#contact">Contact Us</a>    
     	 </div>
     	 <div class="nav_foot_2">
-    	 <a href="terms_conditions.html">Terms & Conditions</a>  |   
-    	 <a href="privacypolicy.html">Privacy Policy</a>  |   
-    	 <a href="faq.html">F.A.Q.</a></div>   
+    	 <a href="terms_conditions.php">Terms & Conditions</a>  |   
+    	 <a href="privacypolicy.php">Privacy Policy</a>  |   
+    	 <a href="faq.php">F.A.Q.</a></div>   
     	    
    	</div>
 </footer>
