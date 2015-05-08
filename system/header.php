@@ -28,14 +28,14 @@ session_start();
         	<li><a href="inicio.php">Home</a></li>
         	<li class="submenu"><a href="#">Catalogs</a>
         		<ul>
-        			<li><a href="#">Companies</a></li>
-        			<li><a href="#">Insurers</a></li>
+        			<li><a href="#">Insured Companies</a></li>
+        			<li><a href="#">UnderWriters</a></li>
         			<li><a href="#">Financial</a></li>
         		</ul>
         	</li>
         	<li class="submenu"><a href="#">Users</a>
         		<ul>
-        			<li><a href="user_register.php">New User</a></li>
+        			<li><a href="user_register.php">New Client User</a></li>
         			<li><a href="users_clients.php">Client Users</a></li>
         		</ul>
         	</li>
