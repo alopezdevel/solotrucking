@@ -62,20 +62,21 @@ function inicio(){
 //archivo 
 $('#emailForm').ajaxForm({
             beforeSubmit: validate,
-            success: function(data, statusText, xhr, form) {
-                $('#loading').html('El email se envio correctamente');
-                alert("El email se envio correctamente");
+            success: function(data, statusText, xhr, form) {            
+                $('#loading').html('Sended 1/1');
+                alert("Sended 1/1");
                 $('#loading').hide();
                 $("#asunto").val("");
                 $("#para").val("");
                 $("#mensaje").val("");
                 $("#adjunto").val("");
+                $( "#dialog-certificate" ).dialog("close");
             }
     });     
     
     function validate(formData, jqForm, options) {
             var form =  jqForm[0]; 
-            $('#loading').html('Loading...').show();
+            $('#loading').html('Sending...').show();
         }   
        
     $( "#filtro_Status" ).selectmenu();
@@ -95,7 +96,7 @@ $('#emailForm').ajaxForm({
     $("#filtro_CertificateHolder").keyup(onkeyup);
     $("#filtro_DescriptionOperations").keyup(onkeyup);
     $("#filtro_Status" ).selectmenu({ change: function( event, ui ) { onkeyup(); }});
-    $( "#boton_uploadFile" ).click(onAbrirDialog); 
+    //$( "#boton_uploadFile" ).click(onAbrirDialog); 
     llenadoGrid();  
     
 }
@@ -103,20 +104,21 @@ function onkeyup(){
     llenadoGrid();
 }
 
-function  onAbrirDialog(){    
+function  onAbrirDialog(id,correo){    
     var dialogo;
     var div =  $("fn_request_certificate");
     dialogo = $( "#dialog-certificate" ).dialog({
       autoOpen: false,
-      height: 300,
-      width: 400,                                 
+      height: 500,
+      width: 527,                                 
       modal: true,      
       close: function() {
         //form[ 0 ].reset();
         //allFields.removeClass( "ui-state-error" );
       }
     });
-    $("#para").val("alopez@globalpc.net");
+    $("#para").val(correo);
+    $("#idCertificate").val(id);
     dialogo.dialog("open");
 }    
 
@@ -181,8 +183,9 @@ function  onAbrirDialog(){
                 <label>to:</label><input  id="para" class="user" name="para" type="text" placeholder="to:" readonly="readonly">
                 <label>Description:</label><textarea  name="mensaje" id="mensaje" rows="3" cols="15" placeholder="Description" ></textarea>
                 <div ><label>File:</label> <input type="file" id="adjunto" name="adjunto" size="25" class="etiqueta_grid" > *</div>  
-                <div align="center"><input type="submit" value="Enviar Correo" id="button_submit"  class="btn_2" ></div>
+                <div align="center"><input type="submit" value="Send" id="button_submit"  class="btn_2" ></div>  
                 <input type="hidden" name="accion" id="accion" value="enviar_certificado"  />                    
+                <input type="hidden" name="idCertificate" id="idCertificate"   />                    
             </form>
             <div id="loading"></div>                                                                                
             </fieldset>

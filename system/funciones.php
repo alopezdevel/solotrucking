@@ -369,7 +369,8 @@ if($_POST["accion"] == ""){
         }
     }
     
-    $sql = "SELECT sInnsuredName as insuredname,
+    $sql = "SELECT iConsecutivo as folio,
+            sInnsuredName as insuredname,
             email,
             sCholder as cholder, 
             sDescription as description,
@@ -391,7 +392,7 @@ if($_POST["accion"] == ""){
                                    "<td >".$certificates['description']."</td>".  
                                    "<td nowrap='nowrap'>".$certificates['eEstatus']."</td>". 
                                    "<td nowrap='nowrap'>".$certificates['dFechaArchivo']."</td>". 
-                                   "<td nowrap='nowrap' ><div id= 'boton_uploadFile' onclick='onAbrirDialog();' class=\"btn-icon ico-email-fwd\" title=\"Send Certificate\"><span></span></div>".
+                                   "<td nowrap='nowrap' ><div id= 'boton_uploadFile' onclick='onAbrirDialog(\"".$certificates['folio']."\",\"".$certificates['email']."\" );' class=\"btn-icon ico-email-fwd\" title=\"Send Certificate\"><span></span></div>".
                                    "<div class=\"btn-icon ico-delete\" title=\"Delete Request\"><span></span></div></td>".  
                                 "</tr>"   ;
              }else{                             
