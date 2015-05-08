@@ -244,7 +244,7 @@ function onInsertarCompania(id,accion){
                 <input tabindex="7" id="phone" class="numb" name="phone1" type="tel" placeholder="* Primary Phone:" maxlength="10">
             </div>
             <div class="field_item"> 
-                <input tabindex="8" id="usdot" class="numb" name="usdot" type="text" placeholder="* USDOT#:" maxlength="10">
+                <input tabindex="8" id="usdot" class="numb" name="usdot" type="text" placeholder="* USDOT#:" maxlength="6">
             </div>
             <button id="btn_register" type="button" class="btn-1" ><p id="mensaje_valido" font size="6" ></p></button>
         </fieldset>

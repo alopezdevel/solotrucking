@@ -375,7 +375,7 @@ if($_POST["accion"] == ""){
             email,
             sCholder as cholder, 
             sDescription as description,
-            CASE WHEN  eEstatus = '0' THEN 'IN PROCESS'  ELSE 'COMPLETE' END  as eEstatus,
+            CASE WHEN  eEstatus = '0' THEN 'IN PROCESS'  ELSE 'COMPLETED' END  as eEstatus,
             DATE_FORMAT(dFechaIngreso,  '%m/%d/%Y')    as dFechaIngreso, 
             DATE_FORMAT(dFechaArchivo,  '%m/%d/%Y')    as dFechaArchivo 
             FROM cb_certificate ".$filtroQuery;
@@ -730,57 +730,85 @@ if($_POST["accion"] == ""){
                        
 } 
   function enviar_certificado(){        
-      //Almacenando los valores recibidos
-    $sAsunto = "solo-trucking team - CERTIFICATE";
-    $sPara   = $_POST['para'];
-    $mensaje = $_POST['mensaje'];
-    $sDe     = "support@solo-trucking.com";
-                
+      //VERIFICANDO REGISTRO DE USUARIO
+    include("cn_usuarios.php");
+    //$conexion->begin_transaction();
+    $id= $_POST['idCertificate'];
+    $conexion->autocommit(FALSE);
+    $transaccion_exitosa = true;
+    $sql = "UPDATE cb_certificate SET eEstatus = '1', dFechaArchivo = NOW() WHERE iConsecutivo = '".$id."'  ";
+    $conexion->query($sql);   
+    if ($conexion->affected_rows < 1 ) {
+        $error = "1";
+        $mensaje= "Internal Error, Failed to verify the account. Please report to Administrator";
+        $transaccion_exitosa = false;
+    }  
+    if ($transaccion_exitosa) {    
+            $mensaje = "Your information has been successfully registered.";
+            $error = "0";
+            $conexion->commit();
+            $conexion->close();
+            
+        } else {
+            $mensaje = "Error: Failed to save the information. Please verify..";
+            $error = "1";  
+            $conexion->rollback();
+            $conexion->close();           
+        }
+    if($transaccion_exitosa){
+          //Almacenando los valores recibidos
+        $sAsunto = "solo-trucking team - CERTIFICATE";
+        $sPara   = $_POST['para'];
+        $mensaje = $_POST['mensaje'];
+        $sDe     = "solo-trucking team";
+                    
 
-    $bHayFicheros = 0;
-    $sCabeceraTexto = "";
-    $sAdjuntos = "";
+        $bHayFicheros = 0;
+        $sCabeceraTexto = "";
+        $sAdjuntos = "";
 
-    if ($sDe)$sCabeceras = "From:".$sDe."\n";
-    else $sCabeceras = "";
-    $sCabeceras .= "MIME-version: 1.0\n";
-    $sTexto =  "
-                        <div style=\"font-size:12px;border:1px solid #6191df;border-radius:3px;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">
-                             <h2 style=\"color:#313131;text-transform: uppercase; text-align:center;\">Solo-Trucking Insurance</h2> \n 
-                             <p style=\"color:#5c5c5c;margin:5px auto; text-align:left;\">His request has already been processed, attached to this email we send the certificate file.</p>\n 
-                             <br><br> 
-                             <p style=\"color:#5c5c5c;margin:5px auto; text-align:left;\">Thank you</p>
-                        </div>";
+        if ($sDe)$sCabeceras = "From:".$sDe."\n";
+        else $sCabeceras = "";
+        $sCabeceras .= "MIME-version: 1.0\n";
+        $sTexto =  "
+                            <div style=\"font-size:12px;border:1px solid #6191df;border-radius:3px;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">
+                                 <h2 style=\"color:#313131;text-transform: uppercase; text-align:center;\">Solo-Trucking Insurance</h2> \n 
+                                 <p style=\"color:#5c5c5c;margin:5px auto; text-align:left;\">His request has already been processed, attached to this email we send the certificate file.</p>\n 
+                                 <p>".$mensaje."</p>
+                                 <br><br> 
+                                 <p style=\"color:#5c5c5c;margin:5px auto; text-align:left;\">Thank you</p>
+                            </div>";
 
 
-    if ($bHayFicheros == 0)
-    {
-    $bHayFicheros = 1;
-    $sCabeceras .= "Content-type: multipart/mixed;";
-    $sCabeceras .= "boundary=\"--_Separador-de-mensajes_--\"\n";
+        if ($bHayFicheros == 0)
+        {
+        $bHayFicheros = 1;
+        $sCabeceras .= "Content-type: multipart/mixed;";
+        $sCabeceras .= "boundary=\"--_Separador-de-mensajes_--\"\n";
 
-    $sCabeceraTexto = "----_Separador-de-mensajes_--\n";
-    $sCabeceraTexto .= "Content-type: text/html; text/plain;charset=iso-8859-1\n";
-    $sCabeceraTexto .= "Content-transfer-encoding: 7BIT\n";
+        $sCabeceraTexto = "----_Separador-de-mensajes_--\n";
+        $sCabeceraTexto .= "Content-type: text/html; text/plain;charset=iso-8859-1\n";
+        $sCabeceraTexto .= "Content-transfer-encoding: 7BIT\n";
 
-    $sTexto = $sCabeceraTexto.$sTexto;
+        $sTexto = $sCabeceraTexto.$sTexto;
+        }
+        if ($_FILES['adjunto']['size'] > 0)
+        {
+        $sAdjuntos .= "\n\n----_Separador-de-mensajes_--\n";
+        $sAdjuntos .= "Content-type: ".$_FILES['adjunto']['type'].";name=\"".$_FILES['adjunto']['name']."\"\n";;
+        $sAdjuntos .= "Content-Transfer-Encoding: BASE64\n";
+        $sAdjuntos .= "Content-disposition: attachment;filename=\"".$_FILES['adjunto']['name']."\"\n\n";
+
+        $oFichero = fopen($_FILES['adjunto']["tmp_name"], 'r');
+        $sContenido = fread($oFichero, filesize($_FILES['adjunto']["tmp_name"]));
+        $sAdjuntos .= chunk_split(base64_encode($sContenido));
+        fclose($oFichero);
+        }
+
+        if ($bHayFicheros)
+        $sTexto .= $sAdjuntos."\n\n----_Separador-de-mensajes_----\n";
+
+        @mail($sPara, $sAsunto,$sTexto, $sCabeceras);
     }
-    if ($_FILES['adjunto']['size'] > 0)
-    {
-    $sAdjuntos .= "\n\n----_Separador-de-mensajes_--\n";
-    $sAdjuntos .= "Content-type: ".$_FILES['adjunto']['type'].";name=\"".$_FILES['adjunto']['name']."\"\n";;
-    $sAdjuntos .= "Content-Transfer-Encoding: BASE64\n";
-    $sAdjuntos .= "Content-disposition: attachment;filename=\"".$_FILES['adjunto']['name']."\"\n\n";
-
-    $oFichero = fopen($_FILES['adjunto']["tmp_name"], 'r');
-    $sContenido = fread($oFichero, filesize($_FILES['adjunto']["tmp_name"]));
-    $sAdjuntos .= chunk_split(base64_encode($sContenido));
-    fclose($oFichero);
-    }
-
-    if ($bHayFicheros)
-    $sTexto .= $sAdjuntos."\n\n----_Separador-de-mensajes_----\n";
-
-    @mail($sPara, $sAsunto,$sTexto, $sCabeceras);
   }
 ?>

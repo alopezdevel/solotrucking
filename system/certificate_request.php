@@ -71,6 +71,7 @@ $('#emailForm').ajaxForm({
                 $("#mensaje").val("");
                 $("#adjunto").val("");
                 $( "#dialog-certificate" ).dialog("close");
+                llenadoGrid();  
             }
     });     
     
@@ -141,7 +142,7 @@ function  onAbrirDialog(id,correo){
                 <td align="center" class="etiqueta_grid"><input class="inp"  id="filtro_email" type="text"></td>
                 <td align="center" class="etiqueta_grid"><input class="inp"  id="filtro_CertificateHolder" type="text"></td>
                 <td align="center" class="etiqueta_grid"><input class="inp"  align="center" id="filtro_DescriptionOperations" type="text"></td>
-                <td align="center" class="etiqueta_grid" nowrap="nowrap"><select   id="filtro_Status" ><option value="">Select<option value="0">IN PROCESS</option><option value="1">COMPLETE</option></td>
+                <td align="center" class="etiqueta_grid" nowrap="nowrap"><select   id="filtro_Status" ><option value="">Select<option value="0">IN PROCESS</option><option value="1">COMPLETED</option></td>
                 <td align="center" class="etiqueta_grid"><input class="inp"   id="filtro_SendingDate" type="text"></td>
                 <td></td> 
             </tr>
