@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <script src="js/jquery.1.8.3.min.js" type="text/javascript"></script> 
 <script src="/../../../code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 <style>
@@ -7,7 +10,8 @@
        
 $(document).ready(inicio);
 function inicio(){
-    //Variables     
+    //Variables   
+        var usuario_actual = <?php echo json_encode($_SESSION['usuario_actual']);?>          
         mensaje = $( ".mensaje_valido" );        
     //eventos
         //focus
@@ -20,7 +24,10 @@ function inicio(){
         $("#email-fax").blur(onBlur);
         $("#cholder").blur(onBlur);
         $("#description").blur(onBlur);
-    $('#btn_getcertificate').click(onSendMessage);       
+    $('#btn_getcertificate').click(onSendMessage);  
+    if(usuario_actual != ""){
+        $("#email-fax").val(usuario_actual);
+    }    
 }                        
 function onSendMessage(){ 
      var emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
