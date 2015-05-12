@@ -169,9 +169,9 @@ if($_POST["accion"] == ""){
                          <p style=\"margin:5px auto; text-align:center;\"><a href='solotrucking.laredo2.net' style='color:#ffffff;background:#8d0c0c;padding:5px 8px;border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px;text-decoration:none;'>Cancel</a></p>
                     </div>";
              $mail = new Mail();                                    
-             $mail->From = "support@solo-trucking.com";
+             $mail->From = "supportteamo@solo-trucking.com";
              $mail->FromName = "solo-trucking team";
-             $mail->Host = "solotrucking.com";
+             $mail->Host = "solo-trucking.com";
              $mail->Mailer = "sendmail";
              $mail->Subject = "Your New Account "; 
              $mail->Body  = $cuerpo;
@@ -811,4 +811,211 @@ if($_POST["accion"] == ""){
         @mail($sPara, $sAsunto,$sTexto, $sCabeceras);
     }
   }
+  function get_company(){   
+    include("cn_usuarios.php");
+    //$conexion->begin_transaction();
+    $conexion->autocommit(FALSE);
+    $transaccion_exitosa = true;
+    $sql = "SELECT ct_companias.iConsecutivo as id, sUsuario, eEstatusCertificadoUpload as estatus_upload,CASE WHEN eEstatusCertificadoUpload = '0' then 'Pending' Else 'Loaded' END AS  hActivado,sDescripcion as nombre,cu_control_acceso.sUsuario as correo FROM cu_control_acceso LEFT JOIN  ct_companias ON  cu_control_acceso.iConsecutivo = ct_companias.iConsecutivoAcceso WHERE eTipoUsuario ='C' ";
+    $result = $conexion->query($sql);
+    $NUM_ROWs_Usuario = $result->num_rows;    
+    if ($NUM_ROWs_Usuario > 0) {
+        //$items = mysql_fetch_all($result);      
+        while ($usuario = $result->fetch_assoc()) {
+           if($usuario["sUsuario"] != ""){                 
+                 $htmlTabla .= "<tr>
+                                    <td>".$usuario['nombre']."</td>".
+                                   "<td>".$usuario['correo']."</td>".
+                                   "<td>".$usuario['nombre']."</td>".
+                                   "<td>".$usuario['hActivado']."</td>";  
+                                   if($usuario['estatus_upload'] == "0"){   
+                                   $htmlTabla = $htmlTabla."<td nowrap='nowrap' ><div id= 'boton_uploadFile' onclick='onAbrirDialog(\"".$usuario['id']."\",\"".$usuario['correo']."\" );' class=\"btn-icon ico-email-fwd\" title=\"Upload Certificate\"><span></span></div>
+                                   </td>";
+                                   }
+                                   if($usuario['estatus_upload'] == "1"){   
+                                   $htmlTabla = $htmlTabla.    "<td nowrap='nowrap'  > <div> </div></td>";
+                                   }
+                                                                                                                                                                                                                                            
+                                "</tr>"   ;
+             }else{                             
+                 $htmlTabla .="<tr>
+                                    <td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                 "</tr>"   ;
+             }    
+        }
+       // $htmlTabla .="<tr>
+         //                           <td>&nbsp;</td>".
+           //                        "<td>&nbsp;</td>".
+             //                      "<td>&nbsp;</td>".
+               //                    "<td>&nbsp;</td>".
+                 //"</tr>"   ;
+        
+        $conexion->rollback();
+        $conexion->close();                                                                                                                                                                       
+    } else { 
+    $htmlTabla .="<tr>
+                                    <td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                 "</tr>"   ;    
+        
+    }
+     $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
+     echo array2json($response);
+}   
+  function subir_certificado(){        
+      //VERIFICANDO REGISTRO DE USUARIO
+    include("cn_usuarios.php");
+    //$conexion->begin_transaction();
+    $id= $_POST['idCertificate'];
+    $conexion->autocommit(FALSE);
+    $transaccion_exitosa = true;       
+    $oFichero = fopen($_FILES['adjunto']["tmp_name"], 'r'); 
+    $sContenido = fread($oFichero, filesize($_FILES['adjunto']["tmp_name"]));  
+    $sContenido =  $conexion->real_escape_string($sContenido);
+    //$contenido = "";
+    //$_FILES['adjunto']["tmp_name"]    
+    $sql_imagen = ", sNombreArchivo = '".$_FILES['adjunto']["name"]."', sTipoArchivo = '".$_FILES['adjunto']["type"]."', iTamanioArchivo = '".$_FILES['adjunto']["size"]."', hContenidoDocumentoDigitalizado = '".$sContenido."'";
+    $sql = "INSERT INTO cb_certificate_file SET iConsecutivoCompania = '$id'   ".$sql_imagen;        
+    $conexion->query($sql);   
+    
+    if ($conexion->affected_rows < 1 ) {
+        $error = "1";
+        $mensaje= "Internal Error, Failed to verify the account. Please report to Administrator";
+        $transaccion_exitosa = false;
+    }  
+    
+    $sql = "UPDATE ct_companias SET eEstatusCertificadoUpload = '1'  WHERE iConsecutivo = '".$id."'  ";
+    $conexion->query($sql);   
+    if ($conexion->affected_rows < 1 ) {
+        $error = "1";
+        $mensaje= "Internal Error, Failed to verify the account. Please report to Administrator";
+        $transaccion_exitosa = false;
+    } 
+    if ($transaccion_exitosa) {    
+            $mensaje = "Your information has been successfully registered.";
+            $error = "0";
+            $conexion->commit();
+            $conexion->close();
+            
+        } else {
+            $mensaje = "Error: Failed to save the information. Please verify..";
+            $error = "1";  
+            $conexion->rollback();
+            $conexion->close();           
+        }
+    if(0){
+          //Almacenando los valores recibidos
+        $sAsunto = "solo-trucking team - CERTIFICATE";
+        $sPara   = $_POST['para'];
+        $mensaje = $_POST['mensaje'];
+        $sDe     = "solo-trucking team";
+                    
+
+        $bHayFicheros = 0;
+        $sCabeceraTexto = "";
+        $sAdjuntos = "";
+
+        if ($sDe)$sCabeceras = "From:".$sDe."\n";
+        else $sCabeceras = "";
+        $sCabeceras .= "MIME-version: 1.0\n";
+        $sTexto =  "
+                            <div style=\"font-size:12px;border:1px solid #6191df;border-radius:3px;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">
+                                 <h2 style=\"color:#313131;text-transform: uppercase; text-align:center;\">Solo-Trucking Insurance</h2> \n 
+                                 <p style=\"color:#5c5c5c;margin:5px auto; text-align:left;\">His request has already been processed, attached to this email we send the certificate file.</p>\n 
+                                 <p>".$mensaje."</p>
+                                 <br><br> 
+                                 <p style=\"color:#5c5c5c;margin:5px auto; text-align:left;\">Thank you</p>
+                            </div>";
+
+
+        if ($bHayFicheros == 0)
+        {
+        $bHayFicheros = 1;
+        $sCabeceras .= "Content-type: multipart/mixed;";
+        $sCabeceras .= "boundary=\"--_Separador-de-mensajes_--\"\n";
+
+        $sCabeceraTexto = "----_Separador-de-mensajes_--\n";
+        $sCabeceraTexto .= "Content-type: text/html; text/plain;charset=iso-8859-1\n";
+        $sCabeceraTexto .= "Content-transfer-encoding: 7BIT\n";
+
+        $sTexto = $sCabeceraTexto.$sTexto;
+        }
+        if ($_FILES['adjunto']['size'] > 0)
+        {
+        $sAdjuntos .= "\n\n----_Separador-de-mensajes_--\n";
+        $sAdjuntos .= "Content-type: ".$_FILES['adjunto']['type'].";name=\"".$_FILES['adjunto']['name']."\"\n";;
+        $sAdjuntos .= "Content-Transfer-Encoding: BASE64\n";
+        $sAdjuntos .= "Content-disposition: attachment;filename=\"".$_FILES['adjunto']['name']."\"\n\n";
+
+        $oFichero = fopen($_FILES['adjunto']["tmp_name"], 'r');
+        $sContenido = fread($oFichero, filesize($_FILES['adjunto']["tmp_name"]));
+        $sAdjuntos .= chunk_split(base64_encode($sContenido));
+        fclose($oFichero);
+        }
+
+        if ($bHayFicheros)
+        $sTexto .= $sAdjuntos."\n\n----_Separador-de-mensajes_----\n";
+
+        @mail($sPara, $sAsunto,$sTexto, $sCabeceras);
+    }
+  }
+  function get_company_certificate(){   
+    include("cn_usuarios.php");
+    //$conexion->begin_transaction();
+    $conexion->autocommit(FALSE);
+    $transaccion_exitosa = true;
+    $where = "";
+    if($_SESSION['acceso'] == "C"){
+        $where = " AND  cu_control_acceso.sUsuario = '".$_SESSION["usuario_actual"]."' ";
+    }
+    $sql = "SELECT cb_certificate_file.iConsecutivo as folio_documento, ct_companias.iConsecutivo as id, sUsuario,CASE WHEN eEstatusCertificadoUpload = '0' then 'Pending' Else 'Loaded' END AS  hActivado,sDescripcion as nombre,sCorreo as correo FROM cu_control_acceso LEFT JOIN  ct_companias ON  cu_control_acceso.iConsecutivo = ct_companias.iConsecutivoAcceso LEFT JOIN cb_certificate_file ON cb_certificate_file.iConsecutivoCompania = ct_companias.iConsecutivo  WHERE eTipoUsuario ='C' ". $where;
+    $result = $conexion->query($sql);
+    $NUM_ROWs_Usuario = $result->num_rows;    
+    if ($NUM_ROWs_Usuario > 0) {
+        //$items = mysql_fetch_all($result);      
+        while ($usuario = $result->fetch_assoc()) {
+           if($usuario["sUsuario"] != ""){                 
+                 $htmlTabla .= "<tr>
+                                    <td>".$usuario['nombre']."</td>".
+                                   "<td>".$usuario['correo']."</td>".
+                                   "<td>".$usuario['nombre']."</td>".
+                                   "<td>".$usuario['hActivado']."</td>".     
+                                   "<td nowrap='nowrap' ><div id= 'boton_uploadFile' onclick='onAbrirDialog(\"".$usuario['folio_documento']."\");' class=\"btn-icon ico-email-fwd\" title=\"Upload Certificate\"><span></span></div>
+                                   </td>".  
+                                "</tr>"   ;
+             }else{                             
+                 $htmlTabla .="<tr>
+                                    <td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                 "</tr>"   ;
+             }    
+        }
+       // $htmlTabla .="<tr>
+         //                           <td>&nbsp;</td>".
+           //                        "<td>&nbsp;</td>".
+             //                      "<td>&nbsp;</td>".
+               //                    "<td>&nbsp;</td>".
+                 //"</tr>"   ;
+        
+        $conexion->rollback();
+        $conexion->close();                                                                                                                                                                       
+    } else { 
+    $htmlTabla .="<tr>
+                                    <td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                                   "<td>&nbsp;</td>".
+                 "</tr>"   ;    
+        
+    }
+     $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
+     echo array2json($response);
+}   
 ?>

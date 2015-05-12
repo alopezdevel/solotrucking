@@ -49,11 +49,25 @@ session_start();
         			<li><a href="endorsement_request.php">Request an Endorsement</a></li>
         		</ul>
             </li>
-            <li class="submenu"><a href="#">Certificates</a>
+            <?php  if($_SESSION['acceso'] == "U"){ ?>
+             <li class="submenu"><a href="#">Certificates</a>
                 <ul>
                     <li><a href="certificate_request.php">Requests to Certificates</a></li>
+                    <li><a href="certificate_request_pdf_upload.php">Upload Certificate</a></li>
+                    <li><a href="certificate_request_company.php">Download Certificate</a></li>
                 </ul>
+                
             </li> 
+            <?php } ?>
+            <?php if($_SESSION['acceso'] == "C"){ ?>
+             <li class="submenu"><a href="#">Certificates</a>
+                <ul>
+                    <li><a href="certificate_request_company.php">Download Certificate</a></li>
+                </ul>
+                
+            </li> 
+            <?php } ?>
+           
             <li><a href="#">Claims</a></li>  
             <?php if($_SESSION['acceso'] == "U"){ ?>
             <li><a href="#">Quotes</a></li>
