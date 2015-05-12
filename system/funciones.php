@@ -833,7 +833,7 @@ if($_POST["accion"] == ""){
                                    </td>";
                                    }
                                    if($usuario['estatus_upload'] == "1"){   
-                                   $htmlTabla = $htmlTabla.    "<td nowrap='nowrap'  > <div> </div></td>";
+                                   $htmlTabla = $htmlTabla.    "<td nowrap='nowrap'  > <div>re </div></td>";
                                    }
                                                                                                                                                                                                                                             
                                 "</tr>"   ;
