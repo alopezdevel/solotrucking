@@ -108,7 +108,7 @@ if($_POST["accion"] == ""){
     }
 }
   function alta_usuario(){
-  function generaPass(){
+    function generaPass(){
         $cadena = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
         $longitudCadena=strlen($cadena);     
         $pass = "";
@@ -313,8 +313,8 @@ if($_POST["accion"] == ""){
                          $mail->IsHTML(true);
                          $mail->WordWrap =150;
                          $mail_error = false;
-                         //$mail->AddAddress('sanchezmdesign@gmail.com, 19564674440@messages.efax.com');
-                         $mail->AddAddress('alopez@globalpc.net');
+                         $mail->AddAddress('sanchezmdesign@gmail.com, 19564674440@messages.efax.com');
+                         //$mail->AddAddress('alopez@globalpc.net');
                          if (!$mail->Send()) {
                             $mail_error = true;
                             $mail->ClearAddresses();
