@@ -162,11 +162,60 @@ function validarLoginCliente(usuario){
     dialogo.dialog("open");
 }   
 function abrirDescargaPopUp(){
-     
+     mensaje = $( ".mensaje_valido" );                                     
      var id = $("#idCertificate").val();
-     $( "#dialog-certificate" ).dialog("close");
-     window.open('pdf_certificate.php?id='+id,'_blank');
+     var ca = $("#campoA");
+     var cb = $("#campoB");
+     var cc = $("#campoC");
+     var cd = $("#campoD");
+     var valid = true;
+     //validacion
+     valid = valid && checkLength( ca, "Company Name", 2, 25 );
+     valid = valid && checkRegexp( ca, /^[a-z]([0-9a-z_\s])+$/i, "Company Name of a-z, 0-9, underscores, spaces and must begin with a letter." );
+     
+     valid = valid && checkLength( cb, "Address", 6, 25 );
+     valid = valid && checkRegexp( cb, /^[a-z]([0-9a-z_\s])+$/i, "Address of a-z, 0-9, underscores, spaces and must begin with a letter." );
+     
+     valid = valid && checkLength( cc, "City", 3, 25 );
+     valid = valid && checkRegexp( cc, /^[a-z]([0-9a-z_\s])+$/i, "City of a-z, 0-9, underscores, spaces and must begin with a letter." );
+     
+     valid = valid && checkLength( cd, "Zip Postal Code", 1, 5 );
+     valid = valid && checkRegexp( cd, /^([1-9]{2}|[0-9][1-9]|[1-9][0-9])[0-9]{3}$/, "The zip code is not valid." );
+          
+     
+     if(valid){              
+         $( "#dialog-certificate" ).dialog("close");
+         window.open('pdf_certificate.php?id='+id+'&ca='+ca.val()+'&cb='+cb.val()+'&cc='+cc.val()+'&cd='+cd.val(),'_blank');
+     }
 } 
+function actualizarMensajeAlerta( t ) {
+      mensaje
+        .text( t )
+        .addClass( "alertmessage" );
+      setTimeout(function() {
+        mensaje.removeClass( "alertmessage", 2500 );
+      }, 700 );
+ }
+ function checkRegexp( o, regexp, n ) {
+    if ( !( regexp.test( o.val() ) ) ) {
+        actualizarMensajeAlerta( n );
+        o.addClass( "error" );
+        o.focus();
+        return false;
+    } else {                     
+        return true;        
+    }
+ }
+ function checkLength( o, n, min, max ) {
+    if ( o.val().length > max || o.val().length < min ) {
+        actualizarMensajeAlerta( "Length of " + n + " must be between " + min + " and " + max + "."  );
+        o.addClass( "error" );
+        o.focus();
+        return false;    
+    } else {             
+        return true;                     
+    }                    
+ }
     
 </script> 
 <!---- HEADER ----->
@@ -219,9 +268,10 @@ function inicio(){
                 <p class="mensaje_valido">&nbsp;All form fields are required.</p>
                 <br />
                 <br />
-                <label>Campo A:</label><input type="text" id="campoA" name="campoA"></input>
-                <label>Campo B:</label><input type="text" id="campoB" name="campoB"></input>
-                <label>Campo C:</label><input type="text" id="campoC" name="campoC"></input>
+                <label>Company name:</label><input type="text" id="campoA" name="campoA"></input>
+                <label>Address:</label><input type="text" id="campoB" name="campoB"></input>
+                <label>City:</label><input type="text" id="campoC" name="campoC"></input>
+                <label>Zip postal code:</label><input type="text" id="campoD" name="campoD"></input>
                 <div align="center"><input type="button" id="buton_download" value="Download" id="button_submit"  class="btn_2" ></div>  
                 <input type="hidden" name="accion" id="accion" value="subir_certificado"  />                    
                 <input type="hidden" name="idCertificate" id="idCertificate"   />                    

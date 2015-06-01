@@ -3,6 +3,12 @@
     require_once('./lib/merge_pdf/fpdi/fpdi.php');
     include("cn_usuarios.php"); 
     $folio = $_GET['id'];
+    $ca = $_GET['ca'];
+    $cb = $_GET['cb'];
+    $cc = $_GET['cc'];
+    $cd = $_GET['cd'];
+    $folio = preg_replace("/%u([0-9a-f]{3,4})/i","&#x\\1;",urldecode($folio)); 
+    $folio = html_entity_decode($folio,null,'UTF-8');
     $sql = "SELECT iConsecutivoCompania,
             hContenidoDocumentoDigitalizado,
             sNombreArchivo,
@@ -40,13 +46,33 @@
     $pdf->SetTextColor(0,0,0);
     $pdf->SetFont('Arial','b',11); 
     //fecha
-    $fecha =  '05/15/2017';
+    $time = time();
+    $fecha = date("m/d/Y", $time);
+    //$fecha =  '05/15/2017';
     $pdf->SetXY(180, 12);
     $pdf->Cell(29,4,$fecha,0,0,'C',1);
     //Holder
     $holder =  '05/15/2017';
-    $pdf->SetXY(17, 238);
-    $pdf->Cell(60,12,'',0,0,'C',1);   
-    $pdf->Output();
+    $pdf->SetXY(12, 235);
+    $pdf->Cell(90,24,'',0,0,'C',1);   
+    $pdf->SetFont('Arial','B',11);
+    //Ca
+    $y_holder = 0;
+    $y_holder = 235 + 4;
+    $pdf->SetXY(12, $y_holder);
+    $pdf->Cell(90,4,$ca,0,0,'L',1);   
+    
+    //Cb
+    $y_holder = $y_holder + 4;
+    $pdf->SetXY(12, $y_holder);
+    $pdf->Cell(90,4,$cb,0,0,'L',1);
+    
+    //Cc
+    $y_holder = $y_holder + 4;
+    $pdf->SetXY(12, $y_holder);
+    $pdf->Cell(90,4,$cc.' '.$cd,0,0,'L',1);
+    
+    $pdf->Output("Certificate-".$ca.".pdf","D");
+    //$pdf->Output();
 ?>
 
