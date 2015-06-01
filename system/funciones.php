@@ -7,7 +7,7 @@ session_start();
 
     //Find out if the given array is a numerical array 
     $keys = array_keys($arr); 
-    $max_length = count($arr)-1; 
+    $max_length = count($arr)-1;                                                                                       
     if(($keys[0] == 0) and ($keys[$max_length] == $max_length)) {//See if the first key is 0 and last key is length - 1 
         $is_list = true; 
         for($i=0; $i<count($keys); $i++) { //See if each key correspondes to its position 
@@ -814,7 +814,7 @@ if($_POST["accion"] == ""){
   function get_company(){   
     include("cn_usuarios.php");
     //$conexion->begin_transaction();
-    $conexion->autocommit(FALSE);
+    $conexion->autocommit(FALSE);                                                                                                                                                                                                                 
     $transaccion_exitosa = true;
     $sql = "SELECT ct_companias.iConsecutivo as id, sUsuario, eEstatusCertificadoUpload as estatus_upload,CASE WHEN eEstatusCertificadoUpload = '0' then 'Pending' Else 'Loaded' END AS  hActivado,sDescripcion as nombre,cu_control_acceso.sUsuario as correo FROM cu_control_acceso LEFT JOIN  ct_companias ON  cu_control_acceso.iConsecutivo = ct_companias.iConsecutivoAcceso WHERE eTipoUsuario ='C' ";
     $result = $conexion->query($sql);
@@ -833,7 +833,7 @@ if($_POST["accion"] == ""){
                                    </td>";
                                    }
                                    if($usuario['estatus_upload'] == "1"){   
-                                   $htmlTabla = $htmlTabla.    "<td nowrap='nowrap'  > <div>re </div></td>";
+                                   $htmlTabla = $htmlTabla.    "<td nowrap='nowrap'  > <div>&nbsp; </div></td>";
                                    }
                                                                                                                                                                                                                                             
                                 "</tr>"   ;
@@ -982,11 +982,16 @@ if($_POST["accion"] == ""){
            if($usuario["sUsuario"] != ""){                 
                  $htmlTabla .= "<tr>
                                     <td>".$usuario['nombre']."</td>".
-                                   "<td>".$usuario['correo']."</td>".
+                                   "<td>".$usuario['correo']."</td>".    
                                    "<td>".$usuario['nombre']."</td>".
-                                   "<td>".$usuario['hActivado']."</td>".     
-                                   "<td nowrap='nowrap' ><div id= 'boton_uploadFile' onclick='onAbrirDialog(\"".$usuario['folio_documento']."\");' class=\"btn-icon ico-email-fwd\" title=\"Upload Certificate\"><span></span></div>
-                                   </td>".  
+                                   "<td>".$usuario['hActivado']."</td>";
+                                   if($usuario['hActivado']=="Pending"){
+                                       $htmlTabla= $htmlTabla . "<td> &nbsp;";
+                                   }else{
+                                    $htmlTabla= $htmlTabla.   "<td nowrap='nowrap' ><div id= 'boton_uploadFile' onclick='onAbrirDialog(\"".$usuario['folio_documento']."\");' class=\"btn-icon ico-email-fwd\" title=\"Upload Certificate\"><span></span></div>";
+                                   }     
+                                   
+                                  $htmlTabla= $htmlTabla. "</td>".  
                                 "</tr>"   ;
              }else{                             
                  $htmlTabla .="<tr>

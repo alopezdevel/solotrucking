@@ -53,7 +53,7 @@
     $pdf->Cell(29,4,$fecha,0,0,'C',1);
     //Holder
     $holder =  '05/15/2017';
-    $pdf->SetXY(12, 235);
+    $pdf->SetXY(8, 233);
     $pdf->Cell(90,24,'',0,0,'C',1);   
     $pdf->SetFont('Arial','B',11);
     //Ca
@@ -72,7 +72,7 @@
     $pdf->SetXY(12, $y_holder);
     $pdf->Cell(90,4,$cc.' '.$cd,0,0,'L',1);
     
-    $pdf->Output("Certificate-".$ca.".pdf","D");
-    //$pdf->Output();
+    //$pdf->Output("Certificate-".$ca.".pdf","D");
+    $pdf->Output();
 ?>
 
