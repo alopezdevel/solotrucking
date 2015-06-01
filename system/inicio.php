@@ -99,7 +99,7 @@ if ( !(($_SESSION["acceso"] == 'C' || $_SESSION["acceso"] == 'U')  && $_SESSION[
             <div class="bann">
                 <h3>Certificates</h3>
                 <br>
-                <a class="fancybox-certificate" href="javascript:;"><span><img src="../images/cont/btn_certificate_a.gif" border="0"  alt="btn_certificate_a.gif (5,626 bytes)"></span></a>
+                <a style="display:none" class="fancybox-certificate" href="javascript:;"><span><img src="../images/cont/btn_certificate_a.gif" border="0"  alt="btn_certificate_a.gif (5,626 bytes)"></span></a>
             </div>
         </div>
         <div class="col_3 left">
