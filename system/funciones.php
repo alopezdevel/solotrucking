@@ -833,11 +833,11 @@ if($_POST["accion"] == ""){
                                    </td>";
                                    }
                                    if($usuario['estatus_upload'] == "1"){   
-                                   $htmlTabla = $htmlTabla.    "<td nowrap='nowrap'  > <div>&nbsp; </div></td>";
+                                   $htmlTabla = $htmlTabla.    "<td nowrap='nowrap'  > <div id= 'boton_uploadFile' onclick='onAbrirDialogAdd(\"".$usuario['id']."\",\"".$usuario['correo']."\" );' class=\"btnicon\" title=\"Upload Additional remarks schedule\"><span ><i class=\"fa fa-upload\"></i></span></div></td>";
                                    }
                                                                                                                                                                                                                                             
                                 "</tr>"   ;
-             }else{                             
+             }else{                                                                                                                                                                                                        
                  $htmlTabla .="<tr>
                                     <td>&nbsp;</td>".
                                    "<td>&nbsp;</td>".
@@ -1023,4 +1023,40 @@ if($_POST["accion"] == ""){
      $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
      echo array2json($response);
 }   
+  function subir_aditional(){ 
+
+      //VERIFICANDO REGISTRO DE USUARIO
+    include("cn_usuarios.php");
+    //$conexion->begin_transaction();
+    $id= $_POST['idCertificateAdd'];
+    $conexion->autocommit(FALSE);
+    $transaccion_exitosa = true;       
+    $oFichero = fopen($_FILES['adjunto_add']["tmp_name"], 'r'); 
+    $sContenido = fread($oFichero, filesize($_FILES['adjunto_add']["tmp_name"]));  
+    $sContenido =  $conexion->real_escape_string($sContenido);
+    //$contenido = "";
+    //$_FILES['adjunto']["tmp_name"]        
+    $sql_imagen = " sNombreArchivoAdd= '".$_FILES['adjunto_add']["name"]."', sTipoArchivoAdd = '".$_FILES['adjunto_add']["type"]."', iTamanioArchivoAdd = '".$_FILES['adjunto_add']["size"]."', hContenidoDocumentoDigitalizadoAdd = '".$sContenido."'";
+    $sql = "UPDATE cb_certificate_file SET   ".$sql_imagen. " WHERE iConsecutivoCompania = '$id'  ";            
+    $conexion->query($sql);       
+    if ($conexion->affected_rows < 1 ) {
+        $error = "1";
+        $mensaje= "Internal Error, Failed to verify the account. Please report to Administrator";
+        $transaccion_exitosa = false;
+    }  
+    
+    
+    if ($transaccion_exitosa) {    
+            $mensaje = "Your information has been successfully registered.";
+            $error = "0";
+            $conexion->commit();
+            $conexion->close();
+            
+        } else {
+            $mensaje = "Error: Failed to save the information. Please verify..";
+            $error = "1";  
+            $conexion->rollback();
+            $conexion->close();           
+        }    
+  }
 ?>

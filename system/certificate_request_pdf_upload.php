@@ -28,6 +28,20 @@ $('#emailForm').ajaxForm({
                 llenadoGrid();  
             }
     });     
+    $('#emailFormAdd').ajaxForm({
+            beforeSubmit: validate,
+            success: function(data, statusText, xhr, form) {            
+                $('#loading').html('Sended 1/1');
+                alert("Sended 1/1");
+                $('#loading').hide();
+                $("#asunto").val("");
+                $("#para").val("");
+                $("#mensaje").val("");
+                $("#adjunto").val("");
+                $( "#dialog-certificate-aditional" ).dialog("close");
+                llenadoGrid();  
+            }
+    });  
     
     function validate(formData, jqForm, options) {
             var form =  jqForm[0]; 
@@ -180,6 +194,22 @@ function validarLoginCliente(usuario){
     $("#Description").val(id);
     dialogo.dialog("open");
 }    
+function  onAbrirDialogAdd(id,correo){    
+    var dialogo;
+    var div =  $("fn_request_certificate");
+    dialogo = $( "#dialog-certificate-aditional" ).dialog({
+      autoOpen: false,
+      height: 500,
+      width: 527,                                 
+      modal: true,      
+      close: function() {
+        //form[ 0 ].reset();
+        //allFields.removeClass( "ui-state-error" );
+      }
+    });     
+    $("#idCertificateAdd").val(id);    
+    dialogo.dialog("open");
+} 
     
 </script> 
 <!---- HEADER ----->
@@ -237,6 +267,20 @@ function inicio(){
                 <div align="center"><input type="submit" value="Upload" id="button_submit"  class="btn_2" ></div>  
                 <input type="hidden" name="accion" id="accion" value="subir_certificado"  />                    
                 <input type="hidden" name="idCertificate" id="idCertificate"   />                    
+            </form>
+            <div id="loading"></div>                                                                                
+            </fieldset>
+    </div>
+    <div id="dialog-certificate-aditional" title="Send Additional remarks schedule"  >
+        <fieldset id="sendEmail">
+            <form name="emailFormAdd" id="emailFormAdd" method="POST" action="funciones.php"  enctype="multipart/form-data">
+                <p class="mensaje_valido">&nbsp;All form fields are required.</p>
+                <br />
+                <br />                
+                <div ><label>File:</label> <input type="file" id="adjunto_add" name="adjunto_add" size="25" class="etiqueta_grid" > *</div>  
+                <div align="center"><input type="submit" value="Upload" id="button_submit"  class="btn_2" ></div>  
+                <input type="hidden" name="accion" id="accion" value="subir_aditional"  />                    
+                <input type="hidden" name="idCertificateAdd" id="idCertificateAdd"   />                    
             </form>
             <div id="loading"></div>                                                                                
             </fieldset>

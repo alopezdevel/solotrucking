@@ -7,6 +7,7 @@
     $cb = $_GET['cb'];
     $cc = $_GET['cc'];
     $cd = $_GET['cd'];
+    $ce = $_GET['ce'];
     $folio = preg_replace("/%u([0-9a-f]{3,4})/i","&#x\\1;",urldecode($folio)); 
     $folio = html_entity_decode($folio,null,'UTF-8');
     $sql = "SELECT iConsecutivoCompania,
@@ -70,9 +71,10 @@
     //Cc
     $y_holder = $y_holder + 4;
     $pdf->SetXY(12, $y_holder);
-    $pdf->Cell(90,4,$cc.' '.$cd,0,0,'L',1);
+    $pdf->Cell(90,4,$ce .' '. $cc.' '.$cd,0,0,'L',1); 
     
     //$pdf->Output("Certificate-".$ca.".pdf","D");
     $pdf->Output();
+    unlink($nombre_pdf);
 ?>
 

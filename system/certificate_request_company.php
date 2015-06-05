@@ -168,24 +168,27 @@ function abrirDescargaPopUp(){
      var cb = $("#campoB");
      var cc = $("#campoC");
      var cd = $("#campoD");
+     var ce = $("#campoE");
      var valid = true;
      //validacion
      valid = valid && checkLength( ca, "Company Name", 2, 25 );
      valid = valid && checkRegexp( ca, /^[a-z]([0-9a-z_\s])+$/i, "Company Name of a-z, 0-9, underscores, spaces and must begin with a letter." );
      
-     valid = valid && checkLength( cb, "Address", 6, 25 );
-     valid = valid && checkRegexp( cb, /^[a-z]([0-9a-z_\s])+$/i, "Address of a-z, 0-9, underscores, spaces and must begin with a letter." );
+     valid = valid && checkLength( cb, "Address", 1, 25 );               
      
      valid = valid && checkLength( cc, "City", 3, 25 );
      valid = valid && checkRegexp( cc, /^[a-z]([0-9a-z_\s])+$/i, "City of a-z, 0-9, underscores, spaces and must begin with a letter." );
      
      valid = valid && checkLength( cd, "Zip Postal Code", 1, 5 );
      valid = valid && checkRegexp( cd, /^([1-9]{2}|[0-9][1-9]|[1-9][0-9])[0-9]{3}$/, "The zip code is not valid." );
+     
+     valid = valid && checkLength( ce, "State", 3, 25 );
+     valid = valid && checkRegexp( ce, /^[a-z]([0-9a-z_\s])+$/i, "State of a-z, 0-9, underscores, spaces and must begin with a letter." );
           
      
      if(valid){              
          $( "#dialog-certificate" ).dialog("close");
-         window.open('pdf_certificate.php?id='+id+'&ca='+ca.val()+'&cb='+cb.val()+'&cc='+cc.val()+'&cd='+cd.val(),'_blank');
+         window.open('pdf_certificate.php?id='+id+'&ca='+ca.val()+'&cb='+cb.val()+'&cc='+cc.val()+'&cd='+cd.val()+'&ce='+ce.val(),'_blank');
      }
 } 
 function actualizarMensajeAlerta( t ) {
@@ -270,6 +273,7 @@ function inicio(){
                 <br />
                 <label>Company name:</label><input type="text" id="campoA" name="campoA"></input>
                 <label>Address:</label><input type="text" id="campoB" name="campoB"></input>
+                <label>State:</label><input type="text" id="campoE" name="campoE"></input>
                 <label>City:</label><input type="text" id="campoC" name="campoC"></input>
                 <label>Zip postal code:</label><input type="text" id="campoD" name="campoD"></input>
                 <div align="center"><input type="button" id="buton_download" value="Download" id="button_submit"  class="btn_2" ></div>  
@@ -279,6 +283,7 @@ function inicio(){
             <div id="loading"></div>                                                                                
             </fieldset>
     </div>
+    
 </body>
 
 </html>
