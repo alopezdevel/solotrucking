@@ -312,8 +312,9 @@ tfoot{border-top:2px solid #b9dcf6;}
 /*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
 /*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
 /*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
-
-div.btn-icon{
+.btnicon{width:auto!important;color:#999999;}
+.btnicon:hover{color:#447096;}
+div.btn-icon, .btnicon{
 	
     width:35px;
     float: left;
