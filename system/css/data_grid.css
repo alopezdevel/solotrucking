@@ -312,7 +312,8 @@ tfoot{border-top:2px solid #b9dcf6;}
 /*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
 /*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
 /*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
-.btnicon{width:auto!important;color:#999999;font-size: 1.4em;}
+.btnicon{width:auto!important;min-width:150px;color:#999999;font-family: Arial, Helvetica, sans-serif;font-weight:bold;}
+.btnicon i{font-family: 'FontAwesome';font-size: 1.4em;font-weight:normal;}
 .btnicon:hover{color:#447096;}
 div.btn-icon, .btnicon{
 	
