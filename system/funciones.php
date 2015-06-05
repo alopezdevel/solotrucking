@@ -814,26 +814,33 @@ if($_POST["accion"] == ""){
   function get_company(){   
     include("cn_usuarios.php");
     //$conexion->begin_transaction();
-    $conexion->autocommit(FALSE);                                                                                                                                                                                                                 
+    $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
     $transaccion_exitosa = true;
-    $sql = "SELECT ct_companias.iConsecutivo as id, sUsuario, eEstatusCertificadoUpload as estatus_upload,CASE WHEN eEstatusCertificadoUpload = '0' then 'Pending' Else 'Loaded' END AS  hActivado,sDescripcion as nombre,cu_control_acceso.sUsuario as correo FROM cu_control_acceso LEFT JOIN  ct_companias ON  cu_control_acceso.iConsecutivo = ct_companias.iConsecutivoAcceso WHERE eTipoUsuario ='C' ";
+    $sql = "SELECT ct_companias.iConsecutivo as id, sUsuario, eEstatusCertificadoUpload as estatus_upload,CASE WHEN eEstatusCertificadoUpload = '0' then 'Pending' Else 'Loaded' END AS  hActivado,sDescripcion as nombre,cu_control_acceso.sUsuario as correo FROM  ct_companias LEFT JOIN   cu_control_acceso ON  cu_control_acceso.iConsecutivo = ct_companias.iConsecutivoAcceso WHERE eTipoUsuario ='C' ";
     $result = $conexion->query($sql);
     $NUM_ROWs_Usuario = $result->num_rows;    
     if ($NUM_ROWs_Usuario > 0) {
         //$items = mysql_fetch_all($result);      
         while ($usuario = $result->fetch_assoc()) {
-           if($usuario["sUsuario"] != ""){                 
+           if($usuario["sUsuario"] != ""){                       
+            $color = "#800000";
                  $htmlTabla .= "<tr>
                                     <td>".$usuario['nombre']."</td>".
                                    "<td>".$usuario['correo']."</td>".
-                                   "<td>".$usuario['nombre']."</td>".
-                                   "<td>".$usuario['hActivado']."</td>";  
+                                   "<td>".$usuario['nombre']."</td>";
+                                   if($usuario['hActivado'] == "Loaded"){
+                                       $color = "#000080";
+                                       $usuario['hActivado'] = "Certificate Loaded";
+                                   }else{
+                                       $usuario['hActivado'] = "Certificate not Loaded";
+                                   }                                   
+                 $htmlTabla = $htmlTabla."<td><b><font color ='$color'> ".$usuario['hActivado']."</font></b></td>";  
                                    if($usuario['estatus_upload'] == "0"){   
-                                   $htmlTabla = $htmlTabla."<td nowrap='nowrap' ><div id= 'boton_uploadFile' onclick='onAbrirDialog(\"".$usuario['id']."\",\"".$usuario['correo']."\" );' class=\"btn-icon ico-email-fwd\" title=\"Upload Certificate\"><span></span></div>
+                                   $htmlTabla = $htmlTabla."<td nowrap='nowrap' ><div id= 'boton_uploadFile' onclick='onAbrirDialog(\"".$usuario['id']."\",\"".$usuario['correo']."\" );' class=\"btnicon\" title=\"Upload Certificate\"><span><i i class=\"fa fa-envelope-o\"> </i> Certificate</span></div>
                                    </td>";
                                    }
                                    if($usuario['estatus_upload'] == "1"){   
-                                   $htmlTabla = $htmlTabla.    "<td nowrap='nowrap'  > <div id= 'boton_uploadFile' onclick='onAbrirDialogAdd(\"".$usuario['id']."\",\"".$usuario['correo']."\" );' class=\"btnicon\" title=\"Upload Additional remarks schedule\"><span ><i class=\"fa fa-upload\"></i></span></div></td>";
+                                   $htmlTabla = $htmlTabla.    "<td nowrap='nowrap'  > <div id= 'boton_uploadFile' onclick='onAbrirDialogAdd(\"".$usuario['id']."\",\"".$usuario['correo']."\" );' class=\"btnicon\" title=\"Upload Additional remarks schedule\"><span ><i class=\"fa fa-upload\"> </i> Additional Remarks</span></div></td>";
                                    }
                                                                                                                                                                                                                                             
                                 "</tr>"   ;
