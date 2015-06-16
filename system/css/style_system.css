@@ -225,12 +225,12 @@ img {max-width:100%;}
 	border-bottom:1px solid #dfdfdf;
 }
 .main-nav{
-	text-align:center;
-	margin:35px 0px 0px;
-	padding:0;
-	list-style:none;
-	float: right;
-	clear:both;
+  text-align: center;
+  margin: 35px 0px 0px 315px;
+  padding: 0;
+  list-style: none;
+  float: left;
+  clear: both;
 }
 .main-nav li{
 	display:inline;
@@ -442,7 +442,8 @@ img {max-width:100%;}
 }
 .container{
 	
-	width:98%;
+	/*width:98%;*/
+    width: 1300px;
 	margin:0 auto;
 	
 }
