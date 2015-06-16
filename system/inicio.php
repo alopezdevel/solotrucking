@@ -95,32 +95,49 @@ if ( !(($_SESSION["acceso"] == 'C' || $_SESSION["acceso"] == 'U')  && $_SESSION[
 	<div class="container">
 		<h2 class="txt-center">Welcome to Solo-Trucking System</h2>
 		<div style="clear:both;padding-top: 40px;">
-        <div class="col_3 left">
-            <div class="bann">
-                <h3>Certificates</h3>
-                <br>
-                <a style="display:none" class="fancybox-certificate" href="javascript:;"><span><img src="../images/cont/btn_certificate_a.gif" border="0"  alt="btn_certificate_a.gif (5,626 bytes)"></span></a>
-            </div>
-        </div>
-        <div class="col_3 left">
-            <div class="bann">
-                <h3>Quotes</h3>
-                <br>
-                <ul>
-                    <li><a href="#"><span>»</span>Get a Quote</a> </li>
-                    <li><a href="#"><span>»</span>Consult One</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="col_3 left">
-            <div class="bann">
-                <h3>Endorsements</h3>
-                <br>
-                <ul>
-                    <li><a href="#"><span>»</span>Request One</a></li>
-                </ul>
-            </div>
-        </div>
+        <?php if($_SESSION['acceso'] == "U"){  ?>
+                <div class="col_3 left">
+                    <div class="bann">
+                        <h3>Certificates</h3>
+                        <br>
+                        <ul>
+                            <li><a href="certificate_request"><span><i class="fa fa-eye"></i> </span>Requests to Certificates</a> </li>
+                            <li><a href="certificate_request_pdf_upload"><span><i class="fa fa-upload"></i> </span>Upload Certificate</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col_3 left">
+                    <div class="bann">
+                        <h3>Quotes</h3>
+                        <br>
+                        <ul>
+                            <li><a href="#"><span><i class="fa fa-external-link-square"></i> </span>Get a Quote</a> </li>
+                            <li><a href="#"><span><i class="fa fa-eye"></i> </span>Consult One</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col_3 left">
+                    <div class="bann">
+                        <h3>Endorsements</h3>
+                        <br>
+                        <ul>
+                            <li><a href="#"><span><i class="fa fa-external-link-square"></i> </span>Request One</a></li>
+                        </ul>
+                    </div>
+                </div>
+        <?php }?>
+        <?php if($_SESSION['acceso'] == "C"){  ?>
+                <div class="col_3 left" style="margin: 0 auto; float:none!important;">
+                    <div class="bann">
+                        <h3>Certificates</h3>
+                        <br>
+                        <p>Now you can edit your certificate:</p>
+                        <ul>
+                            <li><a href="certificate_request_company"><span><i class="fa fa-external-link-square"></i> </span> Go Now!</a></li>
+                        </ul>
+                    </div>
+                </div>
+        <?php }?>
         </div>
 	</div>
 <!---- FOOTER ----->

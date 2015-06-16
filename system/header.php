@@ -62,9 +62,8 @@ session_start();
             <?php if($_SESSION['acceso'] == "C"){ ?>
              <li class="submenu"><a href="#">Certificates</a>
                 <ul>
-                    <li><a href="certificate_request_company.php">Download Certificate</a></li>
-                </ul>
-                
+                    <li><a href="certificate_request_company">Download Certificate</a></li>
+                </ul> 
             </li> 
             <?php } ?>
            
