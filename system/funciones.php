@@ -247,12 +247,7 @@ if($_POST["accion"] == ""){
         $conexion->rollback();
         $conexion->close();                                                                                                                                                                       
     } else { 
-    $htmlTabla .="<tr>
-                                    <td>&nbsp;</td>".
-                                   "<td>&nbsp;</td>".
-                                   "<td>&nbsp;</td>".
-                                   "<td>&nbsp;</td>".
-                 "</tr>"   ;    
+    $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;    
         
     }
      $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
@@ -845,30 +840,17 @@ if($_POST["accion"] == ""){
                                                                                                                                                                                                                                             
                                 "</tr>"   ;
              }else{                                                                                                                                                                                                        
-                 $htmlTabla .="<tr>
-                                    <td>&nbsp;</td>".
-                                   "<td>&nbsp;</td>".
-                                   "<td>&nbsp;</td>".
-                                   "<td>&nbsp;</td>".
-                 "</tr>"   ;
+                
+                 $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;
              }    
         }
-       // $htmlTabla .="<tr>
-         //                           <td>&nbsp;</td>".
-           //                        "<td>&nbsp;</td>".
-             //                      "<td>&nbsp;</td>".
-               //                    "<td>&nbsp;</td>".
-                 //"</tr>"   ;
+    
         
         $conexion->rollback();
         $conexion->close();                                                                                                                                                                       
     } else { 
-    $htmlTabla .="<tr>
-                                    <td>&nbsp;</td>".
-                                   "<td>&nbsp;</td>".
-                                   "<td>&nbsp;</td>".
-                                   "<td>&nbsp;</td>".
-                 "</tr>"   ;    
+        
+        $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;    
         
     }
      $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   

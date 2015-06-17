@@ -26,35 +26,33 @@ session_start();
                 </ul>
             </li>
             
-			<li><a href="login.php" class="icon logout"title="Log Out"><span>Log Out</span></a></li>
+			<li><a href="login" class="icon logout"title="Log Out"><span>Log Out</span></a></li>
 		</ul>
         <ul class="main-nav">
-        	<li><a href="inicio.php">Home</a></li>
+        	<li><a href="inicio">Home</a></li>
             <?php if($_SESSION['acceso'] == "U"){ ?>
-        	<li class="submenu" style="display: none;"><a href="#">Catalogs</a>
+        	<li class="submenu"><a href="#">Catalogs</a>
         		<ul>
-        			<li><a href="#">Insured Companies</a></li>
-        			<li><a href="#">UnderWriters</a></li>
-        			<li><a href="#">Financial</a></li>
+        			<li><a href="users_clients"><i class="fa fa-users"></i> Insured Company Users</a></li> 
+        			<li style="display: none;"><a href="#">UnderWriters</a></li>
+        			<li style="display: none;"><a href="#">Financial</a></li>
         		</ul>
         	</li>
         	<li class="submenu"><a href="#">Users</a>
         		<ul>
-        			<li><a href="user_register.php">New Insured Company User</a></li>
-        			<li><a href="users_clients.php">Insured Company Users</a></li>
+        			<li><a href="user_register"><i class="fa fa-user-plus"></i> New Insured Company User</a></li>
         		</ul>
         	</li>
             <?php } ?>
             <li class="submenu" style="display: none;"><a href="#">Endorsements</a>
             	<ul>
-        			<li><a href="endorsement_request.php">Request an Endorsement</a></li>
+        			<li><a href="endorsement_request">Request an Endorsement</a></li>
         		</ul>
             </li>
             <?php  if($_SESSION['acceso'] == "U"){ ?>
              <li class="submenu"><a href="#">Certificates</a>
                 <ul>
-                    <li><a href="certificate_request.php">Requests to Certificates</a></li>
-                    <li><a href="certificate_request_pdf_upload.php">Upload Certificate</a></li>
+                    <li><a href="certificate_request_pdf_upload"><i class="fa fa-upload"></i> Upload Certificates</a></li>
                 </ul>
                 
             </li> 
@@ -62,7 +60,7 @@ session_start();
             <?php if($_SESSION['acceso'] == "C"){ ?>
              <li class="submenu"><a href="#">Certificates</a>
                 <ul>
-                    <li><a href="certificate_request_company">Download Certificate</a></li>
+                    <li><a href="certificate_request_company"><i class="fa fa-download"></i> Download Certificate</a></li>
                 </ul> 
             </li> 
             <?php } ?>

@@ -101,8 +101,7 @@ if ( !(($_SESSION["acceso"] == 'C' || $_SESSION["acceso"] == 'U')  && $_SESSION[
                         <h3>Certificates</h3>
                         <br>
                         <ul>
-                            <li><a href="certificate_request"><span><i class="fa fa-eye"></i> </span>Requests to Certificates</a> </li>
-                            <li><a href="certificate_request_pdf_upload"><span><i class="fa fa-upload"></i> </span>Upload Certificate</a></li>
+                            <li><a href="certificate_request_pdf_upload"><span><i class="fa fa-upload color-blue"></i> </span>Upload Certificates</a></li>
                         </ul>
                     </div>
                 </div>
@@ -111,8 +110,8 @@ if ( !(($_SESSION["acceso"] == 'C' || $_SESSION["acceso"] == 'U')  && $_SESSION[
                         <h3>Quotes</h3>
                         <br>
                         <ul>
-                            <li><a href="#"><span><i class="fa fa-external-link-square"></i> </span>Get a Quote</a> </li>
-                            <li><a href="#"><span><i class="fa fa-eye"></i> </span>Consult One</a></li>
+                            <li><a href="#"><span><i class="fa fa-external-link-square color-blue"></i> </span>Get a Quote</a> </li>
+                            <li><a href="#"><span><i class="fa fa-eye color-blue"></i> </span>Consult One</a></li>
                         </ul>
                     </div>
                 </div>
@@ -121,7 +120,7 @@ if ( !(($_SESSION["acceso"] == 'C' || $_SESSION["acceso"] == 'U')  && $_SESSION[
                         <h3>Endorsements</h3>
                         <br>
                         <ul>
-                            <li><a href="#"><span><i class="fa fa-external-link-square"></i> </span>Request One</a></li>
+                            <li><a href="#"><span><i class="fa fa-external-link-square color-blue"></i> </span>Request One</a></li>
                         </ul>
                     </div>
                 </div>
@@ -133,7 +132,7 @@ if ( !(($_SESSION["acceso"] == 'C' || $_SESSION["acceso"] == 'U')  && $_SESSION[
                         <br>
                         <p>Now you can edit your certificate:</p>
                         <ul>
-                            <li><a href="certificate_request_company"><span><i class="fa fa-external-link-square"></i> </span> Go Now!</a></li>
+                            <li><a href="certificate_request_company"><span><i class="fa fa-external-link-square color-blue"></i> </span> Go Now!</a></li>
                         </ul>
                     </div>
                 </div>

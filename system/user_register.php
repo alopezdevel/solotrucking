@@ -133,7 +133,7 @@ function onInsertarUsuario(){
 	<div class="container">
 		<div class="page-title">
             <h1>Users</h1>
-            <h2>New User</h2>
+            <h2>New Insured Company User</h2>
         </div>
 		<form method="post" action="">
             <p class="mensaje_valido">&nbsp;All form fields are required.</p>
@@ -144,11 +144,9 @@ function onInsertarUsuario(){
 			<button id = "btn_register" class="btn_register btn_4" type="button">Register</button>
 		</form>
 	</div>
-</div>
 <!---- FOOTER ----->
 <?php include("footer.php"); ?> 
-
+</div>
 </body>
-
 </html>
 <?php }?>

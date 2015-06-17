@@ -88,6 +88,7 @@ button, .btn-1{
 }
 button:hover, .btn-1:hover{background-color:#61b1df;}
 .msg-success{display:none;}
+.mensaje_valido{padding:5px 2px;}
 .error{
 	border:1px solid #b64141!important;
 	-webkit-box-shadow:inset 0px 0px 3px #decfcf!important;
@@ -110,6 +111,9 @@ button:hover, .btn-1:hover{background-color:#61b1df;}
     -moz-box-shadow:inset 0px 0px 3px #f2efdd!important;
     box-shadow:inset 0px 0px 3px #f2efdd!important;
     background:#f9f5dd;
+    border-radius:5px;
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
 
 }
 /*------ Para formas de busqueda----*/
