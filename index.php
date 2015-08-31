@@ -43,8 +43,8 @@
 		<a href="#home" class="img-logo"><img  src="images/nav/img-logo.png" alt="logo"></a>
 		<ul class="top-nav">
 			<li><a href="system/login" class="login-btn" title="Log In" target="_blank"><span>My Account</span></a></li>
-			<li><a href="https://www.facebook.com/" class="icon facebook" title="follow us in Facebook!" target="_blank"><span></span></a></li>
-			<li><a href="https://www.youtube.com/" class="icon youtube" title="follow us in YouTube!" target="_blank"><span></span></a></li>
+			<li><a href="https://www.facebook.com/solotrucking" class="icon facebook" title="follow us in Facebook!" target="_blank"><span></span></a></li>
+			<li style="display:none"><a href="https://www.youtube.com/" class="icon youtube" title="follow us in YouTube!" target="_blank"><span></span></a></li>
 			<li><a href="https://twitter.com/" class="icon twitter" title="follow us in Twitter!" target="_blank"><span></span></a></li>
 			<li><a href="https://www.google.com/" class="icon google" title="follow us in Google +!" target="_blank"><span></span></a></li>
 		</ul>
@@ -84,7 +84,7 @@
 	<div class="container">
     	<h2>Commercial Truck Insurance</h2>
     	<h6>The Trucker's Insurance Company</h6>
-    	<div class="col_4 left wow fadeInUp delay-02s">
+    	<div class="col-md-3 wow fadeInUp delay-02s">
     		<div class="bann">
     			<img src="images/home/img-section-a-certificates.jpg" alt="">
     			<h3>About Us</h3>
@@ -92,7 +92,7 @@
     			<a href="aboutus" class="btn_1"><span>Read more</span></a>
     		</div>
     	</div>
-    	<div class="col_4 left wow fadeInUp delay-03s">
+    	<div class="col-md-3 wow fadeInUp delay-03s">
     		<div class="bann">
     			<img src="images/home/img-section-a-lock.jpg" alt="">
     			<h3>Our Coverages</h3>
@@ -100,7 +100,7 @@
                 <a href="products" class="btn_1"><span>Read more</span></a>  
     		</div>
     	</div>
-    	<div class="col_4 left wow fadeInUp delay-04s">
+    	<div class="col-md-3 wow fadeInUp delay-04s">
     		<div class="bann">
     			<img src="images/home/img-section-a-user.jpg" alt="">
     			<h3>My Account</h3>
@@ -109,7 +109,7 @@
     			<p style="height:auto!important;text-align:center;margin:0px auto;display: none;">You are not a customer yet?</p>
     			<a href="getaquote/intro" class="btn_2" style="display: none;"><span>GET A QUOTE</span></a>
     		</div>
-    	</div><div class="col_4 left wow fadeInUp delay-05s">
+    	</div><div class="col-md-3 wow fadeInUp delay-05s">
     		<div class="bann">
     			<img src="images/home/img-section-a-help.jpg" alt="">
     			<h3>F.A.Q</h3>
@@ -136,7 +136,7 @@
 		<h2>Contact Us</h2>
 		<h6>Ask a question, tell a tale, or just say Hello!</h6>
         <div class="row">
-        	<div class="col-lg-6 col-sm-5 wow fadeInUp delay-05s">
+        	<div class="col-md-6 wow fadeInUp delay-05s">
             	<div class="form">
             		<form method="POST" action="http://nlaredo.globalpc.net/cgi-bin/mailform" onsubmit="return FrontPage_Form1_Validator(this)">                	
             		<input class="input-text" type="text" name="Name" value="Full Name: *" onfocus="if(this.value==this.defaultValue)this.value='';" onblur="if(this.value=='')this.value=this.defaultValue;">
@@ -150,13 +150,13 @@
                     </form>
                 </div>	
             </div>
-            <div class="col-lg-6 col-sm-7 wow fadeInLeft">
+            <div class="col-md-6 wow fadeInLeft">
             	<div class="contact-info-box">
             		<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.908791946539!2d-99.49764990000003!3d27.56534099999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x866120f774ff0a3d%3A0x1a364af6872f3146!2s6909+Springfield+Ave+%23104%2C+Laredo%2C+TX+78041%2C+USA!5e0!3m2!1sen!2smx!4v1428645881060" width="400" height="200" frameborder="0" style="border:0"></iframe>
             	</div>
             	<div class="contact-info-box address clearfix">
                 	<h3><i class=" icon-map-marker"></i>Address:</h3>
-                	<span>6909 Springfield Ave., Ste. 104, Laredo TX.</span>
+                	<span>6909 Springfield Ave., Ste. 104. <br>Laredo TX. 78041</span>
                 </div>
                 <div class="contact-info-box phone clearfix">
                 	<h3><i class="fa-phone"></i>Phone:</h3>
@@ -164,17 +164,17 @@
                 </div>
                 <div class="contact-info-box phone clearfix">
                 	<h3><i class="fa-mobile-phone"></i>Agent Phone:</h3>
-                	<span>(956) 568.4340</span>
+                	<span>(956) 568.5264</span>
                 </div>
             	<div class="contact-info-box hours clearfix">
                 	<h3><i class="fa-clock-o"></i>Hours:</h3>
-                	<span><strong>Monday - Friday:</strong> 10am - 6pm</span>
+                	<span><strong>Monday - Friday:</strong> 9:00 am - 6:00 pm</span>
                 </div>
                 <ul class="social-link">
                 	<li class="twitter"><a href="https://www.twitter.com/" target="_blank"><i class="fa-twitter"></i></a></li>
-                    <li class="facebook"><a href="https://www.facebook.com/" target="_blank"><i class="fa-facebook"></i></a></li>
+                    <li class="facebook"><a href="https://www.facebook.com/solotrucking" target="_blank"><i class="fa-facebook"></i></a></li>
                     <li class="gplus"><a href="https://www.google.com/" target="_blank"><i class="fa-google-plus"></i></a></li>
-                    <li class="youtube"><a href="https://www.youtube.com/" target="_blank"><i class="fa-youtube"></i></a></li>
+                    <li style="display:none" class="youtube"><a href="https://www.youtube.com/" target="_blank"><i class="fa-youtube"></i></a></li>
                 </ul>
             </div>
 

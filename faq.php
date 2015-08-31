@@ -37,8 +37,8 @@
 		<a href="./" class="img-logo"><img  src="images/nav/img-logo.png" alt="logo"></a>
 		<ul class="top-nav">
 			<li><a href="system/login" class="login-btn" title="Log In" target="_blank"><span>My Account</span></a></li>
-			<li><a href="https://www.facebook.com/" class="icon facebook" title="follow us in Facebook!" target="_blank"><span></span></a></li>
-			<li><a href="https://www.youtube.com/" class="icon youtube" title="follow us in YouTube!" target="_blank"><span></span></a></li>
+			<li><a href="https://www.facebook.com/solotrucking" class="icon facebook" title="follow us in Facebook!" target="_blank"><span></span></a></li>
+			<li style="display:none"><a href="https://www.youtube.com/" class="icon youtube" title="follow us in YouTube!" target="_blank"><span></span></a></li>
 			<li><a href="https://twitter.com/" class="icon twitter" title="follow us in Twitter!" target="_blank"><span></span></a></li>
 			<li><a href="https://www.google.com/" class="icon google" title="follow us in Google +!" target="_blank"><span></span></a></li>
 		</ul>

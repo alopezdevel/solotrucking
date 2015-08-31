@@ -45,8 +45,8 @@
 		<a href="./" class="img-logo"><img  src="images/nav/img-logo.png" alt="logo"></a>
 		<ul class="top-nav">
 			<li><a href="system/login" class="login-btn" title="Log In" target="_blank"><span>My Account</span></a></li>
-			<li><a href="https://www.facebook.com/" class="icon facebook" title="follow us in Facebook!" target="_blank"><span></span></a></li>
-			<li><a href="https://www.youtube.com/" class="icon youtube" title="follow us in YouTube!" target="_blank"><span></span></a></li>
+			<li><a href="https://www.facebook.com/solotrucking" class="icon facebook" title="follow us in Facebook!" target="_blank"><span></span></a></li>
+			<li style="display:none"><a href="https://www.youtube.com/" class="icon youtube" title="follow us in YouTube!" target="_blank"><span></span></a></li>
 			<li><a href="https://twitter.com/" class="icon twitter" title="follow us in Twitter!"><span></span></a></li>
 			<li><a href="https://www.google.com/" class="icon google" title="follow us in Google +!"><span></span></a></li>
 		</ul>
@@ -70,14 +70,14 @@
 <!--- TERMINA HEADER----->
 <section class="main-section"><!--main-section-start-->
 	<div class="container">
-    	<img class="left" style="margin:5px 10px 10px 10px;" alt="img_logo" src="images/cont/img_aboutlogo.png">
+    	<img class="left" style="margin:5px 10px 10px 10px;" alt="img_logo" src="images/img_agent.jpg">
     	<div class="txt-justify">
     		<h1 class="subtitle">Solo Trucking </h1>
     		<p>SoloTrucking was founded in 2010 by Juan C. Sanchez, who believes the agency to provide insurance products to all carriers of Texas. Today continues the mission to meet the insurance needs of professional quality products, responsive service and fair dealing transportation.</p>
     		<p class="txt-center"><strong>"We have considerable experience in meeting the insurance needs of commercial motor carriers, but our experience is much deeper."</strong></p>
     	</div>
     	<br><br>
-    	<div class="col_1 wow fadeInUp delay-02s center-block">
+    	<div class="col_1 wow fadeInUp delay-02s center-block" style="clear:both;">
     		<div class="bann" style="min-height:250px;height:620px;">
     			<h2 class="txt-left">LONG TERM RELATIONSHIPS AND PERSONAL SERVICE TO OUR CUSTOMERS</h2>
     			<p>Foremost among our objectives as a company is our effort to provide a consistent market for our customers. To achieve this goal, we use our experience and analytical skills to provide maximum performance of capital allocated to our carriers and reinsurers.
