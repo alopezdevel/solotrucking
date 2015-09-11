@@ -224,7 +224,7 @@
 .frm_quote{
 	background:#efefef;
 	width:300px;
-	height:200px;
+	height:115px;
 	float:left;
 	position:absolute;
 	z-index:3000;
@@ -260,4 +260,32 @@
 	display:block;
 	margin:0px auto;
 	width:65%;
+}
+
+.contact-emails{
+	background:rgba(0,0,0,0.6);
+	width:300px;
+	height:300px;
+	float:left;
+	clear:both;
+	position:absolute;
+	z-index:3000;
+	left:8%;
+	padding:10px;
+	
+	border-radius:10px;
+    -moz-border-radius:10px;
+    -webkit-border-radius:10px;
+    
+    -webkit-box-shadow: 0px 11px 26px -12px rgba(0,0,0,0.75);
+	-moz-box-shadow: 0px 11px 26px -12px rgba(0,0,0,0.75);
+	box-shadow: 0px 11px 26px -12px rgba(0,0,0,0.75);
+
+}
+.contact-emails p, .contact_emails a{
+	color:#fff;
+}
+.contact-emails ul {
+	
+	list-style:none;
 }

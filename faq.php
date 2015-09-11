@@ -63,22 +63,17 @@
 <section class="main-section"><!--main-section-start-->
 	<div class="container">
    		<!-- BEGIN Custom open and close -->
-        <p> Section Underconstruction.</p>
-      <div id="custom-show-hide-example" style="display: none;">
-        <h3>Example for Question 1?</h3>
+        <p> If you have a question, you may find the answer you're looking for here. If not, please contact us and we'll be happy to answer it for you.</p>
+      <h2>Registration and Login Help</h2>
+      <div id="custom-show-hide-example">
+        <h3>Why should I register?</h3>
       		<div>
-          		<p>
-          			Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-          		</p>
+          		<p>The use of our online system allows you to consult and do their transactions from anywhere with internet access, which helps save time.</p>
         	</div>
-        <h3>Example for Question 2?</h3>
-        	<p>
-          		Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-          	</p>
-        <h3>Example for Question 3?</h3>
-        	<p>
-          		Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-          	</p>
+        <h3>What do I need to register?</h3>
+        	<p>To register in our system, you need to contact us so we can otorgorarnos the information needed to create your account.</p>
+        <h3>What do I do if I forget my User ID or Password?</h3>
+        	<p>If you have forgotten your User ID or Password, please return to the Login page and click on the "Forgot your User ID or Password?" link and follow the steps to retrieve your User ID and reset your Password.</p>
       </div>
       <script>
         new jQueryCollapse($("#custom-show-hide-example"), {

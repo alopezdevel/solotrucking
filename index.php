@@ -6,7 +6,7 @@
 
 <title>SoloTrucking Insurance - Commercial Truck Insurance</title>
 <link rel="icon" href="images/favicon.png" type="image/png">
-<link rel="shortcut icon" href="favicon.ico" type="img/x-icon">
+<link rel="shortcut icon" href="images/favicon.ico" type="img/x-icon">
 <link href="css/bootstrap.css" rel="stylesheet" type="text/css">
 <link href="css/style.css" rel="stylesheet" type="text/css">
 <link href="css/font-awesome.css" rel="stylesheet" type="text/css">
@@ -69,10 +69,20 @@
 			<p style="display:none;">You are not a customer yet?</p>
 			<a href="getaquote/intro" class="btn_4" style="display:none;"><span>GET A QUOTE</span></a>
 		</div>
+		<div class="contact-emails">
+			<p>If you need to make a request, select the appropriate option:</p>
+			<ul>
+				<li><a href="mailto:customerservice@solo-trucking.com"><i class="fa fa-user"></i> Customer Service</a></li>
+				<li><a href="mailto:claims@solo-trucking.com"><i class="fa fa-exclamation-circle"></i> Claims</a></li>
+				<li><a href="mailto:elva@solo-trucking.com"><i class="fa fa-file-text"></i> Quotes</a></li>
+				<li><a href="mailto:viviana@solo-trucking.com"><i class="fa fa-usd"></i> Finance</a></li>
+			</ul>
+		</div>
 	</div>
 	<div class="fluid_container">
         <div class="camera_wrap camera_emboss" id="camera_wrap_3">
             <div data-src="camera/images/slides/1.jpg"></div>
+            <div data-src="camera/images/slides/5.jpg"></div>
             <div data-src="camera/images/slides/2.jpg"></div>
             <div data-src="camera/images/slides/3.jpg"></div>
             <div data-src="camera/images/slides/4.jpg"></div>
@@ -104,7 +114,7 @@
     		<div class="bann">
     			<img src="images/home/img-section-a-user.jpg" alt="">
     			<h3>My Account</h3>
-    			<br>
+    			<p>If you already have an account given high with us, please login:</p>
     			<a href="system/login.php" class="btn_2" target="_blank"><span>LOGIN</span></a>
     			<p style="height:auto!important;text-align:center;margin:0px auto;display: none;">You are not a customer yet?</p>
     			<a href="getaquote/intro" class="btn_2" style="display: none;"><span>GET A QUOTE</span></a>
