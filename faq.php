@@ -64,7 +64,8 @@
 	<div class="container">
    		<!-- BEGIN Custom open and close -->
         <p> If you have a question, you may find the answer you're looking for here. If not, please contact us and we'll be happy to answer it for you.</p>
-      <h2>Registration and Login Help</h2>
+      <br><br>
+      <h3>Registration and Login Help</h3>
       <div id="custom-show-hide-example">
         <h3>Why should I register?</h3>
       		<div>
