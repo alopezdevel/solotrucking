@@ -34,7 +34,7 @@ function inicio(){
      $("#loginPassword").removeClass( "error" );
      var valid = true; 
      
-     valid = valid && checkLength( $('#loginUser'), "user", 6, 80 );
+     valid = valid && checkLength( $('#loginUser'), "user", 3, 80 );
      valid = valid && checkRegexp( $('#loginUser'), emailRegex, "eg. ui@solotrucking.com" );
      
      valid = valid && checkLength( $("#loginPassword"), "password", 6, 25 );
@@ -160,7 +160,7 @@ function inicio(){
 <section class="section-phone">
     <p>Need Help? CALL  (956) 791-6511</p>
 </section>
-<div class="copyright">SoloTrucking 2015 . © All rights reserved.</div>
+<div class="copyright">SoloTrucking 2015 . ï¿½ All rights reserved.</div>
 </body>
 <?php }else{ ?>
 <?php  } ?>
