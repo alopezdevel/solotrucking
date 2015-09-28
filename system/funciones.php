@@ -1048,4 +1048,46 @@ if($_POST["accion"] == ""){
             $conexion->close();           
         }    
   }
+  //Catalogo de compañias:
+  function get_companies(){
+     
+    include("cn_usuarios.php");
+    //$conexion->begin_transaction();
+    $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+    $transaccion_exitosa = true;
+    $sql = "SELECT ct_companias.iConsecutivo as id, ct_companias.sDireccion AS direccion, CONCAT(ct_companias.sCiudad, ' ', ct_companias.sEstado ) AS estado, ct_companias.sCodigoPostal AS zipcode, CONCAT(ct_companias.sTelefonoPrincipal, ' ', ct_companias.sTelefono2, ' ', ct_companias.sTelefono3) AS telefonos, ct_companias.sUsdot AS usdot, sDescripcion as nombre,cu_control_acceso.sUsuario as correo FROM  ct_companias LEFT JOIN   cu_control_acceso ON  cu_control_acceso.iConsecutivo = ct_companias.iConsecutivoAcceso WHERE eTipoUsuario ='C' ";
+    $result = $conexion->query($sql);
+    $NUM_ROWs_Usuario = $result->num_rows;    
+    if ($NUM_ROWs_Usuario > 0) {
+        //$items = mysql_fetch_all($result);      
+        while ($usuario = $result->fetch_assoc()) {
+           if($usuario["sUsuario"] != ""){                       
+            $color = "#800000";
+                 $htmlTabla .= "<tr>
+                                    <td>".$usuario['id']."</td>".
+                                   "<td>".$usuario['nombre']."</td>".
+                                   "<td>".$usuario['correo']."</td>".
+                                   "<td>".$usuario['direccion']."</td>".
+                                   "<td>".$usuario['estado']."</td>".
+                                   "<td>".$usuario['zipcode']."</td>".
+                                   "<td>".$usuario['telefonos']."</td>".
+                                   "<td>".$usuario['usdot']."</td>".                                                                                                                                                                                                                         
+                                "</tr>";
+             }else{                                                                                                                                                                                                        
+                
+                 $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;
+             }    
+        }
+    
+        
+        $conexion->rollback();
+        $conexion->close();                                                                                                                                                                       
+    } else { 
+        
+        $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;    
+        
+    }
+     $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
+     echo array2json($response); 
+  }
 ?>
