@@ -33,7 +33,7 @@ function validapantalla(usuario){
         
     }              
 function llenadoGrid(){      
-     var fn_companies = {
+    var fn_companies = {
         domroot:"#ct_companies",
         data_grid: "#data_grid_companies",
         fillgrid: function(){
@@ -44,14 +44,14 @@ function llenadoGrid(){
                 async : true,
                 dataType : "json",
                 success : function(data){                               
-                    $(fn_UsersClients.data_grid+" tbody").empty().append(data.tabla);
-                    $(fn_UsersClients.data_grid+" tbody tr:even").addClass('gray');
-                    $(fn_UsersClients.data_grid+" tbody tr:odd").addClass('white');
+                    $(fn_companies.data_grid+" tbody").empty().append(data.tabla);
+                    $(fn_companies.data_grid+" tbody tr:even").addClass('gray');
+                    $(fn_companies.data_grid+" tbody tr:odd").addClass('white');
                 }
             }); 
         }    
     }
-    fn_UsersClients.fillgrid();    
+    fn_companies.fillgrid();    
 }
 function borrarClient(cliente_borrar){
     $.post("funciones.php",{
