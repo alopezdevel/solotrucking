@@ -1059,9 +1059,9 @@ if($_POST["accion"] == ""){
     $result = $conexion->query($sql);
     $NUM_ROWs_Usuario = $result->num_rows;    
     if ($NUM_ROWs_Usuario > 0) {
-        //$items = mysql_fetch_all($result);      
+              
         while ($usuario = $result->fetch_assoc()) {
-           if($usuario["sUsuario"] != ""){                       
+           if($usuario["correo"] != ""){                       
             $color = "#800000";
                  $htmlTabla .= "<tr>
                                     <td>".$usuario['id']."</td>".

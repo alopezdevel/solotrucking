@@ -53,94 +53,7 @@ function llenadoGrid(){
     }
     fn_companies.fillgrid();    
 }
-function borrarClient(cliente_borrar){
-    $.post("funciones.php",{
-                               accion : "borrar_cliente", 
-                               id : cliente_borrar
-                               }, 
-                               onRespuestaBorrado);
-                               
-}
-function onRespuestaBorrado(respuesta, estado, xhr ){
-    llenadoGrid();   
-}
-function confirmarBorrar(registro,id) {
-    $( "#dialog-confirm" ).dialog({
-      resizable: false,
-      height:200,
-      width:500,
-      show: {effect: 'fade', speed: 2000},
-      modal: true,
-      buttons: {
-        "Delete item": function() {
-          
-          borrarClient(id) ;
-          $( this ).dialog( "close" );
-           
-        },
-        Cancel: function() {
-          $( this ).dialog( "close" );
-          return false;
-        }
-      }
-    });
-    
-    //return confirmacion;
-
-}
-function validarLoginCliente(usuario){
-        //$.blockUI({ message: $('#domMessage') });
-        $.post("funciones.php", { accion: "validar_cliente_acceso", usuario: usuario},
-        function(data){ 
-                                // 
-         if(data.error == "0"){  
-             switch(data.estatus){                                                                                                
-                case "0":  
-                                    //location.href= "login.php";
-                                    break;
-                                    
-                case "1":           $.unblockUI();                          
-                                    codigo_1 = data.codigo.substring(0, 10);
-                                    codigo_2 = data.codigo.substring(5, 15);
-                                    total_len = data.consecutivo.length;
-                                    location.href= "company_register.php?ref="+ total_len + '_'  +  codigo_1 +  data.consecutivo;                                    
-                                    break;
-                case "2":          $.unblockUI();                          
-                                    /*codigo_1 = data.codigo.substring(0, 10);
-                                    codigo_2 = data.codigo.substring(5, 15);
-                                    total_len = data.consecutivo.length;
-                                    location.href= "company_register.php?ref="+ total_len + '_'  +  codigo_1 +  data.consecutivo;  */
-                                    break;
-                 
-             }
-         }else{
-             //error
-         }   
-         
-     }
-     ,"json");
-        
-        
-    }
-function actualizarCliente(usuario){
-        $.post("funciones.php", { accion: "validar_cliente_acceso", usuario: usuario},
-        function(data){ 
-                                // 
-         if(data.error == "0"){
-             codigo_1 = data.codigo.substring(0, 10);
-             codigo_2 = data.codigo.substring(5, 15);
-             total_len = data.consecutivo.length;
-             location.href= "company_register.php?ref="+ total_len + '_'  +  codigo_1 +  data.consecutivo;
-         }else{
-             //error
-         }   
-         
-     }
-     ,"json");
-    }
-
-
-    
+ 
 </script> 
 <!---- HEADER ----->
 <?php include("header.php"); ?> 
@@ -158,20 +71,21 @@ function inicio(){
             <h2>Insured Companies</h2>
         </div>
         <table id="data_grid_companies" class="data_grid">
-        <tr id="grid-head1">
-            <td><input id="flt_id" class="numeros" type="text" placeholder="ID:"></td>
-            <td><input id="flt_name" type="text" placeholder="Name:"></td>
-            <td><input id="flt_address" type="text" placeholder="Address:"></td> 
-            <td><input id="flt_country" type="text" placeholder="Country:"></td>
-            <td><input id="flt_zip" type="text" placeholder="Zip Code:"></td> 
-            <td><input id="flt_phone" type="text" placeholder="Phone(s):"></td> 
-            <td><input id="flt_usdot" type="text" placeholder="USDOT:"></td> 
-            <td style='width:70px;display:none;'>
-                <div class="btnicon btn-left" title="Search" onclick=""><i class="fa fa-search"></i></div>
-            </td> 
-        </tr>
-        <thead id="grid-head2">
-            <tr>
+        <thead>
+            <tr id="grid-head1">
+                <td><input id="flt_id" class="numeros" type="text" placeholder="ID:"></td>
+                <td><input id="flt_name" type="text" placeholder="Name:"></td>
+                <td><input id="flt_email" type="text" placeholder="E-mail:"></td>
+                <td><input id="flt_address" type="text" placeholder="Address:"></td> 
+                <td><input id="flt_country" type="text" placeholder="Country:"></td>
+                <td><input id="flt_zip" type="text" placeholder="Zip Code:"></td> 
+                <td><input id="flt_phone" type="text" placeholder="Phone(s):"></td> 
+                <td><input id="flt_usdot" type="text" placeholder="USDOT:"></td> 
+                <td style='width:70px;'>
+                    <div class="btnicon btn-left" title="Search" onclick=""><i class="fa fa-search"></i></div>
+                </td> 
+            </tr>
+            <tr id="grid-head2">
                 <td class="etiqueta_grid">ID</td>
                 <td class="etiqueta_grid">Name</td>
                 <td class="etiqueta_grid">E-mail</td>
@@ -179,7 +93,8 @@ function inicio(){
                 <td class="etiqueta_grid">Country</td>
                 <td class="etiqueta_grid">Zip Code</td> 
                 <td class="etiqueta_grid">Phone(s)</td>
-                <td class="etiqueta_grid">USDOT</td> 
+                <td class="etiqueta_grid">USDOT</td>
+                <td class="etiqueta_grid"></td> 
             </tr>
         </thead>
         <tbody></tbody>
