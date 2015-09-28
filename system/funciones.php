@@ -1055,14 +1055,23 @@ if($_POST["accion"] == ""){
     //$conexion->begin_transaction();
     $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
     $transaccion_exitosa = true;
-    $sql = "SELECT ct_companias.iConsecutivo as id, ct_companias.sDireccion AS direccion, CONCAT(ct_companias.sCiudad, ' ', ct_companias.sEstado ) AS estado, ct_companias.sCodigoPostal AS zipcode, CONCAT(ct_companias.sTelefonoPrincipal, ' ', ct_companias.sTelefono2, ' ', ct_companias.sTelefono3) AS telefonos, ct_companias.sUsdot AS usdot, sDescripcion as nombre,cu_control_acceso.sUsuario as correo FROM  ct_companias LEFT JOIN   cu_control_acceso ON  cu_control_acceso.iConsecutivo = ct_companias.iConsecutivoAcceso WHERE eTipoUsuario ='C' ";
+    $sql = "SELECT ct_companias.iConsecutivo as id, ct_companias.sDireccion AS direccion, CONCAT(ct_companias.sCiudad, ' ', ct_companias.sEstado ) AS estado, ct_companias.sCodigoPostal AS zipcode, sTelefonoPrincipal AS tel, ct_companias.sTelefono2 AS tel_2, ct_companias.sTelefono3 AS tel_3, ct_companias.sUsdot AS usdot, sDescripcion as nombre,cu_control_acceso.sUsuario as correo FROM  ct_companias LEFT JOIN   cu_control_acceso ON  cu_control_acceso.iConsecutivo = ct_companias.iConsecutivoAcceso WHERE eTipoUsuario ='C' ";
     $result = $conexion->query($sql);
     $NUM_ROWs_Usuario = $result->num_rows;    
     if ($NUM_ROWs_Usuario > 0) {
               
-        while ($usuario = $result->fetch_assoc()) {
-           if($usuario["correo"] != ""){                       
-            $color = "#800000";
+        while ($usuario = $result->fetch_assoc()) { 
+           if($usuario["correo"] != ""){
+                 $telefonos = $usuario['tel'];
+                 if($usuario['tel_2'] != ""){
+                     
+                    $telefonos .= " / ".$usuario['tel_2']; 
+                 }
+                 if($usuario['tel_3'] != ""){
+                     
+                    $telefonos .= " / ".$usuario['tel_3']; 
+                 }
+                 
                  $htmlTabla .= "<tr>
                                     <td>".$usuario['id']."</td>".
                                    "<td>".$usuario['nombre']."</td>".
@@ -1070,9 +1079,9 @@ if($_POST["accion"] == ""){
                                    "<td>".$usuario['direccion']."</td>".
                                    "<td>".$usuario['estado']."</td>".
                                    "<td>".$usuario['zipcode']."</td>".
-                                   "<td>".$usuario['telefonos']."</td>".
+                                   "<td>".$telefonos."</td>".
                                    "<td>".$usuario['usdot']."</td>".                                                                                                                                                                                                                         
-                                "</tr>";
+                                   "<td></td></tr>";
              }else{                                                                                                                                                                                                        
                 
                  $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;

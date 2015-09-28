@@ -33,7 +33,8 @@ session_start();
             <?php if($_SESSION['acceso'] == "U"){ ?>
         	<li class="submenu"><a href="#">Catalogs</a>
         		<ul>
-        			<li><a href="users_clients"><i class="fa fa-users"></i> Insured Company Users</a></li> 
+        			<li><a href="users_clients"><i class="fa fa-users"></i>Users</a></li>
+                    <li><a href="companies"><i class="fa fa-users"></i>Insured Companies</a></li>  
         			<li style="display: none;"><a href="#">UnderWriters</a></li>
         			<li style="display: none;"><a href="#">Financial</a></li>
         		</ul>

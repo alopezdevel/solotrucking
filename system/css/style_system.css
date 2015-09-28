@@ -445,8 +445,8 @@ img {max-width:100%;}
 }
 .container{
 	
-	/*width:98%;*/
-    width: 1200px;
+	width:99%;
+    /*width: 1200px;*/
 	margin:0 auto;
 	
 }
@@ -504,65 +504,6 @@ img {max-width:100%;}
 	border-top:1px solid #d5d5d5;
 }
 .bann ul li strong{color:#7eb414;}
-
-
-/* Featured Work
----------------------------------*/
-.featured-work{
-	font-size:14px;
-}
-.featured-work h2{
-	text-align:left;
-}
-.featured-box{
-	padding:0 0 0 0;
-	margin-bottom:25px;
-	font-size:14px;
-}
-.featured-box h3{
-	margin-bottom:5px;
-}
-.featured-box p{
-	line-height:22px;
-}
-.featured-work p.padding-b{
-	padding-bottom:35px;
-}
-.featured-box-col1{
-	width:60px;
-	float:left;
-}
-.featured-box-col1 i{
-	display:block;
-	line-height:38px;
-	font-family: 'FontAwesome';
-	font-size:38px;
-	color:#777777;
-	font-style:normal;
-}
-.featured-box-col2{ overflow:hidden;}
-.Learn-More{
-	display:inline-block;
-	padding:0 5px 0 0;
-	color:#7cc576;
-	font-size:16px;
-	text-transform:uppercase;
-	font-family: 'Montserrat', sans-serif;
-	font-weight:400;
-	line-height:24px;
-	transition:all 0.3s ease-in-out;
-	-moz-transition:all 0.3s ease-in-out;
-	-webkit-transition:all 0.3s ease-in-out;
-	display: none;
-}
-.Learn-More i{ 
-	padding-right:15px;
-}
-
-.Learn-More:hover, .Learn-More:focus{ 
-	text-decoration:none;
-	color: #111;
-}
 /* no transition on .isotope container */
 .isotope .isotope-item {
   /* change duration value to whatever you like */
@@ -575,7 +516,6 @@ img {max-width:100%;}
      -moz-transition-property:    -moz-transform, opacity;
           transition-property:         transform, opacity;
 }
-
 .main-section.paddind{padding-bottom:60px;}
 .c-logo-part{background:#7cc576;padding:25px 0;filter: alpha(opacity=60);}
 .c-logo-part ul{padding:0;margin:0;list-style:none;text-align:center;}
@@ -586,7 +526,7 @@ img {max-width:100%;}
 
 /* Footer
 ---------------------------------*/
-.footer{background:#dbdbdb;padding:0px!important;clear:both;position:absolute;width:100%;bottom:0px;}
+.footer{background:#dbdbdb;padding:0px!important;clear:both;position:absolute;width:100%;bottom:-50px;margin: 0px;}
 .footer-logo{margin:15px auto 35px;width: 76px;}
 .nav_foot a{color:#929292}
 .nav_foot a:hover, .nav_foot a.active{color:#d16665;}
@@ -616,7 +556,6 @@ img {max-width:100%;}
 .portfolioContainer{
 	max-width: 1140px;
 }
-
 
 /* Animation Timers
 ---------------------------------*/

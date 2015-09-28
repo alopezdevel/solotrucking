@@ -310,10 +310,18 @@ tfoot{border-top:2px solid #b9dcf6;}
 /*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
 /*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
 /*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
-/*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
+/*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/ 
+.btn-icon, .btn-icon-2, .btnicon{cursor:pointer;} 
+/*---contexto---*/
 .btnicon{width:auto!important;min-width:150px;color:#999999;font-family: Arial, Helvetica, sans-serif;font-weight:bold;}
 .btnicon i{font-family: 'FontAwesome';font-size: 1.4em;font-weight:normal;}
 .btnicon:hover{color:#447096;}
+/*---soloicono---*/
+.btn-icon-2{width:30px;height:30px;background: #0e2f66;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px;}
+.btn-icon-2 i{color:#dfe9fa;padding: 7px;}
+.btn-icon-2:hover{background:#244e92;}
+.btn-icon-2:hover i{color:#ffffff;}
+/*--btn grids contenido---*/
 div.btn-icon, .btnicon{
 	
     width:35px;
@@ -330,7 +338,6 @@ div.btn-icon, .btnicon{
     border:1px solid #c3c3c3;
     
     padding:3px;
-    cursor:pointer;
     margin:2px;
    
 }

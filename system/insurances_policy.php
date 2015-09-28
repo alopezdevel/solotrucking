@@ -33,7 +33,7 @@ function validapantalla(usuario){
         
     }              
 function llenadoGrid(){      
-     var fn_UsersClients = {
+     var fn_companies = {
         domroot:"#ct_clientusers",
         data_grid: "#data_grid_clientusers",
         fillgrid: function(){
@@ -61,7 +61,6 @@ function borrarClient(cliente_borrar){
                                onRespuestaBorrado);
                                
 }
-
 function onRespuestaBorrado(respuesta, estado, xhr ){
     llenadoGrid();   
 }
@@ -123,8 +122,7 @@ function validarLoginCliente(usuario){
         
         
     }
-
-  function actualizarCliente(usuario){
+function actualizarCliente(usuario){
         $.post("funciones.php", { accion: "validar_cliente_acceso", usuario: usuario},
         function(data){ 
                                 // 
@@ -154,29 +152,40 @@ function inicio(){
 }
 </script>
 <div id="layer_content" class="main-section">
-	<div id="ct_clientusers" class="container">
+	<div id="ct_companies" class="container">
         <div class="page-title">
             <h1>Catalogs</h1>
-		    <h2>Insured Company Users</h2>
+		    <h2>Insured Companies</h2>
         </div>
-		<table id="data_grid_clientusers" class="data_grid">
+		<table id="data_grid_companies" class="data_grid">
+        <tr id="grid-head1">
+            <td><input id="flt_id" class="numeros" type="text" placeholder="ID:"></td>
+            <td><input id="flt_name" type="text" placeholder="Name:"></td>
+            <td><input id="flt_address" type="text" placeholder="Address:"></td> 
+            <td><input id="flt_country" type="text" placeholder="Country:"></td>
+            <td><input id="flt_zip" type="text" placeholder="Zip Code:"></td> 
+            <td><input id="flt_phone" type="text" placeholder="Phone(s):"></td> 
+            <td><input id="flt_usdot" type="text" placeholder="USDOT:"></td> 
+            <td style='width:70px;display:none;'>
+                <div class="btnicon btn-left" title="Search" onclick=""><i class="fa fa-search"></i></div>
+            </td> 
+        </tr>
 		<thead id="grid-head2">
 			<tr>
+				<td class="etiqueta_grid">ID</td>
 				<td class="etiqueta_grid">Name</td>
 				<td class="etiqueta_grid">E-mail</td>
-				<td class="etiqueta_grid">Description</td>
-				<td class="etiqueta_grid">Status</td>
-                <td class="etiqueta_grid"></td>
+				<td class="etiqueta_grid">Address</td>
+                <td class="etiqueta_grid">Country</td>
+                <td class="etiqueta_grid">Zip Code</td> 
+                <td class="etiqueta_grid">Phone(s)</td>
+                <td class="etiqueta_grid">USDOT</td> 
 			</tr>
 		</thead>
 		<tbody></tbody>
 		<tfoot>
 			<tr>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-                <td></td>
+				<td colspan="100%"></td>
 			</tr>
 		</tfoot>
 		</table>
