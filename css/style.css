@@ -397,28 +397,17 @@ a{	font-family:'FontAwesome','luzsans-bookluzsans-book', Arial, Helvetica, sans-
 }
 /* Services
 ---------------------------------*/
-.service-list{
-	padding:0 0 0 0;
-	font-size:14px;
-	margin-bottom:40px;
-}
-.service-list-col1{
-	float:left;
-	width:60px;
-}
-.service-list-col1 i{
-	font-style:normal;
-	font-size:38px;
-	display:block;
-	color:#222;
-	font-family: 'FontAwesome';
-	line-height:38px;
-}
-.service-list-col2{
-	overflow:hidden;	
-}
-.main-section.alabaster{
-	background:#fafafa;
+.service-list{padding:0 0 0 0;font-size:14px;margin-bottom:40px;}
+.service-list-col1{float:left;width:60px;}
+.service-list-col1 i{font-style:normal;font-size:38px;display:block;color:#222;font-family: 'FontAwesome';line-height:38px;}
+.service-list-col2{overflow:hidden;	}
+.main-section.alabaster{background:#fafafa;}
+.product-info{
+	display:none;
+	width:98%;
+	height:350px;
+	background:#fff;
+	
 }
 
 /* Featured Work
