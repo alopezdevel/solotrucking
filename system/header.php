@@ -29,49 +29,54 @@ session_start();
 			<li><a href="login" class="icon logout"title="Log Out"><span>Log Out</span></a></li>
 		</ul>
         <ul class="main-nav">
-        	<li><a href="inicio">Home</a></li>
-            <?php if($_SESSION['acceso'] == "U"){ ?>
-        	<li class="submenu"><a href="#">Catalogs</a>
-        		<ul>
-        			<li><a href="users_clients"><i class="fa fa-users"></i> Users</a></li>
-                    <li><a href="companies"><i class="fa fa-users"></i> Insured Companies</a></li>  
-        			<li style="display: none;"><a href="#">UnderWriters</a></li>
-        			<li style="display: none;"><a href="#">Financial</a></li>
-        		</ul>
-        	</li>
-        	<li class="submenu"><a href="#">Users</a>
-        		<ul>
-        			<li><a href="user_register"><i class="fa fa-user-plus"></i> New Insured Company User</a></li>
-        		</ul>
-        	</li>
-            <?php } ?>
-            <li class="submenu" style="display: none;"><a href="#">Endorsements</a>
-            	<ul>
-        			<li><a href="endorsement_request">Request an Endorsement</a></li>
-        		</ul>
-            </li>
-            <?php  if($_SESSION['acceso'] == "U"){ ?>
-             <li class="submenu"><a href="#">Certificates</a>
-                <ul>
-                    <li><a href="certificate_request_pdf_upload"><i class="fa fa-upload"></i> Upload Certificates</a></li>
-                </ul>
-                
-            </li> 
+      		<?php if($_SESSION['acceso'] == "U"){ ?>
+      		<!---- Admin navigation ---->
+      			<li><a href="inicio">Home</a></li>
+      			<li class="submenu"><a href="#">Catalogs</a>
+	        		<ul>
+	        			<li><a href="users_clients"><i class="fa fa-users"></i> Users</a></li>
+	                    <li><a href="companies"><i class="fa fa-users"></i> Insured Companies</a></li>  
+	        			<li style="display: none;"><a href="#">UnderWriters</a></li>
+	        			<li style="display: none;"><a href="#">Financial</a></li>
+	        		</ul>
+        		</li>
+        		<li class="submenu"><a href="#">Users</a>
+	        		<ul>
+	        			<li><a href="user_register"><i class="fa fa-user-plus"></i> New Insured Company User</a></li>
+	        		</ul>
+        		</li>
+        		<li class="submenu"><a href="#">Certificates</a>
+	                <ul>
+	                    <li><a href="certificate_request_pdf_upload"><i class="fa fa-upload"></i> Upload Certificates</a></li>
+	                </ul>
+            	</li>
+            	<li style="display: none;"><a href="#">Claims</a></li>  
+            	<li style="display: none;"><a href="#">Quotes</a></li>
+            	<li style="display: none;"><a href="#">Support</a></li>
+            <!---- End Admin navigation ---->	
             <?php } ?>
             <?php if($_SESSION['acceso'] == "C"){ ?>
-             <li class="submenu"><a href="#">Certificates</a>
-                <ul>
-                    <li><a href="certificate_request_company"><i class="fa fa-download"></i> Download Certificate</a></li>
-                </ul> 
-            </li> 
+      		<!---- Customer navigation ---->
+      			<li><a href="inicio">Home</a></li>
+      			<li style="display: none;" class="submenu"><a href="#">Catalogs</a>
+	        		<ul>
+	        			<li><a href="#"><i class="fa fa-users"></i> Operators</a></li>
+	                    <li><a href="#"><i class="fa fa-users"></i> Units</a></li>  
+	        			<li><a href="#"><i class="fa fa-truck"></i> Trailers</a></li>
+	        		</ul>	
+        		</li>
+        		<li class="submenu"><a href="#">Certificates</a>
+	                <ul>
+	                    <li><a href="certificate_request_company"><i class="fa fa-download"></i> Download Certificate</a></li>
+	                </ul> 
+            	</li>
+            	<li style="display: none;"><a href="#">Claims</a></li>  
+            	<li style="display: none;"><a href="#">Quotes</a></li>
+            	<li style="display: none;"><a href="#">Support</a></li>
+	
+      		<!---- End Customer navigation ---->	
             <?php } ?>
-           
-            <li style="display: none;"><a href="#">Claims</a></li>  
-            <?php if($_SESSION['acceso'] == "U"){ ?>
-            <li style="display: none;"><a href="#">Quotes</a></li>
-            <?php }?>
-            <li style="display: none;"><a href="#">Support</a></li>
-        </ul>
+      	</ul>
         <!--<a class="res-nav_click right" href="#"><i class="fa-bars"></i></a>-->
     </div>
 </nav><!--main-nav-end-->

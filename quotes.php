@@ -35,7 +35,9 @@
 <div style="overflow:hidden;" id="home">
 <nav class="main-nav-outer" id="test"><!--main-nav-start-->
 	<div class="container">
-		<a href="#home" class="img-logo"><img  src="getaquote/images/nav/img-logo.png" alt="logo"></a>
+		<a href="./#home" class="img-logo">
+			<img  src="images/nav/img-logo.png" alt="logo">
+		</a>
 		<ul class="top-nav">
 			<li><a href="system/login" class="login-btn" title="Log In" target="_blank"><span>My Account</span></a></li>
 			<li><a href="https://www.facebook.com/solotrucking" class="icon facebook" title="follow us in Facebook!" target="_blank"><span></span></a></li>
@@ -44,13 +46,13 @@
 			<li><a href="https://www.google.com/" class="icon google" title="follow us in Google +!" target="_blank"><span></span></a></li>
 		</ul>
         <ul class="main-nav">
-        	<li><a href="#home">Home</a></li>
-            <li><a href="getaquote/aboutus">About Us</a></li>
-            <li><a href="getaquote/products">Products</a></li>
+        	<li><a href="./#home">Home</a></li>
+            <li><a href="aboutus">About Us</a></li>
+            <li><a href="products">Products</a></li>
             <li><a href="system/login" target="_blank" style="display: none;">Claims</a></li>
-            <li><a href="getaquote/providers">Providers</a></li>
-            <li class="active"><a href="getaquote/intro">Get a Quote</a></li>
-            <li><a href="getaquote/#contact">Contact Us</a></li>
+            <li><a href="providers">Providers</a></li>
+            <li class="active"><a href="quotes">Get a Quote</a></li>
+            <li><a href="#contact">Contact Us</a></li>
         </ul>
         <a class="res-nav_click right" href="#"><i class="fa-bars"></i></a>
     </div>
@@ -67,19 +69,19 @@
     	<div class="row">
     		<div class="col-md-6">
     			<!--- for new clients --->
-	    		<h3>New Customers</h3>
-	    		<h6>There are only a few steps that we will walk you through:</h6>
+	    		<h3 class="color-blue">New Customers</h3>
+	    		<h6 class="text-left">There are only a few steps that we will walk you through:</h6>
 		    	<ul>
 		    		<li>First, we'll ask you some questions to setup an account.</li>
 		    		<li>Then, we'll send you into our system to get you a quote.</li>
 		    		<li>Last, you will be able to activate the quote and bind coverage (assuming you meet underwriting guidelines.)</li>
 		    	</ul>
-		    	<p class="txt-center"><a href="getaquote/create_account.php" class="btn_4">Let's Start!</a></p>
+		    	<p class="txt-center"><a href="create_account.php" class="btn_4">Let's Start!</a></p>
     		</div>
     		<div class="col-md-6">
     			<!--- for clients --->
-	    		<h3>Returning Customers</h3>
-				<h6>If you already are our customer please log in:</h6>
+	    		<h3 class="color-blue">Returning Customers</h3>
+				<h6  class="text-left">If you already are our customer please log in:</h6>
 				<p class="txt-center"><a href="system/login" class="btn_4">Login</a></p>
     		</div>
     	</div>
@@ -89,18 +91,18 @@
 <footer class="footer">
     <div class="container">
     	 <div class="nav_foot">
-    	 	<a href="getaquote/">Home</a>    /    
-    	 	<a href="getaquote/aboutus">About Us</a>    /    
-    	 	<a href="getaquote/products">Products</a>     /    
+    	 	<a href="./">Home</a>    /    
+    	 	<a href="aboutus">About Us</a>    /    
+    	 	<a href="products">Products</a>     /    
     	 	<a href="system/login" target="_blank" style="display: none;">Claims</a>     /    
-    	 	<a href="getaquote/providers">Providers</a>     /    
-    	 	<a href="getaquote/intro" class="active">Get a Quote</a>    
-    	 	<a href="getaquote/#contact">Contact Us</a>    
+    	 	<a href="providers">Providers</a>     /    
+    	 	<a href="quotes" class="active">Get a Quote</a>    
+    	 	<a href="./#contact">Contact Us</a>    
     	 </div>
     	 <div class="nav_foot_2">
-    	 <a href="getaquote/terms_conditions">Terms & Conditions</a>  |   
-    	 <a href="getaquote/privacypolicy">Privacy Policy</a>  |   
-    	 <a href="getaquote/faq">F.A.Q.</a></div>    
+    	 <a href="terms_conditions">Terms & Conditions</a>  |   
+    	 <a href="privacypolicy">Privacy Policy</a>  |   
+    	 <a href="faq">F.A.Q.</a></div>    
     	    
    	</div>
 </footer>
