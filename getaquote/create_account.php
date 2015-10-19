@@ -35,20 +35,22 @@
 <div style="overflow:hidden;" id="home">
 <nav class="main-nav-outer" id="test"><!--main-nav-start-->
 	<div class="container">
-		<a href="../index.html" class="img-logo"><img  src="../images/nav/img-logo.png" alt="logo"></a>
+		<a href="#home" class="img-logo"><img  src="images/nav/img-logo.png" alt="logo"></a>
 		<ul class="top-nav">
-			<li><a href="../system/login.php" class="login-btn" title="Log In"><span>My Account</span></a></li>
-			<li><a href="https://www.facebook.com/" class="icon facebook" title="follow us in Facebook!" target="_blank"><span></span></a></li>
-			<li><a href="https://www.youtube.com/" class="icon youtube" title="follow us in YouTube!" target="_blank"><span></span></a></li>
-			<li><a href="https://twitter.com/" class="icon twitter" title="follow us in Twitter!"><span></span></a></li>
-			<li><a href="https://www.google.com/" class="icon google" title="follow us in Google +!"><span></span></a></li>
+			<li><a href="system/login" class="login-btn" title="Log In" target="_blank"><span>My Account</span></a></li>
+			<li><a href="https://www.facebook.com/solotrucking" class="icon facebook" title="follow us in Facebook!" target="_blank"><span></span></a></li>
+			<li style="display:none"><a href="https://www.youtube.com/" class="icon youtube" title="follow us in YouTube!" target="_blank"><span></span></a></li>
+			<li><a href="https://twitter.com/" class="icon twitter" title="follow us in Twitter!" target="_blank"><span></span></a></li>
+			<li><a href="https://www.google.com/" class="icon google" title="follow us in Google +!" target="_blank"><span></span></a></li>
 		</ul>
         <ul class="main-nav">
-        	<li><a href="../index.html">Home</a></li>
-            <li><a href="../aboutus.html">About Us</a></li>
-            <li><a href="../services.html">Services</a></li>
-            <li><a href="../quote.php">Get a Quote</a></li>
-            <li><a href="../index.html#contact">Contact Us</a></li>
+        	<li><a href="#home">Home</a></li>
+            <li><a href="aboutus">About Us</a></li>
+            <li><a href="products">Products</a></li>
+            <li><a href="system/login" target="_blank" style="display: none;">Claims</a></li>
+            <li><a href="providers">Providers</a></li>
+            <li class="active"><a href="getaquote/intro">Get a Quote</a></li>
+            <li><a href="#contact">Contact Us</a></li>
         </ul>
         <a class="res-nav_click right" href="#"><i class="fa-bars"></i></a>
     </div>
@@ -104,16 +106,18 @@
 <footer class="footer">
     <div class="container">
     	 <div class="nav_foot">
-    	 	<a href="../index.html" class="active">Home</a>    /    
-    	 	<a href="../aboutus.html">About Us</a>    /    
-    	 	<a href="../services.html">Services</a>     /    
-    	 	<a href="../quote.php">Get a Quote</a>    /    
-    	 	<a href="../index.html#contactus">Contact Us</a>    
+    	 	<a href="index.php">Home</a>    /    
+    	 	<a href="aboutus.php">About Us</a>    /    
+    	 	<a href="products.php">Products</a>     /    
+    	 	<a href="system/login.php" target="_blank" style="display: none;">Claims</a>     /    
+    	 	<a href="providers.php">Providers</a>     /    
+    	 	<a href="getaquote/intro.php" class="active">Get a Quote</a>    
+    	 	<a href="#contact">Contact Us</a>    
     	 </div>
-    	 <div class="nav_foot_2"><a href="#">
-    	 <a href="../terms_conditions.html">Terms & Conditions</a>  |   
-    	 <a href="../pricavypolicy.html">Privacy Policy</a>  |   
-    	 <a href="../faq.html">F.A.Q.</a></div>   
+    	 <div class="nav_foot_2">
+    	 <a href="terms_conditions.php">Terms & Conditions</a>  |   
+    	 <a href="privacypolicy.php">Privacy Policy</a>  |   
+    	 <a href="faq.php">F.A.Q.</a></div>    
     	    
    	</div>
 </footer>

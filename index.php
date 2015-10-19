@@ -135,7 +135,7 @@
     	<h2>How Can We Help You?</h2>
     	<p>Have a question? Need more info? Just fill out our contact form below and we'll get back to you promptly.
     	<br><br>
-    	<a href="getaquote/intro.php" class="btn_3"><span>Get a Quote</span></a>
+    	<a href="getaquote/intro" class="btn_3"><span>Get a Quote</span></a>
     	</p>
 	</div>
 </section>
@@ -149,10 +149,10 @@
         	<div class="col-md-6 wow fadeInUp delay-05s">
             	<div class="form">
             		<form method="POST" action="http://nlaredo.globalpc.net/cgi-bin/mailform" onsubmit="return FrontPage_Form1_Validator(this)">                	
-            		<input class="input-text" type="text" name="Name" value="Full Name: *" onfocus="if(this.value==this.defaultValue)this.value='';" onblur="if(this.value=='')this.value=this.defaultValue;">
-                    <input class="input-text" type="text" name="mailto" value="E-mail Address: *" onfocus="if(this.value==this.defaultValue)this.value='';" onblur="if(this.value=='')this.value=this.defaultValue;">
-                    <input class="input-text" type="text" name="Phone" value="Phone: *" onfocus="if(this.value==this.defaultValue)this.value='';" onblur="if(this.value=='')this.value=this.defaultValue;">   
-                	<textarea class="input-text text-area" cols="0" rows="0" onfocus="if(this.value==this.defaultValue)this.value='';" onblur="if(this.value=='')this.value=this.defaultValue;">Message *</textarea>
+            		<input class="input-text" type="text" name="Name"        placeholder="Name:">
+                    <input class="input-text" type="text" name="mailto"      placeholder="E-mail:">
+                    <input class="input-text" type="text" name="Phone"       placeholder="Phone:">   
+                	<textarea class="input-text text-area" cols="0" rows="0" placeholder="Message:"></textarea>
                     <button class="btn_2 right" type="submit">SEND MESSAGE</button>
                     	<input name="email" type="hidden" value="celina@globalpc.net, edwin@solo-trucking.com">
 						<input name="thanks" type="hidden" value="http://solotrucking.laredo2.net">
@@ -181,9 +181,9 @@
                 	<span><strong>Monday - Friday:</strong> 9:00 am - 6:00 pm</span>
                 </div>
                 <ul class="social-link">
-                	<li class="twitter"><a href="https://www.twitter.com/" target="_blank"><i class="fa-twitter"></i></a></li>
+                	<li class="twitter" style="display:none;"><a href="https://www.twitter.com/" target="_blank"><i class="fa-twitter"></i></a></li>
                     <li class="facebook"><a href="https://www.facebook.com/solotrucking" target="_blank"><i class="fa-facebook"></i></a></li>
-                    <li class="gplus"><a href="https://www.google.com/" target="_blank"><i class="fa-google-plus"></i></a></li>
+                    <li class="gplus" style="display:none;"><a href="https://www.google.com/" target="_blank"><i class="fa-google-plus"></i></a></li>
                     <li style="display:none" class="youtube"><a href="https://www.youtube.com/" target="_blank"><i class="fa-youtube"></i></a></li>
                 </ul>
             </div>
@@ -195,18 +195,18 @@
 <footer class="footer">
     <div class="container">
     	 <div class="nav_foot">
-    	 	<a href="index.php" class="active">Home</a>    /    
-    	 	<a href="aboutus.php">About Us</a>    /    
-    	 	<a href="products.php">Products</a>     /    
-    	 	<a href="system/login.php" target="_blank" style="display: none;">Claims</a>     /    
-    	 	<a href="providers.php">Providers</a>     /    
-    	 	<a href="getaquote/intro.php" style="display: none;">Get a Quote</a>    
+    	 	<a href="index" class="active">Home</a>    /    
+    	 	<a href="aboutus">About Us</a>    /    
+    	 	<a href="products">Products</a>     /    
+    	 	<a href="system/login" target="_blank" style="display: none;">Claims</a>     /    
+    	 	<a href="providers">Providers</a>     /    
+    	 	<a href="getaquote/intro" style="display: none;">Get a Quote</a>    
     	 	<a href="#contact">Contact Us</a>    
     	 </div>
     	 <div class="nav_foot_2">
-    	 <a href="terms_conditions.php">Terms & Conditions</a>  |   
-    	 <a href="privacypolicy.php">Privacy Policy</a>  |   
-    	 <a href="faq.php">F.A.Q.</a></div>    
+    	 <a href="terms_conditions">Terms & Conditions</a>  |   
+    	 <a href="privacypolicy">Privacy Policy</a>  |   
+    	 <a href="faq">F.A.Q.</a></div>    
     	    
    	</div>
 </footer>
