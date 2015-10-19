@@ -5,29 +5,29 @@
 <meta name="viewport" content="width=device-width, maximum-scale=1">
 
 <title>SoloTrucking - Commercial Truck Insurance</title>
-<link rel="icon" href="../images/favicon.png" type="image/png">
-<link rel="shortcut icon" href="../favicon.ico" type="img/x-icon">
-<link href="../css/bootstrap.css" rel="stylesheet" type="text/css">
-<link href="../css/style.css" rel="stylesheet" type="text/css">
-<link href="../css/font-awesome.css" rel="stylesheet" type="text/css">
-<link href="../css/responsive.css" rel="stylesheet" type="text/css">
-<link href="../css/animate.css" rel="stylesheet" type="text/css">
+<link rel="icon" href="images/favicon.png" type="image/png">
+<link rel="shortcut icon" href="favicon.ico" type="img/x-icon">
+<link href="css/bootstrap.css" rel="stylesheet" type="text/css">
+<link href="css/style.css" rel="stylesheet" type="text/css">
+<link href="css/font-awesome.css" rel="stylesheet" type="text/css">
+<link href="css/responsive.css" rel="stylesheet" type="text/css">
+<link href="css/animate.css" rel="stylesheet" type="text/css">
 
-<script type="text/javascript" src="../js/jquery.1.8.3.min.js"></script>
-<script type="text/javascript" src="../js/bootstrap.js"></script>
-<script type="text/javascript" src="../js/jquery-scrolltofixed.js"></script>
-<script type="text/javascript" src="../js/jquery.easing.1.3.js"></script>
-<script type="text/javascript" src="../js/jquery.isotope.js"></script>
-<script type="text/javascript" src="../js/wow.js"></script>
-<script type="text/javascript" src="../js/classie.js"></script>
+<script type="text/javascript" src="js/jquery.1.8.3.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.js"></script>
+<script type="text/javascript" src="js/jquery-scrolltofixed.js"></script>
+<script type="text/javascript" src="js/jquery.easing.1.3.js"></script>
+<script type="text/javascript" src="js/jquery.isotope.js"></script>
+<script type="text/javascript" src="js/wow.js"></script>
+<script type="text/javascript" src="js/classie.js"></script>
 
 	<!-----SLIDER HOMEPAGE----->
-	<link rel='stylesheet' id='camera-css'  href='../camera/css/camera.css' type='text/css' media='all'>     
-    <script type='text/javascript' src='../camera/scripts/jquery.min.js'></script>
-    <script type='text/javascript' src='../camera/scripts/jquery.mobile.customized.min.js'></script>
-    <script type='text/javascript' src='../camera/scripts/jquery.easing.1.3.js'></script> 
-    <script type='text/javascript' src='../camera/scripts/camera.js'></script> 
-    <script type='text/javascript' src='../camera/scripts/script.js'></script>
+	<link rel='stylesheet' id='camera-css'  href='camera/css/camera.css' type='text/css' media='all'>     
+    <script type='text/javascript' src='camera/scripts/jquery.min.js'></script>
+    <script type='text/javascript' src='camera/scripts/jquery.mobile.customized.min.js'></script>
+    <script type='text/javascript' src='camera/scripts/jquery.easing.1.3.js'></script> 
+    <script type='text/javascript' src='camera/scripts/camera.js'></script> 
+    <script type='text/javascript' src='camera/scripts/script.js'></script>
 
 
 </head>
@@ -35,9 +35,9 @@
 <div style="overflow:hidden;" id="home">
 <nav class="main-nav-outer" id="test"><!--main-nav-start-->
 	<div class="container">
-		<a href="#home" class="img-logo"><img  src="images/nav/img-logo.png" alt="logo"></a>
+		<a href="#home" class="img-logo"><img  src="getaquote/images/nav/img-logo.png" alt="logo"></a>
 		<ul class="top-nav">
-			<li><a href="../system/login" class="login-btn" title="Log In" target="_blank"><span>My Account</span></a></li>
+			<li><a href="system/login" class="login-btn" title="Log In" target="_blank"><span>My Account</span></a></li>
 			<li><a href="https://www.facebook.com/solotrucking" class="icon facebook" title="follow us in Facebook!" target="_blank"><span></span></a></li>
 			<li style="display:none"><a href="https://www.youtube.com/" class="icon youtube" title="follow us in YouTube!" target="_blank"><span></span></a></li>
 			<li><a href="https://twitter.com/" class="icon twitter" title="follow us in Twitter!" target="_blank"><span></span></a></li>
@@ -45,12 +45,12 @@
 		</ul>
         <ul class="main-nav">
         	<li><a href="#home">Home</a></li>
-            <li><a href="aboutus">About Us</a></li>
-            <li><a href="products">Products</a></li>
-            <li><a href="../system/login" target="_blank" style="display: none;">Claims</a></li>
-            <li><a href="providers">Providers</a></li>
-            <li class="active"><a href="intro">Get a Quote</a></li>
-            <li><a href="./#contact">Contact Us</a></li>
+            <li><a href="getaquote/aboutus">About Us</a></li>
+            <li><a href="getaquote/products">Products</a></li>
+            <li><a href="system/login" target="_blank" style="display: none;">Claims</a></li>
+            <li><a href="getaquote/providers">Providers</a></li>
+            <li class="active"><a href="getaquote/intro">Get a Quote</a></li>
+            <li><a href="getaquote/#contact">Contact Us</a></li>
         </ul>
         <a class="res-nav_click right" href="#"><i class="fa-bars"></i></a>
     </div>
@@ -74,13 +74,13 @@
 		    		<li>Then, we'll send you into our system to get you a quote.</li>
 		    		<li>Last, you will be able to activate the quote and bind coverage (assuming you meet underwriting guidelines.)</li>
 		    	</ul>
-		    	<p class="txt-center"><a href="create_account.php" class="btn_4">Let's Start!</a></p>
+		    	<p class="txt-center"><a href="getaquote/create_account.php" class="btn_4">Let's Start!</a></p>
     		</div>
     		<div class="col-md-6">
     			<!--- for clients --->
 	    		<h3>Returning Customers</h3>
 				<h6>If you already are our customer please log in:</h6>
-				<p class="txt-center"><a href="../system/login" class="btn_4">Login</a></p>
+				<p class="txt-center"><a href="system/login" class="btn_4">Login</a></p>
     		</div>
     	</div>
     </div>
@@ -89,18 +89,18 @@
 <footer class="footer">
     <div class="container">
     	 <div class="nav_foot">
-    	 	<a href="./">Home</a>    /    
-    	 	<a href="aboutus">About Us</a>    /    
-    	 	<a href="products">Products</a>     /    
-    	 	<a href="../system/login" target="_blank" style="display: none;">Claims</a>     /    
-    	 	<a href="providers">Providers</a>     /    
-    	 	<a href="intro" class="active">Get a Quote</a>    
-    	 	<a href="./#contact">Contact Us</a>    
+    	 	<a href="getaquote/">Home</a>    /    
+    	 	<a href="getaquote/aboutus">About Us</a>    /    
+    	 	<a href="getaquote/products">Products</a>     /    
+    	 	<a href="system/login" target="_blank" style="display: none;">Claims</a>     /    
+    	 	<a href="getaquote/providers">Providers</a>     /    
+    	 	<a href="getaquote/intro" class="active">Get a Quote</a>    
+    	 	<a href="getaquote/#contact">Contact Us</a>    
     	 </div>
     	 <div class="nav_foot_2">
-    	 <a href="terms_conditions">Terms & Conditions</a>  |   
-    	 <a href="privacypolicy">Privacy Policy</a>  |   
-    	 <a href="faq">F.A.Q.</a></div>    
+    	 <a href="getaquote/terms_conditions">Terms & Conditions</a>  |   
+    	 <a href="getaquote/privacypolicy">Privacy Policy</a>  |   
+    	 <a href="getaquote/faq">F.A.Q.</a></div>    
     	    
    	</div>
 </footer>

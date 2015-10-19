@@ -70,7 +70,9 @@
 			<a href="getaquote/intro" class="btn_4" style="display:none;"><span>GET A QUOTE</span></a>
 		</div>
 		<div class="contact-emails">
-			<p>If you need to make a request, select the appropriate option:</p>
+			<p><b>You need to make a request?</b>
+				<br>select an option:
+			</p>
 			<ul>
 				<li><a href="mailto:customerservice@solo-trucking.com"><i class="fa fa-user"></i> Customer Service</a></li>
 				<li><a href="mailto:claims@solo-trucking.com"><i class="fa fa-exclamation-circle"></i> Claims</a></li>

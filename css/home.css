@@ -241,7 +241,8 @@
 
 }
 .frm_quote h3{
-	color:#16448f;
+	color:#0b5f9d;
+	text-shadow:1px 1px 0px #ffffff;
 	font-family:Calibri,Arial, Helvetica, sans-serif;
 	font-size:25px;
 	font-weight:bold;
@@ -250,7 +251,7 @@
 .frm_quote p{
 	
 	margin:0px auto;
-	color:#1d88c5;
+	color:#0b5f9d;
 	font-size:1.1em;
 	line-height:20px;
   	padding:10px 0px;
@@ -263,16 +264,16 @@
 }
 
 .contact-emails{
-	background:rgba(0,0,0,0.6);
+	background:#efefef;
 	width:300px;
-	height:300px;
+	height:280px;
 	float:left;
 	clear:both;
 	position:absolute;
 	z-index:3000;
 	left:8%;
 	padding:10px;
-	
+	top: 155px;
 	border-radius:10px;
     -moz-border-radius:10px;
     -webkit-border-radius:10px;
@@ -282,10 +283,38 @@
 	box-shadow: 0px 11px 26px -12px rgba(0,0,0,0.75);
 
 }
-.contact-emails p, .contact_emails a{
-	color:#fff;
+.contact-emails p{
+	color: #343434;
+    font-size: 16px;
+    line-height: 18px;
+    width: 90%;
+    margin: 0 auto 10px;
 }
-.contact-emails ul {
-	
-	list-style:none;
+.contact-emails p b{
+	color:#0b5f9d;
+	text-shadow:1px 1px 0px #ffffff;
+	font-size:18px;
+	text-transform:uppercase;
 }
+.contact-emails ul {list-style:none;}
+.contact-emails ul li{padding:0px;}
+.contact-emails ul li:last-child a{border-bottom:1px solid #bdbdbd;}
+.contact-emails a{
+	color:#757575;
+	padding:8px 10px;
+    display:block;
+    width:180px;
+    border-top:1px solid #bdbdbd;
+}
+.contact-emails a:hover{
+	color:#13629c;
+	background: rgba(255,255,255,0);
+	background: -moz-linear-gradient(left, rgba(255,255,255,0) 0%, rgba(255,255,255,0.55) 22%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0.6) 51%, rgba(255,255,255,0.55) 72%, rgba(255,255,255,0) 100%);
+	background: -webkit-gradient(left top, right top, color-stop(0%, rgba(255,255,255,0)), color-stop(22%, rgba(255,255,255,0.55)), color-stop(50%, rgba(255,255,255,0.6)), color-stop(51%, rgba(255,255,255,0.6)), color-stop(72%, rgba(255,255,255,0.55)), color-stop(100%, rgba(255,255,255,0)));
+	background: -webkit-linear-gradient(left, rgba(255,255,255,0) 0%, rgba(255,255,255,0.55) 22%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0.6) 51%, rgba(255,255,255,0.55) 72%, rgba(255,255,255,0) 100%);
+	background: -o-linear-gradient(left, rgba(255,255,255,0) 0%, rgba(255,255,255,0.55) 22%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0.6) 51%, rgba(255,255,255,0.55) 72%, rgba(255,255,255,0) 100%);
+	background: -ms-linear-gradient(left, rgba(255,255,255,0) 0%, rgba(255,255,255,0.55) 22%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0.6) 51%, rgba(255,255,255,0.55) 72%, rgba(255,255,255,0) 100%);
+	background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.55) 22%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0.6) 51%, rgba(255,255,255,0.55) 72%, rgba(255,255,255,0) 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ffffff', GradientType=1 );
+}
+/*------------------------CMSM SANCHEZDESIGN ------------*/
