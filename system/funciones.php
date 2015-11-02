@@ -1099,4 +1099,57 @@ if($_POST["accion"] == ""){
      $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
      echo array2json($response); 
   }
+  
+  //----------------Funciones para las Companias--------------//
+  //Catalogo de Drivers:
+  function get_drivers(){
+     
+    include("cn_usuarios.php");
+    //$conexion->begin_transaction();
+    $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+    $transaccion_exitosa = true;
+    $sql = "SELECT ct_operadores.iConsecutivo as id, ct_operadores.sNombre, DATE_FORMAT(ct_operadores.dFechaNacimiento,'%d %b %y') AS FechaNacimiento, ct_operadores.iNumLicencia, ct_operadores.iExperienciaYear, DATE_FORMAT(ct_operadores.dFechaExpiracionLicencia,'%d %b %y') AS FechaExpiracion, ct_operadores.iNumLicencia, DATE_FORMAT(ct_operadores.dFechaContratacion,'%d %b %y') AS FechaContratacion, ct_entidad.sDescEntidad  FROM  ct_operadores LEFT JOIN   ct_entidad ON  ct_entidad.sCveEntidad = ct_operadores.iEntidad LEFT JOIN cu_control_acceso ON cu_control_acceso.iConsecutivo = ct_operadores.iCompania WHERE cu_control_acceso.sUsuario = '".$_SESSION['usuario_actual']."'";
+    $result = $conexion->query($sql);
+    $items = $result->num_rows;    
+    if ($NUM_ROWs_Usuario > 0) {
+              
+        while ($usuario = $result->fetch_assoc()) { 
+           if($usuario["correo"] != ""){
+                 $telefonos = $usuario['tel'];
+                 if($usuario['tel_2'] != ""){
+                     
+                    $telefonos .= " / ".$usuario['tel_2']; 
+                 }
+                 if($usuario['tel_3'] != ""){
+                     
+                    $telefonos .= " / ".$usuario['tel_3']; 
+                 }
+                 
+                 $htmlTabla .= "<tr>
+                                    <td>".$usuario['id']."</td>".
+                                   "<td>".$usuario['nombre']."</td>".
+                                   "<td>".$usuario['correo']."</td>".
+                                   "<td>".$usuario['direccion']."</td>".
+                                   "<td>".$usuario['estado']."</td>".
+                                   "<td>".$usuario['zipcode']."</td>".
+                                   "<td>".$telefonos."</td>".
+                                   "<td>".$usuario['usdot']."</td>".                                                                                                                                                                                                                         
+                                   "<td></td></tr>";
+             }else{                                                                                                                                                                                                        
+                
+                 $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;
+             }    
+        }
+    
+        
+        $conexion->rollback();
+        $conexion->close();                                                                                                                                                                       
+    } else { 
+        
+        $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;    
+        
+    }
+     $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
+     echo array2json($response); 
+  }
 ?>
