@@ -1,5 +1,5 @@
 ﻿<?php session_start();    
-if ( !($_SESSION["acceso"] == 'U'  && $_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  )  ){ //No ha iniciado session, redirecciona a la pagina de login
+if ( !($_SESSION["acceso"] == 'C'  && $_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  )  ){ //No ha iniciado session, redirecciona a la pagina de login
     header("Location: login.php");
     exit;
 }else{ ?>
@@ -31,7 +31,7 @@ function validapantalla(usuario){
             location.href= "login.php";
         }
         
-    }              
+}              
 function llenadoGrid(){      
     var fn_drivers = {
         domroot:"#ct_drivers",
