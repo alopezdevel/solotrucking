@@ -1111,29 +1111,20 @@ if($_POST["accion"] == ""){
     $sql = "SELECT ct_operadores.iConsecutivo as id, ct_operadores.sNombre AS nombre, DATE_FORMAT(ct_operadores.dFechaNacimiento,'%d %b %y') AS FechaNacimiento, ct_operadores.iNumLicencia AS NumLicencia, ct_operadores.iExperienciaYear AS Experiencia, DATE_FORMAT(ct_operadores.dFechaExpiracionLicencia,'%d %b %y') AS FechaExpiracion, ct_operadores.iNumLicencia, DATE_FORMAT(ct_operadores.dFechaContratacion,'%d %b %y') AS FechaContratacion, ct_entidad.sDescEntidad AS Entidad  FROM  ct_operadores LEFT JOIN   ct_entidad ON  ct_entidad.sCveEntidad = ct_operadores.iEntidad LEFT JOIN cu_control_acceso ON cu_control_acceso.iConsecutivo = ct_operadores.iCompania WHERE cu_control_acceso.sUsuario = '".$_SESSION['usuario_actual']."'";
     $result = $conexion->query($sql);
     $items = $result->num_rows;    
-    if ($NUM_ROWs_Usuario > 0) {
+    if ($items > 0) {
               
-        while ($usuario = $result->fetch_assoc()) { 
-           if($usuario["correo"] != ""){
-                 $telefonos = $usuario['tel'];
-                 if($usuario['tel_2'] != ""){
-                     
-                    $telefonos .= " / ".$usuario['tel_2']; 
-                 }
-                 if($usuario['tel_3'] != ""){
-                     
-                    $telefonos .= " / ".$usuario['tel_3']; 
-                 }
+        while ($drivers = $result->fetch_assoc()) { 
+           if($drivers["id"] != ""){
                  
                  $htmlTabla .= "<tr>
-                                    <td>".$usuario['id']."</td>".
-                                   "<td>".$usuario['nombre']."</td>".
-                                   "<td>".$usuario['FechaNacimiento']."</td>".
-                                   "<td>".$usuario['NumLicencia']."</td>".
-                                   "<td>".$usuario['FechaExpiracion']."</td>".
-                                   "<td>".$usuario['Entidad']."</td>".
-                                   "<td>".$usuario['Experiencia']."</td>".
-                                   "<td>".$usuario['FechaContratacion']."</td>". 
+                                    <td>".$drivers['id']."</td>".
+                                   "<td>".$drivers['nombre']."</td>".
+                                   "<td>".$drivers['FechaNacimiento']."</td>".
+                                   "<td>".$drivers['NumLicencia']."</td>".
+                                   "<td>".$drivers['FechaExpiracion']."</td>".
+                                   "<td>".$drivers['Entidad']."</td>".
+                                   "<td>".$drivers['Experiencia']."</td>".
+                                   "<td>".$drivers['FechaContratacion']."</td>". 
                                    "<td> - - -</td>".                                                                                                                                                                                                                         
                                    "<td></td></tr>";
              }else{                                                                                                                                                                                                        

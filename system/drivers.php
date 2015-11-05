@@ -51,9 +51,42 @@ function llenadoGrid(){
             }); 
         }    
     }
-    fn_companies.fillgrid();    
+    fn_drivers.fillgrid();    
 }
- 
+function validarLoginCliente(usuario){
+        //$.blockUI({ message: $('#domMessage') });
+        $.post("funciones.php", { accion: "validar_cliente_acceso", usuario: usuario},
+        function(data){ 
+                                // 
+         if(data.error == "0"){  
+             switch(data.estatus){                                                                                                
+                case "0":  
+                                    //location.href= "login.php";
+                                    break;
+                                    
+                case "1":           $.unblockUI();                          
+                                    codigo_1 = data.codigo.substring(0, 10);
+                                    codigo_2 = data.codigo.substring(5, 15);
+                                    total_len = data.consecutivo.length;
+                                    location.href= "company_register.php?ref="+ total_len + '_'  +  codigo_1 +  data.consecutivo;                                    
+                                    break;
+                case "2":          $.unblockUI();                          
+                                    /*codigo_1 = data.codigo.substring(0, 10);
+                                    codigo_2 = data.codigo.substring(5, 15);
+                                    total_len = data.consecutivo.length;
+                                    location.href= "company_register.php?ref="+ total_len + '_'  +  codigo_1 +  data.consecutivo;  */
+                                    break;
+                 
+             }
+         }else{
+             //error
+         }   
+         
+     }
+     ,"json");
+        
+        
+    } 
 </script> 
 <!---- HEADER ----->
 <?php include("header.php"); ?> 
