@@ -305,8 +305,6 @@ tfoot{border-top:2px solid #b9dcf6;}
 .tab_button:hover p, .tab_button:focus p {
 	color:#ffffff;
 }
-
-
 /*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
 /*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
 /*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
@@ -314,98 +312,79 @@ tfoot{border-top:2px solid #b9dcf6;}
 .btn-icon, .btn-icon-2, .btnicon{cursor:pointer;} 
 /*---contexto---*/
 .btnicon{width:auto!important;min-width:150px;color:#999999;font-family: Arial, Helvetica, sans-serif;font-weight:bold;}
-.btnicon i{font-family: 'FontAwesome';font-size: 1.4em;font-weight:normal;}
+.btnicon i{font-family: 'FontAwesome';font-size: 1.4em;font-weight:normal;vertical-align: middle;}
 .btnicon:hover{color:#447096;}
-/*---soloicono---*/
-.btn-icon-2{width:30px;height:30px;background: #0e2f66;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px;}
+/*---btns fondo azul---*/
+.btn-icon-2{width:30px;height:30px;background: #0a2e6b;border: 1px solid #042762;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px;}
 .btn-icon-2 i{color:#dfe9fa;padding: 7px;}
-.btn-icon-2:hover{background:#244e92;}
-.btn-icon-2:hover i{color:#ffffff;}
+.btn-icon-2:hover{background:#244e92;border:1px solid #17448d;}
+.btn-icon-2:hover i,.btn-icon:hover i{color:#ffffff;}
 /*--btn grids contenido---*/
 div.btn-icon, .btnicon{
 	
-    width:35px;
+    width: 20px;
     float: left;
-
-	border-radius:4px;
-	-moz-border-radius:4px;
-	-webkit-border-radius:4px;
-	
-	background: #ececec;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    background: #ececec;
     background: -moz-linear-gradient(top, #ececec, #e8e8e8);
     background: linear-gradient(to bottom, #ececec, #e8e8e8);
     background: -webkit-gradient(linear, 0% 50%, 0% 0%, from(#ececec), to(#e8e8e8));
-    border:1px solid #c3c3c3;
-    
-    padding:3px;
-    margin:2px;
+    border: 1px solid #c3c3c3;
+    padding: 5px;
+    margin: 2px;
+    text-align: center;
    
 }
-div.btn-icon:hover{background: #e8e8e8;background: -moz-linear-gradient(top, #e8e8e8, #d8d5d5);background: linear-gradient(to bottom, #e8e8e8, #d8d5d5);background: -webkit-gradient(linear, 0% 50%, 0% 0%, from(#e8e8e8), to(#d8d5d5));}
-div[name=btn] p{font-size:11px!important;height:18px;color:#79a3c4;margin:1px 0px 0px 0px;padding:3px;font-weight:bold;}
-div[name=btn]:hover p{color:#ffffff;}
-div.btn-icon span{ /*-------  ASIGANDO ICONOS -------*/
-
-    width:33px;
-    height:25px;
-    display: block;
-	background:url('../images/icons/icons.png') no-repeat right top;
-	-moz-background-size: 33px auto;
-	-o-background-size: 33px auto;
-	-webkit-background-size: 33px auto;
-	background-size: 33px auto;
-
-}
-div.btn-icon:hover span{
-    background:url('../images/icons/icons-hover.png') no-repeat right top;
-    -moz-background-size: 33px auto;
-    -o-background-size: 33px auto;
-    -webkit-background-size: 33px auto;
-    background-size: 33px auto;
-} 
-
-/* BTN ELIMINAR */
-.ico-delete span{background-position:50% 0px;}
-.ico-delete:hover span{background-position:50% 0px;}
-
- /* BTN email-forward */
-.ico-email-fwd span{background-position:50% -25px!important;}
-.ico-email-fwd:hover span{background-position:50% -25px!important;}
-
+div.btn-icon:hover{background: #e8e8e8;}
+div.btn-icon i{vertical-align: middle;font-size: 18px;}  
+div.btn-icon span{font-weight: bold;font-size: 13px;}
+/*----icons----*/
+.trash:hover{background: #a51313!important;border: 1px solid #cb0b0b!important;}
+.add:hover  {background: #52bc12!important;border: 1px solid #56cf0c!important;} 
+.edit:hover {background: #4287bc!important;border: 1px solid #4aaaf3!important;} 
 
 /*-----ALINEACION DE LOS BOTONES ----------- IZQUIERDA - DERECHA ------*/
-.btn-left{float:left;}
+.btn-left{float:left;margin-right:2px;}
 .btn-right{float:right;margin-right:5px!important;}
 
-
-/*----------------- EFECTO AL DAR CLIC EN LOS BOTONES --------------------------*/
-div[name=btn].search:active{
-	
-	background: #25a9e5!important;
-    background: -moz-linear-gradient(top, #25a9e5, #088fcd)!important;
-    background: linear-gradient(to bottom, #25a9e5, #088fcd)!important;
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#25a9e5), to(#088fcd))!important;
-    border:1px solid #77d5f7!important;
-
+/*--------------------------------------
+    ##FORMULARIOS FLOTANTES## 
+-----------------------------------------*/
+.overlay-background{
+    
+    display: none;
+    background: rgba(0,0,0,0.6);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 2000;
 }
-div[name=btn]:active,div[name=btn].active{
-	
-	background: #f4f4f4!important;
-    background: -moz-linear-gradient(top, #f4f4f4, #e6e6e6)!important;
-    background: linear-gradient(to bottom, #f4f4f4, #e6e6e6)!important;
-    background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#f4f4f4), to(#e6e6e6))!important;
-    border:1px solid #c9c9c9!important;
+.popup-form{
+    
+    /* centrar popup */  
+    position: absolute;
+    top: 20px;
+    width: 900px;
+    left: 50%;
+    margin-left: -450px;
+    display: block;
+    z-index: 4000;
+    /*--estilo colores ---*/
+    background: #fafafa;
+    border: solid 2px #0470aa;
+    overflow:auto;
 
+    border-radius:5px;
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+
+    -moz-box-shadow: 0px 5px 10px rgba(0,0,0,0.6);
+    -webkit-box-shadow: 0px 5px 10px rgba(0,0,0,0.6);
+    box-shadow: 0px 5px 10px rgba(0,0,0,0.6);
+    
+    /*---altura de prueba ---*/
+    /*height: 500px; */
 }
-div[name=btn]:active p{color:#7b7b7b;}
-
-
-
-
-
 /*----------------------cmsm---------------------------*/
-
-
-
-
-

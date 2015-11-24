@@ -13,6 +13,7 @@ session_start();
 </head>
  
 <body>
+<div class="overlay-background"></div>
 <nav class="main-nav-outer" id="layer_menu"><!--main-nav-start-->
 	<div class="container">
 		<a href="#home" class="img-logo"><img  src="images/nav/img-logo.png" alt="logo"></a>

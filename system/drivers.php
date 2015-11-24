@@ -49,6 +49,10 @@ function llenadoGrid(){
                     $(fn_drivers.data_grid+" tbody tr:odd").addClass('white');
                 }
             }); 
+        },
+        add_new: function(){
+            
+            
         }    
     }
     fn_drivers.fillgrid();    
@@ -108,14 +112,16 @@ function inicio(){
             <tr id="grid-head1">
                 <td style='width:45px;'><input id="flt_id" class="numeros" type="text" placeholder="ID:"></td>
                 <td><input id="flt_name" type="text" placeholder="Name:"></td>
-                <td><input id="flt_dob" type="text" placeholder="Date of Birth:"></td>
+                <td><input id="flt_dob" type="date" placeholder="Date of Birth:"></td>
                 <td><input id="flt_license" type="text" placeholder="License Number:"></td>
                 <td><input id="flt_expirationdate" type="text" placeholder="Expiration Date:"></td> 
                 <td><input id="flt_state" type="text" placeholder="State:"></td>
-                <td><input id="flt_YOE" type="text" placeholder="Zip Code:"></td> 
-                <td><input id="flt_DOH" type="text" placeholder="Phone(s):"></td>  
-                <td style='width:50px;'>
+                <td><input id="flt_YOE" type="text" placeholder="Years of Experience:"></td> 
+                <td><input id="flt_DOH" type="date" placeholder="Date of Hire:"></td>
+                <td><input id="flt_Documents" type="text" placeholder="Document:"></td>  
+                <td style='width:90px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick=""><i class="fa fa-search"></i></div>
+                    <div class="btn-icon-2 add btn-left" title="Add +" onclick=""><i class="fa fa-plus-circle"></i></div> 
                 </td> 
             </tr>
             <tr id="grid-head2">
@@ -146,7 +152,13 @@ function inicio(){
 </div>
 <!---- FOOTER ----->
 <?php include("footer.php"); ?> 
-
+<!---- FORMULARIOS ------>
+<div id="drivers_edit" class="popup-form">
+    <div class="p-header">
+        <h2>Add new Driver</h2>
+        <div class="btn-icon-2 close btn-left" title="Close Window" onclick=""><i class="fa fa-times"></i></div>>
+    </div>
+</div>
 </body>
 
 </html>

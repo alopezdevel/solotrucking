@@ -225,7 +225,7 @@ if($_POST["accion"] == ""){
                                    "<td>".$usuario['correo']."</td>".
                                    "<td>".$usuario['nombre']."</td>".
                                    "<td>".$usuario['hActivado']."</td>".     
-                                   "<td><div ".'Onclick=" if (confirmarBorrar(\''.$usuario['nombre'].'\',\''.$usuario['id'].'\')) {    borrarClient(\''.$usuario['id'].'\')};" '. "   id='f_".$usuario['id']."' class=\"btn-icon ico-delete\" title=\"Forward e-mail\"><span></span></div>
+                                   "<td><div ".'Onclick=" if (confirmarBorrar(\''.$usuario['nombre'].'\',\''.$usuario['id'].'\')) {    borrarClient(\''.$usuario['id'].'\')};" '. "   id='f_".$usuario['id']."' class=\"btn-icon trash\" title=\"Delete Account\"><i class=\"fa fa-trash\"></i></div>
                                    </td>".  
                                 "</tr>"   ;
              }else{                             
@@ -1126,7 +1126,7 @@ if($_POST["accion"] == ""){
                                    "<td>".$drivers['Experiencia']."</td>".
                                    "<td>".$drivers['FechaContratacion']."</td>". 
                                    "<td> - - -</td>".                                                                                                                                                                                                                         
-                                   "<td></td></tr>";
+                                   "<td><div class=\"btn-icon edit btn-left\" title=\"Edit Driver\" onclick=\"\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div><div class=\"btn-icon trash btn-left\" title=\"Delete Driver\" onclick=\"\"><i class=\"fa fa-trash\"></i> <span></span></div></td></tr>";
              }else{                                                                                                                                                                                                        
                 
                  $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;
