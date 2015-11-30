@@ -224,26 +224,38 @@ function onInsertarCompania(id,accion){
         <fieldset name="CompanyInformation">
         <legend>Company Information</legend>
             <p class="mensaje_valido">&nbsp;All form fields are required.</p>
-            <div class="field_item"> 
+            <div class="field_item">
+                <label>Company Name:</label> 
                 <input tabindex="1" id="name" name="companyname" type="text" placeholder="* Company Name:" maxlength="100" readonly>
             </div>
-            <div class="field_item"> 
+            <div class="field_item">
+                <label>E-mail:</label>  
                 <input tabindex="2" id="email" name="Email" type="email" placeholder="* E-mail:" maxlength="100" readonly>
             </div>
-            <div class="field_item"> 
+            <div class="field_item">
+                <label>Address:</label>  
                 <input tabindex="3" id="address" name="address" type="text" placeholder="* Address:" maxlength="100">
             </div>
-            <div class="field_item"> 
-                <input tabindex="4" id="city" name="city" type="text"  placeholder="* City:" maxlength="100" style="width:33%;float:left;clear:none;" required>    
-                <input tabindex="5" id="zipcode" class="numb" name="ZipCode" type="text" maxlength="5" placeholder="Zip Code:" style="width:32%;float:right;clear:none;">                
-                <select tabindex="6" id="country" name="contry" style="width:33%!important;float:right;clear:none;margin-right:5px;">
-                    <option value="">Select a Country</option> 
-                </select>
+            <div class="field_item">
+                <div class="col_3 left ">
+                    <label>City:</label>  
+                    <input tabindex="4" id="city" name="city" type="text"  placeholder="* City:" maxlength="100" required> 
+                </div> 
+                <div class="col_3 left ">  
+                    <label>Zip Code:</label>   
+                    <input tabindex="5" id="zipcode" class="numb" name="ZipCode" type="text" maxlength="5" placeholder="Zip Code:">                
+                </div>
+                <div class="col_3 left "> 
+                    <label>State:</label>  
+                    <select tabindex="6" id="country" name="contry"></select>
+                </div>
             </div>
-            <div class="field_item"> 
+            <div class="field_item">
+                <label>Phone:</label>  
                 <input tabindex="7" id="phone" class="numb" name="phone1" type="tel" placeholder="* Primary Phone:" maxlength="10">
             </div>
             <div class="field_item"> 
+                <label>USDOT:</label> 
                 <input tabindex="8" id="usdot" class="numb" name="usdot" type="text" placeholder="* USDOT#:" maxlength="6">
             </div>
             <button id="btn_register" type="button" class="btn-1" ><p id="mensaje_valido" font size="6" ></p></button>

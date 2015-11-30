@@ -107,6 +107,7 @@ if($_POST["accion"] == ""){
         echo array2json($response);
     }
 }
+#FUNCIONES PARA USUARIOS Y CERTIFICADOS:
   function alta_usuario(){
     function generaPass(){
         $cadena = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
@@ -422,37 +423,6 @@ if($_POST["accion"] == ""){
      $response = array("mensaje"=>"$sql","error"=>"$error","tabla"=>"$htmlTabla");   
      echo array2json($response);
 }  
-  function get_country(){   
-  //error_reporting(E_ALL);
-  //ini_set('display_errors', '1');
-   
-    include("cn_usuarios.php");
-    //$conexion->begin_transaction();
-    $conexion->autocommit(FALSE);
-    $transaccion_exitosa = true;
-    $sql = "SELECT sCveEntidad as clave, sDescEntidad as descripcion FROM ct_entidad";
-    $result = $conexion->query($sql);
-    $NUM_ROWs_Country = $result->num_rows;    
-    if ($NUM_ROWs_Country > 0) {
-        //$items = mysql_fetch_all($result);      
-        while ($country = $result->fetch_assoc()) {
-           if($country["clave"] != ""){
-                 $htmlTabla .= "<option value=\"".$country['clave']."\">".$country['descripcion']."</option>";
-             }else{                             
-                 $htmlTabla .="";
-             }    
-        } 
-        $conexion->rollback();
-        $conexion->close();                                                                                                                                                                       
-    } else { 
-        
-        $htmlTabla .="";    
-        
-    }
-    $html_tabla = utf8_encode($html_tabla); 
-     $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
-     echo array2json($response);
-}    
   function add_company(){
        $userid = trim($_POST["userid"]);
        $address = trim($_POST["address"]);
@@ -991,12 +961,6 @@ if($_POST["accion"] == ""){
                  "</tr>"   ;
              }    
         }
-       // $htmlTabla .="<tr>
-         //                           <td>&nbsp;</td>".
-           //                        "<td>&nbsp;</td>".
-             //                      "<td>&nbsp;</td>".
-               //                    "<td>&nbsp;</td>".
-                 //"</tr>"   ;
         
         $conexion->rollback();
         $conexion->close();                                                                                                                                                                       
@@ -1099,49 +1063,36 @@ if($_POST["accion"] == ""){
      $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
      echo array2json($response); 
   }
-  
-  //----------------Funciones para las Companias--------------//
-  //Catalogo de Drivers:
-  function get_drivers(){
-     
+  #funciones genericas:
+  function get_country(){    
     include("cn_usuarios.php");
     //$conexion->begin_transaction();
-    $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+    $conexion->autocommit(FALSE);
     $transaccion_exitosa = true;
-    $sql = "SELECT ct_operadores.iConsecutivo as id, ct_operadores.sNombre AS nombre, DATE_FORMAT(ct_operadores.dFechaNacimiento,'%d %b %y') AS FechaNacimiento, ct_operadores.iNumLicencia AS NumLicencia, ct_operadores.iExperienciaYear AS Experiencia, DATE_FORMAT(ct_operadores.dFechaExpiracionLicencia,'%d %b %y') AS FechaExpiracion, ct_operadores.iNumLicencia, DATE_FORMAT(ct_operadores.dFechaContratacion,'%d %b %y') AS FechaContratacion, ct_entidad.sDescEntidad AS Entidad  FROM  ct_operadores LEFT JOIN   ct_entidad ON  ct_entidad.sCveEntidad = ct_operadores.iEntidad LEFT JOIN cu_control_acceso ON cu_control_acceso.iConsecutivo = ct_operadores.iCompania WHERE cu_control_acceso.sUsuario = '".$_SESSION['usuario_actual']."'";
+    $sql = "SELECT sCveEntidad as clave, sDescEntidad as descripcion FROM ct_entidad";
     $result = $conexion->query($sql);
-    $items = $result->num_rows;    
-    if ($items > 0) {
-              
-        while ($drivers = $result->fetch_assoc()) { 
-           if($drivers["id"] != ""){
-                 
-                 $htmlTabla .= "<tr>
-                                    <td>".$drivers['id']."</td>".
-                                   "<td>".$drivers['nombre']."</td>".
-                                   "<td>".$drivers['FechaNacimiento']."</td>".
-                                   "<td>".$drivers['NumLicencia']."</td>".
-                                   "<td>".$drivers['FechaExpiracion']."</td>".
-                                   "<td>".$drivers['Entidad']."</td>".
-                                   "<td>".$drivers['Experiencia']."</td>".
-                                   "<td>".$drivers['FechaContratacion']."</td>". 
-                                   "<td> - - -</td>".                                                                                                                                                                                                                         
-                                   "<td><div class=\"btn-icon edit btn-left\" title=\"Edit Driver\" onclick=\"\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div><div class=\"btn-icon trash btn-left\" title=\"Delete Driver\" onclick=\"\"><i class=\"fa fa-trash\"></i> <span></span></div></td></tr>";
-             }else{                                                                                                                                                                                                        
-                
-                 $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;
+    $NUM_ROWs_Country = $result->num_rows;    
+    if ($NUM_ROWs_Country > 0) {
+        //$items = mysql_fetch_all($result);
+        $htmlTabla .= "<option value=\"\">Select an option...</option>";      
+        while ($country = $result->fetch_assoc()) {
+           if($country["clave"] != ""){
+                 $htmlTabla .= "<option value=\"".$country['clave']."\">".$country['descripcion']."</option>";
+             }else{                             
+                 $htmlTabla .="";
              }    
-        }
-    
-        
+        } 
         $conexion->rollback();
         $conexion->close();                                                                                                                                                                       
     } else { 
         
-        $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;    
+        $htmlTabla .="";    
         
     }
+    $html_tabla = utf8_encode($html_tabla); 
      $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
-     echo array2json($response); 
-  }
+     echo array2json($response);
+}    
+  
+  
 ?>

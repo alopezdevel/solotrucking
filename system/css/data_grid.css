@@ -369,12 +369,12 @@ div.btn-icon span{font-weight: bold;font-size: 13px;}
     width: 900px;
     left: 50%;
     margin-left: -450px;
-    display: block;
+    display: none;
     z-index: 4000;
     /*--estilo colores ---*/
     background: #fafafa;
     border:1px solid  #c5c5c5;
-    overflow:auto;
+    overflow:hidden;
 
     border-radius:5px;
     -moz-border-radius:5px;
@@ -385,7 +385,7 @@ div.btn-icon span{font-weight: bold;font-size: 13px;}
     box-shadow: 0px 5px 10px rgba(0,0,0,0.6);
     
     /*---altura de prueba ---*/
-    height: 500px; 
+    height: 600px; 
 }
 .popup-form .p-header{
     
@@ -400,10 +400,11 @@ div.btn-icon span{font-weight: bold;font-size: 13px;}
 .p-header h2{color:#ffffff;text-shadow:1px 1px 0px rgba(0,0,0,0.6);text-align: left;font-size: 15px;margin: 0;padding: 5px;}
 .p-header .btn-close{width:25px;padding:5px 0px;text-align: center;float: right;position: relative;top: -28px;background: #055692;color:#ffffff;}
 .p-header .btn-close:hover{background: #053f6a;cursor: pointer;}
-.p-container{width:98%;margin:20px auto;height: auto; padding:5px;}
+.p-container{width:98%;margin:20px auto;height:500px; padding:5px;overflow-y:scroll;}
 /*contenido popup*/
 .p-container fieldset legend{color:#006dbf;text-transform:uppercase;font-weight:bold;text-align:center;font-size: 15px;}
 .p-container label{color:#464646;font-weight:bold;}
+.p-container .mensaje_valido{font-size:12px;}
 
 
 /*----------------------cmsm---------------------------*/

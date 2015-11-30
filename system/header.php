@@ -10,6 +10,7 @@ session_start();
 <link rel="stylesheet" href="css/style_system.css" type="text/css">
 <link rel="shortcut icon" href="images/favicon.png" type="img/x-icon">
 <link href="../css/font-awesome.css" rel="stylesheet" type="text/css"> 
+<script src="lib/funciones_genericas.js" type="text/javascript"></script>
 </head>
  
 <body>

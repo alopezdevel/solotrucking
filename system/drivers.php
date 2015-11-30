@@ -22,6 +22,11 @@ function inicio(){
         //$("#aUpdateAccount").click(function() { actualizarCliente(usuario_actual); }); 
         llenadoGrid();  
         $.unblockUI();
+        
+        //clic functions:
+        $('#add_new').click(function(){driver_add();}); 
+        
+        
     
 }  
 
@@ -36,10 +41,17 @@ function llenadoGrid(){
     var fn_drivers = {
         domroot:"#ct_drivers",
         data_grid: "#data_grid_drivers",
+        init: function(){
+           //llenando select de estados:     
+           $.post("funciones.php", { accion: "get_country"},function(data){ $("#iEntidad").append(data.tabla);},"json");
+           
+           //Llenamos el grid:
+           fn_drivers.fillgrid();  
+        },
         fillgrid: function(){
                $.ajax({             
                 type:"POST", 
-                url:"funciones.php", 
+                url:"funciones_drivers.php", 
                 data:{accion:"get_drivers"},
                 async : true,
                 dataType : "json",
@@ -51,11 +63,13 @@ function llenadoGrid(){
             }); 
         },
         add_new: function(){
-            
+          
+          fn_popups.resaltar_ventana('drivers_edit');
+          //$('#drivers_edit input').val('');  
             
         }    
     }
-    fn_drivers.fillgrid();    
+    fn_drivers.init();    
 }
 function validarLoginCliente(usuario){
         //$.blockUI({ message: $('#domMessage') });
@@ -91,6 +105,13 @@ function validarLoginCliente(usuario){
         
         
     } 
+//FUNCIONES PARA EL MODULO:
+function driver_add(){
+    
+    fn_popups.resaltar_ventana('drivers_edit');
+    $('#drivers_edit input').val('');  
+            
+}    
 </script> 
 <!---- HEADER ----->
 <?php include("header.php"); ?> 
@@ -121,7 +142,7 @@ function inicio(){
                 <td><input id="flt_Documents" type="text" placeholder="Document:"></td>  
                 <td style='width:90px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick=""><i class="fa fa-search"></i></div>
-                    <div class="btn-icon-2 add btn-left" title="Add +" onclick=""><i class="fa fa-plus-circle"></i></div> 
+                    <div id="add_new" class="btn-icon-2 add btn-left" title="Add +" onclick=""><i class="fa fa-plus-circle"></i></div> 
                 </td> 
             </tr>
             <tr id="grid-head2">
@@ -156,12 +177,13 @@ function inicio(){
 <div id="drivers_edit" class="popup-form">
     <div class="p-header">
         <h2>Add new Driver</h2>
-        <div class="btn-close" title="Close Window" onclick=""><i class="fa fa-times"></i></div>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('drivers_edit');"><i class="fa fa-times"></i></div>
     </div>
     <div class="p-container">
         <form>
             <fieldset>
-                <legend>Personal Information</legend>
+                <legend>Driver Information</legend>
+                <p class="mensaje_valido">&nbsp;All form fields are required.</p> 
                 <div> 
                     <label>First Name: </label><input id="sNombre" type="text" placeholder="Please write a first name...">
                 </div>
@@ -190,6 +212,7 @@ function inicio(){
                 <div> 
                     <label>Documents: (Please upload the file in PDF copy of driver's license.) </label>
                 </div>
+                <button id="btn_add" type="button" class="btn-1" >Guardar</button> 
             </fieldset>
         </form>
     </div>
