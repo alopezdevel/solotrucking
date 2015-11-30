@@ -156,7 +156,42 @@ function inicio(){
 <div id="drivers_edit" class="popup-form">
     <div class="p-header">
         <h2>Add new Driver</h2>
-        <div class="btn-icon-2 close btn-left" title="Close Window" onclick=""><i class="fa fa-times"></i></div>>
+        <div class="btn-close" title="Close Window" onclick=""><i class="fa fa-times"></i></div>
+    </div>
+    <div class="p-container">
+        <form>
+            <fieldset>
+                <legend>Personal Information</legend>
+                <div> 
+                    <label>First Name: </label><input id="sNombre" type="text" placeholder="Please write a first name...">
+                </div>
+                <div> 
+                    <label>Last Name: </label><input id="sNombre_2" type="text" placeholder="Please write a last name...">
+                </div>
+                <div> 
+                    <label>Date of Birthday: </label><input id="dFechaNacimiento" type="date" placeholder="">
+                </div>
+                <div> 
+                    <label>License Number: </label><input id="iNumLicencia" class="numbers" type="text" placeholder="Please write the license number...">
+                </div>
+                <div> 
+                    <label>Expiration Date: </label><input id="dFechaExpiracionLicencia" type="date" placeholder="">
+                </div>
+                <div> 
+                    <label>State: </label>
+                    <Select id="iEntidad"></select>
+                </div>
+                <div> 
+                    <label>Years of Experience: </label><input id="iExperienciaYear" type="text" placeholder="Please write the number of years.">
+                </div>
+                <div> 
+                    <label>Date of Hire: </label><input id="dFechaContratacion" type="date" placeholder="">
+                </div>
+                <div> 
+                    <label>Documents: (Please upload the file in PDF copy of driver's license.) </label>
+                </div>
+            </fieldset>
+        </form>
     </div>
 </div>
 </body>
