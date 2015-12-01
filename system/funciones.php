@@ -1066,10 +1066,12 @@ if($_POST["accion"] == ""){
   #funciones genericas:
   function get_country(){    
     include("cn_usuarios.php");
-    //$conexion->begin_transaction();
     $conexion->autocommit(FALSE);
     $transaccion_exitosa = true;
-    $sql = "SELECT sCveEntidad as clave, sDescEntidad as descripcion FROM ct_entidad";
+    $filtro_country = "";
+    if(isset($_POST['country']))$filtro_country = " WHERE sCvePais = '".$_POST['country']."'";
+    
+    $sql = "SELECT sCveEntidad as clave, sDescEntidad as descripcion FROM ct_entidad".$filtro_country;
     $result = $conexion->query($sql);
     $NUM_ROWs_Country = $result->num_rows;    
     if ($NUM_ROWs_Country > 0) {

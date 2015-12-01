@@ -42,8 +42,8 @@ function onInsertarUsuario(){
     var valid = true;
     
     //tamano
-    valid = valid && checkLength( name, "Company name", 5, 25 );
-    valid = valid && checkRegexp( name, /^[a-z]([0-9a-z_\s])+$/i, "Company name of a-z, 0-9, underscores, spaces and must begin with a letter." );
+    valid = valid && checkLength( name, "Company name", 3, 25 );
+    //valid = valid && checkRegexp( name, /^[a-z]([0-9a-z_\s])+$/i, "Company name of a-z, 0-9, underscores, spaces and must begin with a letter." );
     
     valid = valid && checkLength( email, "E-mail", 6, 80 );
     valid = valid && checkRegexp( email, emailRegex, "eg. ui@solotrucking.com" );

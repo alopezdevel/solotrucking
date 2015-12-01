@@ -23,13 +23,13 @@ function inicio(){
         llenadoGrid();  
         $.unblockUI();
         
-        //clic functions:
+        //functions:
+        $('.only_numbers').keyup(function(){inputnumero();}); 
         $('#add_new').click(function(){driver_add();}); 
-        
+        $('#sCountry').change(function(){get_states($(this).val());});
         
     
 }  
-
 function validapantalla(usuario){
         
         if(usuario == ""  || usuario == null){
@@ -41,13 +41,6 @@ function llenadoGrid(){
     var fn_drivers = {
         domroot:"#ct_drivers",
         data_grid: "#data_grid_drivers",
-        init: function(){
-           //llenando select de estados:     
-           $.post("funciones.php", { accion: "get_country"},function(data){ $("#iEntidad").append(data.tabla);},"json");
-           
-           //Llenamos el grid:
-           fn_drivers.fillgrid();  
-        },
         fillgrid: function(){
                $.ajax({             
                 type:"POST", 
@@ -61,15 +54,9 @@ function llenadoGrid(){
                     $(fn_drivers.data_grid+" tbody tr:odd").addClass('white');
                 }
             }); 
-        },
-        add_new: function(){
-          
-          fn_popups.resaltar_ventana('drivers_edit');
-          //$('#drivers_edit input').val('');  
-            
-        }    
+        },   
     }
-    fn_drivers.init();    
+    fn_drivers.fillgrid();   
 }
 function validarLoginCliente(usuario){
         //$.blockUI({ message: $('#domMessage') });
@@ -105,23 +92,124 @@ function validarLoginCliente(usuario){
         
         
     } 
+function get_states(country){
+     //llenando select de estados:     
+     $.post("funciones.php", { accion: "get_country", country: country},function(data){ $("#iEntidad").empty().append(data.tabla).removeAttr('disabled').removeClass('readonly');},"json");
+}
 //FUNCIONES PARA EL MODULO:
 function driver_add(){
     
     fn_popups.resaltar_ventana('drivers_edit');
-    $('#drivers_edit input').val('');  
+    $('#drivers_edit input, select').val('');  
+    $('#btn_save').click(function(){driver_save();});          
+}
+function driver_save(){
+    
+    //Validando fields:
+    var sNombre = $("#sNombre");
+    var sApellido = $('#sNombre2');
+    var dFechaNacimiento = $('#dFechaNacimiento');
+    var iNumLicencia = $('#iNumLicencia');
+    var dFechaExpiracionLicencia = $('#dFechaExpiracionLicencia');
+    var iEntidad = $('#iEntidad');
+    var iExperienciaYear = $('#iExperienciaYear'); 
+    var dFechaContratacion = $('#dFechaContratacion'); 
+    todosloscampos = $( [] ).add( sNombre ).add( sApellido ).add( dFechaNacimiento ).add( iNumLicencia ).add( dFechaExpiracionLicencia ).add( iEntidad ).add( iExperienciaYear ).add( dFechaContratacion );
+    todosloscampos.removeClass( "error" );
+    actualizarMensajeAlerta("");
+   
+    var valid = true;
             
+    //field nombre
+    valid = valid && checkLength( sNombre, "Name", 1, 20 );
+    valid = valid && checkRegexp( sNombre, /^[0-9a-zA-ZáéíóúàèìòùÀÈÌÒÙÁÉÍÓÚñÑüÜ_\s]+$/, "The field for the Name must contain only letters." );
+    
+    //field Apellido
+    valid = valid && checkLength( sApellido, "Last Name", 1, 20 );
+    valid = valid && checkRegexp( sApellido, /^[0-9a-zA-ZáéíóúàèìòùÀÈÌÒÙÁÉÍÓÚñÑüÜ_\s]+$/, "The field for the Last Name must contain only letters." );
+            
+    //field FDN
+    valid = valid && checkLength( dFechaNacimiento, "Date of Birthday", 1, 10);
+    valid = valid && checkRegexp( dFechaNacimiento, /^(0[1-9]|[12][0-9]|3[01])[- \/.](0[1-9]|1[012])[- \/.](19|20)\d\d$/, "The date must be in DD / MM / YY format." );
+    
+    //field NumLicencia
+    valid = valid && checkLength( iNumLicencia, "License Number", 1, 30);
+    valid = valid && checkRegexp( iNumLicencia, /^[0-9]+$/, "This field allows only numeric data." );        
+    
+    //field dFechaExpiracionLicencia
+    valid = valid && checkLength( dFechaExpiracionLicencia, "Expiration Date", 1, 10);
+    valid = valid && checkRegexp( dFechaExpiracionLicencia, /^(0[1-9]|[12][0-9]|3[01])[- \/.](0[1-9]|1[012])[- \/.](19|20)\d\d$/, "The date must be in DD / MM / YY format." );        
+    
+    //field Entidad
+    if(iEntidad.val() == ""){
+        valid = false;
+        actualizarMensajeAlerta( "Please choose a state" );
+        iEntidad.addClass('error');
+    }
+    
+    //field iExperienciaYear
+    valid = valid && checkLength( iExperienciaYear, "Years of Experience", 1, 30);
+    valid = valid && checkRegexp( iExperienciaYear, /^[0-9]+$/, "This field allows only numeric data." );
+    
+    //field dFechaContratacion
+    valid = valid && checkLength( dFechaContratacion, "Date of Hire", 1, 10);
+    valid = valid && checkRegexp( dFechaContratacion, /^(0[1-9]|[12][0-9]|3[01])[- \/.](0[1-9]|1[012])[- \/.](19|20)\d\d$/, "The date must be in DD / MM / YY format." );
+            
+    if ( valid ) {   }
+    
+} 
+/*------------------ FUNCIONES PARA VALIDACIONES -------------------------*/
+function onFocus(){
+     $(this).css("background-color","#FFFFC0");
+ }
+function onBlur(){
+    $(this).css("background-color","#FFFFFF");
+ }
+function actualizarMensajeAlerta(t) {
+    mensaje = $('.mensaje_valido');
+    mensaje.text(t).addClass( "alertmessage" );
+    setTimeout(function() {
+        mensaje.removeClass( "alertmessage", 2500 );
+    }, 700 );
+}
+function checkRegexp( o, regexp, n ) {
+    if ( !( regexp.test( o.val() ) ) ) {
+        actualizarMensajeAlerta( n );
+        o.addClass( "error" );
+        o.focus();
+        return false;
+    } else {                     
+        return true;        
+    }
+ }
+function checkLength( o, n, min, max ) {
+    if ( o.val().length > max || o.val().length < min ) {
+        actualizarMensajeAlerta( "Length of " + n + " must be between " + min + " and " + max + "."  );
+        o.addClass( "error" );
+        o.focus();
+        return false;    
+    } else {             
+        return true;                     
+    }                    
+ }
+function inputnumero(){
+    if(event.shiftKey){event.preventDefault();}
+    if (event.keyCode != 46 || event.keyCode != 8 || event.keyCode != 9){
+            if (event.keyCode < 95) {
+                    if (event.keyCode < 48 || event.keyCode > 57) {
+                        event.preventDefault();
+                    }
+                } 
+                else {
+                    if (event.keyCode < 96 || event.keyCode > 105) {
+                        event.preventDefault();
+                    }
+                }
+        }
 }    
 </script> 
 <!---- HEADER ----->
 <?php include("header.php"); ?> 
-<script> 
-$(document).ready(inicio);
-function inicio(){   
-
-    llenadoGrid();  
-}
-</script>
 <div id="layer_content" class="main-section">
     <div id="ct_drivers" class="container">
         <div class="page-title">
@@ -188,23 +276,33 @@ function inicio(){
                     <label>First Name: </label><input id="sNombre" type="text" placeholder="Please write a first name...">
                 </div>
                 <div> 
-                    <label>Last Name: </label><input id="sNombre_2" type="text" placeholder="Please write a last name...">
+                    <label>Last Name: </label><input id="sNombre2" type="text" placeholder="Please write a last name...">
                 </div>
                 <div> 
                     <label>Date of Birthday: </label><input id="dFechaNacimiento" type="date" placeholder="">
                 </div>
                 <div> 
-                    <label>License Number: </label><input id="iNumLicencia" class="numbers" type="text" placeholder="Please write the license number...">
+                    <label>License Number: </label><input id="iNumLicencia" class="only_numbers" type="text" placeholder="Please write the license number...">
                 </div>
                 <div> 
                     <label>Expiration Date: </label><input id="dFechaExpiracionLicencia" type="date" placeholder="">
                 </div>
                 <div> 
-                    <label>State: </label>
-                    <Select id="iEntidad"></select>
+                    <div>
+                      <label>State: </label>
+                      <Select id="sCountry">
+                        <option value="">Select an option...</option>
+                        <option value="MEX">Mexico</option>
+                        <option value="USA">United State</option>
+                      </select>
+                    </div>
+                    <div>
+                        <label>State: </label>
+                        <Select id="iEntidad" disabled="disabled" class="readonly"><option value="">Select a country first...</option> </select>
+                    </div>
                 </div>
                 <div> 
-                    <label>Years of Experience: </label><input id="iExperienciaYear" type="text" placeholder="Please write the number of years.">
+                    <label>Years of Experience: </label><input id="iExperienciaYear" class="only_numbers" type="text" placeholder="Please write the number of years.">
                 </div>
                 <div> 
                     <label>Date of Hire: </label><input id="dFechaContratacion" type="date" placeholder="">
@@ -212,7 +310,8 @@ function inicio(){
                 <div> 
                     <label>Documents: (Please upload the file in PDF copy of driver's license.) </label>
                 </div>
-                <button id="btn_add" type="button" class="btn-1" >Guardar</button> 
+                <input id="id_driver" type="hidden">
+                <button id="btn_save" type="button" class="btn-1" >Guardar</button> 
             </fieldset>
         </form>
     </div>

@@ -90,4 +90,5 @@ session_start();
      $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
      echo array2json($response); 
   }
+  
 ?>

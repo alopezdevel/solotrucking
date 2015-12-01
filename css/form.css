@@ -207,3 +207,6 @@ button:hover, .btn-1:hover{background-color:#61b1df;}
     width: auto;
     clear: none;
 }
+
+/*---campos de solo lectura ---*/
+.readonly, input[readonly="readonly"]{background: #dadada!important;color:#585858!important;border: 1px solid #c0c0c0!important;}
