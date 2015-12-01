@@ -25,7 +25,7 @@ function inicio(){
         $("#aUpdateAccount").click(function() { actualizarCliente(usuario_actual); }); 
         llenadoGrid();  
         $.unblockUI();
-        $("#buton_download").click(abrirDescargaPopUp);
+        $("#buton_download").click(abrirDescargaPopUp);        
     
 }  
 
@@ -219,6 +219,9 @@ function actualizarMensajeAlerta( t ) {
         return true;                     
     }                    
  }
+ function onAbrirDownloadAdd(id){
+     window.open('download_certificate_add.php?cve='+id,'_blank');
+ }
     
 </script> 
 <!---- HEADER ----->
@@ -265,7 +268,7 @@ function inicio(){
 </div>
 <!---- FOOTER ----->
 <?php include("footer.php"); ?> 
- <div id="dialog-certificate" title="Send Certificate" >
+ <div id="dialog-certificate" title="Download Certificate" >
         <fieldset id="sendEmail">
             <form name="emailForm" id="emailForm" method="POST"  enctype="multipart/form-data">
                 <p class="mensaje_valido">&nbsp;All form fields are required.</p>

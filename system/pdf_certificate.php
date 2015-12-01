@@ -73,8 +73,8 @@
     $pdf->SetXY(12, $y_holder);
     $pdf->Cell(90,4,$ce .' '. $cc.' '.$cd,0,0,'L',1); 
     
-    //$pdf->Output("Certificate-".$ca.".pdf","D");
-    $pdf->Output();
+    $pdf->Output("Certificate-".$ca.".pdf","D");
+    //$pdf->Output();
     unlink($nombre_pdf);
 ?>
 

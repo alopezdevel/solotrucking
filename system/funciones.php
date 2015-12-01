@@ -781,7 +781,7 @@ if($_POST["accion"] == ""){
     //$conexion->begin_transaction();
     $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
     $transaccion_exitosa = true;
-    $sql = "SELECT ct_companias.iConsecutivo as id, sUsuario, eEstatusCertificadoUpload as estatus_upload,CASE WHEN eEstatusCertificadoUpload = '0' then 'Pending' Else 'Loaded' END AS  hActivado,sDescripcion as nombre,cu_control_acceso.sUsuario as correo FROM  ct_companias LEFT JOIN   cu_control_acceso ON  cu_control_acceso.iConsecutivo = ct_companias.iConsecutivoAcceso WHERE eTipoUsuario ='C' ";
+    $sql = "SELECT  cb_certificate_file.hContenidoDocumentoDigitalizadoAdd, ct_companias.iConsecutivo as id, sUsuario, eEstatusCertificadoUpload as estatus_upload,CASE WHEN eEstatusCertificadoUpload = '0' then 'Pending' Else 'Loaded' END AS  hActivado,sDescripcion as nombre,cu_control_acceso.sUsuario as correo FROM  ct_companias LEFT JOIN   cu_control_acceso ON  cu_control_acceso.iConsecutivo = ct_companias.iConsecutivoAcceso LEFT JOIN cb_certificate_file ON ct_companias.iConsecutivo = cb_certificate_file.iConsecutivoCompania WHERE eTipoUsuario ='C' ";
     $result = $conexion->query($sql);
     $NUM_ROWs_Usuario = $result->num_rows;    
     if ($NUM_ROWs_Usuario > 0) {
@@ -795,13 +795,16 @@ if($_POST["accion"] == ""){
                                    "<td>".$usuario['nombre']."</td>";
                                    if($usuario['hActivado'] == "Loaded"){
                                        $color = "#000080";
-                                       $usuario['hActivado'] = "Certificate Loaded";
+                                       $usuario['hActivado'] = "- Certificate Loaded";
                                    }else{
-                                       $usuario['hActivado'] = "Certificate not Loaded";
-                                   }                                   
+                                       $usuario['hActivado'] = "- Certificate not Loaded";
+                                   }
+                                   if($usuario['hContenidoDocumentoDigitalizadoAdd'] != ""){                                       
+                                       $usuario['hActivado'] =  $usuario['hActivado']. ",<br /> - Additional remarks schedule Loaded";
+                                   }                                 
                  $htmlTabla = $htmlTabla."<td><b><font color ='$color'> ".$usuario['hActivado']."</font></b></td>";  
                                    if($usuario['estatus_upload'] == "0"){   
-                                   $htmlTabla = $htmlTabla."<td nowrap='nowrap' ><div id= 'boton_uploadFile' onclick='onAbrirDialog(\"".$usuario['id']."\",\"".$usuario['correo']."\" );' class=\"btnicon\" title=\"Upload Certificate\"><span><i i class=\"fa fa-envelope-o\"> </i> Certificate</span></div>
+                                   $htmlTabla = $htmlTabla."<td nowrap='nowrap' ><div id= 'boton_uploadFile' onclick='onAbrirDialog(\"".$usuario['id']."\",\"".$usuario['correo']."\" );' class=\"btnicon\" title=\"Upload Certificate\"><span><i  class=\"fa fa-upload\"> </i> Certificate</span></div>
                                    </td>";
                                    }
                                    if($usuario['estatus_upload'] == "1"){   
@@ -932,22 +935,26 @@ if($_POST["accion"] == ""){
     if($_SESSION['acceso'] == "C"){
         $where = " AND  cu_control_acceso.sUsuario = '".$_SESSION["usuario_actual"]."' ";
     }
-    $sql = "SELECT cb_certificate_file.iConsecutivo as folio_documento, ct_companias.iConsecutivo as id, sUsuario,CASE WHEN eEstatusCertificadoUpload = '0' then 'Pending' Else 'Loaded' END AS  hActivado,sDescripcion as nombre,sCorreo as correo FROM cu_control_acceso LEFT JOIN  ct_companias ON  cu_control_acceso.iConsecutivo = ct_companias.iConsecutivoAcceso LEFT JOIN cb_certificate_file ON cb_certificate_file.iConsecutivoCompania = ct_companias.iConsecutivo  WHERE eTipoUsuario ='C' ". $where;
+    $sql = "SELECT cb_certificate_file.iConsecutivo as folio_documento, cb_certificate_file.sNombreArchivoAdd, cb_certificate_file.hContenidoDocumentoDigitalizadoAdd, ct_companias.iConsecutivo as id, sUsuario,CASE WHEN eEstatusCertificadoUpload = '0' then 'Pending' Else 'Loaded' END AS  hActivado,sDescripcion as nombre,sCorreo as correo FROM cu_control_acceso LEFT JOIN  ct_companias ON  cu_control_acceso.iConsecutivo = ct_companias.iConsecutivoAcceso LEFT JOIN cb_certificate_file ON cb_certificate_file.iConsecutivoCompania = ct_companias.iConsecutivo  WHERE eTipoUsuario ='C' ". $where;
     $result = $conexion->query($sql);
     $NUM_ROWs_Usuario = $result->num_rows;    
     if ($NUM_ROWs_Usuario > 0) {
         //$items = mysql_fetch_all($result);      
         while ($usuario = $result->fetch_assoc()) {
-           if($usuario["sUsuario"] != ""){                 
+           if($usuario["sUsuario"] != ""){ 
+               $add_file = "";
+            if($usuario["hContenidoDocumentoDigitalizadoAdd"] != "" && $usuario["sNombreArchivoAdd"] != ""){
+                $add_file = "<br /><br /><br /><div id= 'boton_uploadFile' onclick='onAbrirDownloadAdd(\"".$usuario['folio_documento']."\");' class=\"btnicon\" title=\"Download Additional Remarks \"><span><i class=\"fa fa-upload\"> </i> Download Additional Remarks</span></div>";
+            }                 
                  $htmlTabla .= "<tr>
                                     <td>".$usuario['nombre']."</td>".
                                    "<td>".$usuario['correo']."</td>".    
                                    "<td>".$usuario['nombre']."</td>".
                                    "<td>".$usuario['hActivado']."</td>";
                                    if($usuario['hActivado']=="Pending"){
-                                       $htmlTabla= $htmlTabla . "<td> &nbsp;";
+                                       $htmlTabla= $htmlTabla . "<td width='20%'> &nbsp;";                                                                                                          
                                    }else{
-                                    $htmlTabla= $htmlTabla.   "<td nowrap='nowrap' ><div id= 'boton_uploadFile' onclick='onAbrirDialog(\"".$usuario['folio_documento']."\");' class=\"btn-icon ico-email-fwd\" title=\"Upload Certificate\"><span></span></div>";
+                                    $htmlTabla= $htmlTabla."<td nowrap='nowrap' ><div id= 'boton_uploadFile' onclick='onAbrirDialog(\"".$usuario['folio_documento']."\");' class=\"btnicon\" title=\"Download Certificate\"><span><i class=\"fa fa-upload\"> </i> Download Certificate</span></div>".$add_file;                                    
                                    }     
                                    
                                   $htmlTabla= $htmlTabla. "</td>".  
