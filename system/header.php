@@ -57,6 +57,22 @@ session_start();
             	<li style="display: none;"><a href="#">Support</a></li>
             <!---- End Admin navigation ---->	
             <?php } ?>
+
+            <li class="submenu"><a href="#">Endorsements</a>
+            	<ul>
+        			<li><a href="endorsement_request.php">Request an Endorsement</a></li>
+        		</ul>
+            </li>
+            <?php  if($_SESSION['acceso'] == "U"){ ?>
+             <li class="submenu"><a href="#">Certificates</a>
+                <ul>
+                    <li><a href="certificate_request.php">Requests to Certificates</a></li>
+                    <li><a href="certificate_request_pdf_upload.php">Upload Certificate</a></li>                    
+                </ul>
+                
+            </li> 
+            <?php } ?>
+
             <?php if($_SESSION['acceso'] == "C"){ ?>
       		<!---- Customer navigation ---->
       			<li><a href="inicio">Home</a></li>
