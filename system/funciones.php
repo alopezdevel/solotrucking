@@ -944,7 +944,7 @@ if($_POST["accion"] == ""){
            if($usuario["sUsuario"] != ""){ 
                $add_file = "";
             if($usuario["hContenidoDocumentoDigitalizadoAdd"] != "" && $usuario["sNombreArchivoAdd"] != ""){
-                $add_file = "<br /><br /><br /><div id= 'boton_uploadFile' onclick='onAbrirDownloadAdd(\"".$usuario['folio_documento']."\");' class=\"btnicon\" title=\"Download Additional Remarks \"><span><i class=\"fa fa-upload\"> </i> Download Additional Remarks</span></div>";
+                $add_file = "<br /><br /><br /><div id= 'boton_uploadFile' onclick='onAbrirDownloadAdd(\"".$usuario['folio_documento']."\");' class=\"btnicon\" title=\"Download Additional Remarks \"><span><i class=\"fa fa-download\"> </i> Download Additional Remarks</span></div>";
             }                 
                  $htmlTabla .= "<tr>
                                     <td>".$usuario['nombre']."</td>".
@@ -954,7 +954,7 @@ if($_POST["accion"] == ""){
                                    if($usuario['hActivado']=="Pending"){
                                        $htmlTabla= $htmlTabla . "<td width='20%'> &nbsp;";                                                                                                          
                                    }else{
-                                    $htmlTabla= $htmlTabla."<td nowrap='nowrap' ><div id= 'boton_uploadFile' onclick='onAbrirDialog(\"".$usuario['folio_documento']."\");' class=\"btnicon\" title=\"Download Certificate\"><span><i class=\"fa fa-upload\"> </i> Download Certificate</span></div>".$add_file;                                    
+                                    $htmlTabla= $htmlTabla."<td nowrap='nowrap' ><div id= 'boton_uploadFile' onclick='onAbrirDialog(\"".$usuario['folio_documento']."\");' class=\"btnicon\" title=\"Download Certificate\"><span><i class=\"fa fa-download\"> </i> Download Certificate</span></div>".$add_file;                                    
                                    }     
                                    
                                   $htmlTabla= $htmlTabla. "</td>".  
