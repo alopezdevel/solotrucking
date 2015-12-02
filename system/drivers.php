@@ -4,9 +4,8 @@ if ( !($_SESSION["acceso"] == 'C'  && $_SESSION["usuario_actual"] != "" && $_SES
     exit;
 }else{ ?>
 <script src="/js/jquery.1.8.3.min.js" type="text/javascript"></script> 
-
-<link rel="stylesheet" href="/../../../code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-<script src="/../../../code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/cupertino/jquery-ui.css">          
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 <script src="/js/jquery.blockUI.js" type="text/javascript"></script>
 <script type="text/javascript"> 
 $(document).ready(inicio);
@@ -24,7 +23,7 @@ function inicio(){
         $.unblockUI();
         
         //functions:
-        $('.only_numbers').keyup(function(){inputnumero();}); 
+        $('.only_numbers').keydown(inputnumero()); 
         $('#add_new').click(function(){driver_add();}); 
         $('#sCountry').change(function(){get_states($(this).val());});
         
@@ -106,6 +105,7 @@ function driver_add(){
 function driver_save(){
     
     //Validando fields:
+    var id_driver = $("#drivers_edit #id_driver").val();
     var sNombre = $("#sNombre");
     var sApellido = $('#sNombre2');
     var dFechaNacimiento = $('#dFechaNacimiento');
@@ -130,7 +130,7 @@ function driver_save(){
             
     //field FDN
     valid = valid && checkLength( dFechaNacimiento, "Date of Birthday", 1, 10);
-    valid = valid && checkRegexp( dFechaNacimiento, /^(0[1-9]|[12][0-9]|3[01])[- \/.](0[1-9]|1[012])[- \/.](19|20)\d\d$/, "The date must be in DD / MM / YY format." );
+    //valid = valid && checkRegexp( dFechaNacimiento, /^(0[1-9]|[12][0-9]|3[01])[- \/.](0[1-9]|1[012])[- \/.](19|20)\d\d$/, "The date must be in DD / MM / YY format." );
     
     //field NumLicencia
     valid = valid && checkLength( iNumLicencia, "License Number", 1, 30);
@@ -138,7 +138,7 @@ function driver_save(){
     
     //field dFechaExpiracionLicencia
     valid = valid && checkLength( dFechaExpiracionLicencia, "Expiration Date", 1, 10);
-    valid = valid && checkRegexp( dFechaExpiracionLicencia, /^(0[1-9]|[12][0-9]|3[01])[- \/.](0[1-9]|1[012])[- \/.](19|20)\d\d$/, "The date must be in DD / MM / YY format." );        
+    //valid = valid && checkRegexp( dFechaExpiracionLicencia, /^(0[1-9]|[12][0-9]|3[01])[- \/.](0[1-9]|1[012])[- \/.](19|20)\d\d$/, "The date must be in DD / MM / YY format." );        
     
     //field Entidad
     if(iEntidad.val() == ""){
@@ -153,9 +153,34 @@ function driver_save(){
     
     //field dFechaContratacion
     valid = valid && checkLength( dFechaContratacion, "Date of Hire", 1, 10);
-    valid = valid && checkRegexp( dFechaContratacion, /^(0[1-9]|[12][0-9]|3[01])[- \/.](0[1-9]|1[012])[- \/.](19|20)\d\d$/, "The date must be in DD / MM / YY format." );
+    //valid = valid && checkRegexp( dFechaContratacion, /^(0[1-9]|[12][0-9]|3[01])[- \/.](0[1-9]|1[012])[- \/.](19|20)\d\d$/, "The date must be in DD / MM / YY format." );
             
-    if ( valid ) {   }
+    if ( valid ) { 
+       $.post("funciones_drivers.php", 
+       { 
+           accion: "save_driver", 
+           id_driver : id_driver,
+           sNombre : sNombre.val(),
+           sApellido : sApellido.val(),
+           dFechaNacimiento : dFechaNacimiento.val(),
+           iNumLicencia : iNumLicencia.val(),
+           dFechaExp : dFechaExpiracionLicencia.val(),
+           iEntidad : iEntidad.val(),
+           iExpYear : iExperienciaYear.val(),
+           dFechaContratacion :  dFechaContratacion.val()  
+       },
+       function(data){ 
+           switch(data.error){
+             case '0':
+                alert(data.msj);
+                llenadoGrid();
+                fn_popups.cerrar_ventana('drivers_edit');
+             break;
+             case '1': alert(data.msj); break;  
+               
+           }       
+       },"json");       
+    }
     
 } 
 /*------------------ FUNCIONES PARA VALIDACIONES -------------------------*/
