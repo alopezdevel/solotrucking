@@ -66,7 +66,13 @@ function validapantalla(usuario){
             location.href= "login.php";
         }
         
-    }              
+    }      
+function onAbrirDownload(id){     
+     window.open('pdf_certificate.php?id='+id,'_blank');
+ } 
+ function onAbrirDownload_add(id){     
+     window.open('download_certificate_add.php?cve='+id,'_blank');
+ }        
 function llenadoGrid(){      
      var fn_UsersClients = {
         domroot:"#ct_clientusers",
@@ -110,7 +116,7 @@ function confirmarBorrar(registro,id) {
       buttons: {
         "Delete item": function() {
           
-          borrarClient(id) ;
+          borrarArchivo(id) ;
           $( this ).dialog( "close" );
            
         },
@@ -210,6 +216,18 @@ function  onAbrirDialogAdd(id,correo){
     $("#idCertificateAdd").val(id);    
     dialogo.dialog("open");
 } 
+
+function borrarArchivo(file_borrar){
+    $.post("funciones.php",{
+                               accion : "borrar_file", 
+                               id : file_borrar
+                               }, 
+                               onRespuestaBorrado);
+                               
+}
+function onRespuestaBorrado(respuesta, estado, xhr ){
+    llenadoGrid();   
+}
     
 </script> 
 <!---- HEADER ----->
@@ -235,11 +253,13 @@ function inicio(){
                 <td class="etiqueta_grid">Description</td>
                 <td class="etiqueta_grid">Status </td>
                 <td class="etiqueta_grid"></td>
+                <td class="etiqueta_grid"></td>
             </tr>
         </thead>
         <tbody></tbody>
         <tfoot>
             <tr>
+                <td></td>
                 <td></td>
                 <td></td>
                 <td></td>

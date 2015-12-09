@@ -781,26 +781,28 @@ if($_POST["accion"] == ""){
     //$conexion->begin_transaction();
     $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
     $transaccion_exitosa = true;
-    $sql = "SELECT  cb_certificate_file.hContenidoDocumentoDigitalizadoAdd, ct_companias.iConsecutivo as id, sUsuario, eEstatusCertificadoUpload as estatus_upload,CASE WHEN eEstatusCertificadoUpload = '0' then 'Pending' Else 'Loaded' END AS  hActivado,sDescripcion as nombre,cu_control_acceso.sUsuario as correo FROM  ct_companias LEFT JOIN   cu_control_acceso ON  cu_control_acceso.iConsecutivo = ct_companias.iConsecutivoAcceso LEFT JOIN cb_certificate_file ON ct_companias.iConsecutivo = cb_certificate_file.iConsecutivoCompania WHERE eTipoUsuario ='C' ";
+    $sql = "SELECT cb_certificate_file.iConsecutivo as id_file,  cb_certificate_file.hContenidoDocumentoDigitalizadoAdd, ct_companias.iConsecutivo as id, sUsuario, eEstatusCertificadoUpload as estatus_upload,CASE WHEN eEstatusCertificadoUpload = '0' then 'Pending' Else 'Loaded' END AS  hActivado,sDescripcion as nombre,cu_control_acceso.sUsuario as correo FROM  ct_companias LEFT JOIN   cu_control_acceso ON  cu_control_acceso.iConsecutivo = ct_companias.iConsecutivoAcceso LEFT JOIN cb_certificate_file ON ct_companias.iConsecutivo = cb_certificate_file.iConsecutivoCompania WHERE eTipoUsuario ='C' ";
     $result = $conexion->query($sql);
     $NUM_ROWs_Usuario = $result->num_rows;    
     if ($NUM_ROWs_Usuario > 0) {
         //$items = mysql_fetch_all($result);      
         while ($usuario = $result->fetch_assoc()) {
-           if($usuario["sUsuario"] != ""){                       
+           if($usuario["sUsuario"] != ""){ 
+           $borrado_tabla = "";                      
             $color = "#800000";
-                 $htmlTabla .= "<tr>
+                 $htmlTabla .= "<tr>  
                                     <td>".$usuario['nombre']."</td>".
                                    "<td>".$usuario['correo']."</td>".
                                    "<td>".$usuario['nombre']."</td>";
                                    if($usuario['hActivado'] == "Loaded"){
                                        $color = "#000080";
-                                       $usuario['hActivado'] = "- Certificate Loaded";
+                                       $usuario['hActivado'] = "- <a   href='javascript:onclick=onAbrirDownload(\"".$usuario['id_file']."\");' class=\"fa fa-download\"  ></a> Certificate Loaded";
+                                       $borrado_tabla = "<div ".'Onclick=" if (confirmarBorrar(\''.$usuario['nombre'].'\',\''.$usuario['id'].'\')) {    borrarClient(\''.$usuario['id'].'\')};" '. "   id='f_".$usuario['id']."' class=\"btn-icon trash\" title=\"Delete Account\"><i class=\"fa fa-trash\"></i></div>";
                                    }else{
-                                       $usuario['hActivado'] = "- Certificate not Loaded";
+                                       $usuario['hActivado'] = "-  Certificate not Loaded";
                                    }
                                    if($usuario['hContenidoDocumentoDigitalizadoAdd'] != ""){                                       
-                                       $usuario['hActivado'] =  $usuario['hActivado']. ",<br /> - Additional remarks schedule Loaded";
+                                       $usuario['hActivado'] =  $usuario['hActivado']. ",<br />- <a   href='javascript:onclick=onAbrirDownload_add(\"".$usuario['id_file']."\");' class=\"fa fa-download\"  ></a>Additional remarks schedule Loaded";
                                    }                                 
                  $htmlTabla = $htmlTabla."<td><b><font color ='$color'> ".$usuario['hActivado']."</font></b></td>";  
                                    if($usuario['estatus_upload'] == "0"){   
@@ -809,9 +811,8 @@ if($_POST["accion"] == ""){
                                    }
                                    if($usuario['estatus_upload'] == "1"){   
                                    $htmlTabla = $htmlTabla.    "<td nowrap='nowrap'  > <div id= 'boton_uploadFile' onclick='onAbrirDialogAdd(\"".$usuario['id']."\",\"".$usuario['correo']."\" );' class=\"btnicon\" title=\"Upload Additional remarks schedule\"><span ><i class=\"fa fa-upload\"> </i> Additional Remarks</span></div></td>";
-                                   }
-                                                                                                                                                                                                                                            
-                                "</tr>"   ;
+                                   } 
+                 $htmlTabla = $htmlTabla."<td>$borrado_tabla</td> "."</tr>"   ;
              }else{                                                                                                                                                                                                        
                 
                  $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;
@@ -1101,7 +1102,39 @@ if($_POST["accion"] == ""){
     $html_tabla = utf8_encode($html_tabla); 
      $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
      echo array2json($response);
-}    
+}  
+  function borrar_file(){
+      include("cn_usuarios_2.php");
+      $consecutivo = $_POST['id'];
+      mysql_query("BEGIN");
+      $transaccion_exitosa = true;
+      $sql_file = "SELECT count(*) AS contador FROM cb_certificate_file WHERE iConsecutivoCompania = '".$consecutivo."'";
+      $count_file = mysql_fetch_array(mysql_query($sql_file, $dbconn));
+      if ($count_file['contador'] >0){
+          $sql = "DELETE FROM cb_certificate_file WHERE iConsecutivoCompania = '".$consecutivo."'";
+          mysql_query($sql, $dbconn);
+          if ( mysql_affected_rows() < 0 ) {
+            $transaccion_exitosa = false;
+            $mensaje = $sql;
+          }
+          $sql = "UPDATE  ct_companias SET eEstatusCertificadoUpload = '0' WHERE iConsecutivo = '".$consecutivo."'";
+          mysql_query($sql, $dbconn);
+          if ( mysql_affected_rows() < 0 ) {
+            $transaccion_exitosa = false;
+            $mensaje = $sql;
+          }
+          if ($transaccion_exitosa) {
+            mysql_query("COMMIT");
+            mysql_close($dbconn);
+                  
+          } else {
+            echo $mensaje;
+            mysql_query("ROLLBACK");
+            mysql_close($dbconn);            
+          }
+      }
+    
+  }  
   
   
 ?>
