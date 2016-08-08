@@ -35,7 +35,7 @@ body{
 	height:24px;
 	margin:0;
 	padding:4px 0px;
-	background:url('../images/foot/bg_footer.jpg') repeat-x top;
+	/*background:url('../images/foot/bg_footer.jpg') repeat-x top; */
 }
 .clear{clear:both;}
 /*-----------------------LAYER LOGIN ----------------------------*/

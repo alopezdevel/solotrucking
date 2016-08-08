@@ -42,12 +42,7 @@ fieldset textarea{height:60px!important;}
 	
 				
 }
-.titulo-grid span{
-	
-	/*background:url('../images/img-datagrid/tit-icons.png') no-repeat left top; */
-	-moz-background-size: 25px 160px;-o-background-size: 25px 160px;-webkit-background-size: 25px 160px;background-size: 25px 160px;	
-	padding:2px 0px 2px 30px;
-}
+.titulo-grid span{-moz-background-size: 25px 160px;-o-background-size: 25px 160px;-webkit-background-size: 25px 160px;background-size: 25px 160px;	padding:2px 0px 2px 30px;}
 .titulo-grid .administrador{background-position:0 0px;}
 table.data_grid{width:100%;/*height:200px*/ padding:0px;border-collapse: collapse;border-spacing: 0;font-family:Arial, Helvetica, sans-serif;}
 /*.data_grid td{border:1px solid #dbdbdb;} */
@@ -94,20 +89,18 @@ table.data_grid{width:100%;/*height:200px*/ padding:0px;border-collapse: collaps
 /*------------------------- THEAD - 2------------------------------------------*/
 /*------------------------- THEAD - 2------------------------------------------*/
 #grid-head2{
-	
 	height:40px;	
 	background:#b2d6f1;
 	background: -moz-linear-gradient(top, #d1eafd, #b2d6f1);
     background: linear-gradient(to bottom, #d1eafd, #b2d6f1);
-    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#d1eafd), to(#b2d6f1));
-	/*border-bottom:1px solid #c2c2c2;*/	
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#d1eafd), to(#b2d6f1));	
 }
 #grid-head2 td{border: 1px solid #a9cee7;}
 #grid-head2 img{border:0px;}
 #grid-head2 .etiqueta_grid{color:#0c5388;font-size:13px;text-transform:uppercase;font-weight:bold;text-shadow:1px 2px 3px #ffffff;padding: 10px 10px 15px 5px;text-align: left;}
 #grid-head2 .up, #grid-head2 .down{
 	
-	background:url('../images/img-datagrid/img-up-down.png') no-repeat right top;
+	background:url('../images/data-grid/img-up-down.png') no-repeat right top;
 	-moz-background-size: 30px 60px;
 	-o-background-size: 30px 60px;
 	-webkit-background-size: 30px 60px;
@@ -148,7 +141,12 @@ tbody .gray, tbody .white{
 tbody .gray{background: rgb(249, 249, 249);}
 tbody .white{background: rgb(255, 255, 255);}
 tbody .gray:hover, tbody .white:hover{background-color: rgb(251, 253, 198);cursor:pointer;}
-
+tbody .row_red{background: rgb(255, 251, 251);} 
+/*--- endorsements ---*/
+tbody .red{background: rgb(253, 203, 203);} 
+tbody .green{background: rgb(217, 253, 203);}
+tbody .blue{background: rgb(203, 238, 253);}
+tbody .yellow{background: rgb(253, 245, 203);}
 
 /*-------------------------AGREGAR SCROLL BAR -----------------------*/
 .grid-scroll{
@@ -191,7 +189,7 @@ tfoot{border-top:2px solid #b9dcf6;}
 	text-align:center;
 	border:0px;
     font-size:1em!important;
-    background: #ffffff;
+    background: #ffffff!important;
 }
 #pagina_actual_cliente{color:#4c4c4c!important;}
 #paginas_total_cliente{color:#4c4c4c!important;}
@@ -206,13 +204,9 @@ tfoot{border-top:2px solid #b9dcf6;}
     background: linear-gradient(to bottom, #ebf3fa, #d2e7f7);
     background: -webkit-gradient(linear, 0% 50%, 0% 60%, from(#ebf3fa), to(#d2e7f7));
     border:1px solid #aac7dd;
-    cursor:pointer;
-    height:20px;
-    
+    cursor:pointer; 
     color:#79a3c4;
     font-weight:bold;
-    
-	height:25px;
 
 }
 #datagrid-menu-pages button:hover{
@@ -227,27 +221,26 @@ tfoot{border-top:2px solid #b9dcf6;}
 #datagrid-menu-pages button:focus{outline:0px;}
 
 /*----ICONOS PAGINACION------*/
-#datagrid-menu-pages button p{
+#datagrid-menu-pages button span{
 	
-	background:url('../images/img-datagrid/btns-pagination.png') no-repeat center top;
+	background:url('../images/data-grid/btns-pagination.png') no-repeat center top;
 	-moz-background-size: 25px 200px;
 	-o-background-size: 25px 200px;
 	-webkit-background-size: 25px 200px;
 	background-size: 25px 200px;	
 	margin:0px;
-	min-width:40px;
-	height:25px;
-
-
+	width:40px;
+    padding: 11px 0px;
+    display:block;
 }
-#pgn-inicio p{background-position: 50% 0px!important;}
-#pgn-inicio:hover p{background-position: 50% -25px!important;}
-#pgn-anterior p{background-position: 50% -50px!important;}
-#pgn-anterior:hover p{background-position: 50% -75px!important;}
-#pgn-siguiente p{background-position: 50% -100px!important;}
-#pgn-siguiente:hover p{background-position: 50% -125px!important;}
-#pgn-final p{background-position: 50% -150px!important;}
-#pgn-final:hover p{background-position: 50% -175px!important;}
+#pgn-inicio span{background-position: 50% 0px!important;}
+#pgn-inicio:hover span{background-position: 50% -25px!important;}
+#pgn-anterior span{background-position: 50% -50px!important;}
+#pgn-anterior:hover span{background-position: 50% -75px!important;}
+#pgn-siguiente span{background-position: 50% -100px!important;}
+#pgn-siguiente:hover span{background-position: 50% -125px!important;}
+#pgn-final span{background-position: 50% -150px!important;}
+#pgn-final:hover span{background-position: 50% -175px!important;}
 
 
 
@@ -311,7 +304,7 @@ tfoot{border-top:2px solid #b9dcf6;}
 /*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/ 
 .btn-icon, .btn-icon-2, .btnicon{cursor:pointer;} 
 /*---contexto---*/
-.btnicon{width:auto!important;min-width:150px;color:#999999;font-family: Arial, Helvetica, sans-serif;font-weight:bold;}
+.btnicon{width:auto!important;min-width:90px;color:#999999;font-family: Arial, Helvetica, sans-serif;font-weight:bold;}
 .btnicon i{font-family: 'FontAwesome';font-size: 1.4em;font-weight:normal;vertical-align: middle;}
 .btnicon:hover{color:#447096;}
 /*---btns fondo azul---*/
@@ -341,9 +334,24 @@ div.btn-icon:hover{background: #e8e8e8;}
 div.btn-icon i{vertical-align: middle;font-size: 18px;}  
 div.btn-icon span{font-weight: bold;font-size: 13px;}
 /*----icons----*/
-.trash:hover{background: #a51313!important;border: 1px solid #cb0b0b!important;}
-.add:hover  {background: #52bc12!important;border: 1px solid #56cf0c!important;} 
-.edit:hover {background: #4287bc!important;border: 1px solid #4aaaf3!important;} 
+.add:hover  {background: #52bc12!important;border: 1px solid #56cf0c!important;}
+/*--EDIT--*/
+.edit:hover i {color:#1673b3!important;}
+.edit:hover {background: #d5edfe!important;border: 1px solid #4aaaf3!important;}
+/*--TRASH--*/
+.trash:hover i{color:#a51313!important;}
+.trash:hover{background: #fedede!important;border: 1px solid #cb0b0b!important;}
+/*--VIEW--*/
+.view:hover i{color:#0abdbc!important;}
+.view:hover {background: #e7fdfd!important;border: 1px solid #4af3f1!important;}
+/*--PDF--*/
+.pdf:hover i{color:#de3c3c!important;} 
+.pdf:hover {background: #fff4f4!important;border: 1px solid #991515!important;} 
+/*--SEND EMAIL--*/
+.send-email:hover  i{color:#52bc12!important;}
+.send-email:hover  {background: #e9ffdb!important;border: 1px solid #56cf0c!important;}
+
+
 
 /*-----ALINEACION DE LOS BOTONES ----------- IZQUIERDA - DERECHA ------*/
 .btn-left{float:left;margin-right:2px;}
@@ -359,7 +367,7 @@ div.btn-icon span{font-weight: bold;font-size: 13px;}
     position: absolute;
     width: 100%;
     height: 100%;
-    z-index: 2000;
+    z-index: 99;
 }
 .popup-form{
     
@@ -370,7 +378,7 @@ div.btn-icon span{font-weight: bold;font-size: 13px;}
     left: 50%;
     margin-left: -450px;
     display: none;
-    z-index: 4000;
+    z-index: 100;
     /*--estilo colores ---*/
     background: #fafafa;
     border:1px solid  #c5c5c5;
@@ -406,5 +414,66 @@ div.btn-icon span{font-weight: bold;font-size: 13px;}
 .p-container label{color:#464646;font-weight:bold;}
 .p-container .mensaje_valido{font-size:12px;}
 
+/*--tables on forms---- */
+.popup-gridtit{
+    
+    height:25px;
+    width:98%;    
+    background:#efefef;
+    background: -moz-linear-gradient(top, #efefef, #d2d2d2);
+    background: linear-gradient(to bottom, #efefef, #d2d2d2);
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#efefef), to(#d2d2d2));
+    border:1px solid #c6c6c6;
+        
+    border-radius:6px 6px 0px 0px;
+    -moz-border-radius:6px 6px 0px 0px;
+    -webkit-border-radius:6px 6px 0px 0px;
+
+    
+    margin:0px auto!important; 
+    padding:10px 0px 0px 8px;
+    font-size:1.1em; 
+    text-transform:uppercase; 
+    color:#317a03; 
+    text-shadow:1px 1px 2px #ffffff;
+    text-align:left!important;
+    position:relative;
+
+}
+table.popup-datagrid{
+    width:99%;height:auto;min-height:60px;    
+    border:1px solid #c6c6c6;
+    padding:0px;
+    border-spacing: 0;margin:0px auto;
+}
+.popup-datagrid #grid-head2{
+    height:25px!important;    
+    background:#e5e5e5;
+    background: -moz-linear-gradient(top, #e5e5e5, #efefef);
+    background: linear-gradient(to bottom, #e5e5e5, #efefef);
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#e5e5e5), to(#efefef));
+    border:1px solid #c6c6c6;
+
+}
+.popup-datagrid #grid-head2 .etiqueta_grid{
+    color:#044c8b;
+    font-size:13px!important;
+    text-transform:none!important;
+    font-weight:bold;
+    text-shadow:1px 2px 3px #daeaf6;
+    padding: 3px 0px 5px 5px!important;
+}
+.popup-datagrid tbody td{
+    
+    font-size: 11px!important;
+    text-align:left;
+    color:#424242;
+    padding-left:5px!important;
+    height: 22px;
+    font-family: Arial, Helvetica, sans-serif!important;
+}
+input.fecha{width: 96%;margin-right: 5px;}
+input.fecha.error{width: 95%!important;}
+    
 
 /*----------------------cmsm---------------------------*/
