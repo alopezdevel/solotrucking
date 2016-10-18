@@ -70,7 +70,6 @@
 <!--- TERMINA HEADER----->
 <section class="main-section"><!--main-section-start-->
 	<div class="container">
-    	<img class="left" style="margin:5px 10px 10px 10px;" alt="img_logo" src="images/img_agent.jpg">
     	<div class="txt-justify">
     		<h1 class="subtitle">Solo Trucking </h1>
     		<p>SoloTrucking was founded in 2010 by Juan C. Sanchez, who believes the agency to provide insurance products to all carriers of Texas. Today continues the mission to meet the insurance needs of professional quality products, responsive service and fair dealing transportation.</p>
