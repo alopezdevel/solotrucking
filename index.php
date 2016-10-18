@@ -163,12 +163,12 @@
                 </div>	
             </div>
             <div class="col-md-6 wow fadeInLeft">
-            	<div class="contact-info-box">
+            	<div class="contact-info-box" style="display: none;">
             		<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3536.908791946539!2d-99.49764990000003!3d27.56534099999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x866120f774ff0a3d%3A0x1a364af6872f3146!2s6909+Springfield+Ave+%23104%2C+Laredo%2C+TX+78041%2C+USA!5e0!3m2!1sen!2smx!4v1428645881060" width="400" height="200" frameborder="0" style="border:0"></iframe>
             	</div>
             	<div class="contact-info-box address clearfix">
                 	<h3><i class=" icon-map-marker"></i>Address:</h3>
-                	<span>6909 Springfield Ave., Ste. 104. <br>Laredo TX. 78041</span>
+                	<span>PO BOX 451564 <br>Laredo TX. 78045</span>
                 </div>
                 <div class="contact-info-box phone clearfix">
                 	<h3><i class="fa-phone"></i>Phone:</h3>
