@@ -209,4 +209,10 @@ button:hover, .btn-1:hover{background-color:#61b1df;}
 }
 
 /*---campos de solo lectura ---*/
-.readonly, input[readonly="readonly"]{background: #ececec!important;color:#585858!important;border: 1px solid #c0c0c0;}
+.readonly, input[readonly="readonly"]{background: #ececec;color:#585858!important;border: 1px solid #c0c0c0;}
+.check-label{
+    color: #044c8b!important;
+    position: relative;
+    top: -5px;
+    margin: 5px 15px 5px 5px;
+}
