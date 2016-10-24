@@ -1,0 +1,100 @@
+﻿
+.fork {border:0;position:absolute;top:0;right:0;}
+.c3 {margin-right:0;}
+#custom-show-hide-example h3 {margin: 0; background-color: rgb(255,255,255);}
+#custom-show-hide-example h3 a {
+  background: url("../images/cont/sprite.png") 15px 13px no-repeat;
+  display: block;
+  padding: 10px;
+  padding-left: 32px;
+  margin: 0;
+  color: #7b7b7b;
+  text-transform:none!important;
+  text-decoration: none;
+  font-weight: normal;
+  border-bottom: 1px solid rgba(241, 241, 241, 0.5);
+  text-shadow: 1px 1px 1px rgb(0,0,0, 0.5);
+}
+#custom-show-hide-example h3:hover { 
+  background-color: rgb(255,255,255);
+  background-image: linear-gradient(bottom, rgb(255,255,255) 14%, rgb(241,241,241) 57%);
+  background-image: -o-linear-gradient(bottom, rgb(255,255,255) 14%, rgb(241,241,241) 57%);
+  background-image: -moz-linear-gradient(bottom, rgb(255,255,255) 14%, rgb(241,241,241) 57%);
+  background-image: -webkit-linear-gradient(bottom, rgb(255,255,255) 14%, rgb(241,241,241) 57%);
+  background-image: -ms-linear-gradient(bottom, rgb(255,255,255) 14%, rgb(241,241,241) 57%);
+
+}
+#custom-show-hide-example h3.open  { background: rgb(241,241,241); }
+#custom-show-hide-example h3.open a { background-position: 13px -25px;Â }
+#custom-show-hide-example h3 + div { padding: 10px; }
+
+h2 + div,
+.example {
+  background: #fff;
+  overflow: hidden;
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  margin-bottom: 20px;
+}
+
+/* Pre hide sections with JavaScript on
+--- */
+#custom-show-hide-example h3+div {
+  display: none;
+}
+
+/* CSS3 Animation example
+--- */
+#css3-animated-example h3 + div {
+  height: 0px;
+  padding: 0px;
+  overflow: hidden;
+  background: #000;
+  display: block!important;
+  -webkit-transform: translateZ(0);
+  -webkit-transition: all 0.3s ease;
+	-moz-transition: all 0.3s ease;
+	-o-transition: all 0.3s ease;
+	-ms-transition:all 0.3s ease;
+	transition: all 0.3s ease;
+}
+#css3-animated-example .content {
+  padding: 10px;
+}
+
+#css3-animated-example h3.open + div {
+  height: auto;
+  background: #aaffff;
+}
+
+/* Event example
+--- */
+pre#event-log {
+  background: #fafacc;
+  padding: 10px;
+  display: block;
+}
+
+/* Responsive design
+--- */
+@media screen and (max-width: 1056px) {
+  .c2 {
+    margin-right: 0;
+    margin-bottom: 0;
+  }
+}
+
+@media
+only screen and (max-width: 704px),
+only screen and (-webkit-min-device-pixel-ratio : 1.5),
+only screen and (min-device-pixel-ratio : 1.5) {
+  .c1 {
+    margin-right: 0;
+    margin-bottom: 0;
+  }
+  h1 {
+    font-size: 28px;
+    text-shadow: 0px 0px 1px rgba(0,0,0,0.7);
+  }
+}

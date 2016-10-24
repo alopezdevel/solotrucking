@@ -1,0 +1,218 @@
+@import "dialogs.css";
+form, .form{width:98%;margin:0 auto;}
+fieldset {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  padding-bottom: 25px;
+}
+legend {
+  display: block;
+  width: 100%;
+  padding: 0;
+  margin-bottom: 20px;
+  font-size: 21px;
+  line-height: inherit;
+  color: #333333;
+  border: 0;
+  border-bottom: 1px solid #e5e5e5;
+}
+button{cursor:pointer;}
+form input, form select, form textarea, .form input, .form select, .form textarea{
+                                                                   
+    width:100%;
+    height:40px;
+    margin:5px 0px;
+    clear:both;
+    border-radius:3px;
+    -moz-border-radius:3px;
+    -webkit-border-radius:3px;
+    background: #ffffff;
+    border:1px solid #cbcbcb;
+    padding:2px 0px 1px 5px;  
+    -webkit-box-shadow:inset 0px 0px 3px #cbcbcb;
+    -moz-box-shadow:inset 0px 0px 3px #cbcbcb;
+    box-shadow:inset 0px 0px 3px #cbcbcb;   
+    font-family:Calibri, Arial, Helvetica, sans-serif!important;
+    font-size:14px;
+} 
+form input[type=radio], form input[type=checkbox], .form input[type=radio], .form input[type=checkbox]{
+	width:20px;
+	height:20px;
+	-webkit-box-shadow:inset 0px 0px 3px transparent!important;
+    -moz-box-shadow:inset 0px 0px 3px transparent!important;
+    box-shadow:inset 0px 0px 3px transparent!important;  
+} 
+.lbl-radio{position: relative;top: -6px;padding-left: 5px;}
+select{height:45px!important;width: 100%!important;}
+textarea{height:120px!important;padding-top:10px!important;}
+.frm-btns{
+    width:99%;
+    text-align:center;
+    margin:0px auto 0;
+}
+.frm-btns button, .btn-1{
+    width: 140px;
+      margin: 0px auto;    
+      height:40px;
+    color:#ffffff;
+    text-shadow:1px 1px 1px rgba(0,0,0,0.6);
+    text-transform:uppercase;
+    font-weight:bold;
+    cursor:pointer;
+    float:right;
+
+}
+button, .btn-1{
+    
+    background-color:#5e8bd4;
+    text-shadow:1px 1px 1px rgba(0,0,0,0.3);
+    border-radius:4px;
+    -moz-border-radius:4px;
+    -webkit-border-radius:4px;
+    padding:5px;
+    color:#ffffff;
+    
+    -webkit-transition: left 0.3s linear;
+    -webkit-transition-property:background-color;
+    -moz-transition: left 0.3s linear;
+    -moz-transition-property:background-color;
+    -o-transition: left 0.3s linear;
+    -o-transition-property:background-color;
+    -ms-transition: left 0.3s linear;
+    -ms-transition-property:background-color;
+    transition: left 0.3s linear;
+    transition-property:background-color;
+    
+    border:1px solid #61b7df;
+}
+button:hover, .btn-1:hover{background-color:#61b1df;}
+.msg-success{display:none;}
+.mensaje_valido{padding:5px 2px;}
+.error{
+	border:1px solid #b64141!important;
+	-webkit-box-shadow:inset 0px 0px 3px #decfcf!important;
+    -moz-box-shadow:inset 0px 0px 3px #decfcf!important;
+    box-shadow:inset 0px 0px 3px #decfcf!important;
+    background:#f8f2f2;
+
+}
+.success{
+	border:1px solid #8ac975;
+	-webkit-box-shadow:inset 0px 0px 3px #dee8da!important;
+    -moz-box-shadow:inset 0px 0px 3px #dee8da!important;
+    box-shadow:inset 0px 0px 3px #dee8da!important;
+    background:#f7fbf5;
+
+}
+.alertmessage{
+	border:1px solid #ddc83e!important;
+	-webkit-box-shadow:inset 0px 0px 3px #f2efdd!important;
+    -moz-box-shadow:inset 0px 0px 3px #f2efdd!important;
+    box-shadow:inset 0px 0px 3px #f2efdd!important;
+    background:#f9f5dd;
+    border-radius:5px;
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+
+}
+/*------ Para formas de busqueda----*/
+.frm-buscar{width: auto;margin:10px 0px 0px;height: 30px;}
+.frm-buscar input{width:350px!important;height:35px!important;padding-left:10px;margin:0!important;border-radius:4px 0px 0px 4px!important;-moz-border-radius:4px 0px 0px 4px!important;-webkit-border-radius:4px 0px 0px 4px!important;}
+.frm-buscar button{background:#2d2d2d;border:1px solid #2d2d2d;border-radius:0px 4px 4px 0px!important;-moz-border-radius:0px 4px 4px 0px!important;-webkit-border-radius:0px 4px 4px 0px!important;padding: 0px 9px!important;height: 35px!important;}
+.frm-buscar button:hover{background:#5087ce;border:1px solid #5087ce;}
+
+/*---- botones para las formas ----*/
+.btn-aceptar{
+	
+	color:#ffffff;
+	text-shadow:1px 1px 1px rgba(0,0,0,0.6);
+	font-size:1.3em;
+	text-decoration:none;
+	padding:10px 15px;
+	border:1px solid #7dc217;
+	background: #7DCF3D;
+	border-radius:5px;
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    
+    /*--animacion--*/
+    -webkit-transition: left 0.2s linear;
+    -webkit-transition-property:background;    
+    -moz-transition: left 0.2s linear;
+    -moz-transition-property:background;
+    -o-transition: left 0.2s linear;
+    -o-transition-property:background;
+    -ms-transition: left 0.2s linear;
+    -ms-transition-property:background;
+    transition: left 0.2s linear;
+    transition-property:background;
+    -webkit-transition:all 1s;
+    -moz-transition:all 1s;
+    -o-transition:all 1s;
+    -ms-transition:all 1s;
+    -khtml-transition:all 1s;
+    transition:all 1s;
+
+
+}
+.btn-aceptar:hover{
+	text-decoration:none!important;
+	color:#ffffff;
+	background: #6bab0c;
+}
+.btn-cancelar{
+	
+	color:#ffffff;
+	text-shadow:1px 1px 1px rgba(0,0,0,0.6);
+	font-size:1.3em;
+	text-decoration:none;
+	padding:10px 15px;
+	border:1px solid #bd2122;
+	background: #bd2122;
+	border-radius:5px;
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    
+    /*--animacion--*/
+    -webkit-transition: left 0.2s linear;
+    -webkit-transition-property:background;    
+    -moz-transition: left 0.2s linear;
+    -moz-transition-property:background;
+    -o-transition: left 0.2s linear;
+    -o-transition-property:background;
+    -ms-transition: left 0.2s linear;
+    -ms-transition-property:background;
+    transition: left 0.2s linear;
+    transition-property:background;
+    -webkit-transition:all 1s;
+    -moz-transition:all 1s;
+    -o-transition:all 1s;
+    -ms-transition:all 1s;
+    -khtml-transition:all 1s;
+    transition:all 1s;
+
+
+}
+.btn-cancelar:hover{
+	text-decoration:none!important;
+	color:#ffffff;
+	background: #af0a0b;
+}
+.uploadfile{width:auto;}
+.uploadfile label{float: left;margin-right: 20px;vertical-align: middle;position: relative;top: 12px;}
+.uploadfile input{  
+    height: auto;
+    float: left;
+    width: auto;
+    clear: none;
+}
+
+/*---campos de solo lectura ---*/
+.readonly, input[readonly="readonly"]{background: #ececec;color:#585858!important;border: 1px solid #c0c0c0;}
+.check-label{
+    color: #044c8b!important;
+    position: relative;
+    top: -5px;
+    margin: 5px 15px 5px 5px;
+}
