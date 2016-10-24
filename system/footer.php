@@ -1,1 +1,0 @@
-<footer class="footer"><div class="copyright">SoloTrucking 2015 .   All rights reserved.</div></footer>
