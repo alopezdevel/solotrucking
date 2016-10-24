@@ -1,0 +1,901 @@
+<?php
+  session_start();
+  // Generic functions lib 
+  include("functiones_genericas.php"); 
+  $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accion"],array()) : ""; 
+  define('USER',$_SESSION['usuario_actual']); // Constante UserId  
+ 
+  function get_policies(){
+    include("cn_usuarios.php");
+    $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+    $transaccion_exitosa = true;
+    
+    $registros_por_pagina = $_POST["registros_por_pagina"];
+    $pagina_actual = (isset($_POST["pagina_actual"]) && $_POST["pagina_actual"] != '' ? $_POST["pagina_actual"] : 1);
+    $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
+        
+    //Filtros de informacion //
+    $filtroQuery = " WHERE iDeleted = '0'";
+    $array_filtros = explode(",",$_POST["filtroInformacion"]);
+    foreach($array_filtros as $key => $valor){
+        if($array_filtros[$key] != ""){
+            $campo_valor = explode("|",$array_filtros[$key]);
+            $campo_valor[0] == 'iConsecutivo' ? $filtroQuery.= " AND  ".$campo_valor[0]."='".$campo_valor[1]."' " : $filtroQuery == "" ? $filtroQuery.= " AND  ".$campo_valor[0]." LIKE '%".$campo_valor[1]."%'": $filtroQuery.= " AND ".$campo_valor[0]." LIKE '%".$campo_valor[1]."%'";
+        }
+    }
+    // ordenamiento//
+    $ordenQuery = " ORDER BY ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"];
+    
+    //contando registros // 
+    $query_rows = "SELECT COUNT(A.iConsecutivo) AS total FROM ct_polizas A 
+                   LEFT JOIN ct_companias B ON A.iConsecutivoCompania = B.iConsecutivo
+                   LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo
+                   LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".$filtroQuery;
+    $Result = $conexion->query($query_rows);
+    $items = $Result->fetch_assoc();
+    $registros = $items["total"];
+    if($registros == "0"){$pagina_actual = 0;}
+    $paginas_total = ceil($registros / $registros_por_pagina);
+    if($registros == "0"){
+        $limite_superior = 0;
+        $limite_inferior = 0;
+        $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";
+    }else{
+        $pagina_actual == "0" ? $pagina_actual = 1 : false;
+        $limite_superior = $registros_por_pagina;
+        $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
+        $sql = "SELECT A.iConsecutivo AS clave, sNumeroPoliza, sNombreCompania, sName, sDescripcion, iOnRedList, DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio, DATE_FORMAT(dFechaCaducidad,'%m/%d/%Y') AS dFechaCaducidad, iConsecutivoArchivo,A.iConsecutivoCompania, iTipoPoliza, iConsecutivoArchivoPFA ".
+               "FROM ct_polizas A ".
+               "LEFT JOIN ct_companias B ON A.iConsecutivoCompania = B.iConsecutivo ".
+               "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
+               "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
+        $result = $conexion->query($sql);
+        $rows = $result->num_rows;   
+        if ($rows > 0) {    
+                while ($items = $result->fetch_assoc()){ 
+                   if($items["sNumeroPoliza"] != ""){
+                           
+                         //Redlist:
+                         $items['iOnRedList'] == '1' ? $redlist_icon = "<i class=\"fa fa-star\" style=\"color:#e8051b;margin-right:4px;\"></i>" : $redlist_icon = "";
+                         
+                         $items['iConsecutivoArchivo'] == '' ? $btn_pdf = "" : $btn_pdf = "<div class=\"btn_view_pdf btn-icon pdf btn-left\" title=\"view Policy Jacker\" onclick=\"window.open('open_pdf.php?idfile=".$items['iConsecutivoArchivo']."&type=company');\"><i class=\"fa fa-file-pdf-o\"></i> <span></span></div>" ;  
+                         if($items['iConsecutivoArchivoPFA'] != '') $btn_pdf .= "<div class=\"btn_view_pdf btn-icon pdf btn-left\" title=\"view Policy PFA\" onclick=\"window.open('open_pdf.php?idfile=".$items['iConsecutivoArchivoPFA']."&type=company');\"><i class=\"fa fa-file-pdf-o\"></i> <span></span></div>" ;  
+                
+                
+                         if($items['dFechaCaducidad'] != ''){
+                            
+                            $fechaCaducidad = format_date($items['dFechaCaducidad']);
+                            $fechaHoy = date("Y-m-d"); 
+                            $EstatusPoliza = "";
+                            $dias = (strtotime($fechaCaducidad)-strtotime($fechaHoy))/86400; 
+                            $dias = floor($dias); 
+                            //echo 'vence el'.$items['dFechaCaducidad'].'le quedan:'.$dias;
+                            //echo '    ';      
+                            if($dias > 0 ){
+                               if($dias <= 15){
+                                  $EstatusPoliza = "class=\"yellow\"";
+                               }else if($dias > 15){
+                                  $EstatusPoliza = "class=\"green\""; 
+                               } 
+                            }else{
+                                $EstatusPoliza = "class=\"red\"";
+                            }
+                            
+                             
+                         }
+                         
+                         $iConsecutivoPoliza = $items['clave'];
+                         
+                         if($items['iTipoPoliza'] == 3){
+                            $btn_drivers  = "<div class=\"btn-icon view btn-left\" title=\"View list of Drivers & Units\" onclick=\"fn_policies.get_list_description('$iConsecutivoPoliza','".$items['iConsecutivoCompania']."');\"><i class=\"fa fa-list-alt\"></i> <span></span></div>"; 
+                            //$btn_drivers .= "<div class=\"btn-icon view btn-left\" title=\"View list of Units\" onclick=\"fn_policies.get_list_description('$iConsecutivoPoliza','U','".$items['iConsecutivoCompania']."');\"><i class=\"fa fa-truck\"></i> <span></span></div>";
+                         }else{$btn_drivers = "";}
+                         
+                         $htmlTabla .= "<tr $EstatusPoliza >
+                                            <td>".$items['clave']."</td>".
+                                           "<td>".$redlist_icon.$items['sNombreCompania']."</td>".
+                                           "<td>".$items['sNumeroPoliza']."</td>".
+                                           "<td>".$items['sName']."</td>". 
+                                           "<td>".$items['sDescripcion']."</td>".  
+                                           "<td>".$items['dFechaInicio']."</td>".
+                                           "<td>".$items['dFechaCaducidad']."</td>".                                                                                                                                                                                                                     
+                                           "<td>
+                                                <div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Policy\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>
+                                                <div class=\"btn_delete btn-icon trash btn-left\" title=\"Mark Policy as Canceled\"><i class=\"fa fa-trash\"></i> <span></span></div>
+                                                $btn_pdf 
+                                                $btn_drivers
+                                           </td></tr>";  
+                     }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}    
+                }
+                $conexion->rollback();
+                $conexion->close();                                                                                                                                                                       
+        }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;    }  
+    }
+
+     $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
+     echo json_encode($response);
+  }
+  function get_policy(){
+      $error = '0';
+      $msj = "";
+      $fields = "";
+      $clave = trim($_POST['clave']);
+      $domroot = $_POST['domroot'];
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                 
+      $sql = "SELECT A.iConsecutivo, sNumeroPoliza, A.iConsecutivoCompania, iConsecutivoBrokers, iTipoPoliza, ". 
+             "DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio, DATE_FORMAT(dFechaCaducidad,'%m/%d/%Y') AS dFechaCaducidad, ".
+             "B.sNombreArchivo AS txtPolicyJacker, iConsecutivoArchivo, iConsecutivoArchivoPFA, C.sNombreArchivo AS txtPolicyPFA ".
+             "FROM ct_polizas A ".
+             "LEFT JOIN cb_company_files B ON A.iConsecutivoArchivo = B.iConsecutivo ".
+             "LEFT JOIN cb_company_files C ON A.iConsecutivoArchivoPFA = C.iConsecutivo ".
+             "WHERE A.iConsecutivo = '".$clave."'";  
+      $result = $conexion->query($sql);
+      $items = $result->num_rows;   
+      if ($items > 0) {     
+        $data = $result->fetch_assoc();
+        $llaves  = array_keys($data);
+        $datos   = $data;
+        foreach($datos as $i => $b){
+            $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');"; 
+        }  
+      }
+      $conexion->rollback();
+      $conexion->close(); 
+      $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields");   
+      echo json_encode($response);
+  }
+  function save_policy(){
+      include("funciones_genericas.php");
+      $error = '0'; 
+      $valores = array();
+      $campos  = array(); 
+      $msj = "";  
+      //Conexion:
+      include("cn_usuarios.php"); 
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      $_POST['sNumeroPoliza'] = strtoupper($_POST['sNumeroPoliza']);
+      $_POST['dFechaInicio'] = format_date($_POST['dFechaInicio']); 
+      $_POST['dFechaCaducidad'] = format_date($_POST['dFechaCaducidad']); 
+      
+      $query = "SELECT COUNT(iConsecutivo) AS total 
+                FROM   ct_polizas 
+                WHERE  sNumeroPoliza ='".$_POST['sNumeroPoliza']."'
+                AND iConsecutivoCompania = '".$_POST['iConsecutivoCompania']."' 
+                AND iDeleted = '0'";
+      $result = $conexion->query($query);
+      $valida = $result->fetch_assoc();
+      
+      if($valida['total'] != '0'){
+          if($_POST["edit_mode"] != 'true'){
+              $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+                      Error: The Policy that you trying to add already exists. Please you verify the data.</p>';
+              $error = '1';
+          }else{
+             foreach($_POST as $campo => $valor){
+                if($campo != "accion" and $campo != "edit_mode" and $campo != "sNumeroPoliza" and $campo != "iConsecutivo" and $campo != 'txtPolicyJacker' and $campo != 'iConsecutivoArchivo' and $campo != 'txtPolicyPFA' and $campo != 'iConsecutivoArchivoPFA' ){ //Estos campos no se insertan a la tabla
+                    if($valor){array_push($valores,"$campo='".trim($valor)."'");}
+                }
+             }   
+          }
+      }else if($_POST["edit_mode"] != 'true'){
+         foreach($_POST as $campo => $valor){
+            if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo" and $campo != 'txtPolicyJacker' and $campo != 'iConsecutivoArchivo' and $campo != 'txtPolicyPFA' and $campo != 'iConsecutivoArchivoPFA'){ //Estos campos no se insertan a la tabla
+                if($valor != ''){
+                   array_push($campos ,$campo); 
+                   array_push($valores, trim($valor)); 
+                }
+                
+            }
+         }  
+      }
+      
+      if($error == '0'){
+          if($_POST["edit_mode"] == 'true'){
+            array_push($valores ,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
+            array_push($valores ,"sIP='".$_SERVER['REMOTE_ADDR']."'");
+            array_push($valores ,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'"); 
+            $sql = "UPDATE ct_polizas SET ".implode(",",$valores)." WHERE iConsecutivo ='".$_POST['iConsecutivo']."' AND sNumeroPoliza = '".$_POST['sNumeroPoliza']."' AND iConsecutivoCompania ='".$_POST['iConsecutivoCompania']."'";
+            $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data have been updated successfully.</p>'; 
+          }else{
+            array_push($campos ,"dFechaIngreso");
+            array_push($valores ,date("Y-m-d H:i:s"));
+            array_push($campos ,"sIP");
+            array_push($valores ,$_SERVER['REMOTE_ADDR']);
+            array_push($campos ,"sUsuarioIngreso");
+            array_push($valores ,$_SESSION['usuario_actual']);
+            $sql = "INSERT INTO ct_polizas (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
+            $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data have been added successfully.</p>';
+          }
+          $conexion->query($sql);
+          $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
+          if($transaccion_exitosa){
+                    $conexion->commit();
+                    $conexion->close();
+          }else{
+                    $conexion->rollback();
+                    $conexion->close();
+                    $msj = "A general system error ocurred : internal error";
+                    $error = "1";
+          } 
+      }
+      $response = array("error"=>"$error","msj"=>"$msj");
+      echo json_encode($response);
+  }
+  function delete_policy(){
+      $error = '0';  
+      $msj = "";  
+      //Conexion:
+      include("cn_usuarios.php"); 
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      
+      $query = "UPDATE ct_polizas SET iDeleted = '1' WHERE iConsecutivo = '".$_POST["clave"]."'"; 
+      $conexion->query($query);
+      $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
+      if($transaccion_exitosa){
+        $conexion->commit();
+        $conexion->close();
+        $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+                The user has been deleted succesfully!</p>';
+      }else{
+        $conexion->rollback();
+        $conexion->close();
+        $msj = "A general system error ocurred : internal error";
+        $error = "1";
+      }
+        
+      $response = array("msj"=>"$msj","error"=>"$error");   
+      echo json_encode($response);
+  }
+  
+  #File:
+  function upload_policy(){
+      
+      $error = "0";
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      
+      $idCompany = $_POST['iConsecutivoCompania'];
+      $_POST['sNombreCompania'] != '' ? $nameCompany = str_replace(' ','',$_POST['sNombreCompania']).'_' : $nameCompany =  '';
+      $idFile = $_POST['iConsecutivo'];  
+      
+      $oFichero = fopen($_FILES['userfile']["tmp_name"], 'r'); 
+      $sContenido = fread($oFichero, filesize($_FILES['userfile']["tmp_name"]));  
+      $sContenido =  $conexion->real_escape_string($sContenido);
+      $typeFile = $_POST['eArchivo'];
+      
+       
+      //Revisamos el tamaño del archivo:
+      //if($_FILES['userfile']["size"] <= 1000000){
+          
+          $FileExt = explode('.',$_FILES['userfile']["name"]); 
+          $countArray = count($FileExt);
+          if($countArray == 2){   
+              $name_file = strtolower($nameCompany).$typeFile.'.'.$FileExt[1]; 
+              
+              if($_POST['iConsecutivo'] != ''){
+                 $sql = "UPDATE cb_company_files SET iConsecutivoCompania='$idCompany', sNombreArchivo ='$name_file', sTipoArchivo ='".$_FILES['userfile']["type"]."', iTamanioArchivo ='".$_FILES['userfile']["size"]."', hContenidoDocumentoDigitalizado='$sContenido', ".
+                        "dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."'".
+                        "WHERE iConsecutivo ='".$_POST['iConsecutivo']."'"; 
+              }else{
+                 $sql = "INSERT INTO cb_company_files (iConsecutivoCompania, sNombreArchivo, sTipoArchivo, iTamanioArchivo, hContenidoDocumentoDigitalizado, dFechaIngreso, sIP, sUsuarioIngreso) ".
+                        "VALUES('$idCompany','$name_file','".$_FILES['userfile']["type"]."','".$_FILES['userfile']["size"]."','$sContenido','".date("Y-m-d H:i:s")."', '".$_SERVER['REMOTE_ADDR']."', '".$_SESSION['usuario_actual']."')"; 
+              }
+              if($conexion->query($sql)){
+                    
+                    if($_POST['iConsecutivo'] != ''){
+                       //Si fue un UPDATE, ENTONCES: 
+                       $id_file = $_POST['iConsecutivo'];
+                       $conexion->commit();
+                       $conexion->close();
+                       $mensaje = "The file was updated successfully."; 
+                       
+                    }else{
+                       
+                        //Si fue un INSERT, ENTONCES:
+                        $id_file = $conexion->insert_id;  
+                        //Actualizamos la poliza:
+                        $typeFile == 'pfa' ? $iArchivo = 'iConsecutivoArchivoPFA' : $iArchivo = 'iConsecutivoArchivo';
+                        
+                        if($id_file != '' && $_POST['iConsecutivoPoliza'] != '' && $_POST['iConsecutivoCompania'] != ''){
+                            $sql_poliza = "UPDATE ct_polizas SET $iArchivo = '$id_file' ".
+                                          "WHERE iConsecutivo = '".$_POST['iConsecutivoPoliza']."' AND iConsecutivoCompania = '".$_POST['iConsecutivoCompania']."'";
+                          if($conexion->query($sql_poliza)){
+                              $conexion->commit();
+                              $conexion->close();
+                              $mensaje = "The file was uploaded successfully.";
+                          }else{
+                              $mensaje = "Error: The file was not uploaded successfully";
+                              $error = "1"; 
+                          }  
+                        }else{
+                            $mensaje = "Error: The file was not uploaded successfully";
+                            $error = "1";
+                        } 
+                    }
+                   
+              }else{
+                    $mensaje = "A general system error ocurred : internal error";
+                    $error = "1";    
+              }
+          }else{
+              $mensaje = "Error: Please verify that the file name does not contain any special characters..";
+              $error = "1";
+          }
+          
+          
+          if($error == '1'){
+              $conexion->rollback();
+              $conexion->close();
+          }    
+          
+      /*}else{
+         $mensaje = "Error: The file you are trying to upload exceeds the maximum size (1MB) allowed by the system, please check it and try again.";
+         $error = "1"; 
+      }  */
+      
+      $response = array("mensaje"=>"$mensaje","error"=>"$error", "id_file"=>"$id_file", "name_file" => "$name_file"); 
+      echo json_encode($response);             
+  }
+  
+  /*-------FILE DRIVERS UNITS UPLOAD FUNCTIONS -----------*/
+  function get_company_policies(){
+      include("cn_usuarios.php");   
+      $company = $_POST['company'];
+      $error = "0";
+      $mensaje = "";
+      $check_items = "";
+      
+      $query = "SELECT A.iConsecutivo, sNumeroPoliza, sName, sDescripcion ".
+               "FROM ct_polizas A ".
+               "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
+               "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
+               "WHERE A.iConsecutivoCompania = '$company' AND A.iDeleted = '0'";
+      $result = $conexion->query($query);
+      $rows = $result->num_rows;   
+      
+      if($rows > 0){    
+        while ($items = $result->fetch_assoc()){
+           $check_items .= "<input class=\"num_policies\" type=\"checkbox\" value=\"".$items['iConsecutivo']."\" ><label class=\"check-label\"> ".$items['sNumeroPoliza']."/".$items['sDescripcion']."/".$items['sName']."</label><br>"; 
+        }
+      }
+
+      $response = array("checkboxes"=>"$check_items","mensaje"=>"$mensaje","error"=>"$error");   
+      echo json_encode($response);
+      
+  }
+  function upload_driver_txt(){
+      
+      include("cn_usuarios.php");  
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      
+      #variables:
+      $iConsecutivoCompania = $_POST['iConsecutivoCompania'];
+      $iConsecutivoPolizas  = $_POST['iConsecutivoPolizas'];
+      $error = "0";
+      $mensaje = "";
+      $htmlTabla = ""; 
+      $fileName = $_FILES['userfile']['name'];
+      $tmpName  = $_FILES['userfile']['tmp_name'];
+      if($iConsecutivoCompania != '' && $iConsecutivoPolizas != ''){
+          #Revisamos contenido del archivo:
+          $fp      = fopen($tmpName, 'r'); 
+          $content = fread($fp, filesize($tmpName));
+          $content = addslashes($content);
+          fclose($fp);
+          $array_contenido = explode("\r\n",$content);
+          foreach($array_contenido as $key => $valor){
+            $valores = array();
+            $campos  = array();  
+            if($transaccion_exitosa){    
+              if($array_contenido[$key] != ""){ 
+                  $array_driver = explode("|",$array_contenido[$key]);
+                  $sNombre = strtoupper($array_driver[0]);
+                  $dFechaNacimiento = format_date($array_driver[1]);
+                  $dFechaExpiracionLicencia = $array_driver[2];
+                  $iExperienciaYear = $array_driver[3];
+                  $iNumLicencia = strtoupper($array_driver[4]);
+                  $eTipoLicencia = $array_driver[5];
+                  //print_r($array_driver);
+                  
+                  //Header table:
+                  $htmlTabla = '&lt;tr style="background: rgb(55, 101, 176);color:#ffffff!important;">'.
+                               '&lt;td&gt; NAME</td>'.
+                               '&lt;td&gt; DOB</td>'.
+                               '&lt;td&gt; EXPIRE DATE</td>'.
+                               '&lt;td&gt; EXPERIENCE YEARS</td>'.
+                               '&lt;td&gt; LICENSE NUMBER</td>';
+                  
+                  #Verificamos si el driver no existe:
+                  $sql = "SELECT COUNT(iConsecutivo) AS total FROM ct_operadores WHERE iNumLicencia = '$iNumLicencia' AND iConsecutivoCompania = '$iConsecutivoCompania' ";
+                  $result = $conexion->query($sql);
+                  $items = $result->fetch_assoc();
+                  $existe = $items["total"];
+                  if($existe == "0"){
+                      
+                      #armando Array:
+                      array_push($campos ,"iConsecutivoCompania"); array_push($valores,trim($iConsecutivoCompania));
+                      if($sNombre != ''){array_push($campos ,"sNombre"); array_push($valores,trim($sNombre));}
+                      if($dFechaNacimiento != ''){array_push($campos ,"dFechaNacimiento"); array_push($valores,trim($dFechaNacimiento));}
+                      if($dFechaExpiracionLicencia != ''){array_push($campos ,"dFechaExpiracionLicencia"); array_push($valores,trim($dFechaExpiracionLicencia));}
+                      if($iExperienciaYear != ''){array_push($campos ,"iExperienciaYear"); array_push($valores,trim($iExperienciaYear));}
+                      if($iNumLicencia != ''){array_push($campos ,"iNumLicencia"); array_push($valores,trim($iNumLicencia));}
+                      if($eTipoLicencia != ''){array_push($campos ,"eTipoLicencia"); array_push($valores,trim($eTipoLicencia));}
+                      array_push($campos ,"dFechaIngreso"); array_push($valores,date("Y-m-d H:i:s"));
+                      array_push($campos ,"sIP"); array_push($valores,$_SERVER['REMOTE_ADDR']);
+                      array_push($campos ,"sUsuarioIngreso"); array_push($valores,$_SESSION['usuario_actual']);
+                      array_push($campos ,"siConsecutivosPolizas"); array_push($valores,$iConsecutivoPolizas); 
+                      array_push($campos ,"inPoliza"); array_push($valores,'1'); 
+                      
+                      $insert = "INSERT INTO ct_operadores (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
+                      $conexion->query($insert);
+                      if($conexion->affected_rows < 1){ 
+                         $transaccion_exitosa = false;
+                         $msj = "The data of driver was not saved properly, please try again.";               
+                      }else{
+                        $htmlTabla .= '&lt;tr style="background: rgb(234, 255, 226);">'.
+                                      '&lt;td&gt;'.$driver_name.'</td>'.
+                                      '&lt;td&gt;'.$driver_dob.'</td>'.
+                                      '&lt;td&gt;'.$driver_exp_lic.'</td>'.
+                                      '&lt;td&gt;'.$driver_exp_years.'</td>'.
+                                      '&lt;td&gt;'.$driver_license.'</td>'; 
+                      } 
+                      
+                  }else{
+                     #YA EXISTE actualizamos solo la parte de las polizas para incluirlos:
+                     //if($iNumLicencia != ''){array_push($valores,"iNumLicencia='".trim($iNumLicencia)."'");}
+                     if($sNombre != ''){array_push($valores,"sNombre='".trim($sNombre)."'");}
+                     if($dFechaNacimiento != ''){array_push($valores,"dFechaNacimiento='".trim($dFechaNacimiento)."'"); }
+                     if($dFechaExpiracionLicencia != ''){array_push($valores,"dFechaExpiracionLicencia='".trim($dFechaExpiracionLicencia)."'"); }
+                     if($iExperienciaYear != ''){array_push($valores,"iExperienciaYear='".trim($iExperienciaYear)."'"); }
+                     if($eTipoLicencia != ''){array_push($valores,"eTipoLicencia='".trim($eTipoLicencia)."'"); } 
+                     array_push($valores,"sIPActualizacion='".$_SERVER['REMOTE_ADDR']."'");
+                     array_push($valores,"dFechaActualizacion='".date_to_server(date("Y-m-d H:i:s"))."'");
+                     array_push($valores,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'");
+                     array_push($valores,"iConsecutivosPolizas='".trim(siConsecutivosPolizas)."'");
+                     array_push($valores,"inPoliza='1'");
+                     
+                     $update = "UPDATE ct_operadores SET ".implode(",",$valores)." WHERE iNumLicencia = '$iNumLicencia' AND iConsecutivoCompania = '$iConsecutivoCompania'";
+                     $conexion->query($update);
+                     
+                     if($conexion->affected_rows < 1){ 
+                         $transaccion_exitosa = false;
+                         $msj = "The data of driver was not saved properly, please try again.";               
+                      }else{
+                        $tabla_error .= '&lt;tr style="background: rgb(254, 232, 154);">'.
+                                     '&lt;td&gt;'.$driver_name.'</td>'.
+                                     '&lt;td&gt;'.$driver_dob.'</td>'.
+                                     '&lt;td&gt;'.$driver_exp_lic.'</td>'.
+                                     '&lt;td&gt;'.$driver_exp_years.'</td>'.
+                                     '&lt;td&gt;'.$driver_license.'</td>';
+                      }  
+                     
+                  }
+              }
+            }
+          }          
+      }
+      if($transaccion_exitosa){
+            $conexion->commit();
+            $conexion->close();
+            $mensaje = "The drivers has been uploaded successfully, please verify the data in the company policies.";
+      }else{
+            $conexion->rollback();
+            $conexion->close();
+            $error = "1";
+      }
+      $htmlTabla = $htmlTabla.$tabla_error;
+      //$htmlTabla = utf8_encode($htmlTabla);
+      $response = array("mensaje"=>"$mensaje","error"=>"$error", "name_file" => "$fileName","reporte"=>"$htmlTabla"); 
+      echo json_encode($response); 
+      
+  }
+  function upload_unit_txt(){
+      
+      include("cn_usuarios.php");  
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      
+      #variables:
+      $iConsecutivoCompania = $_POST['iConsecutivoCompania'];
+      $iConsecutivoPolizas  = $_POST['iConsecutivoPolizas'];
+      $error = "0";
+      $mensaje = "";
+      $htmlTabla = ""; 
+      $fileName = $_FILES['userfile']['name'];
+      $tmpName  = $_FILES['userfile']['tmp_name'];
+      
+      if($iConsecutivoCompania != '' && $iConsecutivoPolizas != ''){
+          #Revisamos contenido del archivo:
+          $fp      = fopen($tmpName, 'r'); 
+          $content = fread($fp, filesize($tmpName));
+          $content = addslashes($content);
+          fclose($fp);
+          $array_contenido = explode("\r\n",$content);
+          foreach($array_contenido as $key => $valor){
+             
+              $valores = array();
+              $campos  = array();
+               
+            if($transaccion_exitosa){    
+              if($array_contenido[$key] != ""){ 
+                  $array_unit = explode("|",$array_contenido[$key]);
+                  $sVIN = strtoupper(trim($array_unit[0]));
+                  $iYear = $array_unit[1];
+                  $iModelo = $array_unit[2];
+                  $iConsecutivoRadio = $array_unit[3];
+                  
+                  //Header table:
+                  $htmlTabla = '&lt;tr style="background: rgb(55, 101, 176);color:#ffffff!important;">'.
+                               '&lt;td&gt; VIN</td>'.
+                               '&lt;td&gt; RADIO</td>'.
+                               '&lt;td&gt; YEAR</td>'.
+                               '&lt;td&gt; MAKE</td>'.
+                               '&lt;td&gt; TYPE</td>'.
+                               '&lt;td&gt; WEIGHT</td>';
+                  
+                  #Verificamos si el driver no existe:
+                  $sql = "SELECT COUNT(iConsecutivo) AS total FROM ct_unidades WHERE sVIN = '$sVIN'";
+                  $result = $conexion->query($sql);
+                  $items = $result->fetch_assoc();
+                  $existe = $items["total"];
+                  if($existe == "0"){
+                      #armando Array:
+                      array_push($campos ,"iConsecutivoCompania"); array_push($valores,trim($iConsecutivoCompania));
+                      if($sVIN != ''){array_push($campos ,"sVIN"); array_push($valores,trim($sVIN));}
+                      if($iYear != ''){array_push($campos ,"iYear"); array_push($valores,trim($iYear));}
+                      if($iModelo != ''){array_push($campos ,"iModelo"); array_push($valores,trim($iModelo));}
+                      if($iConsecutivoRadio != ''){array_push($campos ,"iConsecutivoRadio"); array_push($valores,trim($iConsecutivoRadio));}
+                      array_push($campos ,"dFechaIngreso"); array_push($valores,date("Y-m-d H:i:s"));
+                      array_push($campos ,"sIP"); array_push($valores,$_SERVER['REMOTE_ADDR']);
+                      array_push($campos ,"sUsuarioIngreso"); array_push($valores,$_SESSION['usuario_actual']);
+                      array_push($campos ,"siConsecutivosPolizas"); array_push($valores,$iConsecutivoPolizas); 
+                      array_push($campos ,"inPoliza"); array_push($valores,'1'); 
+                      
+                      $insert = "INSERT INTO ct_unidades (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
+                      $conexion->query($insert);
+                      if($conexion->affected_rows < 1){ 
+                         $transaccion_exitosa = false;
+                         $msj = "The data of unit was not saved properly, please try again.";               
+                      }else{
+                        $htmlTabla .= '&lt;tr style="background: rgb(234, 255, 226);">'.
+                                      '&lt;td&gt;'.$sVIN.'</td>'.
+                                      '&lt;td&gt;'.$iYear.'</td>'.
+                                      '&lt;td&gt;'.$iModelo.'</td>'.
+                                      '&lt;td&gt;'.$iConsecutivoRadio.'</td>';
+                      }
+                      
+                  }else{
+                     #YA EXISTE: 
+                     
+                     //if($sVIN != ''){array_push($valores,"sVIN='".trim($sVIN)."'");}
+                     if($iYear != ''){array_push($valores,"iYear='".trim($iYear)."'");}
+                     if($iModelo != ''){array_push($valores,"iModelo='".trim($iModelo)."'"); }
+                     if($iConsecutivoRadio != ''){array_push($valores,"iConsecutivoRadio='".trim($iConsecutivoRadio)."'"); }
+                     array_push($valores,"sIPActualizacion='".$_SERVER['REMOTE_ADDR']."'");
+                     array_push($valores,"dFechaActualizacion='".date_to_server(date("Y-m-d H:i:s"))."'");
+                     array_push($valores,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'");
+                     array_push($valores,"iConsecutivosPolizas='".trim(siConsecutivosPolizas)."'");
+                     array_push($valores,"inPoliza='1'");
+                     
+                      $update = "UPDATE ct_unidades SET ".implode(",",$valores)." WHERE sVIN = '$sVIN' AND iConsecutivoCompania = '$iConsecutivoCompania'";
+                      $conexion->query($update);
+                      if($conexion->affected_rows < 1){ 
+                         $transaccion_exitosa = false;
+                         $msj = "The data of unit was not saved properly, please try again.";               
+                      }else{
+                         $tabla_error .= '&lt;tr style="background: rgb(254, 232, 154);">'.
+                                     '&lt;td&gt;'.$sVIN.'</td>'.
+                                     '&lt;td&gt;'.$iYear.'</td>'.
+                                     '&lt;td&gt;'.$iModelo.'</td>'.
+                                     '&lt;td&gt;'.$iConsecutivoRadio.'</td>';
+                      }
+      
+                  }
+              } 
+            }
+          }
+                
+          
+      }
+      if($transaccion_exitosa){
+            $conexion->commit();
+            $conexion->close();
+            $mensaje = "The drivers has been uploaded successfully, please verify the data in the company policies.";
+      }else{
+            $conexion->rollback();
+            $conexion->close();
+            $error = "1";
+      }
+      $htmlTabla = $htmlTabla.$tabla_error;
+      //$htmlTabla = utf8_encode($htmlTabla.$tabla_error);
+      $response = array("mensaje"=>"$mensaje","error"=>"$error", "name_file" => "$fileName","reporte"=>"$htmlTabla"); 
+      echo json_encode($response); 
+      
+  }
+  function get_drivers_active(){
+      
+      $iConsecutivoPoliza = $_POST['iConsecutivoPoliza'];
+      $iConsecutivoCompania = $_POST['iConsecutivoCompania'];
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+    
+      $registros_por_pagina = $_POST["registros_por_pagina"];
+      $pagina_actual = (isset($_POST["pagina_actual"]) && $_POST["pagina_actual"] != '' ? $_POST["pagina_actual"] : 1);
+      $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
+        
+      //Filtros de informacion //
+      $filtroQuery = " WHERE siConsecutivosPolizas != '' AND inPoliza = '1' AND iConsecutivoCompania = '$iConsecutivoCompania' AND siConsecutivosPolizas LIKE '%$iConsecutivoPoliza%' ";
+      $array_filtros = explode(",",$_POST["filtroInformacion"]);
+      foreach($array_filtros as $key => $valor){
+        if($array_filtros[$key] != ""){
+            $campo_valor = explode("|",$array_filtros[$key]);
+            $campo_valor[0] == 'iConsecutivo' ? $filtroQuery.= " AND  ".$campo_valor[0]."='".$campo_valor[1]."' " : $filtroQuery == "" ? $filtroQuery.= " AND  ".$campo_valor[0]." LIKE '%".$campo_valor[1]."%'": $filtroQuery.= " AND ".$campo_valor[0]." LIKE '%".$campo_valor[1]."%'";
+        }
+      }
+    // ordenamiento//
+    $ordenQuery = " ORDER BY ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"];
+    
+    //contando registros // 
+    $query_rows = "SELECT COUNT(iConsecutivo) AS total FROM ct_operadores ".$filtroQuery;
+    $Result = $conexion->query($query_rows);
+    $items = $Result->fetch_assoc();
+    $registros = $items["total"];
+    if($registros == "0"){$pagina_actual = 0;}
+    $paginas_total = ceil($registros / $registros_por_pagina);
+    if($registros == "0"){
+        $limite_superior = 0;
+        $limite_inferior = 0;
+        $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";
+    }else{
+        $pagina_actual == "0" ? $pagina_actual = 1 : false;
+        $limite_superior = $registros_por_pagina;
+        $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
+        $sql = "SELECT iConsecutivo, sNombre, DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, iExperienciaYear, iNumLicencia, (CASE eTipoLicencia WHEN  1 THEN 'Federal / B1' WHEN  2 THEN 'Commercial / CDL - A' END) AS TipoLicencia ".
+               "FROM ct_operadores ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
+        $result = $conexion->query($sql);
+        $rows = $result->num_rows;   
+        if ($rows > 0) {    
+                while ($items = $result->fetch_assoc()){ 
+                   //if($items["iNumLicencia"] != ""){
+                                   
+                         $htmlTabla .= "<tr id=\"id-".$items['iConsecutivo']."\" >".
+                                           "<td>".$items['sNombre']."</td>".
+                                           "<td>".$items['dFechaNacimiento']."</td>".
+                                           "<td>".$items['iNumLicencia']."</td>". 
+                                           "<td>".$items['TipoLicencia']."</td>".
+                                           "<td>".$items['dFechaExpiracionLicencia']."</td>".  
+                                           "<td>".$items['iExperienciaYear']."</td>".                                                                                                                                                                                                                    
+                                           "<td></td></tr>"; 
+                                                //<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>
+                                               // <div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete Driver from list\"><i class=\"fa fa-trash\"></i> <span></span></div>
+                                            
+                     //}else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}    
+                }
+                $conexion->rollback();
+                $conexion->close();                                                                                                                                                                       
+        }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;    }  
+    }
+     $htmlTabla = utf8_decode($htmlTabla);
+     $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
+     echo json_encode($response);
+      
+  }
+  function get_drivers_inactive(){
+      
+      $iConsecutivoPoliza = $_POST['iConsecutivoPoliza'];
+      $iConsecutivoCompania = $_POST['iConsecutivoCompania'];
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+    
+      $registros_por_pagina = $_POST["registros_por_pagina"];
+      $pagina_actual = (isset($_POST["pagina_actual"]) && $_POST["pagina_actual"] != '' ? $_POST["pagina_actual"] : 1);
+      $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
+        
+      //Filtros de informacion //
+      $filtroQuery = " WHERE iConsecutivoCompania = '$iConsecutivoCompania' AND siConsecutivosPolizas NOT LIKE '%$iConsecutivoPoliza%' OR siConsecutivosPolizas = '' ";
+      $array_filtros = explode(",",$_POST["filtroInformacion"]);
+      foreach($array_filtros as $key => $valor){
+        if($array_filtros[$key] != ""){
+            $campo_valor = explode("|",$array_filtros[$key]);
+            $campo_valor[0] == 'iConsecutivo' ? $filtroQuery.= " AND  ".$campo_valor[0]."='".$campo_valor[1]."' " : $filtroQuery == "" ? $filtroQuery.= " AND  ".$campo_valor[0]." LIKE '%".$campo_valor[1]."%'": $filtroQuery.= " AND ".$campo_valor[0]." LIKE '%".$campo_valor[1]."%'";
+        }
+      }
+    // ordenamiento//
+    $ordenQuery = " ORDER BY ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"];
+    
+    //contando registros // 
+    $query_rows = "SELECT COUNT(iConsecutivo) AS total FROM ct_operadores ".$filtroQuery;
+    $Result = $conexion->query($query_rows);
+    $itemssNombre = $Result->fetch_assoc();
+    $registros = $items["total"];
+    if($registros == "0"){$pagina_actual = 0;}
+    $paginas_total = ceil($registros / $registros_por_pagina);
+    if($registros == "0"){
+        $limite_superior = 0;
+        $limite_inferior = 0;
+        $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";
+    }else{
+        $pagina_actual == "0" ? $pagina_actual = 1 : false;
+        $limite_superior = $registros_por_pagina;
+        $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
+        $sql = "SELECT iConsecutivo, sNombre, DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, iExperienciaYear, iNumLicencia, (CASE eTipoLicencia WHEN  1 THEN 'Federal / B1' WHEN  2 THEN 'Commercial / CDL - A' END) AS TipoLicencia ".
+               "FROM ct_operadores ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
+        $result = $conexion->query($sql);
+        $rows = $result->num_rows;   
+        if ($rows > 0) {    
+                while ($items = $result->fetch_assoc()){ 
+                   if($items["sNombre"] != ""){
+                                   
+                         $htmlTabla .= "<tr id=\"id-".$items['iConsecutivo']."\" >".
+                                           "<td>".$items['sNombre']."</td>".
+                                           "<td>".$items['dFechaNacimiento']."</td>".
+                                           "<td>".$items['iNumLicencia']."</td>". 
+                                           "<td>".$items['TipoLicencia']."</td>".
+                                           "<td>".$items['dFechaExpiracionLicencia']."</td>".  
+                                           "<td>".$items['iExperienciaYear']."</td>".                                                                                                                                                                                                                    
+                                           "<td>
+                                                <div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>
+                                                <div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete Driver from list\"><i class=\"fa fa-trash\"></i> <span></span></div>
+                                           </td></tr>";  
+                     }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}    
+                }
+                $conexion->rollback();
+                $conexion->close();                                                                                                                                                                       
+        }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;    }  
+    }
+
+     $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
+     echo json_encode($response);
+      
+  }
+  function get_drivers_deleted(){
+      
+      $iConsecutivoPoliza = $_POST['iConsecutivoPoliza'];
+      $iConsecutivoCompania = $_POST['iConsecutivoCompania'];
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+    
+      $registros_por_pagina = $_POST["registros_por_pagina"];
+      $pagina_actual = (isset($_POST["pagina_actual"]) && $_POST["pagina_actual"] != '' ? $_POST["pagina_actual"] : 1);
+      $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
+        
+      //Filtros de informacion //
+      $filtroQuery = " WHERE iConsecutivoCompania = '$iConsecutivoCompania' AND siConsecutivosPolizas NOT LIKE '%$iConsecutivoPoliza%' OR siConsecutivosPolizas = '' ";
+      $array_filtros = explode(",",$_POST["filtroInformacion"]);
+      foreach($array_filtros as $key => $valor){
+        if($array_filtros[$key] != ""){
+            $campo_valor = explode("|",$array_filtros[$key]);
+            $campo_valor[0] == 'iConsecutivo' ? $filtroQuery.= " AND  ".$campo_valor[0]."='".$campo_valor[1]."' " : $filtroQuery == "" ? $filtroQuery.= " AND  ".$campo_valor[0]." LIKE '%".$campo_valor[1]."%'": $filtroQuery.= " AND ".$campo_valor[0]." LIKE '%".$campo_valor[1]."%'";
+        }
+      }
+    // ordenamiento//
+    $ordenQuery = " ORDER BY ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"];
+    
+    //contando registros // 
+    $query_rows = "SELECT COUNT(iConsecutivo) AS total FROM ct_operadores ".$filtroQuery;
+    $Result = $conexion->query($query_rows);
+    $itemssNombre = $Result->fetch_assoc();
+    $registros = $items["total"];
+    if($registros == "0"){$pagina_actual = 0;}
+    $paginas_total = ceil($registros / $registros_por_pagina);
+    if($registros == "0"){
+        $limite_superior = 0;
+        $limite_inferior = 0;
+        $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";
+    }else{
+        $pagina_actual == "0" ? $pagina_actual = 1 : false;
+        $limite_superior = $registros_por_pagina;
+        $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
+        $sql = "SELECT iConsecutivo, sNombre, DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, iExperienciaYear, iNumLicencia, (CASE eTipoLicencia WHEN  1 THEN 'Federal / B1' WHEN  2 THEN 'Commercial / CDL - A' END) AS TipoLicencia ".
+               "FROM ct_operadores ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
+        $result = $conexion->query($sql);
+        $rows = $result->num_rows;   
+        if ($rows > 0) {    
+                while ($items = $result->fetch_assoc()){ 
+                   if($items["sNombre"] != ""){
+                                   
+                         $htmlTabla .= "<tr id=\"id-".$items['iConsecutivo']."\" >".
+                                           "<td>".$items['sNombre']."</td>".
+                                           "<td>".$items['dFechaNacimiento']."</td>".
+                                           "<td>".$items['iNumLicencia']."</td>". 
+                                           "<td>".$items['TipoLicencia']."</td>".
+                                           "<td>".$items['dFechaExpiracionLicencia']."</td>".  
+                                           "<td>".$items['iExperienciaYear']."</td>".                                                                                                                                                                                                                    
+                                           "<td>
+                                                <div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>
+                                                <div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete Driver from list\"><i class=\"fa fa-trash\"></i> <span></span></div>
+                                           </td></tr>";  
+                     }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}    
+                }
+                $conexion->rollback();
+                $conexion->close();                                                                                                                                                                       
+        }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;    }  
+    }
+
+     $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
+     echo json_encode($response);
+      
+  }
+  
+  #units
+  function get_units_active(){
+      
+      $iConsecutivoPoliza = $_POST['iConsecutivoPoliza'];
+      $iConsecutivoCompania = $_POST['iConsecutivoCompania']; 
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+    
+      $registros_por_pagina = $_POST["registros_por_pagina"];
+      $pagina_actual = (isset($_POST["pagina_actual"]) && $_POST["pagina_actual"] != '' ? $_POST["pagina_actual"] : 1);
+      $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
+        
+      //Filtros de informacion //
+      $filtroQuery = " WHERE siConsecutivosPolizas != '' AND inPoliza = '1' AND iConsecutivoCompania = '$iConsecutivoCompania' AND siConsecutivosPolizas LIKE '%$iConsecutivoPoliza%' ";
+      $array_filtros = explode(",",$_POST["filtroInformacion"]);
+      foreach($array_filtros as $key => $valor){
+        if($array_filtros[$key] != ""){
+            $campo_valor = explode("|",$array_filtros[$key]);
+            $campo_valor[0] == 'A.iConsecutivo' ? $filtroQuery.= " AND  ".$campo_valor[0]."='".$campo_valor[1]."' " : $filtroQuery == "" ? $filtroQuery.= " AND  ".$campo_valor[0]." LIKE '%".$campo_valor[1]."%'": $filtroQuery.= " AND ".$campo_valor[0]." LIKE '%".$campo_valor[1]."%'";
+        }
+      }
+    // ordenamiento//
+    $ordenQuery = " ORDER BY ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"];
+    
+    //contando registros // 
+    $query_rows = "SELECT COUNT(A.iConsecutivo) AS total FROM ct_unidades A ".
+                  "LEFT JOIN ct_unidad_radio B ON A.iConsecutivoRadio = B.iConsecutivo ".
+                  "LEFT JOIN ct_unidad_modelo C ON A.iModelo = C.iConsecutivo ".$filtroQuery;
+    $Result = $conexion->query($query_rows);
+    $items = $Result->fetch_assoc();
+    $registros = $items["total"];
+    if($registros == "0"){$pagina_actual = 0;}
+    $paginas_total = ceil($registros / $registros_por_pagina);
+    if($registros == "0"){
+        $limite_superior = 0;
+        $limite_inferior = 0;
+        $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";
+    }else{
+        $pagina_actual == "0" ? $pagina_actual = 1 : false;
+        $limite_superior = $registros_por_pagina;
+        $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
+        $sql = "SELECT A.iConsecutivo, CONCAT('(',C.sAlias,')',C.sDescripcion ) AS Make, B.sDescripcion AS Radio, iYear, sVIN, sPeso, sTipo, sModelo  ".
+               "FROM ct_unidades A ".
+               "LEFT JOIN ct_unidad_radio B ON A.iConsecutivoRadio = B.iConsecutivo ".
+               "LEFT JOIN ct_unidad_modelo C ON A.iModelo = C.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
+        $result = $conexion->query($sql);
+        $rows = $result->num_rows;   
+        if ($rows > 0) {    
+                while ($items = $result->fetch_assoc()){ 
+                   if($items["iConsecutivo"] != ""){
+                                   
+                         $htmlTabla .= "<tr id=\"id-".$items['iConsecutivo']."\" >".
+                                           "<td>".$items['sVIN']."</td>".
+                                           "<td>".$items['Radio']."</td>".
+                                           "<td>".$items['iYear']."</td>". 
+                                           "<td>".$items['Make']."</td>".
+                                           "<td>".$items['sTipo']."</td>".  
+                                           "<td>".$items['sPeso']."</td>".                                                                                                                                                                                                                    
+                                           "<td>                                           </td></tr>";
+                                                //<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>
+                                               // <div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete unit from list\"><i class=\"fa fa-trash\"></i> <span></span></div>
+ 
+                     }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}    
+                }
+                $conexion->rollback();
+                $conexion->close();                                                                                                                                                                       
+        }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;    }  
+    }
+
+     $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
+     echo json_encode($response);
+  }
+?>

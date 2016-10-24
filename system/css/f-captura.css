@@ -1,0 +1,264 @@
+.fedicion{
+	
+	position: absolute;
+	top: 20px;
+	left: 128.5px;
+	display: block;
+	z-index: 100;
+	
+	display: none;
+	position: absolute;
+	background: #fafafa;
+	width: 80%;
+	border: solid 2px #0470aa;
+	height: 95%;
+	overflow:auto;
+	overflow-x:hidden;
+	
+	border-radius:5px;
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
+
+	-moz-box-shadow: 0px 5px 10px rgba(0,0,0,0.6);
+	-webkit-box-shadow: 0px 5px 10px rgba(0,0,0,0.6);
+	box-shadow: 0px 5px 10px rgba(0,0,0,0.6);
+	
+	
+	
+}
+.fcaptura-header{
+	width:100%;
+	margin:0px;
+    height:30px;
+    
+    background:#044b8b;
+	background: -moz-linear-gradient(top, #044b8b, #038cc2);
+    background: linear-gradient(to bottom, #044b8b, #038cc2);
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#044b8b), to(#038cc2));
+	border:1px solid #0470aa;
+		
+	border-radius:4px 4px 0px 0px;
+	-moz-border-radius:4px 4px 0px 0px;
+	-webkit-border-radius:4px 4px 0px 0px;
+
+}
+.fcaptura-header .fcaptura-logo, .fcaptura-header .fcaptura-boton, .fcaptura-header .fcaptura-tit{float:left;height:30px;}
+.fcaptura-header .fcaptura-logo, .fcaptura-header .fcaptura-boton{width:25%!important;}
+.fcaptura-header .fcaptura-tit{width:50%!important;}
+/*-- logo izquierda --*/
+ .fedicion a{color:#659aad;text-decoration: none;}
+ .fedicion a:hover,  .fedicion a:active{color:#046eb3;text-decoration:underline;}
+.fcaptura-header .fcaptura-logo{background:url('../images/logo_fcaptura.png') no-repeat left top;}
+/*-- titulo --*/
+.fcaptura-tit h4{
+	margin:0px!important; 
+    padding:5px 0px 0px 10px;
+	font-size:1.2em; 
+    letter-spacing: 1px; 
+	text-transform:uppercase; 
+	color:#ffffff; 
+	text-shadow:1px 1px 2px #000000;
+	text-align:center!important;
+
+}
+.fedicion hr{margin: 20px;border:1px solid #c5c5c5;}
+/*-- botones forms --*/
+.btn-icon {
+	
+	height:25px;
+    width:30px;
+    max-height:100px;
+
+	border-radius:4px 4px 0px 0px;
+	-moz-border-radius:4px 4px 0px 0px;
+	-webkit-border-radius:4px 4px 0px 0px;	
+	
+	background: #045190;
+    background: -moz-linear-gradient(top, #045190, #093e69);
+    background: linear-gradient(to bottom, #045190, #093e69);
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#045190), to(#093e69));
+    border:1px solid #1094cb;
+    
+    padding:0px 2px 0px 2px;
+    cursor:pointer;
+    margin:3px 5px 0px;
+    
+    float:right;
+
+}
+.btn-icon:hover{background: #0378b0;background: -moz-linear-gradient(top, #055e9a, #082d4d);background: linear-gradient(to bottom, #055e9a, #082d4d);background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#055e9a), to(#082d4d));}
+.btn-icon .ico{
+
+	background:url('../images/img-datagrid/btns-icons.png') no-repeat right top;
+	-moz-background-size: 20px auto;
+	-o-background-size: 20px auto;
+	-webkit-background-size: 20px auto;
+	background-size: 20px auto;
+
+	padding:2px 20px 0px 0px;
+	height:18px;
+	margin:3px 4px;
+}
+/* BTN CERRAR */
+.btn-icon.cerrar .ico{background-position: 100% -72px;}
+/*-- Fieldset y formulario --*/
+.fedicion fieldset{padding: 15px;width:95%;border: 1px solid #72a250;margin:10px auto;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px;}
+.fedicion fieldset legend{
+	
+	color:#72a250;
+	text-transform:uppercase;
+	font-size:13px;
+	font-weight:bold;
+	text-align:center;
+}
+.fedicion fieldset td{
+	
+	vertical-align:middle;
+}
+.fedicion label{
+	color:#044c8b;
+	font-weight:bold;
+	font-size:13px; 
+}
+.fedicion input[type="text"], .fedicion textarea, .fedicion select{
+
+	height:20px!important;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	
+	background: #ffffff;
+    background: -moz-linear-gradient(top, #ffffff, #f7f7f7);
+    background: linear-gradient(to bottom, #ffffff, #f7f7f7);
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#ffffff), to(#f7f7f7));
+	border:1px solid #a9a9a9;
+	/*padding:10px; */
+}
+.fedicion textarea{height:60px!important;}
+.fedicion input[readonly="readonly"]{
+    background: #dadada!important;
+    color:#585858!important;
+    font-size: 12px;
+    border: 1px solid #c0c0c0!important;
+    font-family:Arial, Helvetica, sans-serif;
+}
+/*-- opciones para el formulario --*/
+.fedicion-options{
+	list-style:none;
+	width:100%;
+	margin:10px auto;
+	text-align:center;
+	padding:0;
+	bottom:5px;
+	position:relative;
+	clear:both;
+    /*--- hacemos que flote al centro ---*/
+    float: left;
+    left: 50%;
+    margin-left: -50%;
+}
+.fedicion-options li{/*float:left;*/ display: inline-block;text-align: center;width:auto;}
+.fedicion-options.dos-op li{width: 50%!important;}
+/*---- cuando f-options es un DIV y debe estar flotando hacia el centro ---*/       
+.fedicion-options div[name=btn]{
+    /*float: left;*/
+    width: auto;
+    margin:0px 2px!important;
+}
+.clear{clear:both;}
+/*--- data grid --*/
+.fcaptura-gridtit{
+	
+	height:25px;
+	width:98%;	
+	background:#efefef;
+	background: -moz-linear-gradient(top, #efefef, #d2d2d2);
+    background: linear-gradient(to bottom, #efefef, #d2d2d2);
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#efefef), to(#d2d2d2));
+	border:1px solid #c6c6c6;
+		
+	border-radius:6px 6px 0px 0px;
+	-moz-border-radius:6px 6px 0px 0px;
+	-webkit-border-radius:6px 6px 0px 0px;
+
+	
+	margin:0px auto!important; 
+	padding:10px 0px 0px 8px;
+	font-size:1.1em; 
+	text-transform:uppercase; 
+	color:#317a03; 
+	text-shadow:1px 1px 2px #ffffff;
+	text-align:left!important;
+	position:relative;
+
+}
+table.fcaptura-datagrid{width:99%;height:auto;min-height:60px;	border:1px solid #c6c6c6;
+padding:0px;/*border-collapse: collapse;*/border-spacing: 0;margin:0px auto;}
+/*-- Grid Head --*/
+.fcaptura-datagrid #grid-head2{
+	height:25px!important;	
+	background:#e5e5e5;
+	background: -moz-linear-gradient(top, #e5e5e5, #efefef);
+    background: linear-gradient(to bottom, #e5e5e5, #efefef);
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#e5e5e5), to(#efefef));
+	border:1px solid #c6c6c6;
+
+}
+.fcaptura-datagrid #grid-head2 .etiqueta_grid{
+	color:#044c8b;
+	font-size:13px!important;
+	text-transform:none!important;
+	font-weight:bold;
+	text-shadow:1px 2px 3px #daeaf6;
+}
+.fcaptura-datagrid tbody td{
+	
+	font-size: 11px!important;
+	text-align:left;
+	color:#424242;
+	padding-left:5px!important;
+    height: 22px;
+    font-family: Arial, Helvetica, sans-serif!important;
+}
+/*-- totales --*/
+.fcaptura-totales{
+	width:35%;
+	height:200px;
+	float:right;
+	margin-right:70px;
+}
+.fcaptura-totales td{
+	text-align:right;
+}
+.fcaptura-totales label{
+	font-size:1.1em;
+}
+/*--- columnas ---*/
+.col-center{width: 50%; margin: 5px auto;height: auto;min-height: 20px;}
+.col-1{width:50%;float:left;} /*2 columnas */
+.col-3{width: 33%;float: left;}/* 3 columnas -*/
+.center{margin:5px auto!important;float:none!important;}
+.error{
+    border:1px solid #b64141;
+    -webkit-box-shadow:inset 0px 0px 3px #decfcf;
+    -moz-box-shadow:inset 0px 0px 3px #decfcf;
+    box-shadow:inset 0px 0px 3px #decfcf;
+
+}
+.success{
+    border:1px solid #8ac975;
+    -webkit-box-shadow:inset 0px 0px 3px #dee8da;
+    -moz-box-shadow:inset 0px 0px 3px #dee8da;
+    box-shadow:inset 0px 0px 3px #dee8da;
+
+}
+.mayus{text-transform: uppercase!important;}
+.readonly, input[readonly="readonly"]{
+    /*background: #dadada!important;*/
+    background: #ebebeb;
+    color:#585858;
+    border: 1px solid #c0c0c0;
+}
+
+
+/*----------------------cmsm---------------------------*/
