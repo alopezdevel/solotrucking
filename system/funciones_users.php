@@ -222,12 +222,12 @@
             //Array de campos a insertar:
             foreach($_POST as $campo => $valor){
                 if($_POST['iConsecutivoTipoUsuario'] != '2' && $_POST['iConsecutivoCompania'] == ''){
-                    if($campo != "accion" and $campo != "edit_mode" and $campo != 'hClave2' and $campo != 'iConsecutivoCompania'){ //Estos campos no se insertan a la tabla
+                    if($campo != "accion" and $campo != "edit_mode" and $campo != 'hClave2' and $campo != 'iConsecutivoCompania' and $campo != "iConsecutivo"){ //Estos campos no se insertan a la tabla
                         array_push($campos ,$campo); 
                         array_push($valores, trim($valor));
                     } 
                 }else{
-                    if($campo != "accion" and $campo != "edit_mode" and $campo != 'hClave2'){ //Estos campos no se insertan a la tabla
+                    if($campo != "accion" and $campo != "edit_mode" and $campo != 'hClave2' and $campo != "iConsecutivo"){ //Estos campos no se insertan a la tabla
                         array_push($campos ,$campo); 
                         array_push($valores, trim($valor));
                     }
