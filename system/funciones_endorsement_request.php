@@ -370,7 +370,7 @@
                                       "<li style=\"line-height:15px;\"><strong style=\"color:#044e8d;\">LICENSE NUMBER: </strong>".$driver['iNumLicencia']."</li>".
                                       "</ul>".
                                       "</td></tr>".
-                                      "<tr><td><p style=\"color:#010101;margin:5px auto 10px; text-align:left;font-size:11px;\">Please reply this email to the account:<a href=\"mailto:customersolotrucking@gmail.com\"> customersolotrucking@gmail.com</a></p></td></tr>".
+                                      "<tr><td><p style=\"color:#010101;margin:5px auto 10px; text-align:left;font-size:11px;\">Please reply this email to the account:<a href=\"mailto:endorsement@solo-trucking.com\"> endorsement@solo-trucking.com</a></p></td></tr>".
                                       "<tr><td><p style=\"color:#858585;margin:5px auto; text-align:left;font-size:10px;\">e-mail sent from Solo-trucking Insurance System.</p></td></tr>".
                                       "</table>".
                                       "</body>";
@@ -389,7 +389,7 @@
                         $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
                         $mail->Password   = "SL09100242"; 
                         $mail->SetFrom('systemsupport@solo-trucking.com', 'Solo-Trucking Insurance');
-                        $mail->AddReplyTo('customersolotrucking@gmail.com','Customer service Solo-Trucking');
+                        $mail->AddReplyTo('endorsement@solo-trucking.com','Customer service Solo-Trucking');
                         $mail->Subject    = $subject;
                         $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
                         $mail->MsgHTML($htmlEmail);
@@ -443,7 +443,7 @@
                     $sql_endoso = "UPDATE cb_endoso_estatus SET eStatus = 'SB', dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
                                   "WHERE iConsecutivoEndoso = '$id' AND iConsecutivoPoliza = '$idPoliza'"; 
                     if($conexion->query($sql_endoso)){
-                            $msj = "The Endorsement was sent successfully, please check your email (customerservice@solo-trucking.com) waiting for their response."; 
+                            $msj = "The Endorsement was sent successfully, please check your email (endorsement@solo-trucking.com) waiting for their response."; 
                     }else{
                           $transaccion_exitosa = false;
                             $msj = "The data of endorsement was not updated properly, please try again.";  
@@ -761,7 +761,7 @@
                                       "<li style=\"line-height:15px;\"><strong style=\"color:#044e8d;\">LICENSE NUMBER: </strong>".$driver['iNumLicencia']."</li>".
                                       "</ul>".
                                       "</td></tr>".
-                                      "<tr><td><p style=\"color:#010101;margin:5px auto 10px; text-align:left;font-size:11px;\">Please reply this email to the account:<a href=\"mailto:customersolotrucking@gmail.com\"> customersolotrucking@gmail.com</a></p></td></tr>".
+                                      "<tr><td><p style=\"color:#010101;margin:5px auto 10px; text-align:left;font-size:11px;\">Please reply this email to the account:<a href=\"mailto:endorsement@solo-trucking.com\"> endorsement@solo-trucking.com</a></p></td></tr>".
                                       "<tr><td><p style=\"color:#858585;margin:5px auto; text-align:left;font-size:10px;\">e-mail sent from Solo-trucking Insurance System.</p></td></tr>".
                                       "</table>".
                                       "</body>";
@@ -780,7 +780,7 @@
                         $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
                         $mail->Password   = "SL09100242"; 
                         $mail->SetFrom('systemsupport@solo-trucking.com', 'Solo-Trucking Insurance');
-                        $mail->AddReplyTo('customersolotrucking@gmail.com','Customer service Solo-Trucking');
+                        $mail->AddReplyTo('endorsement@solo-trucking.com','Customer service Solo-Trucking');
                         $mail->Subject    = $subject;
                         $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
                         $mail->MsgHTML($htmlEmail);
@@ -972,7 +972,7 @@
                      $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
                      $mail->Password   = "SL09100242"; 
                      $mail->SetFrom('systemsupport@solo-trucking.com', 'Solo-Trucking Insurance');
-                     $mail->AddReplyTo('customersolotrucking@gmail.com','Customer service Solo-Trucking');
+                     $mail->AddReplyTo('endorsement@solo-trucking.com','Customer service Solo-Trucking');
                      $mail->Subject    = $subject;
                      $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
                      $mail->MsgHTML($htmlEmail);

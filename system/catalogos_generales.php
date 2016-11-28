@@ -260,4 +260,52 @@
      $response = array("mensaje"=>"$mensaje","error"=>"$error","select"=>"$htmlTabla");   
      echo json_encode($response);  
   }
+  function get_claims_types(){
+     include("cn_usuarios.php");
+     $conexion->autocommit(FALSE);
+      
+     $sql = "SELECT iConsecutivo AS clave, sNombre AS descripcion, sDescripcion 
+             FROM ct_tipo_claim ORDER BY iConsecutivo ASC";
+     $result = $conexion->query($sql);
+     $tipos = $result->num_rows;  
+        if($tipos > 0){
+            $htmlTabla .= "<option value=\"\">Select an option...</option>";      
+            while ($options = $result->fetch_assoc()) {
+               if($options["clave"] != ""){
+                     $htmlTabla .= "<option value=\"".$options['clave']."\" title=\"".$options['sDescripcion']."\">".$options['descripcion']."</option>";
+                 }else{                             
+                     $htmlTabla .="";
+                 }    
+            }                                                                                                                                                                       
+        }else {$htmlTabla .="";}
+     $conexion->rollback();
+     $conexion->close();
+     $htmlTabla = utf8_encode($htmlTabla);  
+     $response = array("mensaje"=>"$mensaje","error"=>"$error","select"=>"$htmlTabla");   
+     echo json_encode($response);   
+  }
+  function get_claims_incident(){
+      include("cn_usuarios.php");
+     $conexion->autocommit(FALSE);
+      
+     $sql = "SELECT iConsecutivo AS clave, sNombre AS descripcion 
+             FROM ct_tipo_incidente_claim ORDER BY iConsecutivo ASC";
+     $result = $conexion->query($sql);
+     $tipos = $result->num_rows;  
+        if($tipos > 0){
+            $htmlTabla .= "<option value=\"\">Select an option...</option>";      
+            while ($options = $result->fetch_assoc()) {
+               if($options["clave"] != ""){
+                     $htmlTabla .= "<option value=\"".$options['clave']."\">".$options['descripcion']."</option>";
+                 }else{                             
+                     $htmlTabla .="";
+                 }    
+            }                                                                                                                                                                       
+        }else {$htmlTabla .="";}
+     $conexion->rollback();
+     $conexion->close();
+     $htmlTabla = utf8_encode($htmlTabla);  
+     $response = array("mensaje"=>"$mensaje","error"=>"$error","select"=>"$htmlTabla");   
+     echo json_encode($response); 
+  }
 ?>

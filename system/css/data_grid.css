@@ -360,13 +360,14 @@ div.btn-icon, .btnicon{
    
 }
 div.btn-icon:hover{background: #e8e8e8;}
+.btn-icon.active i{color:#ffffff!important;}
 div.btn-icon i{vertical-align: middle;font-size: 18px;}  
 div.btn-icon span{font-weight: bold;font-size: 13px;}
 /*----icons----*/
-.add:hover  {background: #52bc12!important;border: 1px solid #56cf0c!important;}
+.add:hover, .add.active  {background: #52bc12!important;border: 1px solid #56cf0c!important;}
 /*--EDIT--*/
-.edit:hover i {color:#1673b3!important;}
-.edit:hover {background: #d5edfe!important;border: 1px solid #4aaaf3!important;}
+.edit:hover i, .edit.active  i {color:#1673b3!important;}
+.edit:hover, .edit.active {background: #d5edfe!important;border: 1px solid #4aaaf3!important;}
 /*--TRASH--*/
 .trash:hover i, .btn-red:hover i{color:#a51313!important;}
 .trash:hover, .btn-red:hover{background: #fedede!important;border: 1px solid #cb0b0b!important;}
@@ -439,7 +440,7 @@ div.btn-icon span{font-weight: bold;font-size: 13px;}
 .p-header h2{color:#ffffff;text-shadow:1px 1px 0px rgba(0,0,0,0.6);text-align: left;font-size: 15px;margin: 0;padding: 5px;}
 .p-header .btn-close{width:25px;padding:5px 0px;text-align: center;float: right;position: relative;top: -28px;background: #055692;color:#ffffff;}
 .p-header .btn-close:hover{background: #053f6a;cursor: pointer;}
-.p-container{width:98%;margin:20px auto;height:500px; padding:5px;overflow-y:scroll;}
+.p-container{width:98%;margin:0px auto;height:500px; padding:0px 5px;overflow-y:scroll;top: -20px;position: relative;}
 /*contenido popup*/
 .p-container fieldset legend{color:#006dbf;text-transform:uppercase;font-weight:bold;text-align:center;font-size: 15px;}
 .p-container label{color:#464646;font-weight:bold;}
@@ -506,6 +507,10 @@ table.popup-datagrid{
 }
 input.fecha{width: 96%;margin-right: 5px;}
 input.fecha.error{width: 95%!important;}
-    
+.popup-datagrid tfoot input{
+   background: transparent!important;
+   border: 0 !important; 
+   height:20px;
+}    
 
 /*----------------------cmsm---------------------------*/

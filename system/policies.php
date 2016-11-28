@@ -45,8 +45,10 @@ var fn_policies = {
         pagina_actual : "",
         sort : "ASC",
         orden : "A.iConsecutivo",
+        filtro_table : 'active', 
         init : function(){
             fn_policies.fillgrid();
+            
             $('.num').keydown(fn_solotrucking.inputnumero());  
             //Cargar companias, tipos y brokers:
             $.ajax({             
@@ -117,10 +119,10 @@ var fn_policies = {
                             
                             this.setData({
                                 'accion':'upload_policy',
-                                'iConsecutivo':$('#iConsecutivoArchivo').val(), 
-                                'iConsecutivoCompania':$('#iConsecutivoCompania').val(),
-                                'sNombreCompania':$('#iConsecutivoCompania option:selected').text(),
-                                'iConsecutivoPoliza':$('#iConsecutivo').val(),
+                                'iConsecutivo':$(fn_policies.form +' #iConsecutivoArchivo').val(), 
+                                'iConsecutivoCompania':$(fn_policies.form + ' #iConsecutivoCompania').val(),
+                                'sNombreCompania':$(fn_policies.form +' #iConsecutivoCompania option:selected').text(),
+                                'iConsecutivoPoliza':$(fn_policies.form + ' #iConsecutivo').val(),
                                 'eArchivo' : 'policy_jacker' 
                             });
                             $('#txtPolicyJacker').val('loading...');
@@ -157,10 +159,10 @@ var fn_policies = {
                             
                             this.setData({
                                 'accion':'upload_policy',
-                                'iConsecutivo':$('#iConsecutivoArchivoPFA').val(), 
-                                'iConsecutivoCompania':$('#iConsecutivoCompania').val(),
-                                'sNombreCompania':$('#iConsecutivoCompania option:selected').text(),
-                                'iConsecutivoPoliza':$('#iConsecutivo').val(),
+                                'iConsecutivo':$(fn_policies.form + ' #iConsecutivoArchivoPFA').val(), 
+                                'iConsecutivoCompania':$(fn_policies.form +' #iConsecutivoCompania').val(),
+                                'sNombreCompania':$(fn_policies.form +'# iConsecutivoCompania option:selected').text(),
+                                'iConsecutivoPoliza':$(fn_policies.form +' #iConsecutivo').val(),
                                 'eArchivo' : 'pfa' 
                             });
                             $('#txtPolicyPFA').val('loading...');
@@ -262,6 +264,36 @@ var fn_policies = {
                     fn_policies.pagina_actual = data.pagina; 
                     fn_policies.edit();
                     fn_policies.delete_confirm();
+                    $(fn_policies.data_grid + ' .btn-icon.expired_policies').removeClass('active');
+                    $(fn_policies.data_grid + ' .btn-icon.active_policies').addClass('active');
+                    fn_policies.filtro_table = 'active';
+                }
+            }); 
+        },
+        fillgrid_expired: function(){
+               $.ajax({             
+                type:"POST", 
+                url:"funciones_policies.php", 
+                data:{
+                    accion:"get_expired_policies",
+                    registros_por_pagina : "15", 
+                    pagina_actual : fn_policies.pagina_actual, 
+                    filtroInformacion : fn_policies.filtro,  
+                    ordenInformacion : fn_policies.orden,
+                    sortInformacion : fn_policies.sort,
+                },
+                async : true,
+                dataType : "json",
+                success : function(data){                               
+                    $(fn_policies.data_grid+" tbody").empty().append(data.tabla);
+                    $(fn_policies.data_grid+" tbody tr:even").addClass('gray');
+                    $(fn_policies.data_grid+" tbody tr:odd").addClass('white');
+                    $(fn_policies.data_grid + " tfoot #paginas_total").val(data.total);
+                    $(fn_policies.data_grid + " tfoot #pagina_actual").val(data.pagina);
+                    fn_policies.pagina_actual = data.pagina; 
+                    $(fn_policies.data_grid + ' .btn-icon.active_policies').removeClass('active');
+                    $(fn_policies.data_grid + ' .btn-icon.expired_policies').addClass('active');
+                    fn_policies.filtro_table = 'expired'; 
                 }
             }); 
         },
@@ -361,31 +393,31 @@ var fn_policies = {
           $.post("funciones_policies.php",{accion:"delete_policy", 'clave': id},
            function(data){
                 fn_solotrucking.mensaje(data.msj);
-                fn_policies.fillgrid();
+                if(fn_policies.filtro_table == 'active'){fn_policies.fillgrid();}else if(fn_policies.filtro_table == 'expired'){fn_policies.fillgrid_expired();}
            },"json");  
         },
         firstPage : function(){
             if($(fn_policies.data_grid+" #pagina_actual").val() != "1"){
                 fn_policies.pagina_actual = "";
-                fn_policies.fillgrid();
+                if(fn_policies.filtro_table == 'active'){fn_policies.fillgrid();}else if(fn_policies.filtro_table == 'expired'){fn_policies.fillgrid_expired();}
             }
         },
         previousPage : function(){
             if($(fn_policies.data_grid+" #pagina_actual").val() != "1"){
                 fn_policies.pagina_actual = (parseInt($(fn_policies.data_grid+" #pagina_actual").val()) - 1) + "";
-                fn_policies.fillgrid();
+                if(fn_policies.filtro_table == 'active'){fn_policies.fillgrid();}else if(fn_policies.filtro_table == 'expired'){fn_policies.fillgrid_expired();}
             }
         },
         nextPage : function(){
             if($(fn_policies.data_grid+" #pagina_actual").val() != $(fn_policies.data_grid+" #paginas_total").val()){
                 fn_policies.pagina_actual = (parseInt($(fn_policies.data_grid+" #pagina_actual").val()) + 1) + "";
-                fn_policies.fillgrid();
+                if(fn_policies.filtro_table == 'active'){fn_policies.fillgrid();}else if(fn_policies.filtro_table == 'expired'){fn_policies.fillgrid_expired();}
             }
         },
         lastPage : function(){
             if($(fn_policies.data_grid+" #pagina_actual").val() != $(fn_policies.data_grid+" #paginas_total").val()){
                 fn_policies.pagina_actual = $(fn_policies.data_grid+" #paginas_total").val();
-                fn_policies.fillgrid();
+                if(fn_policies.filtro_table == 'active'){fn_policies.fillgrid();}else if(fn_policies.filtro_table == 'expired'){fn_policies.fillgrid_expired();};
             }
         }, 
         ordenamiento : function(campo,objeto){
@@ -404,7 +436,7 @@ var fn_policies = {
                 fn_policies.orden = campo;
                 $(fn_policies.data_grid + " #grid-head2 td:eq("+objeto+")").addClass('down');
             }
-            fn_policies.fillgrid();
+            if(fn_policies.filtro_table == 'active'){fn_policies.fillgrid();}else if(fn_policies.filtro_table == 'expired'){fn_policies.fillgrid_expired();}
 
             return false;
         }, 
@@ -418,7 +450,9 @@ var fn_policies = {
             if($(fn_policies.data_grid+" .flt_policytype").val() != ""){ fn_policies.filtro += "sDescripcion|"+$(fn_policies.data_grid+" .flt_policytype").val()+","} 
             if($(fn_policies.data_grid+" .flt_policystartdate").val() != ""){ fn_policies.filtro += "dFechaInicio|"+$(fn_policies.data_grid+" .flt_policystartdate").val()+","} 
             if($(fn_policies.data_grid+" .flt_policyexpdate").val() != ""){ fn_policies.filtro += "dFechaCaducidad|"+$(fn_policies.data_grid+" .flt_policyexpdate").val()+","}    
-            fn_policies.fillgrid();
+            
+            if(fn_policies.filtro_table == 'active'){fn_policies.fillgrid();}else if(fn_policies.filtro_table == 'expired'){fn_policies.fillgrid_expired();}
+            
         }, 
         upload_file : function(){
             $(fn_policies.data_grid + " tbody td .btn_upload_policy").bind("click",function(){
@@ -447,13 +481,16 @@ var fn_policies = {
                 $("#file_edit_form .company_policies").empty();
             }
         },
-        get_list_description : function(policy,company){
+        get_list_description : function(policy,company,sNumeroPoliza){
 
             fn_policies.list.id_policy = policy; 
             fn_policies.list.id_company = company;
             fn_policies.list.fill_drivers_actives();
             fn_policies.list.fill_units_actives();
-            $("#driver_tabs" ).tabs('option', 'active', 0); 
+            $("#driver_tabs" ).tabs('option', 'active', 0);
+            $('#drivers_active_table').show();
+            $('#drivers_edit_form').hide(); 
+            $('#driver_list_form h2').empty().append('Policy Number: '+sNumeroPoliza);
             fn_popups.resaltar_ventana('driver_list_form');
         },
         list : {
@@ -466,6 +503,20 @@ var fn_policies = {
             orden_unit : "sVIN",
             id_policy : "",
             id_company : "",
+            cargar_polizas : function(domroot){
+                $.ajax({             
+                    type:"POST", 
+                    url:"funciones_policies.php", 
+                    data:{accion:"get_company_policies",company : fn_policies.list.id_company},
+                    async : false,
+                    dataType : "json",
+                    success : function(data){                               
+                        if(data.error == '0'){
+                            $(domroot + " .company_policies").empty().append(data.checkboxes); 
+                        }
+                    }
+                });
+            },
             filtraInformacion : function(){
                 fn_policies.list.drivers_pagina_actual = 0;
                 fn_policies.list.filtro = "";
@@ -500,7 +551,7 @@ var fn_policies = {
                         $(fn_policies.list.domroot_nav+" #drivers_active_table tfoot .paginas_total").val(data.total);
                         $(fn_policies.list.domroot_nav+" #drivers_active_table tfoot .pagina_actual").val(data.pagina);
                         fn_policies.list.drivers_pagina_actual = data.pagina; 
-                        //fn_policies.list.edit();
+                        fn_policies.list.drivers_edit();
                         //fn_policies.list.delete_confirm();
                     }
                 }); 
@@ -529,6 +580,92 @@ var fn_policies = {
                     fn_policies.list.fill_drivers_actives();
                 }
             },
+            drivers_add : function(){
+                $('#drivers_edit_form :text ').val(''); 
+                $('#drivers_edit_form #iConsecutivoCompania').val(fn_policies.list.id_company);
+                fn_policies.list.cargar_polizas('#drivers_edit_form');
+                $('#drivers_active_table').hide();
+                $('#drivers_edit_form').show();
+                
+                //fn_solotrucking.get_date('#drivers_edit_form .fecha');
+            },
+            drivers_save : function(){
+                
+                todosloscampos = $('#data_driver_form input, #data_driver_form select');
+                todosloscampos.removeClass( "error" );
+                valid = true;
+                var policies_selected = "";
+                
+                //Revsamos los valores marcados como required:
+                $("#data_driver_form .required-field" ).each(function( index ){
+                     if($(this).val() == ''){
+                        $(this).addClass('error'); 
+                        valid = false;
+                     }
+                });
+                if(!valid){fn_solotrucking.mensaje('Please check all fields are required for the driver.'); }
+                
+                $("#drivers_edit_form .company_policies .num_policies" ).each(function( index ){
+                       if(this.checked){
+                          if(policies_selected != ''){policies_selected += "," + this.value; }else{policies_selected += this.value;} 
+                       }
+                         
+                });
+                if(policies_selected == ''){valid = false;}else{$("#data_driver_form #siConsecutivosPolizas").val(policies_selected); }
+                
+                
+                if(valid){
+                    
+                    if($('#drivers_edit_form #iConsecutivo').val() != ''){struct_data_post.edit_mode = "true";}else{struct_data_post.edit_mode = "false";} 
+                    struct_data_post.action="save_driver";
+                    struct_data_post.domroot= "#data_driver_form";  
+                    $.post("funciones_policies.php",struct_data_post.parse(),
+                    function(data){
+                        fn_solotrucking.mensaje(data.msj);
+                        if(data.error == '0'){
+                            fn_policies.list.fill_drivers_actives(); 
+                            $('#drivers_active_table').show();
+                            $('#drivers_edit_form').hide();
+                        }    
+                    },"json");
+                    
+                    
+                }else{
+                   fn_solotrucking.mensaje('Please select the policies to which you want to add the driver.'); 
+                }
+
+            },
+            drivers_edit : function (){
+                $("#drivers_active_table tbody td .edit").bind("click",function(){
+                    var clave = $(this).parent().parent().find("td:eq(0)").attr('id');
+                    fn_policies.list.cargar_polizas('#drivers_edit_form');
+                    $.ajax({             
+                    type:"POST", 
+                    url:"funciones_policies.php", 
+                    data:{
+                        accion:"get_driver", 
+                        clave: clave, 
+                        company : fn_policies.list.id_company, 
+                        domroot : "drivers_edit_form"
+                    },
+                    async : false,
+                    dataType : "json",
+                    success : function(data){                               
+                        if(data.error == '0'){
+                           //$(fn_policies.form+' input, '+fn_policies.form+' select').val('').removeClass('error'); 
+                           //$(fn_policies.form + ' #sNumeroPoliza ,' + fn_policies.form + ' #iConsecutivoCompania').attr('readonly','readonly').addClass('readonly');
+                           eval(data.fields); 
+                           $('#drivers_active_table').hide();
+                           $('#drivers_edit_form').show();
+                             
+                        }else{
+                           fn_solotrucking.mensaje(data.msj);  
+                        }       
+                    }
+                    }); 
+              });  
+            },
+            //UNITS
             fill_units_actives : function(){
                  $.ajax({             
                     type:"POST", 
@@ -621,6 +758,8 @@ var fn_policies = {
             <tr id="grid-head-tools">
                 <td colspan="100%">
                     <ul>
+                        <li><div class="btn-icon add btn-left active active_policies" title="View Actived Policies "  onclick="fn_policies.pagina_actual='';fn_policies.fillgrid();"><i class="fa fa-file-text"></i></div></li> 
+                        <li><div class="btn-icon edit btn-left expired_policies" title="View Canceled & Expired Policies "  onclick="fn_policies.pagina_actual='';fn_policies.fillgrid_expired();"><i class="fa fa-file-text"></i></div></li>
                         <li><div class="btn-icon add btn-left" title="Upload drivers or units of a company"  onclick="fn_policies.upload_file_form();"><i class="fa fa-upload"></i></div></li>
                     </ul>
                 </td>
@@ -799,6 +938,7 @@ var fn_policies = {
                         <td style="width:80px;"><input class="flt_dYears num" type="text" placeholder="Years:"></td>  
                         <td style='width:120px;'>
                             <div class="btn-icon-2 btn-left" title="Search" onclick="fn_policies.list.drivers_filtraInformacion();"><i class="fa fa-search"></i></div>
+                            <div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_policies.list.drivers_add();"><i class="fa fa-plus"></i></div>
                         </td> 
                     </tr>
                     <tr id="grid-head2">
@@ -834,6 +974,52 @@ var fn_policies = {
                     </tr>
                 </tfoot>
         </table>
+        <!---- FORMULARIOS DE EDICION DRIVERS----->
+        <div id="drivers_edit_form" style="display:none;">
+           <form>
+                <div class="field_item">
+                    <label>Select policies: <span style="color:#ff0000;">*</span>:</label>  
+                    <div class="company_policies" style="padding:10px;"></div>
+                    <br>
+                </div> 
+           <fieldset id="data_driver_form">
+                <legend>Add New Driver</legend> 
+                <input type="hidden" id="iConsecutivo" value="">
+                <input type="hidden" id="iConsecutivoCompania" value="">
+                <input type="hidden" id="siConsecutivosPolizas" value="">
+                <div class="field_item"> 
+                    <label>Name <span style="color:#ff0000;">*</span>: </label>
+                    <input id="sNombre" type="text" placeholder="Please write a name..." class="txt-uppercase required-field">
+                </div>
+                <div class="field_item"> 
+                    <label>Date of Birth: </label>
+                    <input id="dFechaNacimiento" type="text" class="txt-uppercase fecha">
+                </div>
+                <div class="field_item_operador"> 
+                      <label>Licence Type: </label>
+                      <Select id="eTipoLicencia">
+                        <option value="">Select an option...</option>
+                        <option value="1">FEDERAL / B1</option>
+                        <option value="2">COMMERCIAL / CDL-1</option>
+                      </select>
+                </div>
+                <div class="field_item"> 
+                    <label>License Number: </label>
+                    <input id="iNumLicencia" class="txt-uppercase" maxlength="10" type="text" placeholder="Please write the license number...">
+                </div>
+                <div class="field_item"> 
+                    <label>Expiration Date: </label>
+                    <input id="dFechaExpiracionLicencia" type="text" class="txt-uppercase fecha">
+                </div>
+                <div class="field_item"> 
+                    <label>Experience Years: </label>
+                    <input id="iExperienciaYear" class="num txt-uppercase" type="text" placeholder="Please write only the number.">
+                </div>
+                <button type="button" class="btn-1" onclick="fn_policies.list.drivers_save();">SAVE</button>
+                <button type="button" class="btn-1" onclick="$('#drivers_active_table').show();$('#drivers_edit_form').hide();" style="margin-right:10px;background:#e8051b;">CLOSE</button>
+            </fieldset>
+            </form> 
+        </div>
       </div>
       <div id="tabs-2">
         <table id="units_active_table" class="popup-datagrid">

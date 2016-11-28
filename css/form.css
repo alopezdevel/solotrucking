@@ -16,6 +16,7 @@ legend {
   color: #333333;
   border: 0;
   border-bottom: 1px solid #e5e5e5;
+  padding-top: 10px;
 }
 button{cursor:pointer;}
 form input, form select, form textarea, .form input, .form select, .form textarea{
