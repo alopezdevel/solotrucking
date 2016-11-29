@@ -436,31 +436,98 @@
           $rows = $result->num_rows; 
           if($rows > 0){ 
             $data = $result->fetch_assoc();
-            if($data['eCategoria'] == 'DRIVER'){
-                
-            }else if($data['eCategoria'] == 'UNIT/TRAILER'){  
-                
-            }else if($data['eCategoria'] == 'BOTH'){ 
-                
-                
-            }
-            
-            /*$llaves  = array_keys($data);
-            $datos   = $data;
-            foreach($datos as $i => $b){ 
-                if($i == 'sMensaje'){
-                   $descripcion = utf8_decode($datos[$i]); 
+            if($data['eCategoria'] == 'DRIVER'){$polizas = explode(',',$data['polizas_operador']);}
+            else if($data['eCategoria'] == 'UNIT/TRAILER'){$polizas = explode(',',$data['polizas_unidad']);}
+            else if($data['eCategoria'] == 'BOTH'){ 
+                if($data['polizas_operador'] == $data['polizas_unidad']){
+                    $polizas = explode(',',$data['polizas_operador']);
                 }else{
-                   $fields .= "\$('#$domroot :input[id=".$i."]').val('".htmlentities($datos[$i])."');\n"; 
+                    $polizas_operador = explode(',',$data['polizas_operador']);
+                    $polizas_unidad = explode(',',$data['polizas_unidad']);
+                    $error = '1';
+                    $msj = "Error: The driver or unit is not added to the same policies. Please check the information in the driver and unit list.";
                 }
-            } */
+            }
+            $select = "<option value=\"\">Select an option...</option>";
+            for($i=0; $i < count($polizas); $i++) {
+                 $policy_query = "SELECT A.iConsecutivo, sNumeroPoliza, D.sDescripcion, D.iConsecutivo AS TipoPoliza, sName ".
+                                 "FROM ct_polizas A ".
+                                 "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
+                                 "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
+                                 "WHERE A.iConsecutivo = '".$polizas[$i]."' AND A.iDeleted ='0' ORDER BY sName ASC";
+                 $result_policy = $conexion->query($policy_query); 
+                 $rows = $result_policy->num_rows;
+                 if($rows>0){
+                     $poliza = $result_policy->fetch_assoc();
+                     $select .= "<option value=\"".$poliza['iConsecutivo']."\">".$poliza['sName']." - ".$poliza['sDescripcion']." /  ".$poliza['sNumeroPoliza']."</option>";
+                 }  
+            } 
+            $select .= "<option value=\"ALL\">ALL</option>";
+            $fields .= "\$('#$domroot :input[id=iConsecutivo]').val('$clave');\n";
           }else{
               $error = '1';
-              $msj = "Error: The Data ";
+              $msj = "Error: When loading information, please try again.";
           }
           $conexion->rollback();
           $conexion->close(); 
-          $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields","descripcion"=>"$descripcion");   
+          $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields","select" => "$select");   
+          echo json_encode($response);
+      }
+      function preview_email(){
+          $error = '0';
+          $msj = "";
+          $fields = "";
+          $clave = trim($_POST['iConsecutivoClaim']);
+          $iConsecutivoPoliza = trim($_POST['iConsecutivoPoliza']);
+          $sMensaje = trim(utf8_decode($_POST['sMensaje']));
+          
+          include("cn_usuarios.php");
+          $conexion->autocommit(FALSE);
+          
+          //REVISAMOS LAS POLIZAS:
+          if($iConsecutivoPoliza != 'ALL'){
+                $policy_query = "SELECT A.iConsecutivo, sNumeroPoliza, D.sDescripcion, D.iConsecutivo AS TipoPoliza, sName ".
+                                 "FROM ct_polizas A ".
+                                 "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
+                                 "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
+                                 "WHERE A.iConsecutivo = '$iConsecutivoPoliza' AND A.iDeleted ='0' ORDER BY sName ASC";
+                $result_policy = $conexion->query($policy_query); 
+                $rows = $result_policy->num_rows;
+                $poliza = $result_policy->fetch_assoc();   
+          }else{
+              
+          }
+          
+          //GET CLAIM DATA:
+          $sql = "SELECT A.iConsecutivo,A.iConsecutivoCompania,sMensaje,DATE_FORMAT(dHoraIncidente,'%h:%i %p') AS dHoraIncidente, DATE_FORMAT(dFechaIncidente,'%m/%d/%Y') AS dFechaIncidente,CONCAT(B.iConsecutivo,'-',sNombre) AS sDriver, CONCAT(C.iConsecutivo,'-',sVIN) AS sUnitTrailer, ".
+                 "B.siConsecutivosPolizas AS polizas_operador, C.siConsecutivosPolizas AS polizas_unidad, sNombreCompania, A.sEstado, A.sCiudad, eCategoria, sMensaje, eStatus ".
+                 "FROM cb_claims A ".
+                 "LEFT JOIN ct_operadores B ON A.iConsecutivoOperador = B.iConsecutivo ".
+                 "LEFT JOIN ct_unidades   C ON A.iConsecutivoUnidad   = C.iConsecutivo ".
+                 "LEFT JOIN ct_companias  D ON A.iConsecutivoCompania = D.iConsecutivo ".
+                 "WHERE A.iConsecutivo = '$clave'";
+          $result = $conexion->query($sql); 
+          $rows = $result->num_rows; 
+          $data = $result->fetch_assoc();
+          
+          $htmlTabla  = "<table style=\"width:100%;\">";
+          $htmlTabla .= "<tr><td>Subject: Application to claim from company ".$data['sNombreCompania']."</td></tr>";
+          $htmlTabla .= "<tr><td></td></tr>";
+          $htmlTabla .= "<tr><td>$sMensaje</td></tr>";
+          $htmlTabla .= "<tr><td></td></tr>"; 
+          $htmlTabla .= "<tr>"."<td style=\"text-align:center;\">Data of Incident:</td>"."</tr>"; 
+          $htmlTabla .= "<tr><td></td></tr>";
+          $htmlTabla .= "<tr>"."<td>Date and Hour: ".$data['dFechaIncidente']." at ".$data['dHoraIncidente']."</td>"."</tr>";
+          $htmlTabla .= "<tr>"."<td>State and City: ".$data['sCiudad'].", ".$data['sEstado']."</td>"."</tr>";
+          $htmlTabla .= "<tr>"."<td>What happend?:</td>"."</tr>";
+          $htmlTabla .= "<tr>"."<td>".$data['sMensaje']."</td>"."</tr>";
+          
+          $htmlTabla .= "</table>";
+          
+
+          $conexion->rollback();
+          $conexion->close(); 
+          $response = array("msj"=>"$msj","error"=>"$error","tabla" => "$htmlTabla");   
           echo json_encode($response);
       }
 ?>
