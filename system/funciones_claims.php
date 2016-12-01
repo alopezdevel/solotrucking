@@ -213,13 +213,13 @@
         $parametros == '' ? $parametros .= " siConsecutivosPolizas LIKE '%".$iConsecutivosPolizas[$i]."%' " : $parametros .= " OR siConsecutivosPolizas LIKE '%".$iConsecutivosPolizas[$i]."%' "; 
     }  
 
-    $query = "SELECT iConsecutivo,iModelo,sVIN,sTipo FROM ct_unidades WHERE iConsecutivoCompania = '$company' AND inPoliza = '1' AND ($parametros) AND sVIN != ''"; 
+    $query = "SELECT iConsecutivo,iModelo,sVIN,sTipo,iYear FROM ct_unidades WHERE iConsecutivoCompania = '$company' AND inPoliza = '1' AND ($parametros) AND sVIN != ''"; 
     $result = $conexion->query($query);
     $rows = $result->num_rows; 
     $r = 0;  
     if($rows > 0){  
         while ($response = $result->fetch_assoc()){
-            $respuesta == '' ? $respuesta .= '"'.$response["sVIN"].'-'.utf8_encode($response["sTipo"]).'"' : $respuesta .= ',"'.$response["sVIN"].'-'.utf8_encode($response["sTipo"]).'"';
+            $respuesta == '' ? $respuesta .= '"'.$response["iConsecutivo"].'-'.$response["sVIN"].'/'.utf8_encode($response["iYear"]).'"' : $respuesta .= ',"'.$response["iConsecutivo"].'-'.$response["sVIN"].'/'.utf8_encode($response["iYear"]).'"';
         } 
     }
     $respuesta = "[".$respuesta."]";
@@ -354,6 +354,7 @@
           //TRANSACTION...
           if($sql != ""){
               if($conexion->query($sql)){
+                  $_POST['edit_mode'] != 'true' ? $iConsecutivoClaim = $conexion->insert_id :  $iConsecutivoClaim = "";
                   $conexion->commit();
                   $conexion->close();
               }else{
@@ -372,7 +373,7 @@
           $mensaje = "Error: Please select a driver or unit/trailer of your lists.";
       }
       
-      $response = array("error"=>"$error","msj"=>"$mensaje");
+      $response = array("error"=>"$error","msj"=>"$mensaje", "iConsecutivoClaim" => "$iConsecutivoClaim");
       echo json_encode($response);
       
   }
@@ -399,7 +400,7 @@
         $datos   = $data;
         foreach($datos as $i => $b){ 
             if($i == 'sMensaje'){
-               $descripcion = utf8_decode($datos[$i]); 
+               $descripcion = utf8_decode(utf8_encode($datos[$i]));  
             }else{
                $fields .= "\$('#$domroot :input[id=".$i."]').val('".htmlentities($datos[$i])."');\n"; 
             }

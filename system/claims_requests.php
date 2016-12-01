@@ -93,7 +93,7 @@ var fn_claims = {
             /*----------- CARGANDO DRIVERS Y UNITS ----------*/
             $.ajax({
                 type: "POST",
-                url : "funciones_claims_requests.php",
+                url : "funciones_claims.php",
                 data: {
                     "accion" : "get_drivers"
                 },
@@ -107,7 +107,7 @@ var fn_claims = {
             });
             $.ajax({
                 type: "POST",
-                url : "funciones_claims_requests.php",
+                url : "funciones_claims.php",
                 data: {
                     "accion" : "get_units"
                 },
@@ -118,7 +118,17 @@ var fn_claims = {
                     $("#sUnitTrailer").autocomplete();
                     $("#sUnitTrailer").autocomplete({source:datos});
                 }
-            });sUnitTrailer
+            });
+            $.ajax({             
+                type:"POST", 
+                url:"catalogos_generales.php", 
+                data:{accion:"get_companies"},
+                async : true,
+                dataType : "json",
+                success : function(data){
+                    $("#edit_form #iConsecutivoCompania").empty().append(data.select);
+                }
+            });
             
             
             // UPLOAD FILES SCRIPT
@@ -146,6 +156,7 @@ var fn_claims = {
                             case '0':
                                 this.enable();
                                 fn_solotrucking.mensaje(respuesta.mensaje);
+                                fn_claims.files.iConsecutivoClaim = $('#edit_form #iConsecutivo').val();
                                 fn_claims.files.fillgrid(); 
                             break;
                             case '1':
@@ -181,6 +192,7 @@ var fn_claims = {
                     fn_claims.edit();
                     fn_claims.send();
                     fn_claims.send_claim();
+                    fn_claims.edit_estatus();
                 }
             }); 
         },
@@ -297,7 +309,7 @@ var fn_claims = {
            
        },
        edit: function(){
-            $(fn_claims.data_grid + " tbody td .edit").bind("click",function(){
+            $(fn_claims.data_grid + " tbody td .btn_edit").bind("click",function(){
                     var clave = $(this).parent().parent().find("td:eq(0)").html();
                     $.post("funciones_claims_requests.php",
                     {
@@ -323,7 +335,7 @@ var fn_claims = {
        send_claim: function(){
             $(fn_claims.data_grid + " tbody td .btn_send_claim").bind("click",function(){
                     var clave = $(this).parent().parent().find("td:eq(0)").html();
-                    $.post("funciones_claims_requests.php",{accion:"get_claim_policies", clave: clave, domroot : "form_send_claim"},
+                   /* $.post("funciones_claims_requests.php",{accion:"get_claim_policies", clave: clave, domroot : "form_send_claim"},
                     function(data){
                         if(data.error == '0'){
                            $('#form_send_claim input, #form_send_claim textarea').val('').removeClass('error');
@@ -333,7 +345,11 @@ var fn_claims = {
                         }else{
                            fn_solotrucking.mensaje(data.msj);  
                         }       
-            },"json");
+                    },"json"); */
+                    $('#form_send_claim input, #form_send_claim textarea').val('').removeClass('error');
+                    $('#form_send_claim #iConsecutivo').val(clave);
+                    fn_popups.resaltar_ventana('form_send_claim');
+            
             });
        },
        send : function(){
@@ -441,8 +457,8 @@ var fn_claims = {
            
        },
        preview_email : function(){
-          $('#form_send_claim #policies_claim').removeClass('error'); 
-          if($('#form_send_claim #policies_claim').val() != ''){
+          //$('#form_send_claim #policies_claim').removeClass('error'); 
+          //if($('#form_send_claim #policies_claim').val() != ''){
              $.ajax({             
                 type:"POST", 
                 url:"funciones_claims_requests.php", 
@@ -462,8 +478,67 @@ var fn_claims = {
                     
                 }
              });   
-          }else{fn_solotrucking.mensaje('Please first select an option from your policies');$('#form_send_claim #policies_claim').addClass('error');} 
-       }           
+         // }else{fn_solotrucking.mensaje('Please first select an option from your policies');$('#form_send_claim #policies_claim').addClass('error');} 
+       },    
+       send_email : function(){
+          $('#form_send_claim input').removeClass('error'); 
+          if($('#form_send_claim #sEmail').val() != ''){
+             $.ajax({             
+                type:"POST", 
+                url:"funciones_claims_requests.php", 
+                data:{
+                    accion:"send_email",
+                    iConsecutivoClaim  : $('#form_send_claim #iConsecutivo').val(),
+                    sEmail             : $('#form_send_claim #sEmail').val(),
+                    sMensaje           : $('#form_send_claim #sMensajeEmail').val(),
+                },
+                async : true,
+                dataType : "json",
+                success : function(data){                               
+                    if(data.error == '0'){
+                          fn_solotrucking.mensaje(data.msj);
+                          fn_claims.fillgrid();
+                          fn_popups.cerrar_ventana('form_send_claim');
+                    }
+                    
+                }
+             });   
+         }else{fn_solotrucking.mensaje('Please write the emails to send the claim');$('#form_send_claim #sEmail').addClass('error');} 
+       },
+       edit_estatus : function(){
+           $(fn_claims.data_grid + " tbody td .btn_change_status").bind("click",function(){
+                    var clave = $(this).parent().parent().find("td:eq(0)").html();
+                    $('#form_change_estatus input, #form_change_estatus select').val('');
+                    $('#form_change_estatus #iConsecutivo').val(clave);
+                    fn_popups.resaltar_ventana('form_change_estatus');
+                    
+           });  
+       },
+       save_estatus : function(){
+          $('#form_change_estatus #eStatus').removeClass('error'); 
+          if($('#form_change_estatus #eStatus').val() != ''){
+             $.ajax({             
+                type:"POST", 
+                url:"funciones_claims_requests.php", 
+                data:{
+                    accion:"save_estatus",
+                    iConsecutivoClaim  : $('#form_change_estatus #iConsecutivo').val(),
+                    eStatus : $('#form_change_estatus #eStatus').val(),
+                },
+                async : true,
+                dataType : "json",
+                success : function(data){                               
+                    if(data.error == '0'){
+                          fn_solotrucking.mensaje(data.msj);
+                          fn_claims.fillgrid();
+                          fn_popups.cerrar_ventana('form_send_claim');
+                    }
+                    
+                }
+             });   
+          }else{fn_solotrucking.mensaje('Please first select a status before you press save.');$('#form_change_estatus #eStatus').addClass('error');}  
+           
+       },                  
 }    
 
  
@@ -566,7 +641,17 @@ var fn_claims = {
             </table> ---->
             <fieldset id="general_information">
                 <legend>INFORMATION FROM INCIDENT</legend>
-                <table style="width: 100%;">
+                <table style="width: 100%;"> 
+                <tr>
+                    <td colspan="2">
+                    <div class="field_item">
+                        <label>Company <span style="color:#ff0000;">*</span>:</label>  
+                        <select id="iConsecutivoCompania"  name="iConsecutivoCompania" class="readonly" disabled="disabled">
+                            <option value="">Select an option...</option>
+                        </select>
+                    </div> 
+                    </td>
+                </tr> 
                 <tr>
                     <td style="width: 50%;">
                     <div class="field_item">
@@ -680,19 +765,19 @@ var fn_claims = {
                 <legend>INFORMATION TO SEND BY E-MAIL</legend>
                 <input id="iConsecutivo" type="hidden" value="">
                 <table style="width: 100%;">
-                <tr>
+                <!--<tr>
                     <td colspan="100%">
                     <div class="field_item">
                         <label>This claim involves the following policies, please select the one you wish to send the e-mail: <span style="color:#ff0000;">*</span>:</label><br> 
                         <select tabindex="1" id="policies_claim"><option value="">Select an option...</option></select>
                     </div>
                     </td>
-                </tr>
+                </tr>--->
                 <tr>
                     <td colspan="100%">
                     <div class="field_item">
                         <label>Write the e-mail(s) to send the claim: <span style="color:#ff0000;">*</span>:</label><br> 
-                        <input tabindex="2" id="sEmail" type="text" title="If you need to write more than one email, please separate them by comma symbol (,)."> 
+                        <input tabindex="2" id="sEmail" type="text" title="If you need to write more than one email, please separate them by comma symbol (,)." placeholder="For Ex: email@domain.com,email@domain.com"> 
                     </div>
                     </td>
                 </tr>
@@ -723,6 +808,40 @@ var fn_claims = {
         <div id="preview_email" class="letter-back"></div>
     <div>
         <button type="button" class="btn-1" onclick="$('#form_preview_email').hide();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
+    </div>
+    </div>
+</div>
+<!---- change the status of claim --->
+<!---- FORMULARIOS ------>
+<div id="form_change_estatus" class="popup-form">
+    <div class="p-header">
+        <h2>CLAIMS / Change the status of claim</h2>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('form_change_estatus');"><i class="fa fa-times"></i></div>
+    </div>
+    <div class="p-container"> 
+    <input id="iConsecutivo" type="hidden" value="">
+    <form>
+    <fieldset>
+    <legend>Change the status of claim</legend>
+    <table style="width: 100%;">
+    <tr class="claim_estatus">
+        <td colspan="2">
+        <div class="field_item">
+            <label>If the claim is already approved or denied please confirm with the following field, to have a record in the system.</label>  
+            <select id="eStatus"  name="eStatus">
+                <option value="">Select an option...</option>
+                <option value="CANCELED">Canceled or Denied</option>
+                <option value="APPROVED">Approved</option>
+            </select>
+        </div> 
+        </td>
+    </tr>
+    </table> 
+    </fieldset>
+    </form>   
+    <div>
+        <button type="button" class="btn-1" onclick="fn_claims.save_estatus();">SAVE</button> 
+        <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_change_estatus');" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
     </div>
     </div>
 </div>

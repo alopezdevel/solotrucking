@@ -146,6 +146,7 @@ var fn_claims = {
                             case '0':
                                 this.enable();
                                 fn_solotrucking.mensaje(respuesta.mensaje);
+                                fn_claims.files.iConsecutivoClaim = $('#edit_form #iConsecutivo').val();
                                 fn_claims.files.fillgrid(); 
                             break;
                             case '1':
@@ -243,7 +244,7 @@ var fn_claims = {
                 fn_claims.fillgrid();
        },
        add : function(){
-          $('#edit_form :text, #edit_form select').val('').removeClass('error');
+          $('#edit_form input, #edit_form select, #edit_form textarea').val('').removeClass('error');
           $('#edit_form .mensaje_valido').empty().append('The fields containing an (<span style="color:#ff0000;">*</span>) are required.');
           $('#edit_form .p-header h2').empty().append('CLAIMS - NEW APPLICATION');
           fn_solotrucking.get_date(".fecha"); 
@@ -287,6 +288,7 @@ var fn_claims = {
                     switch(data.error){
                      case '0':
                         fn_solotrucking.mensaje(data.msj);
+                        if(data.iConsecutivoClaim != ''){$('#edit_form #iConsecutivo').val(data.iConsecutivoClaim);}
                      break;
                      case '1': fn_solotrucking.mensaje(data.msj); break;
                     }

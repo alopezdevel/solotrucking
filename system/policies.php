@@ -937,7 +937,7 @@ var fn_policies = {
                         <td><input class="flt_dExpire flt_fecha" type="text" placeholder="MM-DD-YY"></td> 
                         <td style="width:80px;"><input class="flt_dYears num" type="text" placeholder="Years:"></td>  
                         <td style='width:120px;'>
-                            <div class="btn-icon-2 btn-left" title="Search" onclick="fn_policies.list.drivers_filtraInformacion();"><i class="fa fa-search"></i></div>
+                            <div class="btn-icon-2 btn-left" title="Search" onclick="fn_policies.list.filtraInformacion();"><i class="fa fa-search"></i></div>
                             <div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_policies.list.drivers_add();"><i class="fa fa-plus"></i></div>
                         </td> 
                     </tr>

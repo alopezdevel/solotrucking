@@ -62,7 +62,7 @@
                              break;
                              case 'INPROCESS': 
                                 $class = "class = \"yellow\""; 
-                                $btn_confirm = ""; 
+                                $btn_confirm = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of claim\"><i class=\"fa fa-pencil-square-o\"></i><span></span></div>"; 
                              break;
                              case 'APPROVED': 
                                 $class = "class = \"green\"";
@@ -124,7 +124,7 @@
             $datos   = $data;
             foreach($datos as $i => $b){ 
                 if($i == 'sMensaje'){
-                   $descripcion = utf8_decode($datos[$i]); 
+                   $descripcion = utf8_decode(utf8_encode($datos[$i])); 
                 }else{
                    $fields .= "\$('#$domroot :input[id=".$i."]').val('".htmlentities($datos[$i])."');\n"; 
                 }
@@ -226,7 +226,7 @@
                 else if($driverID != ''){array_push($valores ,"eCategoria='DRIVER'");}
                 else if($unitID != ''){array_push($valores ,"eCategoria='UNIT/TRAILER'"); } 
                 
-                $sql = "UPDATE cb_claims SET ".implode(",",$valores)." WHERE iConsecutivo = '".trim($_POST['iConsecutivo'])."' AND iConsecutivoCompania = '$company'";
+                $sql = "UPDATE cb_claims SET ".implode(",",$valores)." WHERE iConsecutivo = '".trim($_POST['iConsecutivo'])."'";
                 $mensaje = "The data was updated successfully.";
                 
               }else{
@@ -499,28 +499,140 @@
           }
           
           //GET CLAIM DATA:
-          $sql = "SELECT A.iConsecutivo,A.iConsecutivoCompania,sMensaje,DATE_FORMAT(dHoraIncidente,'%h:%i %p') AS dHoraIncidente, DATE_FORMAT(dFechaIncidente,'%m/%d/%Y') AS dFechaIncidente,CONCAT(B.iConsecutivo,'-',sNombre) AS sDriver, CONCAT(C.iConsecutivo,'-',sVIN) AS sUnitTrailer, ".
+          $sql = "SELECT A.iConsecutivo,A.iConsecutivoCompania,sMensaje,DATE_FORMAT(dHoraIncidente,'%h:%i %p') AS dHoraIncidente, DATE_FORMAT(dFechaIncidente,'%m/%d/%Y') AS dFechaIncidente,sNombre AS sDriver, sVIN AS sUnitTrailer, ".
+                 "iYear AS UnitYear, sTipo AS UnitType, E.sDescripcion AS UnitMake, iNumLicencia, (CASE WHEN eTipoLicencia = '1' THEN 'Federal/B1' WHEN eTipoLicencia = '2' THEN 'Commercial/CDL - A' END) AS eTipoLicencia, ".
                  "B.siConsecutivosPolizas AS polizas_operador, C.siConsecutivosPolizas AS polizas_unidad, sNombreCompania, A.sEstado, A.sCiudad, eCategoria, sMensaje, eStatus ".
                  "FROM cb_claims A ".
                  "LEFT JOIN ct_operadores B ON A.iConsecutivoOperador = B.iConsecutivo ".
                  "LEFT JOIN ct_unidades   C ON A.iConsecutivoUnidad   = C.iConsecutivo ".
                  "LEFT JOIN ct_companias  D ON A.iConsecutivoCompania = D.iConsecutivo ".
+                 "LEFT JOIN ct_unidad_modelo E ON C.iModelo = E.iConsecutivo ".
                  "WHERE A.iConsecutivo = '$clave'";
           $result = $conexion->query($sql); 
           $rows = $result->num_rows; 
           $data = $result->fetch_assoc();
           
           $htmlTabla  = "<table style=\"width:100%;\">";
-          $htmlTabla .= "<tr><td>Subject: Application to claim from company ".$data['sNombreCompania']."</td></tr>";
+          $htmlTabla .= "<tr><td style=\"height: 30px;text-transform: uppercase;font-weight: bold;\">Subject: Solo-Trucking Insurance application to claim from company ".$data['sNombreCompania']."</td></tr>";
           $htmlTabla .= "<tr><td></td></tr>";
           $htmlTabla .= "<tr><td>$sMensaje</td></tr>";
           $htmlTabla .= "<tr><td></td></tr>"; 
-          $htmlTabla .= "<tr>"."<td style=\"text-align:center;\">Data of Incident:</td>"."</tr>"; 
+          $htmlTabla .= "<tr>"."<td style=\"text-align:center;font-weight: bold;\">Data of Incident</td>"."</tr>"; 
           $htmlTabla .= "<tr><td></td></tr>";
-          $htmlTabla .= "<tr>"."<td>Date and Hour: ".$data['dFechaIncidente']." at ".$data['dHoraIncidente']."</td>"."</tr>";
-          $htmlTabla .= "<tr>"."<td>State and City: ".$data['sCiudad'].", ".$data['sEstado']."</td>"."</tr>";
-          $htmlTabla .= "<tr>"."<td>What happend?:</td>"."</tr>";
+          $htmlTabla .= "<tr>"."<td><span style=\"font-weight: bold;\">Date and Hour: </span>".$data['dFechaIncidente']." at ".$data['dHoraIncidente']."</td>"."</tr>";
+          $htmlTabla .= "<tr>"."<td><span style=\"font-weight: bold;\">State and City: </span>".$data['sCiudad'].", ".$data['sEstado']."</td>"."</tr>";
+          $htmlTabla .= "<tr>"."<td><span style=\"font-weight: bold;\">What happend?: </span></td>"."</tr>";
           $htmlTabla .= "<tr>"."<td>".$data['sMensaje']."</td>"."</tr>";
+          
+          if($data['sDriver'] != '' && ($data['eCategoria'] = 'BOTH' || $data['eCategoria'] = 'DRIVER')){
+              $htmlTabla .= "<tr><td><hr></td></tr>"; 
+              $htmlTabla .= "<tr>"."<td style=\"text-align:center;font-weight: bold;\">Data of Driver</td>"."</tr>";
+              $htmlTabla .= "<tr><td>";
+              /*$htmlTabla .= "<table style=\"width:100%\">";
+              $htmlTabla .= "<tr><td style=\"font-weight: bold;\">Name</td>".
+                            "<td style=\"font-weight: bold;\">License Number</td>".
+                            "<td style=\"font-weight: bold;\">License Type</td>".
+                            "<td style=\"font-weight: bold;\">Is in Policies</td></tr>";
+              $htmlTabla .= "<tr><td>".$data['sDriver']."</td>".
+                            "<td>".$data['iNumLicencia']."</td>".
+                            "<td>".$data['eTipoLicencia']."</td>";
+              //Get Policies:
+              $polizas = explode(',',$data['polizas_operador']);
+              $htmlTabla .= "<td style=\"width: 350px;\">";
+              for($i=0; $i < count($polizas); $i++) {
+                 $policy_query = "SELECT A.iConsecutivo, sNumeroPoliza, D.sDescripcion, D.iConsecutivo AS TipoPoliza, sName ".
+                                 "FROM ct_polizas A ".
+                                 "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
+                                 "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
+                                 "WHERE A.iConsecutivo = '".$polizas[$i]."' AND A.iDeleted ='0' ORDER BY sName ASC";
+                 $result_policy = $conexion->query($policy_query); 
+                 $rows = $result_policy->num_rows;
+                 if($rows>0){
+                     $poliza = $result_policy->fetch_assoc();
+                     $htmlTabla .= "<span style=\"display:block;\">".$poliza['sNumeroPoliza']." / ".$poliza['sDescripcion']." - ".$poliza['sName']."</span>";
+                 }  
+              } 
+              $htmlTabla .= "</td>";
+              $htmlTabla .= "</tr></table>";*/
+              
+              $htmlTabla .= "<span style=\"font-weight: bold;\">Name:</span> ".$data['sDriver']."<br>".
+                            "<span style=\"font-weight: bold;\">License Number</span> ".$data['iNumLicencia']."<br>".
+                            "<span style=\"font-weight: bold;\">License Type</span> ".$data['eTipoLicencia']."<br>".
+                            "<span style=\"font-weight: bold;\">Is in Policies</span><br>";
+              //Get Policies:
+              $polizas = explode(',',$data['polizas_operador']);
+              for($i=0; $i < count($polizas); $i++) {
+                 $policy_query = "SELECT A.iConsecutivo, sNumeroPoliza, D.sDescripcion, D.iConsecutivo AS TipoPoliza, sName ".
+                                 "FROM ct_polizas A ".
+                                 "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
+                                 "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
+                                 "WHERE A.iConsecutivo = '".$polizas[$i]."' AND A.iDeleted ='0' ORDER BY sName ASC";
+                 $result_policy = $conexion->query($policy_query); 
+                 $rows = $result_policy->num_rows;
+                 if($rows>0){
+                     $poliza = $result_policy->fetch_assoc();
+                     $htmlTabla .= "<span style=\"display:block;\">".$poliza['sNumeroPoliza']." / ".$poliza['sDescripcion']." - ".$poliza['sName']."</span>";
+                 }  
+              } 
+
+              $htmlTabla .= "</td></tr>";
+              $htmlTabla .= "</td></tr>"; 
+          }
+          if($data['sUnitTrailer'] != '' && ($data['eCategoria'] = 'BOTH' || $data['eCategoria'] = 'UNIT/TRAILER')){
+              $data['UnitType'] == 'UNIT' ? $type = 'Unit' : $type = 'Trailer';
+              $htmlTabla .= "<tr><td><hr></td></tr>"; 
+              $htmlTabla .= "<tr>"."<td style=\"text-align:center;font-weight: bold;\">Data of $type</td>"."</tr>";
+              $htmlTabla .= "<tr><td>";
+              /*$htmlTabla .= "<table style=\"width:100%\">";
+              $htmlTabla .= "<tr><td style=\"font-weight: bold;\">VIN#</td>".
+                            "<td style=\"font-weight: bold;\">YEAR</td>".
+                            "<td style=\"font-weight: bold;\">MAKE</td>".
+                            "<td style=\"font-weight: bold;\">Is in Policies</td></tr>";
+              $htmlTabla .= "<tr><td>".$data['sUnitTrailer']."</td>".
+                            "<td>".$data['UnitYear']."</td>".
+                            "<td>".$data['UnitMake']."</td>";
+              //Get Policies:
+              $polizas = explode(',',$data['polizas_unidad']);
+              $htmlTabla .= "<td style=\"width: 350px;\">";
+              for($i=0; $i < count($polizas); $i++) {
+                 $policy_query = "SELECT A.iConsecutivo, sNumeroPoliza, D.sDescripcion, D.iConsecutivo AS TipoPoliza, sName ".
+                                 "FROM ct_polizas A ".
+                                 "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
+                                 "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
+                                 "WHERE A.iConsecutivo = '".$polizas[$i]."' AND A.iDeleted ='0' ORDER BY sName ASC";
+                 $result_policy = $conexion->query($policy_query); 
+                 $rows = $result_policy->num_rows;
+                 if($rows>0){
+                     $poliza = $result_policy->fetch_assoc();
+                     $htmlTabla .= "<span style=\"display:block;\">".$poliza['sNumeroPoliza']." / ".$poliza['sDescripcion']." - ".$poliza['sName']."</span>";
+                 }  
+              } 
+              $htmlTabla .= "</td>"; 
+              $htmlTabla .= "</tr></table>"; */
+              
+                       
+              $htmlTabla .= "<span style=\"font-weight: bold;\">VIN#:</span> ".$data['sUnitTrailer']."<br>".
+                            "<span style=\"font-weight: bold;\">Year:</span> ".$data['UnitYear']."<br>".
+                            "<span style=\"font-weight: bold;\">Make:</span> ".$data['UnitMake']."<br>".
+                            "<span style=\"font-weight: bold;\">Is in Policies</span><br>";
+              //Get Policies:
+              $polizas = explode(',',$data['polizas_unidad']);
+              for($i=0; $i < count($polizas); $i++) {
+                 $policy_query = "SELECT A.iConsecutivo, sNumeroPoliza, D.sDescripcion, D.iConsecutivo AS TipoPoliza, sName ".
+                                 "FROM ct_polizas A ".
+                                 "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
+                                 "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
+                                 "WHERE A.iConsecutivo = '".$polizas[$i]."' AND A.iDeleted ='0' ORDER BY sName ASC";
+                 $result_policy = $conexion->query($policy_query); 
+                 $rows = $result_policy->num_rows;
+                 if($rows>0){
+                     $poliza = $result_policy->fetch_assoc();
+                     $htmlTabla .= "<span style=\"display:block;\">".$poliza['sNumeroPoliza']." / ".$poliza['sDescripcion']." - ".$poliza['sName']."</span>";
+                 }  
+              } 
+
+              $htmlTabla .= "</td></tr>"; 
+          }
           
           $htmlTabla .= "</table>";
           
@@ -529,5 +641,264 @@
           $conexion->close(); 
           $response = array("msj"=>"$msj","error"=>"$error","tabla" => "$htmlTabla");   
           echo json_encode($response);
+      }
+      function send_email(){
+          $error = '0';
+          $msj = "";
+          $fields = "";
+          $clave = trim($_POST['iConsecutivoClaim']);
+          $sEmail = trim(strtolower($_POST['sEmail']));
+          $sMensaje = trim(utf8_decode($_POST['sMensaje']));
+          
+          include("cn_usuarios.php");
+          $conexion->autocommit(FALSE);
+          //$conexion->beginTransaction();
+          
+          //GET CLAIM DATA:
+          $sql = "SELECT A.iConsecutivo,A.iConsecutivoCompania,sMensaje,DATE_FORMAT(dHoraIncidente,'%h:%i %p') AS dHoraIncidente, DATE_FORMAT(dFechaIncidente,'%m/%d/%Y') AS dFechaIncidente,sNombre AS sDriver, sVIN AS sUnitTrailer, ".
+                 "iYear AS UnitYear, sTipo AS UnitType, E.sDescripcion AS UnitMake, iNumLicencia, (CASE WHEN eTipoLicencia = '1' THEN 'Federal/B1' WHEN eTipoLicencia = '2' THEN 'Commercial/CDL - A' END) AS eTipoLicencia, ".
+                 "B.siConsecutivosPolizas AS polizas_operador, C.siConsecutivosPolizas AS polizas_unidad, sNombreCompania, A.sEstado, A.sCiudad, eCategoria, sMensaje, eStatus ".
+                 "FROM cb_claims A ".
+                 "LEFT JOIN ct_operadores B ON A.iConsecutivoOperador = B.iConsecutivo ".
+                 "LEFT JOIN ct_unidades   C ON A.iConsecutivoUnidad   = C.iConsecutivo ".
+                 "LEFT JOIN ct_companias  D ON A.iConsecutivoCompania = D.iConsecutivo ".
+                 "LEFT JOIN ct_unidad_modelo E ON C.iModelo = E.iConsecutivo ".
+                 "WHERE A.iConsecutivo = '$clave'";
+          $result = $conexion->query($sql); 
+          $rows = $result->num_rows; 
+          $data = $result->fetch_assoc();
+          
+          $htmlTabla  = "<table style=\"font-size:12px;border:1px solid #6191df;border-radius:3px;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">";
+          $htmlTabla .= "<tr><td style=\"height: 30px;text-transform: uppercase;font-weight: bold;color:#313131;text-transform: uppercase; text-align:center;\">Solo-Trucking Insurance application to claim from company ".$data['sNombreCompania']."</td></tr>";
+          $htmlTabla .= "<tr><td></td></tr>";
+          $htmlTabla .= "<tr><td>$sMensaje</td></tr>";
+          $htmlTabla .= "<tr><td></td></tr>"; 
+          $htmlTabla .= "<tr>"."<td style=\"text-align:center;font-weight: bold;\">Data of Incident</td>"."</tr>"; 
+          $htmlTabla .= "<tr><td></td></tr>";
+          $htmlTabla .= "<tr>"."<td><span style=\"font-weight: bold;\">Date and Hour: </span>".$data['dFechaIncidente']." at ".$data['dHoraIncidente']."</td>"."</tr>";
+          $htmlTabla .= "<tr>"."<td><span style=\"font-weight: bold;\">State and City: </span>".$data['sCiudad'].", ".$data['sEstado']."</td>"."</tr>";
+          $htmlTabla .= "<tr>"."<td><span style=\"font-weight: bold;\">What happend?: </span></td>"."</tr>";
+          $htmlTabla .= "<tr>"."<td>".$data['sMensaje']."</td>"."</tr>";
+          
+          if($data['sDriver'] != '' && ($data['eCategoria'] = 'BOTH' || $data['eCategoria'] = 'DRIVER')){
+              $htmlTabla .= "<tr><td><hr></td></tr>"; 
+              $htmlTabla .= "<tr>"."<td style=\"text-align:center;font-weight: bold;\">Data of Driver</td>"."</tr>";
+              $htmlTabla .= "<tr><td>";
+              /*$htmlTabla .= "<table style=\"width:100%;font-family: Arial, Helvetica, sans-serif;font-size:12px;\">";
+              $htmlTabla .= "<tr><td style=\"font-weight: bold;\">Name</td>".
+                            "<td style=\"font-weight: bold;\">License Number</td>".
+                            "<td style=\"font-weight: bold;\">License Type</td>".
+                            "<td style=\"font-weight: bold;\">Is in Policies</td></tr>";
+              $htmlTabla .= "<tr><td>".$data['sDriver']."</td>".
+                            "<td>".$data['iNumLicencia']."</td>".
+                            "<td>".$data['eTipoLicencia']."</td>";
+              //Get Policies:
+              $polizas = explode(',',$data['polizas_operador']);
+              $htmlTabla .= "<td style=\"width: 350px;\">";
+              for($i=0; $i < count($polizas); $i++) {
+                 $policy_query = "SELECT A.iConsecutivo, sNumeroPoliza, D.sDescripcion, D.iConsecutivo AS TipoPoliza, sName ".
+                                 "FROM ct_polizas A ".
+                                 "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
+                                 "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
+                                 "WHERE A.iConsecutivo = '".$polizas[$i]."' AND A.iDeleted ='0' ORDER BY sName ASC";
+                 $result_policy = $conexion->query($policy_query); 
+                 $rows = $result_policy->num_rows;
+                 if($rows>0){
+                     $poliza = $result_policy->fetch_assoc();
+                     $htmlTabla .= "<span style=\"display:block;\">".$poliza['sNumeroPoliza']." / ".$poliza['sDescripcion']." - ".$poliza['sName']."</span>";
+                 }  
+              } 
+              $htmlTabla .= "</td>";
+              $htmlTabla .= "</tr></table>";*/
+              $htmlTabla .= "<span style=\"font-weight: bold;\">Name:</span> ".$data['sDriver']."<br>".
+                            "<span style=\"font-weight: bold;\">License Number</span> ".$data['iNumLicencia']."<br>".
+                            "<span style=\"font-weight: bold;\">License Type</span> ".$data['eTipoLicencia']."<br>".
+                            "<span style=\"font-weight: bold;\">Is in Policies</span><br>";
+              //Get Policies:
+              $polizas = explode(',',$data['polizas_operador']);
+              for($i=0; $i < count($polizas); $i++) {
+                 $policy_query = "SELECT A.iConsecutivo, sNumeroPoliza, D.sDescripcion, D.iConsecutivo AS TipoPoliza, sName ".
+                                 "FROM ct_polizas A ".
+                                 "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
+                                 "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
+                                 "WHERE A.iConsecutivo = '".$polizas[$i]."' AND A.iDeleted ='0' ORDER BY sName ASC";
+                 $result_policy = $conexion->query($policy_query); 
+                 $rows = $result_policy->num_rows;
+                 if($rows>0){
+                     $poliza = $result_policy->fetch_assoc();
+                     $htmlTabla .= "<span style=\"display:block;\">".$poliza['sNumeroPoliza']." / ".$poliza['sDescripcion']." - ".$poliza['sName']."</span>";
+                 }  
+              } 
+              $htmlTabla .= "</td></tr>"; 
+          }
+          if($data['sUnitTrailer'] != '' && ($data['eCategoria'] = 'BOTH' || $data['eCategoria'] = 'UNIT/TRAILER')){
+              $data['UnitType'] == 'UNIT' ? $type = 'Unit' : $type = 'Trailer';
+              $htmlTabla .= "<tr><td><hr></td></tr>"; 
+              $htmlTabla .= "<tr>"."<td style=\"text-align:center;font-weight: bold;\">Data of $type</td>"."</tr>";
+              $htmlTabla .= "<tr><td>";
+              /*$htmlTabla .= "<table style=\"width:100%;font-family: Arial, Helvetica, sans-serif;font-size:12px;\">";
+              $htmlTabla .= "<tr><td style=\"font-weight: bold;\">VIN#</td>".
+                            "<td style=\"font-weight: bold;\">YEAR</td>".
+                            "<td style=\"font-weight: bold;\">MAKE</td>".
+                            "<td style=\"font-weight: bold;\">Is in Policies</td></tr>";
+              $htmlTabla .= "<tr><td>".$data['sUnitTrailer']."</td>".
+                            "<td>".$data['UnitYear']."</td>".
+                            "<td>".$data['UnitMake']."</td>";
+              //Get Policies:
+              $polizas = explode(',',$data['polizas_unidad']);
+              $htmlTabla .= "<td style=\"width: 350px;\">";
+              for($i=0; $i < count($polizas); $i++) {
+                 $policy_query = "SELECT A.iConsecutivo, sNumeroPoliza, D.sDescripcion, D.iConsecutivo AS TipoPoliza, sName ".
+                                 "FROM ct_polizas A ".
+                                 "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
+                                 "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
+                                 "WHERE A.iConsecutivo = '".$polizas[$i]."' AND A.iDeleted ='0' ORDER BY sName ASC";
+                 $result_policy = $conexion->query($policy_query); 
+                 $rows = $result_policy->num_rows;
+                 if($rows>0){
+                     $poliza = $result_policy->fetch_assoc();
+                     $htmlTabla .= "<span style=\"display:block;\">".$poliza['sNumeroPoliza']." / ".$poliza['sDescripcion']." - ".$poliza['sName']."</span>";
+                 }  
+              } 
+              $htmlTabla .= "</td>"; 
+              $htmlTabla .= "</tr></table>"; */
+              $htmlTabla .= "<span style=\"font-weight: bold;\">VIN#:</span> ".$data['sUnitTrailer']."<br>".
+                            "<span style=\"font-weight: bold;\">Year:</span> ".$data['UnitYear']."<br>".
+                            "<span style=\"font-weight: bold;\">Make:</span> ".$data['UnitMake']."<br>".
+                            "<span style=\"font-weight: bold;\">Is in Policies</span><br>";
+              //Get Policies:
+              $polizas = explode(',',$data['polizas_unidad']);
+              for($i=0; $i < count($polizas); $i++) {
+                 $policy_query = "SELECT A.iConsecutivo, sNumeroPoliza, D.sDescripcion, D.iConsecutivo AS TipoPoliza, sName ".
+                                 "FROM ct_polizas A ".
+                                 "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
+                                 "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
+                                 "WHERE A.iConsecutivo = '".$polizas[$i]."' AND A.iDeleted ='0' ORDER BY sName ASC";
+                 $result_policy = $conexion->query($policy_query); 
+                 $rows = $result_policy->num_rows;
+                 if($rows>0){
+                     $poliza = $result_policy->fetch_assoc();
+                     $htmlTabla .= "<span style=\"display:block;\">".$poliza['sNumeroPoliza']." / ".$poliza['sDescripcion']." - ".$poliza['sName']."</span>";
+                 }  
+              }
+              $htmlTabla .= "</td></tr>"; 
+          }
+          $htmlTabla .= "</table>";
+          
+          #Building Email Body:                                   
+          require_once("./lib/phpmailer_master/class.phpmailer.php");
+          require_once("./lib/phpmailer_master/class.smtp.php");
+          
+          //subject
+          $subject = "Solo-Trucking Insurance application to claim from company ".$data['sNombreCompania'];
+          //header
+          $htmlEmail .= "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"\"http://www.w3.org/TR/html4/strict.dtd\"><html><head><meta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\"><title>claim from solo-trucking insurance</title></head>";
+          //Body
+          $htmlEmail .= "<body>$htmlTabla</body>";
+          //footer              
+          $htmlEmail .= "</html>"; 
+          
+          #TERMINA CUERPO DEL MENSAJE
+          $mail = new PHPMailer();   
+          $mail->IsSMTP(); // telling the class to use SMTP
+          $mail->Host       = "mail.solo-trucking.com"; // SMTP server
+          $mail->SMTPAuth   = true;                  // enable SMTP authentication
+          $mail->SMTPSecure = "TLS";                 // sets the prefix to the servier
+          $mail->Host       = "smtp.gmail.com";      // sets GMAIL as the SMTP server
+          $mail->Port       = 587;                   // set the SMTP port for the GMAIL server
+          $mail->Username   = "claims@solo-trucking.com";  // GMAIL username
+          $mail->Password   = "quotes03"; 
+          $mail->SetFrom('claims@solo-trucking.com', 'Claims Solo-Trucking Insurance');
+          $mail->AddReplyTo('claims@solo-trucking.com','Claims Solo-Trucking Insurance');
+          $mail->Subject    = $subject;
+          $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
+          $mail->MsgHTML($htmlEmail);
+          $mail->IsHTML(true); 
+          
+          #armando array para emails:
+          $sEmail = str_replace(' ','',$sEmail);
+          $sEmail = explode(',',$sEmail);
+          for($i=0; $i < count($sEmail); $i++) {
+             $mail->AddAddress($sEmail[$i]); 
+          }
+          
+          //Revisar si se necesitan enviar archivos adjuntos:
+          $select_files = "SELECT * FROM cb_claims_files WHERE iConsecutivoClaim ='$clave'";
+          $result = $conexion->query($select_files);
+          $rows = $result->num_rows;
+          if ($rows > 0) {    
+                while ($files = $result->fetch_assoc()) { 
+                   if($files['sNombreArchivo'] != ""){ 
+                        $file_tmp = fopen('tmp/'.$files["sNombreArchivo"],"w") or die("Error when creating the file. Please check."); 
+                        fwrite($file_tmp,$files["hContenidoDocumentoDigitalizado"]); 
+                        fclose($file_tmp);     
+                        $archivo = "tmp/".$files["sNombreArchivo"];  
+                        $mail->AddAttachment($archivo);
+                        $delete_files .= "unlink(\"tmp/\".".$files["sNombreArchivo"].");"; 
+                   }    
+                }                                                                                                                                                                      
+          }
+          
+          $mail_error = false;
+          if(!$mail->Send()){$mail_error = true; $mail->ClearAddresses();}
+          if(!$mail_error){
+              $msj = "Mail confirmation to the user $usuario was successfully sent.";
+          }else{
+              $msj = "Error: The e-mail cannot be sent.";$error = "1";
+          }
+          $mail->ClearAttachments();
+          #deleting files attachment:
+          eval($delete_files);
+          
+          #VERIFICAR SI SE ENVIARON LOS CORREOS CORRECTAMENTE PARA ACTUALIZAR EL STATUS DEL CLAIM:
+          if($error == '0'){
+            
+            $sql = "UPDATE cb_claims SET eStatus = 'INPROCESS', dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
+                   "WHERE iConsecutivo = '$clave'"; 
+                   
+            if($conexion->query($sql)){
+                
+                #INSERTAMOS DATOS EN LA TABLA DE EMAIL:
+                $sql = "INSERT INTO cb_claims_email (iConsecutivoClaim,sMensajeEmail,sEmail,sIPIngreso,sUsuarioIngreso,dFechaIngreso) VALUES ('$clave','$sMensaje','".trim(strtolower($_POST['sEmail']))."', '".$_SERVER['REMOTE_ADDR']."', '".$_SESSION['usuario_actual']."', '".date("Y-m-d H:i:s")."')";
+                if($conexion->query($sql)){
+                   $msj = "The claim was sent successfully, please check your email (claims@solo-trucking.com) waiting for their response.";  
+                }else{
+                    $msj = "The data of email was not inserted properly, please try again."; 
+                }
+            }
+            else{$error = '1';$msj = "The data of claim was not updated properly, please try again.";} 
+
+          }
+          
+          if($error == '0'){$conexion->commit();$conexion->close();}else{$conexion->rollback();$conexion->close();}
+          $response = array("error"=>"$error","msj"=>"$msj");
+          echo json_encode($response); 
+      }
+      function save_estatus(){
+          $error = '0';  
+          $msj = "";  
+          $eStatus = trim($_POST['eStatus']);
+          $iConsecutivoClaim = trim($_POST['iConsecutivoClaim']);
+          //Conexion:
+          include("cn_usuarios.php");  
+          $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+          $transaccion_exitosa = true;
+          
+          $query = "UPDATE cb_claims SET eStatus = '$eStatus' WHERE iConsecutivo = '$iConsecutivoClaim'";
+          if($conexion->query($query)){
+                $conexion->commit();
+                $conexion->close();
+                $mensaje = "The data has been saved successfully, Thank you!";
+          }else{
+                $conexion->rollback();
+                $conexion->close(); 
+                $error = "1";
+                $mensaje = "The data was not saved properly, please try again.";
+          }
+          
+          
+          $response = array("error"=>"$error","msj"=>"$mensaje");
+          echo json_encode($response);
+          
       }
 ?>

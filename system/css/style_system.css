@@ -631,7 +631,15 @@ img {max-width:100%;}
 /*#accordion_help li:before {background:url('img/img-arrow2.png') no-repeat left top;}
 #accordion_help li.active:before{background:url('img/img-arrow2.png') no-repeat left top;} */
 #accordion_help-cont > ul > li{ color:#000000!important;}
-
+/*PREVIEW EMAIL*/
+#preview_email {
+    background: #fff;
+    border-radius: 5px;
+    border: 1px solid #dedede;
+    padding: 10px;
+    height: 90%;
+    margin-bottom: 5px;
+}
 
 
 /* Animation Timers
