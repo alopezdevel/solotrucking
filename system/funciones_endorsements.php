@@ -966,7 +966,7 @@
                         $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
                         $mail->MsgHTML($htmlEmail);
                         $mail->IsHTML(true); 
-                        $email_destinatario = "endorsement@solo-trucking.com"; 
+                        $email_destinatario = "customerservice@solo-trucking.com"; 
                         $mail->AddAddress($email_destinatario,'Customer service Solo-Trucking');
                         
                         //VALIDAR QUE SI ES UN ENDOSO ADD VENGAN LOS ARCHIVOS NECESARIOS PARA PROCEDER:
@@ -1171,7 +1171,7 @@
                     $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
                     $mail->MsgHTML($htmlEmail);
                     $mail->IsHTML(true); 
-                    $email_destinatario = "endorsement@solo-trucking.com"; 
+                    $email_destinatario = "customerservice@solo-trucking.com"; 
                     $mail->AddAddress($email_destinatario,'Customer service Solo-Trucking');
                      
                     $mail_error = false; 
@@ -1411,7 +1411,7 @@
             $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
             $mail->MsgHTML($htmlEmail);
             $mail->IsHTML(true); 
-            $email_destinatario = "endorsement@solo-trucking.com"; 
+            $email_destinatario = "customerservice@solo-trucking.com"; 
             $mail->AddAddress($email_destinatario,'Customer service Solo-Trucking');
              
             $mail_error = false; 

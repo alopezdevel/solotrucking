@@ -125,7 +125,7 @@ var fn_claims = {
             new AjaxUpload('#btnFile', {
                     action: 'funciones_claims.php',
                     onSubmit : function(file , ext){
-                        if (!(ext && /^(jpg|png)$/i.test(ext))){
+                        if (!(ext && /^(jpg|png|pdf)$/i.test(ext))){
                             var mensaje = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Error: Invalid file format, please upload JPG or PNG.</p>';
                             fn_solotrucking.mensaje(mensaje);
                             return false;
