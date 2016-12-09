@@ -10,7 +10,7 @@
      $conexion->autocommit(FALSE);
      $error = "0";   
      $sql = "SELECT iConsecutivo AS clave, sNombreCompania AS descripcion 
-             FROM ct_companias ORDER BY iConsecutivo ASC";
+             FROM ct_companias ORDER BY sNombreCompania ASC";
      $result = $conexion->query($sql);
      $tipos = $result->num_rows;  
         if($tipos > 0){
