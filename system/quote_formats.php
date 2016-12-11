@@ -14,6 +14,8 @@ function inicio(){
         //$("#aUpdateAccount").click(function() { actualizarCliente(usuario_actual); });
         fn_formats.init();
         $.unblockUI();
+        
+        //DRIVERS
         $('#dialog_driver_options').dialog({
             modal: true,
             autoOpen: false,
@@ -80,11 +82,12 @@ function inicio(){
                             iNumLicencia : license,
                             sAccidentesNum : accident,
                             iConsecutivoCompania : iConsecutivoCompania,
-                            edit_mode : edit_mode
+                            edit_mode : edit_mode,
+                            token : $('#'+form+' #driver_token').val()
                         },
                         function(data){
                             if(data.error == '0'){
-                               
+                                $('#'+form+' #driver_token').val(data.token); 
                                 $('#dialog_driver_form,#dialog_driver_options').dialog('close');
                                 fn_formats.get_list_drivers(form);  
                             }else{
@@ -95,6 +98,96 @@ function inicio(){
                    }else{
                       fn_solotrucking.mensaje('Please verify if the name and license have a valid value.'); 
                    }
+                },
+                 'CANCEL' : function(){
+                    $(this).dialog('close');
+                }
+            }
+        });
+        //UNIT AND TRAILER:
+        $('#dialog_unit_trailer_options').dialog({
+            modal: true,
+            autoOpen: false,
+            width : 500,
+            height : 200,
+            resizable : false,
+            buttons : {
+                'CONTINUE' : function() {
+                    var parameter = $('#dialog_unit_trailer_options #option').val();
+                    var form      = $('#dialog_unit_trailer_options #form_select').val();
+                    var tipo      = $('#dialog_unit_trailer_options #sTipo').val(); 
+                    fn_formats.cargar_unit_trailer_option(parameter,form,tipo);             
+                },
+                 'CANCEL' : function(){
+                    $(this).dialog('close');
+                }
+            }
+        });
+        $('#dialog_unit_trailer_list').dialog({
+            modal: true,
+            autoOpen: false,
+            width : 600,
+            height : 500,
+            resizable : false,
+            buttons : {
+                'CONTINUE' : function() {
+                    
+                    var list = "";
+                    var type = $('#dialog_unit_trailer_list #sTipo').val();
+                    var form = $('#dialog_unit_trailer_list #form_select').val();
+                    $("#dialog_unit_trailer_list table .utlist_id" ).each(function( index ){
+                        if(this.checked){if(list != ''){list += "|" + this.value;}else{list += this.value;} }
+                    });
+                    fn_formats.save_list(list,form,type);               
+                },
+                 'CANCEL' : function(){
+                    $(this).dialog('close');
+                }
+            }
+        });
+        $('#dialog_unit_trailer_form').dialog({
+            modal: true,
+            autoOpen: false,
+            width : 580,
+            height : 450,
+            resizable : false,
+            buttons : {
+                'SAVE DRIVER' : function() {
+                   
+                   var vin = $('#dialog_unit_trailer_form #sVIN').val();
+                   var year = $('#dialog_unit_trailer_form #iYear').val();
+                   var make = $('#dialog_unit_trailer_form #iModelo').val();
+                   var deductible = $('#dialog_unit_trailer_form #iTotalPremiumPD').val();
+                   var form = $('#dialog_unit_trailer_form #form_select').val();
+                   var tipo = $('#dialog_unit_trailer_form #sTipo').val(); 
+                   var iConsecutivoCompania =  $('#dialog_unit_trailer_form #iConsecutivoCompania').val();
+                   
+                   if($('#dialog_unit_trailer_form #iConsecutivo').val() != ""){var edit_mode = 'true';}else{var edit_mode = 'false';} 
+                   
+                   if(vin != ""){
+                        $.post("funciones_quote_formats.php",
+                        {
+                            accion:"save_ut", 
+                            sVIN: vin, 
+                            iYear : year,
+                            iModelo : make,
+                            iTotalPremiumPD : deductible,
+                            sTipo : tipo,
+                            iConsecutivoCompania : iConsecutivoCompania,
+                            edit_mode : edit_mode,
+                            token : $('#'+form+' #'+tipo+'_token').val()
+                        },
+                        function(data){
+                            if(data.error == '0'){
+                                $('#'+form+' #'+tipo+'_token').val(data.token); 
+                                $('#dialog_unit_trailer_form,#dialog_unit_trailer_options').dialog('close');
+                                fn_formats.get_list_ut(form,tipo);  
+                            }else{
+                               fn_solotrucking.mensaje(data.msj);  
+                            }       
+                        },"json");             
+                       
+                   }else{fn_solotrucking.mensaje('Please verify if the VIN# have a valid value.'); } 
                 },
                  'CANCEL' : function(){
                     $(this).dialog('close');
@@ -125,7 +218,43 @@ var fn_formats = {
                    $(this).val(''); 
                    fn_formats.filtraInformacion();
                 }
-            });  
+            }); 
+            //Cargar Modelos para unidades:
+            $.ajax({             
+                type:"POST", 
+                url:"funciones_endorsements.php", 
+                data:{accion:"get_unit_models"},
+                async : true,
+                dataType : "json",
+                success : function(data){                               
+                    $("#dialog_unit_trailer_form #iModelo").empty().append(data.select);
+                     
+                }
+            });
+            //Cargar Radio para unidades:
+            /*$.ajax({             
+                type:"POST", 
+                url:"catalogos_generales.php", 
+                data:{accion:"get_unit_radio"},
+                async : true,
+                dataType : "json",
+                success : function(data){                               
+                    $("#frm_unit_information #iConsecutivoRadio_unit").empty().append(data.select);
+                     
+                }
+            });*/
+            //Cargar Años:
+            $.ajax({             
+                type:"POST", 
+                url:"catalogos_generales.php", 
+                data:{accion:"get_years"},
+                async : true,
+                dataType : "json",
+                success : function(data){                               
+                    $("#dialog_unit_trailer_form #iYear").empty().append(data.select);
+                     
+                }
+            }); 
         },
         fillgrid: function(){
                $.ajax({             
@@ -145,72 +274,11 @@ var fn_formats = {
                     $(fn_formats.data_grid+" tbody").empty().append(data.tabla);
                     $(fn_formats.data_grid+" tbody tr:even").addClass('gray');
                     $(fn_formats.data_grid+" tbody tr:odd").addClass('white');
-                    $(fn_formats.data_grid + " tfoot #paginas_total").val(data.total);
-                    $(fn_formats.data_grid + " tfoot #pagina_actual").val(data.pagina);
+                    $(fn_formats.data_grid+" tfoot #paginas_total").val(data.total);
+                    $(fn_formats.data_grid+" tfoot #pagina_actual").val(data.pagina);
                     fn_formats.pagina_actual = data.pagina; 
-                    fn_formats.edit();
                 }
             }); 
-        },
-        add : function(){
-           $('#edit_form :text, #edit_form select').val('').removeClass('error');
-           $('#edit_form .mensaje_valido').empty().append('The fields containing an (*) are required.');
-           $('#edit_form #sUsdot').removeAttr('readonly');
-           //$('#edit_form #companies_tabs').hide();
-           fn_popups.resaltar_ventana('edit_form');  
-        },
-        edit : function (){
-            $(fn_formats.data_grid + " tbody td .edit").bind("click",function(){
-                var clave = $(this).parent().parent().find("td:eq(0)").html();
-                
-                //fn_popups.resaltar_ventana("edit_form");
-                $.post("funciones_companies.php",
-                {
-                    accion:"get_company", 
-                    clave: clave, 
-                    domroot : "edit_form"
-                },
-                function(data){
-                    if(data.error == '0'){
-                       $('#edit_form :text, #edit_form select').val('').removeClass('error'); 
-                       eval(data.fields);
-                       $('#edit_form #sUsdot').attr('readonly','readonly'); 
-                       //$('#edit_form #companies_tabs').show(); 
-                       fn_popups.resaltar_ventana('edit_form');
-                         
-                    }else{
-                       fn_solotrucking.mensaje(data.msj);  
-                    }       
-                },"json"); 
-          });  
-        },
-        save : function (){
-           //Validate Fields:
-           var sNombreCompania = $('#edit_form #sNombreCompania');
-           var sUsdot = $('#edit_form #sUsdot');
-           var valid = true;
-           //field nombre
-           valid = valid && fn_solotrucking.checkLength( sNombreCompania, "Company Name", 1, 255 );
-           //valid = valid && fn_solotrucking.checkRegexp( sNombreCompania, /^[0-9a-zA-ZáéíóúàèìòùÀÈÌÒÙÁÉÍÓÚñÑüÜ_\s]+$/, "The field for the Name must contain only letters." );
-           valid = valid && fn_solotrucking.checkLength( sUsdot, "Company Name", 1, 10 );
-           
-           if(valid){
-             if($('#edit_form #iConsecutivo').val() != ''){struct_data_post.edit_mode = "true";}else{struct_data_post.edit_mode = "false";}  
-             struct_data_post.action="save_company";
-             struct_data_post.domroot= "#edit_form"; 
-                $.post("funciones_companies.php",struct_data_post.parse(),
-                function(data){
-                    switch(data.error){
-                     case '0':
-                        fn_solotrucking.mensaje(data.msj);
-                        fn_formats.fillgrid();
-                        fn_popups.cerrar_ventana('edit_form');
-                     break;
-                     case '1': fn_solotrucking.mensaje(data.msj); break;
-                    }
-                },"json");
-           }
-            
         },
         firstPage : function(){
             if($(fn_formats.data_grid+" #pagina_actual").val() != "1"){
@@ -264,6 +332,7 @@ var fn_formats = {
             if($(fn_formats.data_grid+" .flt_filename").val() != ""){ fn_formats.filtro += "sNombreArchivoEmpresa|"+$(fn_formats.data_grid+" .flt_filename").val()+","}     
             fn_formats.fillgrid();
         },
+        //DRIVERS...
         cargar_driver_option : function(parameter,form){
             
           var iConsecutivoCompania = $('#'+form+' #iConsecutivoCompania').val(); 
@@ -294,7 +363,9 @@ var fn_formats = {
                 function(data){ 
                    if(data.error == '0'){
                        $('#'+form+' #'+type+'_token').val(data.token);
-                       fn_formats.get_list_drivers(form);
+                       if(type == 'driver'){fn_formats.get_list_drivers(form);}
+                       else{fn_formats.get_list_ut(form,type);}
+                       
                    }else{fn_solotrucking.mensaje(data.mensaje);}   
                 },"json");
             }else{fn_solotrucking.mensaje('Please first select a driver before to continue.');}
@@ -308,13 +379,47 @@ var fn_formats = {
                    }else{fn_solotrucking.mensaje(data.msj);}   
            },"json"); 
         },
+        //UNIT AND TRAILERS:
+        cargar_unit_trailer_option : function(parameter,form,tipo){
+           
+           var iConsecutivoCompania = $('#'+form+' #iConsecutivoCompania').val(); 
+           var token = $('#'+form+' #'+tipo+'_token').val();
+          
+           if(parameter == "NEW"){
+              $("#dialog_unit_trailer_form input").val('');
+              $('#dialog_unit_trailer_form #form_select').val(form);
+              $('#dialog_unit_trailer_form #sTipo').val(tipo);
+              $('#dialog_unit_trailer_form #iConsecutivoCompania').val(iConsecutivoCompania);
+              $("#dialog_unit_trailer_form").dialog( 'open' );
+           }else if(parameter == "EXISTING"){
+              $.post("funciones_quote_formats.php", {accion: "get_unit_trailer_list",iConsecutivoCompania : iConsecutivoCompania,token:token,tipo:tipo},
+               function(data){ 
+                   if(data.error == '0' && data.total != '0'){
+                       $("#dialog_unit_trailer_list table tbody").empty().append(data.tabla);
+                       $('#dialog_unit_trailer_list #form_select').val(form);
+                       $('#dialog_unit_trailer_list #sTipo').val(tipo);
+                       $("#dialog_unit_trailer_list").dialog( 'open' );
+                   }else{fn_solotrucking.mensaje(data.mensaje);}
+               },"json");
+           }else{fn_solotrucking.mensaje('Please first select an option before to continue.');}
+        },
+        get_list_ut : function(form,type){
+           $.post("funciones_quote_formats.php", {accion: "get_list_ut",token: $('#'+form+' #'+type+'_token').val()},
+           function(data){ 
+                   if(data.error == '0'){
+                       $('#'+form+' #'+type+'_list tbody').empty().append(data.tabla);
+                       $('#dialog_unit_trailer_list,#dialog_unit_trailer_options').dialog('close');
+                   }else{fn_solotrucking.mensaje(data.msj);}   
+           },"json"); 
+        },
+        //FORMULARIOS
         form_commercial_auto_quick : {
            init : function(){
                //Cargar Companies:
                $.post("catalogos_generales.php", { accion: "get_companies"},function(data){ $("#form_commercial_auto_quick #iConsecutivoCompania").empty().append(data.select);},"json");
-               
                //Limpiar form:
-               $('#form_commercial_auto_quick input, #form_commercial_auto_quick select').val('');
+               $('#form_commercial_auto_quick input:text, #form_commercial_auto_quick select').val('');
+               $('#form_commercial_auto_quick input:radio').prop('checked','');
                //fn_solotrucking.get_date(".fecha"); 
                fn_popups.resaltar_ventana('form_commercial_auto_quick');  
            },
@@ -323,7 +428,7 @@ var fn_formats = {
                function(data){ 
                    if(data.error == '0'){
                        eval(data.fields);
-                   }else{fn_solotrucking.mensaje(data.msj);}
+                   }//else{fn_solotrucking.mensaje(data.msj);}
                    
                },"json");
            },
@@ -334,8 +439,35 @@ var fn_formats = {
                   $('#dialog_driver_options').dialog( 'open' );
                   return false; 
                }else{fn_solotrucking.mensaje('Please first select a company.');}
+           },
+           open_unit_trailer_dialog : function(tipo){
+              if($('#form_commercial_auto_quick #iConsecutivoCompania').val() != ""){
+                  $('#dialog_unit_trailer_options input ,#dialog_driver_options select ').val('');
+                  $('#dialog_unit_trailer_options #form_select').val('form_commercial_auto_quick');
+                  $('#dialog_unit_trailer_options #sTipo').val(tipo);
+                  $('#dialog_unit_trailer_options').dialog( 'open' );
+                  return false; 
+              }else{fn_solotrucking.mensaje('Please first select a company.');} 
+           },
+           open_pdf : function(){
+               //variables:
+               var iConsecutivoCompania = $('#form_commercial_auto_quick #iConsecutivoCompania').val();
+               var sYearsExperiencia    = $('#form_commercial_auto_quick #sYearsExperiencia').val();
+               var iFEINNumb            = $('#form_commercial_auto_quick #iFEINNumb').val();
+               var sCommodities         = $('#form_commercial_auto_quick #sCommodities').val();
+               var iFillings            = $('#form_commercial_auto_quick input:radio[name=iFillings]').val();
+               var iRadius              = $('#form_commercial_auto_quick input:radio[name=iRadius]').val();
+               var iTokenDriver         = $('#form_commercial_auto_quick #driver_token').val(); 
+               var iTokenUnit           = $('#form_commercial_auto_quick #unit_token').val(); 
+               var iTokenTrailer        = $('#form_commercial_auto_quick #trailer_token').val(); 
+               var iAutoLiability       = $('#form_commercial_auto_quick input:radio[name=iAutoLiability]').val();  
+               var iAutoLiabilityD      = $('#form_commercial_auto_quick input:radio[name=iAutoLiabilityD]').val();
+               var iInsuredMBI          = $('#form_commercial_auto_quick input:radio[name=iInsuredMBI]').val();
+               var iCargo               = $('#form_commercial_auto_quick input:radio[name=iCargo]').val();
+               //var iOtherCoverage1      = $('#form_commercial_auto_quick #iOtherCoverage1').val(); 
                
-           }, 
+               window.open('PDF_universal_quick_quotes_1.php?consecutivo_doc=1&id_compania='+iConsecutivoCompania+'&consecutivo_drivers='+iTokenDriver+'&consecutivo_equipment'+iTokenUnit+'&consecutivo_trailer='+iTokenTrailer+'&year_in_bussines='+sYearsExperiencia+'&fein='+iFEINNumb+'&commodities_hauled='+sCommodities+'&filing_required='+iFillings);
+           } 
         } 
 }     
 </script> 
@@ -450,8 +582,8 @@ var fn_formats = {
                         <td colspan="100%">
                             <div class="field_item">
                                 <label>Filings Required:</label> 
-                                <label class="lbl-check"><input tabindex="7"  id="" name="filings_node" type="radio"> None</label>
-                                <label class="lbl-check"><input tabindex="8"  id="" name="filings_node" type="radio"> YES</label>
+                                <label class="lbl-check"><input tabindex="7"  name="iFillings" type="radio" value="0"> None</label>
+                                <label class="lbl-check"><input tabindex="8"  name="iFillings" type="radio" value="1"> YES</label>
                                                          <!--<input tabindex="9" id="" name="" type="text" style="height: 27px;width: auto;">  
                                 <label class="lbl-check"><input tabindex="10"  id="" name="" type="checkbox"> DMV</label>
                                                          <input tabindex="11" id="" name="" type="text" style="height: 27px;width: auto;"> 
@@ -464,9 +596,9 @@ var fn_formats = {
                         <td colspan="100%">
                             <div class="field_item">
                                 <label>Radius:</label>
-                                <label class="lbl-check"><input tabindex="15"  id="" name="" type="checkbox"> -250 Miles</label>
-                                <label class="lbl-check"><input tabindex="16"  id="" name="" type="checkbox"> -500 Miles</label>
-                                <label class="lbl-check"><input tabindex="17"  id="" name="" type="checkbox">  +500 Miles</label> 
+                                <label class="lbl-check"><input tabindex="15"  name="iRadio" type="radio" value="250"> -250 Miles</label>
+                                <label class="lbl-check"><input tabindex="16"  name="iRadio" type="radio" value="500"> -500 Miles</label>
+                                <label class="lbl-check"><input tabindex="17"  name="iRadio" type="radio" value="500p">  +500 Miles</label> 
                                 <!---<label class="lbl-check"><input tabindex="14"  id="" name="" type="checkbox"> Intrastate (CA Only)</label>
                                 <label class="lbl-check"><input tabindex="15"  id="" name="" type="checkbox"> 0-100 Miles</label>
                                 <label class="lbl-check"><input tabindex="16"  id="" name="" type="checkbox"> 101-200 Miles</label>
@@ -504,7 +636,7 @@ var fn_formats = {
                             <div class="field_item">
                                 <label>Equipment:</label>
                                 <input id="unit_token" name="unit_token" type="hidden" value="">  
-                                <table style="width:100%;" class="popup-datagrid">
+                                <table id="unit_list" style="width:100%;" class="popup-datagrid">
                                 <thead>
                                     <tr id="grid-head2">
                                         <td class="etiqueta_grid">YEAR</td>
@@ -513,7 +645,9 @@ var fn_formats = {
                                         <td class="etiqueta_grid">GBW</td>
                                         <td class="etiqueta_grid">STATED VALUE</td> 
                                         <td class="etiqueta_grid">DEDUCTIBLE</td> 
-                                        <td class="etiqueta_grid" style="width: 100px;text-align: center;"></td>
+                                        <td class="etiqueta_grid" style="width: 100px;text-align: center;">
+                                            <div class="btn-icon add btn-left" title="Add +"  onclick="fn_formats.form_commercial_auto_quick.open_unit_trailer_dialog('unit');"><i class="fa fa-plus"></i></div> 
+                                        </td>
                                     </tr>
                                 </thead>
                                 <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
@@ -527,7 +661,7 @@ var fn_formats = {
                             <div class="field_item">
                                 <label>Trailer(s):</label>
                                 <input id="trailer_token" name="trailer_token" type="hidden" value=""> 
-                                <table style="width:100%;" class="popup-datagrid">
+                                <table id="trailer_list" style="width:100%;" class="popup-datagrid">
                                 <thead>
                                     <tr id="grid-head2">
                                         <td class="etiqueta_grid">YEAR</td>
@@ -536,7 +670,9 @@ var fn_formats = {
                                         <td class="etiqueta_grid">GBW</td>
                                         <td class="etiqueta_grid">STATED VALUE</td> 
                                         <td class="etiqueta_grid">DEDUCTIBLE</td> 
-                                        <td class="etiqueta_grid" style="width: 100px;text-align: center;"></td>
+                                        <td class="etiqueta_grid" style="width: 100px;text-align: center;">
+                                            <div class="btn-icon add btn-left" title="Add +"  onclick="fn_formats.form_commercial_auto_quick.open_unit_trailer_dialog('trailer');"><i class="fa fa-plus"></i></div>
+                                        </td>
                                     </tr>
                                 </thead>
                                 <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
@@ -552,29 +688,29 @@ var fn_formats = {
                             </div>
                             <div class="field_item">
                                 <label style="float: left;padding: 12px 0px 0px;display: block;width: 150px;">Auto Liability:</label> 
-                                <label class="lbl-check"><input tabindex="21"  id="" name="" type="checkbox"> $100K CSL</label>
-                                <label class="lbl-check"><input tabindex="22"  id="" name="" type="checkbox"> $300K CSL</label>
-                                <label class="lbl-check"><input tabindex="23"  id="" name="" type="checkbox"> $500K CSL</label>
-                                <label class="lbl-check"><input tabindex="24"  id="" name="" type="checkbox"> $750 CSL</label>
-                                <label class="lbl-check"><input tabindex="25"  id="" name="" type="checkbox"> $1M CSL</label> 
-                                <label class="lbl-check"><input tabindex="26"  id="" name="" type="checkbox"> Other</label>
-                                <input tabindex="27" id="" name="" type="text" style="height: 27px;width: 120px;">
+                                <label class="lbl-check"><input tabindex="21"  name="iAutoLiability" type="radio" value="100"> $100K CSL</label>
+                                <label class="lbl-check"><input tabindex="22"  name="iAutoLiability" type="radio" value="300"> $300K CSL</label>
+                                <label class="lbl-check"><input tabindex="23"  name="iAutoLiability" type="radio" value="500"> $500K CSL</label>
+                                <label class="lbl-check"><input tabindex="24"  name="iAutoLiability" type="radio" value="750"> $750 CSL</label>
+                                <label class="lbl-check"><input tabindex="25"  name="iAutoLiability" type="radio" value="1m"> $1M CSL</label> 
+                                <label class="lbl-check"><input tabindex="26"  name="iAutoLiability" type="radio" value="other"> Other</label>
+                                <input tabindex="27" id="iAutoLiability" type="text" style="height: 27px;width: 120px;">
                             </div> 
                             <div class="field_item"> 
                                 <label style="float: left;padding: 12px 0px 0px;display: block;width: 150px;">Auto Liability Deductible:</label> 
-                                <label class="lbl-check"><input tabindex="28"  id="" name="" type="checkbox"> $500</label> 
+                                <label class="lbl-check"><input tabindex="28" name="iAutoLiabilityD" type="radio" value="500"> $500</label> 
                             </div> 
                             <div class="field_item">
                                 <label style="float: left;padding: 12px 0px 0px;display: block;width: 150px;">Ininsured Motorist BI:</label> 
-                                <label class="lbl-check"><input tabindex="29"  id="" name="" type="checkbox"> $15,000/30,000</label>
-                                <label class="lbl-check"><input tabindex="23"  id="" name="" type="checkbox"> $25,000/50,000</label> 
-                                <label class="lbl-check"><input tabindex="31"  id="" name="" type="checkbox"> $30,000/60,000</label> 
+                                <label class="lbl-check"><input tabindex="29" name="iInsuredMBI" type="radio" value="15"> $15,000/30,000</label>
+                                <label class="lbl-check"><input tabindex="23" name="iInsuredMBI" type="radio" value="25"> $25,000/50,000</label> 
+                                <label class="lbl-check"><input tabindex="31" name="iInsuredMBI" type="radio" value="30"> $30,000/60,000</label> 
                             </div> 
                             <div class="field_item">
                                 <label style="float: left;padding: 12px 0px 0px;display: block;width: 150px;">Cargo:</label> 
-                                <label class="lbl-check"><input tabindex="32"  id="" name="" type="checkbox"> $25,000</label> 
-                                <label class="lbl-check"><input tabindex="33"  id="" name="" type="checkbox"> $50,000</label> 
-                                <label class="lbl-check"> Deductible <input tabindex="34" id="" name="" type="text" style="height: 27px;width: 120px;"></label>   
+                                <label class="lbl-check"><input tabindex="32"  name="iCargo" type="radio" value="25"> $25,000</label> 
+                                <label class="lbl-check"><input tabindex="33"  name="iCargo" type="radio" value="50"> $50,000</label> 
+                                <label class="lbl-check"> Deductible <input tabindex="34" id="iCargo"type="text" style="height: 27px;width: 120px;"></label>   
                             </div>
                         </td>
                     </tr>
@@ -582,24 +718,24 @@ var fn_formats = {
                         <td colspan="100%">
                             <div class="field_item">
                                 <label>Other Coverage:</label><br> 
-                                <input tabindex="27" id="" name="" type="text" style="height: 27px;width: 120px;">  
-                                <label class="lbl-check"><input tabindex="15"  id="" name="" type="checkbox"></label>
-                                <input tabindex="27" id="" name="" type="text" style="height: 27px;width: 120px;">  
-                                <label class="lbl-check"><input tabindex="17" id="" name="" type="checkbox"></label>
-                                <input tabindex="27" id="" name="" type="text" style="height: 27px;width: 120px;">  
+                                <input tabindex="27" id="iOtherCoverage1" type="text" style="height: 27px;width: 120px;">  
+                                <label class="lbl-check"><input tabindex="15" name="OtherCoverage" type="radio"></label>
+                                <input tabindex="27" id="iOtherCoverage2" type="text" style="height: 27px;width: 120px;">  
+                                <label class="lbl-check"><input tabindex="17" name="OtherCoverage" type="radio"></label>
+                                <input tabindex="27" id="iOtherCoverage3" type="text" style="height: 27px;width: 120px;">  
                                 <label class="lbl-check"> Deductible</label> 
-                                <input tabindex="34" id="" name="" type="text" style="height: 27px;width: 120px;">    
+                                <input tabindex="34" id="iOtherCoverage4" type="text" style="height: 27px;width: 120px;">    
                             </div>
                         </td>
                     </tr>
                 </table>
-                <button type="button" class="btn-1" onclick="">GENERATE PDF FORMAT</button> 
+                <button type="button" class="btn-1" onclick="fn_formats.form_commercial_auto_quick.open_pdf();">GENERATE PDF FORMAT</button> 
             </fieldset>
         </form>
     </div>
     </div>
 </div>
-<!--- DIALOGUES --->
+<!--- DIALOGUES DRIVERS--->
 <div id="dialog_driver_options" title="SELECT AN OPTION">
   <p>Please select an of following options:</p>
   <input  id="form_select" type="hidden" value="">
@@ -612,7 +748,7 @@ var fn_formats = {
 <div id="dialog_driver_list" title="SELECT DRIVERS TO ADD">
   <p>Please select the drivers of company list:</p>
   <input  id="form_select" type="hidden" value=""> 
-  <table>
+  <table style="width: 100%;">
    <thead>
     <tr id="grid-head2">
         <td class="etiqueta_grid" style="width:50px;text-align: center;"></td>
@@ -632,10 +768,55 @@ var fn_formats = {
   <input id="iConsecutivoCompania" type="hidden" value="">  
   <table style="width: 100%;">
     <tr><td><br><br></td></tr>
-    <tr><td><div class="field_item"> <label>Name:</label><input id="sNombre" type="text" placeholder="last name + first name"></div></td></tr>
-    <tr><td><div class="field_item"> <label>Experience Years:</label><input id="iExperienciaYear" type="text" placeholder=""></div></td></tr>
-    <tr><td><div class="field_item"> <label>License#:</label><input id="iNumLicencia" type="text" placeholder=""></div></td></tr> 
-    <tr><td><div class="field_item"> <label>Accidents:</label><input id="sAccidentesNum" type="text" placeholder=""></div></td></tr>
+    <tr><td><div class="field_item"> <label>Name:</label><input id="sNombre" type="text" placeholder="last name + first name" class="txt-uppercase"></div></td></tr>
+    <tr><td><div class="field_item"> <label>Experience Years:</label><input id="iExperienciaYear" type="text" class="num"></div></td></tr>
+    <tr><td><div class="field_item"> <label>License#:</label><input id="iNumLicencia" type="text" class="txt-uppercase"></div></td></tr> 
+    <tr><td><div class="field_item"> <label>Accidents:</label><input id="sAccidentesNum" type="text" class="num"></div></td></tr>
+  </table>
+  </form>  
+</div>
+<!--- DIALOGUES UNITS AND TRAILERS --->
+<div id="dialog_unit_trailer_options" title="SELECT AN OPTION">
+  <p>Please select an of following options:</p>
+  <input  id="form_select" type="hidden" value="">
+  <input  id="sTipo" type="hidden" value="">
+  <select id="option">
+    <option value="">Select an option...</option> 
+    <option value="EXISTING">Select an of existing data in the list</option>
+    <option value="NEW">Add a new data on the list.</option>
+  </select>
+</div>
+<div id="dialog_unit_trailer_list" title="SELECT DATA TO ADD">
+  <p>Please select the data of company list:</p>
+  <input  id="form_select" type="hidden" value="">
+  <input  id="sTipo" type="hidden" value="">  
+  <table style="width: 100%;">
+   <thead>
+    <tr id="grid-head2">
+        <td class="etiqueta_grid" style="width:50px;text-align: center;"></td>
+        <td class="etiqueta_grid">YEAR</td>
+        <td class="etiqueta_grid">MAKE</td>
+        <td class="etiqueta_grid">VIN#</td> 
+        <td class="etiqueta_grid">BODY TYPE</td> 
+        <td class="etiqueta_grid">DEDUCTIBLE</td> 
+    </tr>
+   </thead>
+   <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
+  </table>
+</div>
+<div id="dialog_unit_trailer_form" title="DRIVER INFORMATION">
+  <p>Please select an of following options:</p>
+  <form class="p-container">
+  <input id="form_select" type="hidden" value="">
+  <input id="sTipo" type="hidden" value=""> 
+  <input id="iConsecutivo" type="hidden" value="">
+  <input id="iConsecutivoCompania" type="hidden" value="">  
+  <table style="width: 100%;">
+    <tr><td><br><br></td></tr>
+    <tr><td><div class="field_item"> <label>VIN#:</label><input  id="sVIN" type="text"  class="txt-uppercase"></div></td></tr>
+    <tr><td><div class="field_item"> <label>Year:</label><select id="iYear" type="text" placeholder=""><option value="" >Select an option...</option></select></div></td></tr>
+    <tr><td><div class="field_item"> <label>Make:</label><select id="iModelo" type="text" placeholder=""><option value="" >Select an option...</option></select></div></td></tr> 
+    <tr><td><div class="field_item"> <label>Deductible:</label><input id="iTotalPremiumPD" type="text" class="num"></div></td></tr>
   </table>
   </form>  
 </div>

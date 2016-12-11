@@ -108,7 +108,8 @@
     $conexion->close(); 
     $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields");   
     echo json_encode($response);
-  }
+  } 
+  //drivers:
   function get_drivers_list(){
       
       $iConsecutivoCompania = $_POST['iConsecutivoCompania'];
@@ -121,7 +122,7 @@
       
       $sql = "SELECT iConsecutivo, sNombre, iExperienciaYear, iNumLicencia,sAccidentesNum ".
              "FROM ct_operadores ".
-             "WHERE iConsecutivoCompania ='$iConsecutivoCompania'  ORDER BY sNombre ASC"; 
+             "WHERE iConsecutivoCompania ='$iConsecutivoCompania' $filtrotoken ORDER BY sNombre ASC"; 
         $result = $conexion->query($sql);
         $rows = $result->num_rows;   
         if ($rows > 0) { 
@@ -147,10 +148,9 @@
      $response = array("total"=>"$paginas_total","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error");   
      echo json_encode($response);
   }
-  //save drivers:
   function save_list(){
       $list = trim($_POST['list']);
-      strpos($list,'|') ?  $list = explode('|',$list) : $list = trim($_POST['list']);
+      $list = explode('|',$list);
       $_POST['token'] != "" ? $token = trim($_POST['token']) : $token = ""; 
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
@@ -162,7 +162,7 @@
          $query = "SELECT iConsecutivo FROM cb_quote_format_operadores ORDER BY iConsecutivo DESC LIMIT 1";
          $result = $conexion->query($query);
          $items = $result->fetch_assoc();
-         $items["iConsecutivo"] != '' ? $token = $items["iConsecutivo"] + 1 : $token = '1'; 
+         $items["iConsecutivo"] != '' ? $token = $items["iConsecutivo"] + 1 : $token = 1; 
       } 
       for($i = 0; $i < count($list); $i++){
           
@@ -241,6 +241,15 @@
       
       $_POST['sNombre']      = strtoupper($_POST['sNombre']);
       $_POST['iNumLicencia'] = strtoupper($_POST['iNumLicencia']); 
+      $_POST['token'] != "" ? $token = trim($_POST['token']) : $token = "";
+      
+      //create a token id:
+      if($token == ""){
+         $query = "SELECT iConsecutivo FROM cb_quote_format_operadores ORDER BY iConsecutivo DESC LIMIT 1";
+         $result = $conexion->query($query);
+         $items = $result->fetch_assoc();
+         $items["iConsecutivo"] != '' ? $token = $items["iConsecutivo"] + 1 : $token = 1; 
+      }
       
       $query = "SELECT COUNT(iConsecutivo) AS total ".
                "FROM   ct_operadores ".
@@ -287,16 +296,18 @@
           $conexion->query($sql);
           $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
           if($transaccion_exitosa){
-                    $conexion->commit();
-                    $conexion->close();
-          }else{
-                    $conexion->rollback();
-                    $conexion->close();
-                    $msj = "A general system error ocurred : internal error";
-                    $error = "1";
-          } 
+                //Revisamos si es un insert , actualizamos la tabla: 
+                if($_POST['edit_mode'] == 'false'){
+                    $id = $conexion->insert_id;
+                    $query = "INSERT INTO cb_quote_format_operadores (iConsecutivo,iConsecutivoOperador) VALUES('$token','$id')";
+                    $conexion->query($query);
+                    if($conexion->affected_rows < 1){ $error = "1"; $mensaje = "The data of driver was not saved properly, please try again.";}
+                }
+          }else{$msj = "A general system error ocurred : internal error";$error = "1";} 
+          
+          if($error == '0'){$conexion->commit();$conexion->close();}else{$conexion->rollback();$conexion->close();}
       }
-      $response = array("error"=>"$error","msj"=>"$msj");
+      $response = array("error"=>"$error","msj"=>"$msj","token"=>"$token");
       echo json_encode($response);
       
       
@@ -370,6 +381,173 @@
       }
       $response = array("error"=>"$error","msj"=>"$msj");
       echo json_encode($response);
-  }  
+  } 
+  //units y trailers:
+  function get_unit_trailer_list(){
+      
+      $iConsecutivoCompania = $_POST['iConsecutivoCompania'];
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      $error = "0";
+      $tipo  = trim($_POST['tipo']); 
+      
+      $_POST['token'] != "" ? $filtrotoken = "AND iConsecutivo NOT IN (SELECT iConsecutivoOperador FROM cb_quote_format_operadores WHERE iConsecutivo = '".$_POST['token']."')" : $filtrotoken = "";
+      
+      $sql = "SELECT A.iConsecutivo,iYear,iModelo,sVIN,sPeso,sTipo,iTotalPremiumPD,sDescripcion AS sModelo ".
+             "FROM   ct_unidades A ".
+             "LEFT JOIN ct_unidad_modelo B ON A.iModelo = B.iConsecutivo ".
+             "WHERE  iConsecutivoCompania ='$iConsecutivoCompania' AND sTipo = '$tipo' $filtrotoken ORDER BY sDescripcion ASC"; 
+        $result = $conexion->query($sql);
+        $rows = $result->num_rows;   
+        if ($rows > 0) { 
+            $paginas_total = $rows;   
+            while ($items = $result->fetch_assoc()){        
+                     $htmlTabla .= "<tr>".
+                                   "<td><input class=\"utlist_id\" name=\"utlist_id\" type=\"checkbox\" value=\"".$items['iConsecutivo']."\"></td>".
+                                   "<td>".$items['iYear']."</td>".
+                                   "<td>".$items['sModelo']."</td>".
+                                   "<td>".$items['sVIN']."</td>". 
+                                   "<td>".$items['sTipo']."</td>".  
+                                   "<td>".$items['iTotalPremiumPD']."</td>".                                                                                                                                                                                                                  
+                                   "</tr>"; 
+            }
+            $conexion->rollback();
+            $conexion->close();                                                                                                                                                                       
+        }else{
+            
+            $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";
+            $mensaje = "There are no ".$tipo."s for this company, please register them."; 
+            $paginas_total = 0;   
+        }  
+    
+     $htmlTabla = utf8_decode($htmlTabla);
+     $response = array("total"=>"$paginas_total","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error");   
+     echo json_encode($response);
+       
+  } 
+  function get_list_ut(){
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      $error = "0";
+      $token = trim($_POST['token']);
+
+      $sql = "SELECT B.iConsecutivo,iYear,iModelo,sVIN,sPeso,sTipo,iTotalPremiumPD,sDescripcion AS sModelo  ".
+             "FROM cb_quote_format_operadores A  ".
+             "INNER JOIN ct_unidades B ON A.iConsecutivoOperador = B.iConsecutivo  ".
+             "LEFT JOIN ct_unidad_modelo C ON B.iModelo = C.iConsecutivo ".
+             "WHERE A.iConsecutivo = '$token' ORDER BY sDescripcion ASC";
+        $result = $conexion->query($sql);
+        $rows = $result->num_rows;   
+        if ($rows > 0) { 
+            $paginas_total = $rows;   
+            while ($items = $result->fetch_assoc()){        
+                     $htmlTabla .= "<tr>".
+                                   "<td id=\"".$items['iConsecutivo']."\">".$items['iYear']."</td>".
+                                   "<td>".$items['sModelo']."</td>".
+                                   "<td>".$items['sTipo']."</td>". 
+                                   "<td></td>". 
+                                   "<td></td>". 
+                                   "<td>".$items['iTotalPremiumPD']."</td>".                                                                                                                                                                                                                  
+                                   "</tr>";
+            }
+            $conexion->rollback();
+            $conexion->close();                                                                                                                                                                       
+        }else{
+            
+            $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";
+            $mensaje = "There are no unit/trailer for this company, please register them."; 
+            $paginas_total = 0;   
+        }  
+    
+     $htmlTabla = utf8_decode($htmlTabla);
+     $response = array("total"=>"$paginas_total","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error");   
+     echo json_encode($response); 
+  }
+  function save_ut(){
+     include("funciones_genericas.php"); 
+      //Conexion:
+      include("cn_usuarios.php"); 
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      
+      #VARIABLES:
+      $error = '0'; 
+      $valores = array();
+      $campos  = array(); 
+      $msj = ""; 
+      
+      $_POST['sVIN']  = strtoupper($_POST['sVIN']);
+      $_POST['sTipo'] = strtoupper($_POST['sTipo']); 
+      $_POST['token'] != "" ? $token = trim($_POST['token']) : $token = "";
+      
+      //create a token id:
+      if($token == ""){
+         $query = "SELECT iConsecutivo FROM cb_quote_format_operadores ORDER BY iConsecutivo DESC LIMIT 1";
+         $result = $conexion->query($query);
+         $items = $result->fetch_assoc();
+         $items["iConsecutivo"] != '' ? $token = $items["iConsecutivo"] + 1 : $token = 1; 
+      }
+      
+      $query = "SELECT COUNT(iConsecutivo) AS total ".
+               "FROM   ct_unidades ".
+               "WHERE  sVIN ='".$_POST['sVIN']."' AND iConsecutivoCompania = '".$_POST['iConsecutivoCompania']."'";
+      $result = $conexion->query($query);
+      $valida = $result->fetch_assoc();
+      
+      if($valida['total'] != '0'){
+          if($_POST["edit_mode"] != 'true'){
+              $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Error: The '.$_POST['sTipo'].' that you trying to add already exists in this list. Please you verify by VIN Number .</p>';
+              $error = '1';
+          }else{
+             foreach($_POST as $campo => $valor){
+                if($campo != "accion" and $campo != "edit_mode"  and $campo != "iConsecutivo" and $campo != "sVIN"){ //Estos campos no se insertan a la tabla
+                    if($valor){array_push($valores,"$campo='".trim($valor)."'");}
+                }
+             }   
+          }
+      }else if($_POST["edit_mode"] != 'true'){
+         foreach($_POST as $campo => $valor){
+            if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo"){ //Estos campos no se insertan a la tabla
+                if($valor != ''){array_push($campos ,$campo); array_push($valores, trim($valor)); }
+            }
+         }  
+      }
+      ////////
+      if($error == '0'){
+          if($_POST["edit_mode"] == 'true'){
+            array_push($valores ,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
+            array_push($valores ,"sIP='".$_SERVER['REMOTE_ADDR']."'");
+            array_push($valores ,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'"); 
+            $sql = "UPDATE ct_unidades SET ".implode(",",$valores)." WHERE iConsecutivo ='".$_POST['iConsecutivo']."' AND iConsecutivoCompania ='".$_POST['iConsecutivoCompania']."'";
+            $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data have been updated successfully.</p>'; 
+          }else{
+            array_push($campos ,"dFechaIngreso");
+            array_push($valores ,date("Y-m-d H:i:s"));
+            array_push($campos ,"sIP");
+            array_push($valores ,$_SERVER['REMOTE_ADDR']);
+            array_push($campos ,"sUsuarioIngreso");
+            array_push($valores ,$_SESSION['usuario_actual']);
+            $sql = "INSERT INTO ct_unidades (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
+            $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data have been added successfully.</p>';
+          }
+          $conexion->query($sql);
+          $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
+          if($transaccion_exitosa){
+                //Revisamos si es un insert , actualizamos la tabla: 
+                if($_POST['edit_mode'] == 'false'){
+                    $id = $conexion->insert_id;
+                    $query = "INSERT INTO cb_quote_format_operadores (iConsecutivo,iConsecutivoOperador) VALUES('$token','$id')";
+                    $conexion->query($query);
+                    if($conexion->affected_rows < 1){ $error = "1"; $mensaje = "The data of driver was not saved properly, please try again.";}
+                }
+          }else{$msj = "A general system error ocurred : internal error";$error = "1";} 
+          
+          if($error == '0'){$conexion->commit();$conexion->close();}else{$conexion->rollback();$conexion->close();}
+      }
+      $response = array("error"=>"$error","msj"=>"$msj","token"=>"$token");
+      echo json_encode($response); 
+  }
   
 ?>
