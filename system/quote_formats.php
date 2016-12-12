@@ -152,7 +152,7 @@ function inicio(){
             height : 450,
             resizable : false,
             buttons : {
-                'SAVE DRIVER' : function() {
+                'SAVE' : function() {
                    
                    var vin = $('#dialog_unit_trailer_form #sVIN').val();
                    var year = $('#dialog_unit_trailer_form #iYear').val();
@@ -418,7 +418,7 @@ var fn_formats = {
                //Cargar Companies:
                $.post("catalogos_generales.php", { accion: "get_companies"},function(data){ $("#form_commercial_auto_quick #iConsecutivoCompania").empty().append(data.select);},"json");
                //Limpiar form:
-               $('#form_commercial_auto_quick input:text, #form_commercial_auto_quick select').val('');
+               $('#form_commercial_auto_quick input:text, #form_commercial_auto_quick select, #form_commercial_auto_quick input:hidden ').val('');
                $('#form_commercial_auto_quick input:radio').prop('checked','');
                //fn_solotrucking.get_date(".fecha"); 
                fn_popups.resaltar_ventana('form_commercial_auto_quick');  
@@ -427,7 +427,14 @@ var fn_formats = {
                $.post("funciones_quote_formats.php", {accion: "get_companies_info",iConsecutivo : id_company,domroot:"form_commercial_auto_quick"},
                function(data){ 
                    if(data.error == '0'){
+                       
+                       $('#form_commercial_auto_quick input:text,#form_commercial_auto_quick input:hidden ').val('');
+                       $('#form_commercial_auto_quick input:radio').prop('checked','');
+                       fn_formats.get_list_drivers('form_commercial_auto_quick');
+                       fn_formats.get_list_ut('form_commercial_auto_quick','unit');
+                       fn_formats.get_list_ut('form_commercial_auto_quick','trailer');
                        eval(data.fields);
+                       
                    }//else{fn_solotrucking.mensaje(data.msj);}
                    
                },"json");
@@ -455,20 +462,21 @@ var fn_formats = {
                var sYearsExperiencia    = $('#form_commercial_auto_quick #sYearsExperiencia').val();
                var iFEINNumb            = $('#form_commercial_auto_quick #iFEINNumb').val();
                var sCommodities         = $('#form_commercial_auto_quick #sCommodities').val();
-               var iFillings            = $('#form_commercial_auto_quick input:radio[name=iFillings]').val();
-               var iRadius              = $('#form_commercial_auto_quick input:radio[name=iRadius]').val();
+               var iFillings            = $('#form_commercial_auto_quick input:radio[name=iFillings]:checked').val();
+               var iRadius              = $('#form_commercial_auto_quick input:radio[name=iRadius]:checked').val();
                var iTokenDriver         = $('#form_commercial_auto_quick #driver_token').val(); 
                var iTokenUnit           = $('#form_commercial_auto_quick #unit_token').val(); 
                var iTokenTrailer        = $('#form_commercial_auto_quick #trailer_token').val(); 
-               var iAutoLiability       = $('#form_commercial_auto_quick input:radio[name=iAutoLiability]').val(); 
-               if(iAutoLiability == 'other'){var iAutoLiabilityDescription = $('#form_commercial_auto_quick #iAutoLiability]').val();}else{var iAutoLiabilityDescription = "";}
-               var iAutoLiabilityD      = $('#form_commercial_auto_quick input:radio[name=iAutoLiabilityD]').val();
-               var iInsuredMBI          = $('#form_commercial_auto_quick input:radio[name=iInsuredMBI]').val();
-               var iCargo               = $('#form_commercial_auto_quick input:radio[name=iCargo]').val();
-               var iCargoDescription    = $('#form_commercial_auto_quick #iCargo]').val();
+               var iAutoLiability       = $('#form_commercial_auto_quick input:radio[name=iAutoLiability]:checked').val(); 
+               if(iAutoLiability == 'other'){var iAutoLiabilityDescription = $('#form_commercial_auto_quick #iAutoLiability').val();}
+               else{var iAutoLiabilityDescription = "";}
+               var iAutoLiabilityD      = $('#form_commercial_auto_quick input:radio[name=iAutoLiabilityD]:checked').val();
+               var iInsuredMBI          = $('#form_commercial_auto_quick input:radio[name=iInsuredMBI]:checked').val();
+               var iCargo               = $('#form_commercial_auto_quick input:radio[name=iCargo]:checked').val();
+               var iCargoDescription    = $('#form_commercial_auto_quick #iCargo').val();
                //var iOtherCoverage1      = $('#form_commercial_auto_quick #iOtherCoverage1').val(); 
                
-               window.open('PDF_universal_quick_quotes_1.php?consecutivo_doc=1&id_compania='+iConsecutivoCompania+'&consecutivo_drivers='+iTokenDriver+'&consecutivo_equipment'+iTokenUnit+'&consecutivo_trailer='+iTokenTrailer+'&year_in_bussines='+sYearsExperiencia+'&fein='+iFEINNumb+'&commodities_hauled='+sCommodities+'&filing_required='+iFillings+'&radio='+iRadius+'&coverages_auto_liability='+iAutoLiability+'&auto_liability_other='+iAutoLiabilityDescription+'&auto_liability_deductible='+iAutoLiabilityD+'&coverages_uninsured_mot='+iInsuredMBI+'&coverages_cargo='+iCargo+'&cargo_deductible'+iCargoDescription);
+               window.open('PDF_universal_quick_quotes_1.php?consecutivo_doc=1&id_compania='+iConsecutivoCompania+'&consecutivo_drivers='+iTokenDriver+'&consecutivo_equipment='+iTokenUnit+'&consecutivo_trailer='+iTokenTrailer+'&year_in_bussines='+sYearsExperiencia+'&fein='+iFEINNumb+'&commodities_hauled='+sCommodities+'&filing_required='+iFillings+'&radio='+iRadius+'&coverages_auto_liability='+iAutoLiability+'&auto_liability_other='+iAutoLiabilityDescription+'&auto_liability_deductible='+iAutoLiabilityD+'&coverages_uninsured_mot='+iInsuredMBI+'&coverages_cargo='+iCargo+'&cargo_deductible'+iCargoDescription);
            } 
         } 
 }     
@@ -598,9 +606,9 @@ var fn_formats = {
                         <td colspan="100%">
                             <div class="field_item">
                                 <label>Radius:</label>
-                                <label class="lbl-check"><input tabindex="15"  name="iRadio" type="radio" value="250"> -250 Miles</label>
-                                <label class="lbl-check"><input tabindex="16"  name="iRadio" type="radio" value="500"> -500 Miles</label>
-                                <label class="lbl-check"><input tabindex="17"  name="iRadio" type="radio" value="500p">  +500 Miles</label> 
+                                <label class="lbl-check"><input tabindex="15"  name="iRadius" type="radio" value="250"> -250 Miles</label>
+                                <label class="lbl-check"><input tabindex="16"  name="iRadius" type="radio" value="500"> -500 Miles</label>
+                                <label class="lbl-check"><input tabindex="17"  name="iRadius" type="radio" value="500p">  +500 Miles</label> 
                                 <!---<label class="lbl-check"><input tabindex="14"  id="" name="" type="checkbox"> Intrastate (CA Only)</label>
                                 <label class="lbl-check"><input tabindex="15"  id="" name="" type="checkbox"> 0-100 Miles</label>
                                 <label class="lbl-check"><input tabindex="16"  id="" name="" type="checkbox"> 101-200 Miles</label>
@@ -806,7 +814,7 @@ var fn_formats = {
    <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
   </table>
 </div>
-<div id="dialog_unit_trailer_form" title="DRIVER INFORMATION">
+<div id="dialog_unit_trailer_form" title="UNIT/TRAILER INFORMATION">
   <p>Please select an of following options:</p>
   <form class="p-container">
   <input id="form_select" type="hidden" value="">

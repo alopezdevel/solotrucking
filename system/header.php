@@ -79,6 +79,11 @@
                     </ul>
                 </li>
                 <li><a href="claims_requests">CLAIMS</a></li> 
+                <li class="submenu"><a href="#">QUOTES</a>
+                   <ul>
+                        <li><a href="quote_formats"><i class="fa fa-file-text"></i> QUOTE FORMATS</a></li>  
+                    </ul>
+                </li>
                 <li class="submenu"><a href="#">SYSTEM SUPPORT</a>
                     <ul>
                         <li><a href="bitacora_actividades"><i class="fa fa-list-alt"></i> SYSTEM DEVELOPMENT ACTIVITIES</a></li>
@@ -104,7 +109,12 @@
                         <li><a href="endorsement_files"> <i class="fa fa-file-text"></i> UPLOAD FILES</a></li> 
                     </ul>
                 </li>
-                <li><a href="claims_requests">CLAIMS</a></li> 
+                <li><a href="claims_requests">CLAIMS</a></li>
+                <li class="submenu"><a href="#">QUOTES</a>
+                   <ul>
+                        <li><a href="quote_formats"><i class="fa fa-file-text"></i> QUOTE FORMATS</a></li>  
+                    </ul>
+                </li> 
                   <li class="submenu"><a href="#">SYSTEM SUPPORT</a>
                     <ul>
                         <li><a href="bitacora_actividades"><i class="fa fa-list-alt"></i> SYSTEM DEVELOPMENT ACTIVITIES</a></li>
