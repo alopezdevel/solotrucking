@@ -2,11 +2,11 @@
   require('lib/fpdf153/fpdf.php');//Cargando  libreria
   include_once("funciones_documentos.php");
   //forzado
-  $_GET['consecutivo_doc'] = "1";
+  /*$_GET['consecutivo_doc'] = "1";
   $_GET['id_compania'] = "2";
   $_GET['consecutivo_drivers'] = "1";
   $_GET['consecutivo_equipment'] = "2";
-  $_GET['consecutivo_trailer'] = "3";
+  $_GET['consecutivo_trailer'] = "3"; */
   //Variables 0
   $error = 0;
   $mensaje = "";
@@ -56,17 +56,16 @@
   $PH = $arr_compania[0]['telefono_principal'];
   
   
-  $YEARS_IN_BUSSINES = $_GET['year_in_bussines'] = '30';
-  $FEIN = $_GET['fein'] = "FEIN";
-  $COMMODITIES_HAULED = $_GET['commodities_hauled'] = 'COMMODITIES_HAUL COMMODITIES_HAUL COMMODITIES_HAUL COMMODITIES_HAUL';
+  $YEARS_IN_BUSSINES = $_GET['year_in_bussines'];
+  $FEIN = $_GET['fein'] ;
+  $COMMODITIES_HAULED = $_GET['commodities_hauled'] ;
   if($_GET['filing_required'] == "1" || $_GET['filing_required'] == true || $_GET['filing_required'] != "" ){
       $CHECK_ICC = "X";      
   }else{
       $CHECK_NONE = "X";      
-  }
-  $_GET['filing_required'] = "250";
-  if($_GET['filing_required'] != ""){
-      switch($_GET['filing_required']){
+  }  
+  if($_GET['radio'] != ""){
+      switch($_GET['radio']){
           CASE "250" : $CHECK_RADIUS1 = "X"; break;
           CASE "500" : $CHECK_RADIUS2 = "X";break;
           CASE "500p" : $CHECK_RADIUS3 = "X";  break;
@@ -82,6 +81,47 @@
       echo '<script language="javascript">alert(\''.$mensaje.'\'); window.close();</script>';  
        exit;       
   }
+  if($_GET['coverages_auto_liability'] != ""){
+      switch($_GET['coverages_auto_liability']){
+          CASE "100" : $COVERAGES_100 = "X"; break;
+          CASE "300" : $COVERAGES_300 = "X";break;
+          CASE "500" : $COVERAGES_500 = "X";  break;
+          CASE "750" : $COVERAGES_750 = "X";  break;
+          CASE "1m" : $COVERAGES_1M = "X";  break;
+          CASE "other" : $COVERAGES_OTHER = "X";  break;
+          default  : "" ; break;
+          
+      }
+      
+  }      
+  
+  if($_GET['auto_liability_deductible'] != ""){
+      switch($_GET['auto_liability_deductible']){
+          CASE "500" : $COVERAGES_ALD_500 = "X"; break;         
+          default  : "" ; break;
+          
+      }
+      
+  }
+  if($_GET['coverages_uninsured_mot'] != ""){
+      switch($_GET['coverages_uninsured_mot']){
+          CASE "15" : $COVERAGES_UMB_15 = "X"; break;         
+          CASE "25" : $COVERAGES_UMB_25 = "X"; break;         
+          CASE "30" : $COVERAGES_UMB_30 = "X"; break;         
+          default  : "" ; break;
+          
+      }
+      
+  }  
+  if($_GET['coverages_cargo'] != ""){
+      switch($_GET['coverages_cargo']){
+          CASE "25" : $CARGO_25 = "X"; break;         
+          CASE "50" : $CARGO_50 = "X"; break;                   
+          default  : "" ; break;
+          
+      }
+      
+  }  
   
   
   //$ICC = "ICC";
@@ -153,12 +193,13 @@
             
         }
         //FILLINGS REQUIRED     
-        $x += 33;        
-        $y += 8;        
+        $x = 52;        
+        $y = 58;        
         $pdf->SetXY($x,$y);
         $pdf->Write(5,$CHECK_NONE);
         //ICC        
-        $x += 18;                
+        $x =70;  
+        $y = 58;              
         $pdf->SetXY($x,$y);
         $pdf->Write(5,$CHECK_ICC);
         //ICC        
@@ -239,23 +280,33 @@
         $pdf->SetXY($x,$y);
         $pdf->Write(5,$COVERAGES_OTHER_LABEL);
         //COVERAGE AUTO LIABILITY DEDUCTIBLE
-        $x = 40;     
+        $x = 62;     
         $y += 6;           
         $pdf->SetXY($x,$y);
         $pdf->Write(5,$COVERAGES_ALD_500);
         //COVERAGE AUTO LIABILITY DEDUCTIBLE
-        $x = 40;     
-        $y += 5;           
+        $x = 59;     
+        $y += 6;           
         $pdf->SetXY($x,$y);
         $pdf->Write(5,$COVERAGES_UMB_15); 
         //COVERAGE AUTO LIABILITY DEDUCTIBLE    Z
-        $x += 10;             
+        $x = 96;             
         $pdf->SetXY($x,$y);
         $pdf->Write(5,$COVERAGES_UMB_25); 
         //COVERAGE AUTO LIABILITY DEDUCTIBLE
-        $x += 10;             
+        $x = 135;             
         $pdf->SetXY($x,$y);
-        $pdf->Write(5,$COVERAGES_UMB_30); 
+        $pdf->Write(5,$COVERAGES_UMB_30);  
+        //CARGO
+        
+        $x = 30;             
+        $y = 203;
+        $pdf->SetXY($x,$y);
+        $pdf->Write(5,$CARGO_25); 
+        $x = 63;             
+        $y = 203;
+        $pdf->SetXY($x,$y);
+        $pdf->Write(5,$CARGO_50); 
         
         //DATOS FIJOS
         $x_con = 33;      
