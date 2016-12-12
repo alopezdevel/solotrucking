@@ -46,6 +46,11 @@
                     </ul>
                 </li>
                 <li><a href="claims_requests">CLAIMS</a></li> 
+                <li class="submenu"><a href="#">QUOTES</a>
+                   <ul>
+                        <li><a href="quote_formats"><i class="fa fa-file-text"></i> QUOTE FORMATS</a></li>  
+                    </ul>
+                </li>
                 <li class="submenu"><a href="invoices">INVOICES</a> 
             	<li class="submenu"><a href="#">SYSTEM SUPPORT</a>
                     <ul>

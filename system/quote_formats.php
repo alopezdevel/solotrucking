@@ -460,13 +460,15 @@ var fn_formats = {
                var iTokenDriver         = $('#form_commercial_auto_quick #driver_token').val(); 
                var iTokenUnit           = $('#form_commercial_auto_quick #unit_token').val(); 
                var iTokenTrailer        = $('#form_commercial_auto_quick #trailer_token').val(); 
-               var iAutoLiability       = $('#form_commercial_auto_quick input:radio[name=iAutoLiability]').val();  
+               var iAutoLiability       = $('#form_commercial_auto_quick input:radio[name=iAutoLiability]').val(); 
+               if(iAutoLiability == 'other'){var iAutoLiabilityDescription = $('#form_commercial_auto_quick #iAutoLiability]').val();}else{var iAutoLiabilityDescription = "";}
                var iAutoLiabilityD      = $('#form_commercial_auto_quick input:radio[name=iAutoLiabilityD]').val();
                var iInsuredMBI          = $('#form_commercial_auto_quick input:radio[name=iInsuredMBI]').val();
                var iCargo               = $('#form_commercial_auto_quick input:radio[name=iCargo]').val();
+               var iCargoDescription    = $('#form_commercial_auto_quick #iCargo]').val();
                //var iOtherCoverage1      = $('#form_commercial_auto_quick #iOtherCoverage1').val(); 
                
-               window.open('PDF_universal_quick_quotes_1.php?consecutivo_doc=1&id_compania='+iConsecutivoCompania+'&consecutivo_drivers='+iTokenDriver+'&consecutivo_equipment'+iTokenUnit+'&consecutivo_trailer='+iTokenTrailer+'&year_in_bussines='+sYearsExperiencia+'&fein='+iFEINNumb+'&commodities_hauled='+sCommodities+'&filing_required='+iFillings);
+               window.open('PDF_universal_quick_quotes_1.php?consecutivo_doc=1&id_compania='+iConsecutivoCompania+'&consecutivo_drivers='+iTokenDriver+'&consecutivo_equipment'+iTokenUnit+'&consecutivo_trailer='+iTokenTrailer+'&year_in_bussines='+sYearsExperiencia+'&fein='+iFEINNumb+'&commodities_hauled='+sCommodities+'&filing_required='+iFillings+'&radio='+iRadius+'&coverages_auto_liability='+iAutoLiability+'&auto_liability_other='+iAutoLiabilityDescription+'&auto_liability_deductible='+iAutoLiabilityD+'&coverages_uninsured_mot='+iInsuredMBI+'&coverages_cargo='+iCargo+'&cargo_deductible'+iCargoDescription);
            } 
         } 
 }     
@@ -693,8 +695,8 @@ var fn_formats = {
                                 <label class="lbl-check"><input tabindex="23"  name="iAutoLiability" type="radio" value="500"> $500K CSL</label>
                                 <label class="lbl-check"><input tabindex="24"  name="iAutoLiability" type="radio" value="750"> $750 CSL</label>
                                 <label class="lbl-check"><input tabindex="25"  name="iAutoLiability" type="radio" value="1m"> $1M CSL</label> 
-                                <label class="lbl-check"><input tabindex="26"  name="iAutoLiability" type="radio" value="other"> Other</label>
-                                <input tabindex="27" id="iAutoLiability" type="text" style="height: 27px;width: 120px;">
+                                <label class="lbl-check"><input tabindex="26"  name="iAutoLiability" type="radio" value="other" onclick="if($(this).prop('checked') == ''){$('#form_commercial_auto_quick #iAutoLiability').attr('readonly','readonly');}else{$('#form_commercial_auto_quick #iAutoLiability').removeAttr('readonly');}"> Other</label>
+                                <input tabindex="27" id="iAutoLiability" type="text" style="height: 27px;width: 120px;" readonly="readonly">
                             </div> 
                             <div class="field_item"> 
                                 <label style="float: left;padding: 12px 0px 0px;display: block;width: 150px;">Auto Liability Deductible:</label> 
@@ -718,13 +720,13 @@ var fn_formats = {
                         <td colspan="100%">
                             <div class="field_item">
                                 <label>Other Coverage:</label><br> 
-                                <input tabindex="27" id="iOtherCoverage1" type="text" style="height: 27px;width: 120px;">  
-                                <label class="lbl-check"><input tabindex="15" name="OtherCoverage" type="radio"></label>
-                                <input tabindex="27" id="iOtherCoverage2" type="text" style="height: 27px;width: 120px;">  
-                                <label class="lbl-check"><input tabindex="17" name="OtherCoverage" type="radio"></label>
-                                <input tabindex="27" id="iOtherCoverage3" type="text" style="height: 27px;width: 120px;">  
+                                <input tabindex="27" id="iOtherCoverage1" type="text" style="height: 27px;width: 120px;" readonly="readonly">  
+                                <label class="lbl-check"><input tabindex="15" name="OtherCoverage" type="radio" disabled="disabled"></label>
+                                <input tabindex="27" id="iOtherCoverage2" type="text" style="height: 27px;width: 120px;" readonly="readonly">  
+                                <label class="lbl-check"><input tabindex="17" name="OtherCoverage" type="radio" disabled="disabled"></label>
+                                <input tabindex="27" id="iOtherCoverage3" type="text" style="height: 27px;width: 120px;" readonly="readonly">  
                                 <label class="lbl-check"> Deductible</label> 
-                                <input tabindex="34" id="iOtherCoverage4" type="text" style="height: 27px;width: 120px;">    
+                                <input tabindex="34" id="iOtherCoverage4" type="text" style="height: 27px;width: 120px;" readonly="readonly">    
                             </div>
                         </td>
                     </tr>
