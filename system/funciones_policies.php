@@ -1072,16 +1072,14 @@
                 while ($items = $result->fetch_assoc()){ 
                    if($items["iConsecutivo"] != ""){
                                    
-                         $htmlTabla .= "<tr id=\"id-".$items['iConsecutivo']."\" >".
-                                           "<td>".$items['sVIN']."</td>".
+                         $htmlTabla .= "<tr>".
+                                           "<td id=\"".$items['iConsecutivo']."\">".$items['sVIN']."</td>".
                                            "<td>".$items['Radio']."</td>".
                                            "<td>".$items['iYear']."</td>". 
                                            "<td>".$items['Make']."</td>".
                                            "<td>".$items['sTipo']."</td>".  
                                            "<td>".$items['sPeso']."</td>".                                                                                                                                                                                                                    
-                                           "<td>                                           </td></tr>";
-                                                //<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>
-                                               // <div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete unit from list\"><i class=\"fa fa-trash\"></i> <span></span></div>
+                                           "<td><div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div></td></tr>";
  
                      }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}    
                 }
@@ -1092,5 +1090,110 @@
 
      $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
      echo json_encode($response);
+  }
+  function save_unit(){
+      include("funciones_genericas.php"); 
+      //Conexion:
+      include("cn_usuarios.php"); 
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      
+      #VARIABLES:
+      $error = '0'; 
+      $valores = array();
+      $campos  = array(); 
+      $msj = ""; 
+      $_POST['sVIN'] = strtoupper($_POST['sVIN']); 
+      $query = "SELECT COUNT(iConsecutivo) AS total FROM   ct_unidades WHERE  sVIN ='".$_POST['sVIN']."' AND iConsecutivoCompania = '".$_POST['iConsecutivoCompania']."'";
+      $result = $conexion->query($query);
+      $valida = $result->fetch_assoc();
+      
+      if($valida['total'] != '0'){
+          if($_POST["edit_mode"] != 'true'){
+              $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+                      Error: The Unit/Trailer that you trying to add already exists in this list. Please you verify the data.</p>';
+              $error = '1';
+          }else{
+             foreach($_POST as $campo => $valor){
+                if($campo != "accion" and $campo != "edit_mode"  and $campo != "iConsecutivo" and $campo != "sVIN"){ //Estos campos no se insertan a la tabla
+                    if($valor){array_push($valores,"$campo='".trim($valor)."'");}
+                }
+             }   
+          }
+      }else if($_POST["edit_mode"] != 'true'){
+         foreach($_POST as $campo => $valor){
+            if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo"){ //Estos campos no se insertan a la tabla
+                if($valor != ''){array_push($campos ,$campo); array_push($valores, trim($valor)); }
+            }
+         }  
+      }
+      ////////
+      if($error == '0'){
+          if($_POST["edit_mode"] == 'true'){
+            array_push($valores ,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
+            array_push($valores ,"sIP='".$_SERVER['REMOTE_ADDR']."'");
+            array_push($valores ,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'"); 
+            array_push($valores,"inPoliza = '1'");
+            $sql = "UPDATE ct_unidades SET ".implode(",",$valores)." WHERE iConsecutivo ='".$_POST['iConsecutivo']."' AND iConsecutivoCompania ='".$_POST['iConsecutivoCompania']."'";
+            $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data have been updated successfully.</p>'; 
+          }else{
+            array_push($campos ,"dFechaIngreso");
+            array_push($valores ,date("Y-m-d H:i:s"));
+            array_push($campos ,"sIP");
+            array_push($valores ,$_SERVER['REMOTE_ADDR']);
+            array_push($campos ,"sUsuarioIngreso");
+            array_push($valores ,$_SESSION['usuario_actual']);
+            array_push($campos ,"inPoliza");
+            array_push($valores ,'1');
+            $sql = "INSERT INTO ct_unidades (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
+            $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data have been added successfully.</p>';
+          }
+          $conexion->query($sql);
+          $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
+          if($transaccion_exitosa){
+                    $conexion->commit();
+                    $conexion->close();
+          }else{
+                    $conexion->rollback();
+                    $conexion->close();
+                    $msj = "A general system error ocurred : internal error";
+                    $error = "1";
+          } 
+      }
+      $response = array("error"=>"$error","msj"=>"$msj");
+      echo json_encode($response); 
+  }
+  function get_unit(){
+      $error = '0';
+      $msj = "";
+      $fields = "";
+      $clave = trim($_POST['clave']);
+      $company = trim($_POST['company']);  
+      $domroot = $_POST['domroot'];
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                 
+      $sql = "SELECT * FROM ct_unidades WHERE iConsecutivo = '$clave' AND iConsecutivoCompania = '$company'";  
+      $result = $conexion->query($sql);
+      $items = $result->num_rows;   
+      if ($items > 0) {     
+        $data = $result->fetch_assoc();
+        $llaves  = array_keys($data);
+        $datos   = $data;
+        foreach($datos as $i => $b){
+            if($i == 'siConsecutivosPolizas'){
+                $poliza = explode(',',$datos[$i]); 
+                for ($i = 0; $i < count($poliza); $i++) {
+                   $fields .= "\$('#unit_edit_form  :input[value=\"".$poliza[$i]."\"]').prop(\"checked\",\"true\");";  
+                }
+            }else{
+               $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');"; 
+            }
+             
+        }  
+      }
+      $conexion->rollback();
+      $conexion->close(); 
+      $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields");   
+      echo json_encode($response);
   }
 ?>

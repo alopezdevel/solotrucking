@@ -192,7 +192,7 @@ var fn_policies = {
             new AjaxUpload('#btnFile', {
                     action: 'funciones_policies.php',
                     onSubmit : function(file , ext){
-                        if (!(ext && (/^(txt)$/i.test(ext))  )){
+                        if (!(ext && (/^(xls)$/i.test(ext))  )){
                             var mensaje = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Error: Invalid file format, please a TXT File.</p>';
                             fn_solotrucking.mensaje(mensaje);
                             return false;
@@ -239,7 +239,42 @@ var fn_policies = {
                     }        
             }); 
             $("#driver_tabs").tabs();
-            
+            //Cargar Modelos para unidades:
+            $.ajax({             
+                type:"POST", 
+                url:"funciones_endorsements.php", 
+                data:{accion:"get_unit_models"},
+                async : true,
+                dataType : "json",
+                success : function(data){                               
+                    $("#unit_edit_form #iModelo").empty().append(data.select);
+                     
+                }
+            });
+            //Cargar Radio para unidades:
+            $.ajax({             
+                type:"POST", 
+                url:"catalogos_generales.php", 
+                data:{accion:"get_unit_radio"},
+                async : true,
+                dataType : "json",
+                success : function(data){                               
+                    $("#unit_edit_form #iConsecutivoRadio").empty().append(data.select);
+                     
+                }
+            });
+            //Cargar Años:
+            $.ajax({             
+                type:"POST", 
+                url:"catalogos_generales.php", 
+                data:{accion:"get_years"},
+                async : true,
+                dataType : "json",
+                success : function(data){                               
+                    $("#unit_edit_form #iYear").empty().append(data.select);
+                     
+                }
+            });
         },
         fillgrid: function(){
                $.ajax({             
@@ -488,8 +523,9 @@ var fn_policies = {
             fn_policies.list.fill_drivers_actives();
             fn_policies.list.fill_units_actives();
             $("#driver_tabs" ).tabs('option', 'active', 0);
-            $('#drivers_active_table').show();
-            $('#drivers_edit_form').hide(); 
+            $('#drivers_active_table,#units_active_table ').show();
+            $('#drivers_edit_form,#unit_edit_form ').hide(); 
+            
             $('#driver_list_form h2').empty().append('Policy Number: '+sNumeroPoliza);
             fn_popups.resaltar_ventana('driver_list_form');
         },
@@ -689,6 +725,7 @@ var fn_policies = {
                         $(fn_policies.list.domroot_nav+" #units_active_table tfoot .paginas_total").val(data.total);
                         $(fn_policies.list.domroot_nav+" #units_active_table tfoot .pagina_actual").val(data.pagina);
                         fn_policies.list.units_pagina_actual = data.pagina; 
+                        fn_policies.list.unit_edit(); 
                     }
                 }); 
             },
@@ -726,7 +763,89 @@ var fn_policies = {
                     fn_policies.list.units_pagina_actual = $("#units_active_table .paginas_total").val();
                     fn_policies.list.fill_units_actives();
                 }
+            },
+            unit_add : function(){
+                $('#unit_edit_form :text ').val(''); 
+                $('#unit_edit_form #iConsecutivoCompania').val(fn_policies.list.id_company);
+                fn_policies.list.cargar_polizas('#unit_edit_form');
+                $('#units_active_table').hide();
+                $('#unit_edit_form').show();
+
             }, 
+            unit_save : function(){
+                
+                todosloscampos = $('#data_unit_form input, #data_unit_form select');
+                todosloscampos.removeClass( "error" );
+                valid = true;
+                var policies_selected = "";
+                
+                //Revsamos los valores marcados como required:
+                $("#unit_edit_form .required-field" ).each(function( index ){
+                     if($(this).val() == ''){
+                        $(this).addClass('error'); 
+                        valid = false;
+                     }
+                });
+                if(!valid){fn_solotrucking.mensaje('Please check all fields are required for the driver.'); }
+                
+                $("#unit_edit_form .company_policies .num_policies" ).each(function( index ){
+                       if(this.checked){
+                          if(policies_selected != ''){policies_selected += "," + this.value; }else{policies_selected += this.value;} 
+                       }
+                         
+                });
+                if(policies_selected == ''){valid = false;}else{$("#unit_edit_form #siConsecutivosPolizas").val(policies_selected); }
+                
+                
+                if(valid){
+                    
+                    if($('#unit_edit_form #iConsecutivo').val() != ''){struct_data_post.edit_mode = "true";}else{struct_data_post.edit_mode = "false";} 
+                    struct_data_post.action="save_unit";
+                    struct_data_post.domroot= "#data_unit_form";  
+                    $.post("funciones_policies.php",struct_data_post.parse(),
+                    function(data){
+                        fn_solotrucking.mensaje(data.msj);
+                        if(data.error == '0'){
+                            fn_policies.list.fill_drivers_actives(); 
+                            $('#units_active_table').show();
+                            $('#unit_edit_form').hide();
+                        }    
+                    },"json");
+                    
+                    
+                }else{
+                   fn_solotrucking.mensaje('Please select the policies to which you want to add the unit/trailer.'); 
+                }
+
+            },
+            unit_edit : function (){
+                $("#units_active_table tbody td .edit").bind("click",function(){
+                    var clave = $(this).parent().parent().find("td:eq(0)").attr('id'); 
+                    fn_policies.list.cargar_polizas('#unit_edit_form');
+                    $.ajax({             
+                    type:"POST", 
+                    url:"funciones_policies.php", 
+                    data:{
+                        accion:"get_unit", 
+                        clave: clave, 
+                        company : fn_policies.list.id_company, 
+                        domroot : "unit_edit_form"
+                    },
+                    async : false,
+                    dataType : "json",
+                    success : function(data){                               
+                        if(data.error == '0'){
+                           eval(data.fields); 
+                           $('#units_active_table').hide();
+                           $('#unit_edit_form').show();
+                           fn_policies.list.fill_units_actives();  
+                        }else{
+                           fn_solotrucking.mensaje(data.msj);  
+                        }       
+                    }
+                    }); 
+              });  
+            },
         }
                
 }    
@@ -983,7 +1102,7 @@ var fn_policies = {
                     <br>
                 </div> 
            <fieldset id="data_driver_form">
-                <legend>Add New Driver</legend> 
+                <legend>Data of Driver</legend> 
                 <input type="hidden" id="iConsecutivo" value="">
                 <input type="hidden" id="iConsecutivoCompania" value="">
                 <input type="hidden" id="siConsecutivosPolizas" value="">
@@ -1040,6 +1159,7 @@ var fn_policies = {
                         <td style="width:80px;"><input class="flt_uWeight" type="text" placeholder="Weigth:"></td>  
                         <td style='width:120px;'>
                             <div class="btn-icon-2 btn-left" title="Search" onclick="fn_policies.list.units_filtraInformacion();"><i class="fa fa-search"></i></div>
+                            <div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_policies.list.unit_add();"><i class="fa fa-plus"></i></div> 
                         </td> 
                     </tr>
                     <tr id="grid-head2">
@@ -1075,6 +1195,52 @@ var fn_policies = {
                     </tr>
                 </tfoot>
         </table>
+        <!---- FORMULARIOS DE EDICION DRIVERS----->
+        <div id="unit_edit_form" style="display:none;">
+           <form>
+                <div class="field_item">
+                    <label>Select policies: <span style="color:#ff0000;">*</span>:</label>  
+                    <div class="company_policies" style="padding:10px;"></div>
+                    <br>
+                </div> 
+           <fieldset id="data_unit_form">
+                <legend>Data of Unit</legend> 
+                <input type="hidden" id="iConsecutivo" value="">
+                <input type="hidden" id="iConsecutivoCompania" value="">
+                <input type="hidden" id="siConsecutivosPolizas" value="">
+                <div class="field_item required_field"> 
+                    <label>Type <span style="color:#ff0000;">*</span>: </label>
+                    <Select id="sTipo">
+                        <option value="">Select an option...</option>
+                        <option value="UNIT">Unit</option>
+                        <option value="TRAILER">Trailer</option>
+                    </select>    
+                </div>
+                <div class="field_item required_field"> 
+                    <label>Year <span style="color:#ff0000;">*</span>: </label>
+                    <Select id="iYear"><option value="">Select an option...</option></select> 
+                </div>
+                <div class="field_item"> 
+                      <label>Make: </label>
+                      <Select id="iModelo"><option value="">Select an option...</option></select>
+                </div>
+                <div class="field_item required_field"> 
+                    <label>VIN Number <span style="color:#ff0000;">*</span>: </label>
+                    <input id="sVIN" type="text" class="txt-uppercase" maxlength="17">
+                </div>
+                <div class="field_item"> 
+                      <label>Radius: </label>
+                      <Select id="iConsecutivoRadio" onblur=""><option value="">Select an option...</option></select>
+                </div>
+                <div class="field_item required_field"> 
+                    <label>Deductible ($): </label>
+                    <input id="iTotalPremiumPD" type="text" class="num" maxlength="25">
+                </div>
+                <button type="button" class="btn-1" onclick="fn_policies.list.unit_save();">SAVE</button>
+                <button type="button" class="btn-1" onclick="$('#units_active_table').show();$('#unit_edit_form').hide();" style="margin-right:10px;background:#e8051b;">CLOSE</button>
+            </fieldset>
+            </form> 
+        </div>
       </div>
     </div>
     <div>

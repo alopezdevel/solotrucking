@@ -218,7 +218,15 @@ var fn_formats = {
                    $(this).val(''); 
                    fn_formats.filtraInformacion();
                 }
-            }); 
+            });
+            //INICIALIZA DATEPICKER PARA CAMPOS FECHA
+            $(".fecha").datepicker({
+                showOn: 'button',
+                buttonImage: 'images/layout.png',
+                dateFormat : 'mm/dd/yy',
+                buttonImageOnly: true
+            });
+            $(".fecha,.flt_fecha").mask("99/99/9999"); 
             //Cargar Modelos para unidades:
             $.ajax({             
                 type:"POST", 
@@ -531,7 +539,7 @@ var fn_formats = {
         
     </div>
 </div>
-<!---- FORMULARIOS ------>
+<!---- FORMULARIOS FORMATO 1 ------>
 <div id="form_commercial_auto_quick" class="popup-form" style="width:1000px">
     <div class="p-header">
         <h2>QUOTE FORMAT - COMMERCIAL AUTO QUICK QUOTE FORM</h2>
@@ -740,6 +748,79 @@ var fn_formats = {
                     </tr>
                 </table>
                 <button type="button" class="btn-1" onclick="fn_formats.form_commercial_auto_quick.open_pdf();">GENERATE PDF FORMAT</button> 
+            </fieldset>
+        </form>
+    </div>
+    </div>
+</div>
+<!---- FORMULARIOS FORMATO 2 ------>
+<div id="form_application_coverage" class="popup-form" style="width:1000px">
+    <div class="p-header">
+        <h2>QUOTE FORMAT - APPLICATION FOR COVERAGE</h2>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('form_application_coverage');"><i class="fa fa-times"></i></div>
+    </div>
+    <div class="p-container">
+    <div id="company_information">
+    <p style="text-align:center;">Physical Damage / Motor Truck Cargo / Non-Trucking Liability</p> 
+        <form>
+            <fieldset>
+                <p class="mensaje_valido">&nbsp;The fields containing an (*) are required.</p> 
+                <table style="width:100%">
+                    <tr>
+                        <td>
+                            <div class="field_item">
+                                <label class="lbl-check"><input tabindex="1" name="iBindEffective" type="checkbox" value="1"> Bind Effective</label>  
+                                <input tabindex="2" id="sDateBindEffective" class="fecha" name="sDateBindEffective" type="text" readonly="readonly">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="field_item"> 
+                                <label class="lbl-check"><input tabindex="3" name="iQuoteNeeded" type="checkbox" value="1"> Quote Needed By: </label>  
+                                <input tabindex="4" id="sDateQuoteNeeded" class="fecha" name="sDateQuoteNeeded" type="text" readonly="readonly">
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <legend>Insured Information</legend> 
+                <table style="width:100%"> 
+                    <tr>
+                        <td>
+                            <div class="field_item">
+                                <input id="iConsecutivo" name="iConsecutivo" type="hidden" value="">
+                                <label>Insured's Name <span style="color:#ff0000;">*</span>:</label> 
+                                <select tabindex="1" id="iConsecutivoCompania" onblur="fn_formats.form_commercial_auto_quick.get_company_info(this.value);"><option value="">Select an option...</option></select>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="field_item"> 
+                                <label>Ph#:</label>  
+                                <input tabindex="2" id="sTelefonoPrincipal" class="numb" name="sTelefonoPrincipal" type="text" readonly="readonly">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="100%">
+                            <div class="field_item">
+                                <label>Garaging Address:</label> 
+                                <input tabindex="3" id="sDireccion" name="sDireccion" type="text" readonly="readonly">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:80%">
+                            <div class="field_item">
+                                <label>No. Of Years In Business (With own insurance):</label> 
+                                <input tabindex="4" id="sYearsExperiencia" class="num" name="sYearsExperiencia" type="text" maxlength="2" style="width: 99%;"> 
+                            </div>
+                        </td>
+                        <td>
+                            <div class="field_item">
+                                <label>FEIN#:</label> 
+                                <input tabindex="5" id="iFEINNumb" name="iFEINNumb" type="text" maxlength="15"> 
+                            </div>
+                        </td>
+                    </tr>
+                <table>
             </fieldset>
         </form>
     </div>
