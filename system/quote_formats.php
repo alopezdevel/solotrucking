@@ -726,8 +726,8 @@ var fn_formats = {
                             </div> 
                             <div class="field_item">
                                 <label style="float: left;padding: 12px 0px 0px;display: block;width: 150px;">Cargo:</label> 
-                                <label class="lbl-check"><input tabindex="32"  name="iCargo" type="radio" value="25"> $25,000</label> 
-                                <label class="lbl-check"><input tabindex="33"  name="iCargo" type="radio" value="50"> $50,000</label> 
+                                <label class="lbl-check"><input tabindex="32"  name="iCargo" type="radio" value="25"> $100,000</label> 
+                                <label class="lbl-check"><input tabindex="33"  name="iCargo" type="radio" value="50"> $250,000</label> 
                                 <label class="lbl-check"> Deductible <input tabindex="34" id="iCargo"type="text" style="height: 27px;width: 120px;"></label>   
                             </div>
                         </td>
