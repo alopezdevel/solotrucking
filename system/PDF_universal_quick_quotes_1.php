@@ -307,6 +307,11 @@
         $y = 203;
         $pdf->SetXY($x,$y);
         $pdf->Write(5,$CARGO_50); 
+        $CARGO_DEDUCTIBLE = $_GET['cargo_deductible'];
+        $x = 113;             
+        $y = 203;
+        $pdf->SetXY($x,$y);
+        $pdf->Write(5,$CARGO_DEDUCTIBLE); 
         
         //DATOS FIJOS
         $x_con = 33;      
