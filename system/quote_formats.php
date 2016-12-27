@@ -38,7 +38,7 @@ function inicio(){
             autoOpen: false,
             width : 600,
             height : 500,
-            resizable : false,
+            resizable : true,
             buttons : {
                 'CONTINUE' : function() {
                     
@@ -426,8 +426,8 @@ var fn_formats = {
                //Cargar Companies:
                $.post("catalogos_generales.php", { accion: "get_companies"},function(data){ $("#form_commercial_auto_quick #iConsecutivoCompania").empty().append(data.select);},"json");
                //Limpiar form:
-               $('#form_commercial_auto_quick input:text, #form_commercial_auto_quick select, #form_commercial_auto_quick input:hidden ').val('');
                $('#form_commercial_auto_quick input:radio').prop('checked','');
+               $('#form_commercial_auto_quick input.company_info, #form_commercial_auto_quick select').val(''); 
                //fn_solotrucking.get_date(".fecha"); 
                fn_popups.resaltar_ventana('form_commercial_auto_quick');  
            },
@@ -437,7 +437,7 @@ var fn_formats = {
                    if(data.error == '0'){
                        
                        $('#form_commercial_auto_quick input:text,#form_commercial_auto_quick input:hidden ').val('');
-                       $('#form_commercial_auto_quick input:radio').prop('checked','');
+                       //$('#form_commercial_auto_quick input:radio').prop('checked','');
                        fn_formats.get_list_drivers('form_commercial_auto_quick');
                        fn_formats.get_list_ut('form_commercial_auto_quick','unit');
                        fn_formats.get_list_ut('form_commercial_auto_quick','trailer');
@@ -482,9 +482,12 @@ var fn_formats = {
                var iInsuredMBI          = $('#form_commercial_auto_quick input:radio[name=iInsuredMBI]:checked').val();
                var iCargo               = $('#form_commercial_auto_quick input:radio[name=iCargo]:checked').val();
                var iCargoDescription    = $('#form_commercial_auto_quick #iCargo').val();
-               //var iOtherCoverage1      = $('#form_commercial_auto_quick #iOtherCoverage1').val(); 
+               var iOtherCoverage1      = $('#form_commercial_auto_quick #iOtherCoverage1').val(); 
+               var iOtherCoverage2      = $('#form_commercial_auto_quick #iOtherCoverage2').val(); 
+               var iOtherCoverage3      = $('#form_commercial_auto_quick #iOtherCoverage3').val(); 
+               var iOtherCoverage4      = $('#form_commercial_auto_quick #iOtherCoverage4').val(); 
                
-               window.open('PDF_universal_quick_quotes_1.php?consecutivo_doc=1&id_compania='+iConsecutivoCompania+'&consecutivo_drivers='+iTokenDriver+'&consecutivo_equipment='+iTokenUnit+'&consecutivo_trailer='+iTokenTrailer+'&year_in_bussines='+sYearsExperiencia+'&fein='+iFEINNumb+'&commodities_hauled='+sCommodities+'&filing_required='+iFillings+'&radio='+iRadius+'&coverages_auto_liability='+iAutoLiability+'&auto_liability_other='+iAutoLiabilityDescription+'&auto_liability_deductible='+iAutoLiabilityD+'&coverages_uninsured_mot='+iInsuredMBI+'&coverages_cargo='+iCargo+'&cargo_deductible'+iCargoDescription);
+               window.open('PDF_universal_quick_quotes_1.php?consecutivo_doc=1&id_compania='+iConsecutivoCompania+'&consecutivo_drivers='+iTokenDriver+'&consecutivo_equipment='+iTokenUnit+'&consecutivo_trailer='+iTokenTrailer+'&year_in_bussines='+sYearsExperiencia+'&fein='+iFEINNumb+'&commodities_hauled='+sCommodities+'&filing_required='+iFillings+'&radio='+iRadius+'&coverages_auto_liability='+iAutoLiability+'&auto_liability_other='+iAutoLiabilityDescription+'&auto_liability_deductible='+iAutoLiabilityD+'&coverages_uninsured_mot='+iInsuredMBI+'&coverages_cargo='+iCargo+'&cargo_deductible='+iCargoDescription+'&other_coverage1='+iOtherCoverage1+'&other_coverage2='+iOtherCoverage2+'&other_coverage3='+iOtherCoverage3+'&other_coverage4='+iOtherCoverage4);
            } 
         } 
 }     
@@ -554,15 +557,15 @@ var fn_formats = {
                     <tr>
                         <td>
                             <div class="field_item">
-                                <input id="iConsecutivo" name="iConsecutivo" type="hidden" value="">
+                                <input id="iConsecutivo" name="iConsecutivo" type="hidden" value="" class="company_info">
                                 <label>Named Insured <span style="color:#ff0000;">*</span>:</label> 
-                                <select tabindex="1" id="iConsecutivoCompania" onblur="fn_formats.form_commercial_auto_quick.get_company_info(this.value);"><option value="">Select an option...</option></select>
+                                <select tabindex="1" class="company_info" id="iConsecutivoCompania" onblur="fn_formats.form_commercial_auto_quick.get_company_info(this.value);"><option value="">Select an option...</option></select>
                             </div>
                         </td>
                         <td>
                             <div class="field_item"> 
                                 <label>Ph#:</label>  
-                                <input tabindex="2" id="sTelefonoPrincipal" class="numb" name="sTelefonoPrincipal" type="text" readonly="readonly">
+                                <input tabindex="2" class="company_info" id="sTelefonoPrincipal" class="numb" name="sTelefonoPrincipal" type="text" readonly="readonly">
                             </div>
                         </td>
                     </tr>
@@ -570,7 +573,7 @@ var fn_formats = {
                         <td colspan="100%">
                             <div class="field_item">
                                 <label>Garaging Address:</label> 
-                                <input tabindex="3" id="sDireccion" name="sDireccion" type="text" readonly="readonly">
+                                <input tabindex="3" class="company_info" id="sDireccion" name="sDireccion" type="text" readonly="readonly">
                             </div>
                         </td>
                     </tr>
@@ -578,13 +581,13 @@ var fn_formats = {
                         <td style="width:80%">
                             <div class="field_item">
                                 <label>No. Of Years In Business (With own insurance):</label> 
-                                <input tabindex="4" id="sYearsExperiencia" class="num" name="sYearsExperiencia" type="text" maxlength="2" style="width: 99%;"> 
+                                <input tabindex="4" class="company_info" id="sYearsExperiencia" class="num" name="sYearsExperiencia" type="text" maxlength="2" style="width: 99%;"> 
                             </div>
                         </td>
                         <td>
                             <div class="field_item">
                                 <label>FEIN#:</label> 
-                                <input tabindex="5" id="iFEINNumb" name="iFEINNumb" type="text" maxlength="15"> 
+                                <input tabindex="5" class="company_info" id="iFEINNumb" name="iFEINNumb" type="text" maxlength="15"> 
                             </div>
                         </td>
                     </tr>
@@ -592,7 +595,7 @@ var fn_formats = {
                         <td colspan="100%">
                             <div class="field_item">
                                 <label>Commodities Hauled (Be specific about percent of time):</label> 
-                                <input tabindex="6" id="sCommodities" name="sCommodities" type="text">
+                                <input tabindex="6" class="company_info" id="sCommodities" name="sCommodities" type="text">
                             </div>
                         </td>
                     </tr>
@@ -631,7 +634,7 @@ var fn_formats = {
                         <td colspan="100%">
                             <div class="field_item">
                                 <label>Driver(s):</label>
-                                <input id="driver_token" name="driver_token" type="hidden" value="">  
+                                <input id="driver_token" name="driver_token" type="hidden" value="" class="company_info">  
                                 <table id="driver_list" style="width:100%;" class="popup-datagrid">
                                 <thead>
                                     <tr id="grid-head2">
@@ -653,7 +656,7 @@ var fn_formats = {
                         <td colspan="100%">
                             <div class="field_item">
                                 <label>Equipment:</label>
-                                <input id="unit_token" name="unit_token" type="hidden" value="">  
+                                <input id="unit_token" name="unit_token" type="hidden" value="" class="company_info">  
                                 <table id="unit_list" style="width:100%;" class="popup-datagrid">
                                 <thead>
                                     <tr id="grid-head2">
@@ -726,8 +729,8 @@ var fn_formats = {
                             </div> 
                             <div class="field_item">
                                 <label style="float: left;padding: 12px 0px 0px;display: block;width: 150px;">Cargo:</label> 
-                                <label class="lbl-check"><input tabindex="32"  name="iCargo" type="radio" value="25"> $100,000</label> 
-                                <label class="lbl-check"><input tabindex="33"  name="iCargo" type="radio" value="50"> $250,000</label> 
+                                <label class="lbl-check"><input tabindex="32"  name="iCargo" type="radio" value="25" onchange="if($(this).prop('checked')){$('#form_commercial_auto_quick #iCargo').val('1000')}"> $100,000</label> 
+                                <label class="lbl-check"><input tabindex="33"  name="iCargo" type="radio" value="50" onchange="if($(this).prop('checked')){$('#form_commercial_auto_quick #iCargo').val('2500')}"> $250,000</label> 
                                 <label class="lbl-check"> Deductible <input tabindex="34" id="iCargo"type="text" style="height: 27px;width: 120px;"></label>   
                             </div>
                         </td>
@@ -736,13 +739,13 @@ var fn_formats = {
                         <td colspan="100%">
                             <div class="field_item">
                                 <label>Other Coverage:</label><br> 
-                                <input tabindex="27" id="iOtherCoverage1" type="text" style="height: 27px;width: 120px;" readonly="readonly">  
+                                <input tabindex="27" id="iOtherCoverage1" type="text" style="height: 27px;width: 120px;">  
                                 <label class="lbl-check"><input tabindex="15" name="OtherCoverage" type="radio" disabled="disabled"></label>
-                                <input tabindex="27" id="iOtherCoverage2" type="text" style="height: 27px;width: 120px;" readonly="readonly">  
+                                <input tabindex="27" id="iOtherCoverage2" type="text" style="height: 27px;width: 120px;">  
                                 <label class="lbl-check"><input tabindex="17" name="OtherCoverage" type="radio" disabled="disabled"></label>
-                                <input tabindex="27" id="iOtherCoverage3" type="text" style="height: 27px;width: 120px;" readonly="readonly">  
+                                <input tabindex="27" id="iOtherCoverage3" type="text" style="height: 27px;width: 120px;">  
                                 <label class="lbl-check"> Deductible</label> 
-                                <input tabindex="34" id="iOtherCoverage4" type="text" style="height: 27px;width: 120px;" readonly="readonly">    
+                                <input tabindex="34" id="iOtherCoverage4" type="text" style="height: 27px;width: 120px;">    
                             </div>
                         </td>
                     </tr>
@@ -753,7 +756,7 @@ var fn_formats = {
     </div>
     </div>
 </div>
-<!---- FORMULARIOS FORMATO 2 ------>
+<!---- FORMULARIOS FORMATO 2 
 <div id="form_application_coverage" class="popup-form" style="width:1000px">
     <div class="p-header">
         <h2>QUOTE FORMAT - APPLICATION FOR COVERAGE</h2>
@@ -793,7 +796,7 @@ var fn_formats = {
                         </td>
                         <td>
                             <div class="field_item"> 
-                                <label>Ph#:</label>  
+                                <label>FEIN or SS#:</label>  
                                 <input tabindex="2" id="sTelefonoPrincipal" class="numb" name="sTelefonoPrincipal" type="text" readonly="readonly">
                             </div>
                         </td>
@@ -801,8 +804,14 @@ var fn_formats = {
                     <tr>
                         <td colspan="100%">
                             <div class="field_item">
-                                <label>Garaging Address:</label> 
+                                <label>Address:</label> 
                                 <input tabindex="3" id="sDireccion" name="sDireccion" type="text" readonly="readonly">
+                            </div>
+                        </td>
+                        <td colspan="100%">
+                            <div class="field_item">
+                                <label>City:</label> 
+                                <input tabindex="3" id="sCiudad" name="sCiudad" type="text" readonly="readonly">
                             </div>
                         </td>
                     </tr>
@@ -825,7 +834,7 @@ var fn_formats = {
         </form>
     </div>
     </div>
-</div>
+</div> ------> 
 <!--- DIALOGUES DRIVERS--->
 <div id="dialog_driver_options" title="SELECT AN OPTION">
   <p>Please select an of following options:</p>
@@ -836,8 +845,8 @@ var fn_formats = {
     <option value="NEW">Add a new driver on the list.</option>
   </select>
 </div>
-<div id="dialog_driver_list" title="SELECT DRIVERS TO ADD">
-  <p>Please select the drivers of company list:</p>
+<div id="dialog_driver_list"  title="SELECT DRIVERS TO ADD">
+  <p>Please select the data of company list:</p>
   <input  id="form_select" type="hidden" value=""> 
   <table style="width: 100%;">
    <thead>
