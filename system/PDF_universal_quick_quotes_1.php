@@ -314,7 +314,7 @@
         $pdf->Write(5,$CARGO_50); 
         $CARGO_DEDUCTIBLE = $_GET['cargo_deductible'];
         $x = 115;             
-        $y = 203;
+        $y = 204;
         $pdf->SetXY($x,$y);
         $pdf->Write(5,$CARGO_DEDUCTIBLE); 
         
@@ -350,12 +350,12 @@
         $pdf->SetXY($x_con,$y_con);
         $pdf->Write(5,$AGENCY = "SOLO TRUCKING INSURANCE");
         
-        $x_con = 117;      
+        $x_con = 115;      
         $y_con = 252;       
         $pdf->SetXY($x_con,$y_con);
         $pdf->Write(5,$PHONE = "(956)791-6511 ");
         
-        $x_con = 31;      
+        $x_con = 33;      
         $y_con = 258;       
         $pdf->SetXY($x_con,$y_con);
         $pdf->Write(5,$AGENT = "JUAN C SANCHEZ ");

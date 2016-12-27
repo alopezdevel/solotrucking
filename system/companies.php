@@ -270,8 +270,28 @@ var fn_companies = {
                 <input class="txt-uppercase" tabindex="1" id="sNombreCompania" name="sNombreCompania" type="text" placeholder="" maxlength="255">
             </div>
             <div class="field_item"> 
-                <label>USDOT <span style="color:#ff0000;">*</span>:</label> 
+                <label>USDOT# <span style="color:#ff0000;">*</span>:</label> 
                 <input tabindex="2" id="sUsdot" class="numb" name="sUsdot" type="text" placeholder="" maxlength="10">
+            </div>
+            <div class="field_item"> 
+                <label>Texas DMV#:</label> 
+                <input tabindex="2" id="sTexasDMV" class="txt-uppercase" name="sTexasDMV" type="text" placeholder="" maxlength="15">
+            </div>
+            <div class="field_item"> 
+                <label>FEIN#:</label> 
+                <input tabindex="2" id="sFEIN" class="txt-uppercase" name="sFEIN" type="text" placeholder="" maxlength="15">
+            </div>
+            <div class="field_item"> 
+                <label>MC#:</label> 
+                <input tabindex="2" id="sMC" class="txt-uppercase" name="sMC" type="text" placeholder="" maxlength="15">
+            </div>
+            <div class="field_item"> 
+                <label>Starting in Business since year:</label> 
+                <input tabindex="2" id="iStartingYear" class="numb" name="iStartingYear" type="text" placeholder="" maxlength="4">
+            </div>
+            <div class="field_item"> 
+                <label>Started operations with equipment since year:</label> 
+                <input tabindex="2" id="iStartingOperationYear" class="numb" name="iStartingOperationYear" type="text" placeholder="" maxlength="4">
             </div>
             <div class="field_item">
                 <label>Address:</label>  
@@ -280,11 +300,11 @@ var fn_companies = {
             <div class="field_item">
                 <div class="col_3 left ">
                     <label>City:</label>  
-                    <input tabindex="4" id="sCiudad" name="sCiudad" type="text"  placeholder="" maxlength="200"> 
+                    <input tabindex="4" id="sCiudad" name="sCiudad" type="text"  placeholder="" maxlength="200" style="width: 96%;"> 
                 </div> 
                 <div class="col_3 left ">  
                     <label>Zip Code:</label>   
-                    <input tabindex="5" id="sCodigoPostal" class="numb" name="sCodigoPostal" type="text" maxlength="5" placeholder="" style="margin-left: 3px;">                
+                    <input tabindex="5" id="sCodigoPostal" class="numb" name="sCodigoPostal" type="text" maxlength="5" placeholder="" style="width:98%">                
                 </div>
                 <div class="col_3 left "> 
                     <label>State:</label>  
