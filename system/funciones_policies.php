@@ -122,7 +122,7 @@
     $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
         
     //Filtros de informacion //
-    $filtroQuery = " WHERE iDeleted = '0' OR DATE(A.dFechaCaducidad)< CURDATE() ";
+    $filtroQuery = " WHERE iDeleted = '0' OR DATE(A.dFechaCaducidad) < CURDATE() ";
     $array_filtros = explode(",",$_POST["filtroInformacion"]);
     foreach($array_filtros as $key => $valor){
         if($array_filtros[$key] != ""){
@@ -155,7 +155,9 @@
                "FROM ct_polizas A ".
                "LEFT JOIN ct_companias B ON A.iConsecutivoCompania = B.iConsecutivo ".
                "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
-               "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
+               "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
+               echo $sql;
+               exit; 
         $result = $conexion->query($sql);
         $rows = $result->num_rows;   
         if ($rows > 0) {    

@@ -208,7 +208,7 @@ var fn_companies = {
                 <td><input class="flt_country" type="text" placeholder="Country:"></td>
                 <td style='width:50px;'><input class="flt_zip" type="text" placeholder="Zip Code:"></td> 
                 <td><input class="flt_contacto" type="text" placeholder="Contact Name:"></td>
-                <td style='width:100px;'><input class="flt_phone" type="text" placeholder="Phone(s):"></td> 
+                <td style='width:200px;'><input class="flt_phone" type="text" placeholder="Phone(s):"></td> 
                 <td style='width:80px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_companies.filtraInformacion();"><i class="fa fa-search"></i></div>
                     <div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_companies.add();"><i class="fa fa-plus"></i></div>
@@ -275,55 +275,65 @@ var fn_companies = {
             </div>
             <div class="field_item"> 
                 <label>Texas DMV#:</label> 
-                <input tabindex="2" id="sTexasDMV" class="txt-uppercase" name="sTexasDMV" type="text" placeholder="" maxlength="15">
+                <input tabindex="3" id="sTexasDMV" class="txt-uppercase" name="sTexasDMV" type="text" placeholder="" maxlength="15">
             </div>
             <div class="field_item"> 
                 <label>FEIN#:</label> 
-                <input tabindex="2" id="sFEIN" class="txt-uppercase" name="sFEIN" type="text" placeholder="" maxlength="15">
+                <input tabindex="4" id="sFEIN" class="txt-uppercase" name="sFEIN" type="text" placeholder="" maxlength="15">
             </div>
             <div class="field_item"> 
                 <label>MC#:</label> 
-                <input tabindex="2" id="sMC" class="txt-uppercase" name="sMC" type="text" placeholder="" maxlength="15">
+                <input tabindex="5" id="sMC" class="txt-uppercase" name="sMC" type="text" placeholder="" maxlength="15">
             </div>
             <div class="field_item"> 
                 <label>Starting in Business since year:</label> 
-                <input tabindex="2" id="iStartingYear" class="numb" name="iStartingYear" type="text" placeholder="" maxlength="4">
+                <input tabindex="6" id="iStartingYear" class="numb" name="iStartingYear" type="text" placeholder="" maxlength="4">
             </div>
             <div class="field_item"> 
                 <label>Started operations with equipment since year:</label> 
-                <input tabindex="2" id="iStartingOperationYear" class="numb" name="iStartingOperationYear" type="text" placeholder="" maxlength="4">
+                <input tabindex="7" id="iStartingOperationYear" class="numb" name="iStartingOperationYear" type="text" placeholder="" maxlength="4">
             </div>
             <div class="field_item">
                 <label>Address:</label>  
-                <input tabindex="3" id="sDireccion" name="sDireccion" type="text" placeholder="" maxlength="300">
+                <input tabindex="8" id="sDireccion" name="sDireccion" type="text" placeholder="" maxlength="300">
             </div>
             <div class="field_item">
                 <div class="col_3 left ">
                     <label>City:</label>  
-                    <input tabindex="4" id="sCiudad" name="sCiudad" type="text"  placeholder="" maxlength="200" style="width: 96%;"> 
+                    <input tabindex="9" id="sCiudad" name="sCiudad" type="text"  placeholder="" maxlength="200" style="width: 96%;"> 
                 </div> 
                 <div class="col_3 left ">  
                     <label>Zip Code:</label>   
-                    <input tabindex="5" id="sCodigoPostal" class="numb" name="sCodigoPostal" type="text" maxlength="5" placeholder="" style="width:98%">                
+                    <input tabindex="10" id="sCodigoPostal" class="numb" name="sCodigoPostal" type="text" maxlength="5" placeholder="" style="width:98%">                
                 </div>
                 <div class="col_3 left "> 
                     <label>State:</label>  
-                    <select tabindex="6" id="sEstado" name="sEstado" style="height: 41px!important;margin-left: 6px;"></select>
+                    <select tabindex="11" id="sEstado" name="sEstado" style="height: 41px!important;margin-left: 6px;"></select>
                 </div>
             </div>
             <div class="field_item">
                 <div class="col_2 left "> 
                 <label>Contact Name:</label>  
-                <input tabindex="2" id="sNombreContacto" name="sNombreContacto" type="text" placeholder="" maxlength="255">
+                <input tabindex="12" id="sNombreContacto" name="sNombreContacto" type="text" placeholder="" maxlength="255">
                 </div>
                 <div class="col_2 left "> 
-                <label>Phone:</label>  
-                <input tabindex="7" id="sTelefonoPrincipal" class="numb" name="sTelefonoPrincipal" type="text" placeholder="" maxlength="25" style="margin-left: 7px;">
+                <label>E-mail:</label>  
+                <input tabindex="13" id="sEmailContacto" name="sEmailContacto" type="text" placeholder="" maxlength="100" style="margin-left: 7px;">
+                </div>
+            </div>
+            <div class="field_item">
+                <div class="col_2 left "> 
+                <label>PH:</label>  
+                <input tabindex="14" id="sTelefonoPrincipal" class="numb" name="sTelefonoPrincipal" type="text" placeholder="" maxlength="25" style="margin-left: 7px;">
+                </div>
+                <div class="col_2 left "> 
+                <label>FAX:</label>  
+                <input tabindex="15" id="sTelefono2" class="numb" name="sTelefono2" type="text" placeholder="" maxlength="25" style="margin-left: 7px;">
                 </div>
             </div>
             <div class="field_item" style="clear: both;">
                 <label>Red List:</label>  
-                <select tabindex="3" id="iOnRedList" name="iOnRedList">
+                <select tabindex="16" id="iOnRedList" name="iOnRedList">
                     <option value="0">No</option>
                     <option value="1">Yes</option> 
                 </select>

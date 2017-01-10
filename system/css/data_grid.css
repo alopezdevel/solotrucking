@@ -505,7 +505,7 @@ table.popup-datagrid{
     height: 22px;
     font-family: Arial, Helvetica, sans-serif!important;
 }
-input.fecha{width: 96%;margin-right: 5px;}
+input.fecha{width: 96%;margin-right: 5px!important;}
 input.fecha.error{width: 95%!important;}
 .popup-datagrid tfoot input{
    background: transparent!important;

@@ -51,13 +51,13 @@
         if ($rows > 0) {    
             while ($items = $result->fetch_assoc()) { 
                if($items["iConsecutivo"] != ""){
-                     $items['sNombreFormularioCaptura'] != "" ? $funcion = "fn_formats.".$items['sNombreFormularioCaptura'].".init();" : $funcion = "";
+                     $items['sNombreFormularioCaptura'] != "" ? $funcion = " <div class=\"btn_new send-email btn-icon btn-left\" title=\"Generate this format\" onclick=\"fn_formats.".$items['sNombreFormularioCaptura'].".init();\" ><i class=\"fa fa-plus\"></i></div>" : $funcion = "";
                      $htmlTabla .= "<tr>
                                         <td>".$items['iConsecutivo']."</td>".
                                        "<td>".$items['sTituloArchivoEmpresa']."</td>".
                                        "<td>".$items['sNombreArchivoEmpresa']."</td>".                                                                                                                                                                                                                         
                                        "<td>
-                                            <div class=\"btn_new send-email btn-icon btn-left\" title=\"Generate this format\" onclick=\"$funcion\"><i class=\"fa fa-plus\"></i></div>
+                                            $funcion
                                             <div class=\"btn_new send-email btn-icon btn-left\" title=\"Open original format in a new window\"><a href=\"".$items['sRutaArchivoOriginal']."\" target=\"_blank\"><i class=\"fa fa-external-link\"></i></a></div>  
                                        </td></tr>";
                                        //<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Format Name\"><i class=\"fa fa-pencil-square-o\"></i><span></span></div>
@@ -90,7 +90,7 @@
     //$conexion->begin_transaction();
     $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
     $transaccion_exitosa = true;
-    $sql = "SELECT * FROM ct_companias WHERE iConsecutivo = ".$iConsecutivo;
+    $sql = "SELECT * FROM ct_companias WHERE iConsecutivo = ".$iConsecutivo; 
     $result = $conexion->query($sql);
     $items = $result->num_rows;   
     if ($items > 0) {     
@@ -98,7 +98,16 @@
         $llaves  = array_keys($data);
         $datos   = $data;
         foreach($datos as $i => $b){
-             $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');"; 
+             if($i == 'iStartingYear' || $i == 'iStartingOperationYear'){
+                $StartingYear = $datos[$i]; 
+                $TodayYear = getdate(); 
+                $StartingYear != '' ? $TotalYears = ($TodayYear['year']-$StartingYear) : $TotalYears = "";
+                if($i == 'iStartingYear'){$campo = 'sYearsExperiencia';}
+                else if($i == 'iStartingOperationYear'){$campo = 'sYearsOperation';}
+                $fields .= "\$('#$domroot :input[id=$campo]').val('".$TotalYears."');";
+             }else{
+                $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');";  
+             }
         }  
     }else{
         $error = '1';
