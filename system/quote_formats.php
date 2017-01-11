@@ -539,7 +539,12 @@ var fn_formats = {
                var iOtherCoverage3      = $('#form_application_coverage #iOtherCoverage3').val(); 
                var iOtherCoverage4      = $('#form_application_coverage #iOtherCoverage4').val(); 
                
-               window.open('PDF_formato_quotes_5.php?consecutivo_doc=5&id_compania='+iConsecutivoCompania+'&consecutivo_drivers='+iTokenDriver+'&consecutivo_equipment='+iTokenUnit+'&consecutivo_trailer='+iTokenTrailer+'&commodities_hauled='+sCommodities+'&radio='+iRadius);
+               window.open('PDF_formato_quotes_5.php?consecutivo_doc=5&id_compania='+iConsecutivoCompania+
+                           '&consecutivo_drivers='+iTokenDriver+
+                           '&consecutivo_equipment='+iTokenUnit+
+                           '&consecutivo_trailer='+iTokenTrailer+
+                           '&commodities_hauled='+sCommodities+
+                           '&radio='+iRadius);
            } 
         } 
 }     
