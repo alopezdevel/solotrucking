@@ -171,27 +171,27 @@
         $pdf->SetXY($x,$y);
         $pdf->Write(5,$GARAGING_ADDRESS);
         //YEARS_IN_BUSSINES
-        $x += 50;
+        $x += 47;
         $y += 7;   
         $pdf->SetXY($x,$y);
         $pdf->Write(5,$YEARS_IN_BUSSINES);
         //FEIN                
-        $pdf->SetXY($x + 38,$y);
+        $pdf->SetXY($x +41,$y);
         $pdf->Write(5,$FEIN);
         //COMMODITIES_HAULED
-        if(strlen($COMMODITIES_HAULED)>32){
-            $COMMODITIES_HAULED1 = substr($COMMODITIES_HAULED,0,33);
-            $COMMODITIES_HAULED2 = substr($COMMODITIES_HAULED,33);
-            $x += 10;
+        if(strlen($COMMODITIES_HAULED)>42){
+            $COMMODITIES_HAULED1 = substr($COMMODITIES_HAULED,0,42);
+            $COMMODITIES_HAULED2 = substr($COMMODITIES_HAULED,42,96);
+            $x = 114;
             $y += 7;   
             $pdf->SetXY($x,$y);
             $pdf->Write(5,$COMMODITIES_HAULED1); 
-            $x = 19;
+            $x = 20;
             $y += 7;   
             $pdf->SetXY($x,$y);
             $pdf->Write(5,$COMMODITIES_HAULED2);           
         }else{
-            $x += 10;
+            $x = 114;
             $y += 7;   
             $pdf->SetXY($x,$y);
             $pdf->Write(5,$COMMODITIES_HAULED);

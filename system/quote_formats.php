@@ -652,7 +652,7 @@ var fn_formats = {
                         <td colspan="100%">
                             <div class="field_item">
                                 <label>Commodities Hauled (Be specific about percent of time):</label> 
-                                <input tabindex="6" class="company_info" id="sCommodities" name="sCommodities" type="text">
+                                <input tabindex="6" class="company_info" id="sCommodities" name="sCommodities" type="text" maxlength="138">
                             </div>
                         </td>
                     </tr>
@@ -661,12 +661,7 @@ var fn_formats = {
                             <div class="field_item">
                                 <label>Filings Required:</label> 
                                 <label class="lbl-check"><input tabindex="7"  name="iFillings" type="radio" value="0"> None</label>
-                                <label class="lbl-check"><input tabindex="8"  name="iFillings" type="radio" value="1"> YES</label>
-                                                         <!--<input tabindex="9" id="" name="" type="text" style="height: 27px;width: auto;">  
-                                <label class="lbl-check"><input tabindex="10"  id="" name="" type="checkbox"> DMV</label>
-                                                         <input tabindex="11" id="" name="" type="text" style="height: 27px;width: auto;"> 
-                                <label class="lbl-check"><input tabindex="12" id="" name="" type="checkbox"> OTHER</label>
-                                                         <input tabindex="13" id="" name="" type="text" style="height: 27px;width: auto;">-->   
+                                <label class="lbl-check"><input tabindex="8"  name="iFillings" type="radio" value="1"> YES</label>   
                             </div>
                         </td>
                     </tr>
@@ -676,14 +671,7 @@ var fn_formats = {
                                 <label>Radius:</label>
                                 <label class="lbl-check"><input tabindex="15"  name="iRadius" type="radio" value="250"> -250 Miles</label>
                                 <label class="lbl-check"><input tabindex="16"  name="iRadius" type="radio" value="500"> -500 Miles</label>
-                                <label class="lbl-check"><input tabindex="17"  name="iRadius" type="radio" value="500p">  +500 Miles</label> 
-                                <!---<label class="lbl-check"><input tabindex="14"  id="" name="" type="checkbox"> Intrastate (CA Only)</label>
-                                <label class="lbl-check"><input tabindex="15"  id="" name="" type="checkbox"> 0-100 Miles</label>
-                                <label class="lbl-check"><input tabindex="16"  id="" name="" type="checkbox"> 101-200 Miles</label>
-                                <label class="lbl-check"><input tabindex="17" id="" name="" type="checkbox"> 201-300 Miles</label>
-                                <label class="lbl-check"><input tabindex="18" id="" name="" type="checkbox"> 301-500 Miles</label> 
-                                <label class="lbl-check"><input tabindex="19" id="" name="" type="checkbox"> Interstate - Exactly Where?</label>
-                                <input tabindex="20" id="" name="" type="text" style="height: 27px;width: 120px;">--->    
+                                <label class="lbl-check"><input tabindex="17"  name="iRadius" type="radio" value="500p">  +500 Miles</label>   
                             </div>
                         </td>
                     </tr>
@@ -1075,7 +1063,7 @@ var fn_formats = {
                         </td>
                     </tr>
                 </table>
-                <button type="button" class="btn-1" onclick="">GENERATE PDF FORMAT</button> 
+                <button type="button" class="btn-1" onclick="fn_formats.form_application_coverage.open_pdf();">GENERATE PDF FORMAT</button> 
             </fieldset>
         </form>
     </div>
