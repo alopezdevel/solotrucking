@@ -67,7 +67,7 @@ function inicio(){
                    var name = $('#dialog_driver_form #sNombre').val();
                    var experience = $('#dialog_driver_form #iExperienciaYear').val();
                    var license = $('#dialog_driver_form #iNumLicencia').val();
-                   var accident = $('#dialog_driver_form #sAccidentesNum').val();
+                   var dFechaNacimiento = $('#dialog_driver_form #dFechaNacimiento').val();
                    var form      = $('#dialog_driver_form #form_select').val();
                    var iConsecutivoCompania =  $('#dialog_driver_form #iConsecutivoCompania').val();
                    
@@ -80,7 +80,7 @@ function inicio(){
                             sNombre: name, 
                             iExperienciaYear : experience,
                             iNumLicencia : license,
-                            sAccidentesNum : accident,
+                            dFechaNacimiento : dFechaNacimiento,
                             iConsecutivoCompania : iConsecutivoCompania,
                             edit_mode : edit_mode,
                             token : $('#'+form+' #driver_token').val()
@@ -193,8 +193,58 @@ function inicio(){
                     $(this).dialog('close');
                 }
             }
+        });   
+        //COMMODITIES:
+        $('#dialog_commodities_form').dialog({
+            modal: true,
+            autoOpen: false,
+            width : 550,
+            height : 450,
+            resizable : false,
+            buttons : {
+                'SAVE' : function() {
+                   
+                   var iConsecutivoCommodity = $('#dialog_commodities_form #iConsecutivoCommodity').val();
+                   var iPorcentajeHauled = $('#dialog_commodities_form #iPorcentajeHauled').val();
+                   var iValorMinimo = $('#dialog_commodities_form #iValorMinimo').val();
+                   var iValorMaximo = $('#dialog_commodities_form #iValorMaximo').val();
+                   var form      = $('#dialog_commodities_form #form_select').val();
+                   var iConsecutivoCompania =  $('#dialog_commodities_form #iConsecutivoCompania').val();
+                   
+                   //if($('#dialog_commodities_form #iConsecutivo').val() != ""){var edit_mode = 'true';}else{var edit_mode = 'false';} 
+                   var edit_mode = 'false';
+                   
+                   if(iConsecutivoCommodity != "" && iPorcentajeHauled != "" && iValorMaximo != ''){
+                        $.post("funciones_quote_formats.php",
+                        {
+                            accion:"save_commodities", 
+                            iConsecutivoCommodity: iConsecutivoCommodity, 
+                            iPorcentajeHauled : iPorcentajeHauled,
+                            iValorMinimo : iValorMinimo,
+                            iValorMaximo : iValorMaximo,
+                            iConsecutivoCompania : iConsecutivoCompania,
+                            edit_mode : edit_mode,
+                            token : $('#'+form+' #commodities_token').val()
+                        },
+                        function(data){
+                            if(data.error == '0'){
+                                $('#'+form+' #commodities_token').val(data.token); 
+                                $('#dialog_commodities_form').dialog('close');
+                                fn_formats.get_list_commodities(form);  
+                            }else{
+                               fn_solotrucking.mensaje(data.msj);  
+                            }       
+                        },"json");             
+                       
+                   }else{
+                      fn_solotrucking.mensaje('Please verify if the data have a valid value.'); 
+                   }
+                },
+                 'CANCEL' : function(){
+                    $(this).dialog('close');
+                }
+            }
         });
-    
 }  
 function validapantalla(usuario){if(usuario == ""  || usuario == null){location.href= "login.php";}}                   
 var fn_formats = {
@@ -206,7 +256,7 @@ var fn_formats = {
         orden : "iConsecutivo",
         init : function(){
             fn_formats.fillgrid();
-            $('.num').keydown(fn_solotrucking.inputnumero()); 
+            $('.num').keydown(fn_solotrucking.inputnumero); 
             //Filtrado con la tecla enter
             $(fn_formats.data_grid + ' #grid-head1 input').keyup(function(event){
                 if (event.keyCode == '13') {
@@ -263,6 +313,7 @@ var fn_formats = {
                      
                 }
             }); 
+            $.post("catalogos_generales.php", { accion: "get_commodities"},function(data){ $("#dialog_commodities_form #iConsecutivoCommodity").empty().append(data.select);},"json");
         },
         fillgrid: function(){
                $.ajax({             
@@ -435,7 +486,16 @@ var fn_formats = {
                    }//else{fn_solotrucking.mensaje(data.msj);}
                    
                },"json");
-           },
+        },
+        get_list_commodities : function(form){
+          $.post("funciones_quote_formats.php", {accion: "get_list_commodities",token: $('#'+form+' #commodities_token').val()},
+          function(data){ 
+                   if(data.error == '0'){
+                       $('#'+form+' #commodities_list tbody').empty().append(data.tabla);
+                       //$('#dialog_commodities_form').dialog('close');
+                   }else{fn_solotrucking.mensaje(data.msj);}   
+          },"json");  
+        },
         //FORMULARIOS:
         form_commercial_auto_quick : {
            init : function(){
@@ -490,7 +550,7 @@ var fn_formats = {
         },
         form_application_coverage : { 
             init : function(){
-               //Cargar Companies:
+               //Cargar Catalogos:
                $.post("catalogos_generales.php", { accion: "get_companies"},function(data){ $("#form_application_coverage #iConsecutivoCompania").empty().append(data.select);},"json");
                //Limpiar form:
                $('#form_application_coverage input:radio').prop('checked','');
@@ -513,6 +573,15 @@ var fn_formats = {
                   $('#dialog_unit_trailer_options #form_select').val('form_application_coverage');
                   $('#dialog_unit_trailer_options #sTipo').val(tipo);
                   $('#dialog_unit_trailer_options').dialog( 'open' );
+                  return false; 
+              }else{fn_solotrucking.mensaje('Please first select a company.');} 
+           }, 
+           open_commodities_dialog : function(){
+              if($('#form_application_coverage #iConsecutivoCompania').val() != ""){
+                  $('#dialog_commodities_form input,#dialog_commodities_form select ').val('');
+                  $('#dialog_commodities_form #iConsecutivoCompania').val($('#form_application_coverage #iConsecutivoCompania').val());
+                  $('#dialog_commodities_form #form_select').val('form_application_coverage');
+                  $('#dialog_commodities_form').dialog( 'open' );
                   return false; 
               }else{fn_solotrucking.mensaje('Please first select a company.');} 
            },
@@ -685,7 +754,7 @@ var fn_formats = {
                                     <tr id="grid-head2">
                                         <td class="etiqueta_grid">Name</td>
                                         <td class="etiqueta_grid">YRS EXP</td>
-                                        <td class="etiqueta_grid">ACCIDENTS</td>
+                                        <td class="etiqueta_grid">DOB</td>
                                         <td class="etiqueta_grid" style="width: 100px;text-align: center;">
                                             <div class="btn-icon add btn-left" title="Add +"  onclick="fn_formats.form_commercial_auto_quick.open_driver_dialog();"><i class="fa fa-plus"></i></div>
                                         </td>
@@ -942,7 +1011,7 @@ var fn_formats = {
                                         <td class="etiqueta_grid">$ Minimum Value</td>
                                         <td class="etiqueta_grid">$ Maximum Value</td>
                                         <td class="etiqueta_grid" style="width: 100px;text-align: center;">
-                                            <div class="btn-icon add btn-left" title="Add +"  onclick=""><i class="fa fa-plus"></i></div>
+                                            <div class="btn-icon add btn-left" title="Add +"  onclick="fn_formats.form_application_coverage.open_commodities_dialog();"><i class="fa fa-plus"></i></div>
                                         </td>
                                     </tr>
                                 </thead>
@@ -993,8 +1062,8 @@ var fn_formats = {
                         <td colspan="100%">
                             <div class="field_item">
                                 <label>Equipment:</label>
-                                <input id="unit_token" name="unit_token" type="hidden" value="" class="company_info">  
-                                <table id="unit_list" style="width:100%;" class="popup-datagrid datagrid">
+                                <input id="both_token" name="both_token" type="hidden" value="" class="company_info">  
+                                <table id="both_list" style="width:100%;" class="popup-datagrid datagrid">
                                 <thead>
                                     <tr id="grid-head2">
                                         <td class="etiqueta_grid">VIN</td>
@@ -1005,7 +1074,7 @@ var fn_formats = {
                                         <td class="etiqueta_grid">STATED VALUE</td> 
                                         <td class="etiqueta_grid">RADIUS</td> 
                                         <td class="etiqueta_grid" style="width: 100px;text-align: center;">
-                                            <div class="btn-icon add btn-left" title="Add +"  onclick="fn_formats.form_application_coverage.open_unit_trailer_dialog('trailer');"><i class="fa fa-plus"></i></div> 
+                                            <div class="btn-icon add btn-left" title="Add +"  onclick="fn_formats.form_application_coverage.open_unit_trailer_dialog('both');"><i class="fa fa-plus"></i></div> 
                                         </td>
                                     </tr>
                                 </thead>
@@ -1089,7 +1158,7 @@ var fn_formats = {
         <td class="etiqueta_grid" style="width:50px;text-align: center;"></td>
         <td class="etiqueta_grid">Name</td>
         <td class="etiqueta_grid">YRS EXP</td>
-        <td class="etiqueta_grid">ACCIDENTS</td>
+        <td class="etiqueta_grid">DOB</td>
     </tr>
    </thead>
    <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
@@ -1097,7 +1166,7 @@ var fn_formats = {
 </div>
 <div id="dialog_driver_form" title="DRIVER INFORMATION">
   <p>Please select an of following options:</p>
-  <form class="p-container">
+  <form class="p-container" style="overflow: hidden;">
   <input id="form_select" type="hidden" value="">
   <input id="iConsecutivo" type="hidden" value="">
   <input id="iConsecutivoCompania" type="hidden" value="">  
@@ -1106,7 +1175,7 @@ var fn_formats = {
     <tr><td><div class="field_item"> <label>Name:</label><input id="sNombre" type="text" placeholder="last name + first name" class="txt-uppercase"></div></td></tr>
     <tr><td><div class="field_item"> <label>Experience Years:</label><input id="iExperienciaYear" type="text" class="num"></div></td></tr>
     <tr><td><div class="field_item"> <label>License#:</label><input id="iNumLicencia" type="text" class="txt-uppercase"></div></td></tr> 
-    <tr><td><div class="field_item"> <label>Accidents:</label><input id="sAccidentesNum" type="text" class="num"></div></td></tr>
+    <tr><td><div class="field_item"> <label>DOB:</label><input id="dFechaNacimiento" type="text" class="fecha" style="width:93%"></div></td></tr>
   </table>
   </form>  
 </div>
@@ -1141,7 +1210,7 @@ var fn_formats = {
 </div>
 <div id="dialog_unit_trailer_form" title="UNIT/TRAILER INFORMATION">
   <p>Please select an of following options:</p>
-  <form class="p-container">
+  <form class="p-container" style="overflow: hidden;">
   <input id="form_select" type="hidden" value="">
   <input id="sTipo" type="hidden" value=""> 
   <input id="iConsecutivo" type="hidden" value="">
@@ -1154,6 +1223,39 @@ var fn_formats = {
     <tr><td><div class="field_item"> <label>Deductible:</label><input id="iTotalPremiumPD" type="text" class="num"></div></td></tr>
   </table>
   </form>  
+</div>  
+<!-----COMMODITIES DIALOG--->
+<!--<div id="dialog_commodities_list" title="SELECT DATA TO ADD">
+  <p>Please select the data of company list:</p>
+  <input id="form_select" type="hidden" value=""> 
+  <table style="width: 100%;">
+   <thead>
+    <tr id="grid-head2">
+        <td class="etiqueta_grid" style="width:50px;text-align: center;"></td>
+        <td class="etiqueta_grid">NAME</td>
+    </tr>
+   </thead>
+   <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
+  </table>
+</div>  -->
+<div id="dialog_commodities_form" title="COMMODITIES INFORMATION">
+  <p>Please select an of following options:</p>
+  <form class="p-container" style="overflow: hidden;">
+  <input id="form_select" type="hidden" value="">
+  <input id="iConsecutivo" type="hidden" value="">
+  <input id="iConsecutivoCompania" type="hidden" value="">  
+  <table style="width: 100%;">
+    <tr><td><br><br></td></tr>
+    <tr><td>
+    <div class="field_item">
+        <label>Commodity:</label><select id="iConsecutivoCommodity"><option value="">Select an option...</option></select>
+    </div>
+    </td></tr>
+    <tr><td><div class="field_item"> <label>% Hauled:</label><input   id="iPorcentajeHauled" type="text" class="num"></div></td></tr>
+    <tr><td><div class="field_item"> <label>Minimum Value $:</label><input id="iValorMinimo" type="text" class="num"></div></td></tr>  
+    <tr><td><div class="field_item"> <label>Maximum Value $:</label><input id="iValorMaximo" type="text" class="num"></div></td></tr>
+  </table>
+  </form>
 </div>
 <!---- FOOTER ----->
 <?php include("footer.php"); ?> 

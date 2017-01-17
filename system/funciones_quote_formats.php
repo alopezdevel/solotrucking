@@ -129,7 +129,7 @@
       
       $_POST['token'] != "" ? $filtrotoken = "AND iConsecutivo NOT IN (SELECT iConsecutivoOperador FROM cb_quote_format_operadores WHERE iConsecutivo = '".$_POST['token']."')" : $filtrotoken = "";
       
-      $sql = "SELECT iConsecutivo, sNombre, iExperienciaYear, iNumLicencia,sAccidentesNum ".
+      $sql = "SELECT iConsecutivo, sNombre, iExperienciaYear, iNumLicencia,sAccidentesNum, DATE_FORMAT(dFechaNacimiento,  '%m/%d/%Y') AS dFechaNacimiento ".
              "FROM ct_operadores ".
              "WHERE iConsecutivoCompania ='$iConsecutivoCompania' $filtrotoken ORDER BY sNombre ASC"; 
         $result = $conexion->query($sql);
@@ -141,7 +141,7 @@
                                    "<td><input class=\"driverlist_id\" name=\"driverlist_id\" type=\"checkbox\" value=\"".$items['iConsecutivo']."\"></td>".
                                    "<td>".$items['sNombre']."</td>".
                                    "<td>".$items['iExperienciaYear']."</td>".
-                                   "<td>".$items['sAccidentesNum']."</td>".                                                                                                                                                                                                                   
+                                   "<td>".$items['dFechaNacimiento']."</td>".                                                                                                                                                                                                                   
                                    "</tr>"; 
             }
             $conexion->rollback();
@@ -206,7 +206,7 @@
       $error = "0";
       $token = trim($_POST['token']);
 
-      $sql = "SELECT B.iConsecutivo, sNombre, iExperienciaYear, iNumLicencia,sAccidentesNum ".
+      $sql = "SELECT B.iConsecutivo, sNombre, iExperienciaYear, iNumLicencia,sAccidentesNum,DATE_FORMAT(dFechaNacimiento,  '%m/%d/%Y') AS dFechaNacimiento ".
              "FROM cb_quote_format_operadores A  ".
              "INNER JOIN ct_operadores B ON A.iConsecutivoOperador = B.iConsecutivo  ".
              "WHERE A.iConsecutivo = '$token' ORDER BY sNombre ASC"; 
@@ -218,7 +218,7 @@
                      $htmlTabla .= "<tr>".
                                    "<td id=\"".$items['iConsecutivo']."\">".$items['sNombre']."</td>".
                                    "<td>".$items['iExperienciaYear']."</td>".
-                                   "<td>".$items['sAccidentesNum']."</td>".
+                                   "<td>".$items['dFechaNacimiento']."</td>".
                                    "<td></td>".                                                                                                                                                                                                                   
                                    "</tr>"; 
             }
@@ -250,6 +250,7 @@
       
       $_POST['sNombre']      = strtoupper($_POST['sNombre']);
       $_POST['iNumLicencia'] = strtoupper($_POST['iNumLicencia']); 
+      $_POST['dFechaNacimiento'] = format_date($_POST['dFechaNacimiento']);
       $_POST['token'] != "" ? $token = trim($_POST['token']) : $token = "";
       
       //create a token id:
@@ -400,15 +401,16 @@
       $transaccion_exitosa = true;
       $error = "0";
       $tipo  = trim($_POST['tipo']); 
+      $tipo != 'both' ? $filtrotipo = "AND sTipo = '$tipo'" : $filtrotipo = "";
       
-      $_POST['token'] != "" ? $filtrotoken = "AND iConsecutivo NOT IN (SELECT iConsecutivoOperador FROM cb_quote_format_operadores WHERE iConsecutivo = '".$_POST['token']."')" : $filtrotoken = "";
+      $_POST['token'] != "" ? $filtrotoken = "AND A.iConsecutivo NOT IN (SELECT iConsecutivoOperador FROM cb_quote_format_operadores WHERE iConsecutivo = '".$_POST['token']."')" : $filtrotoken = "";
       
       $sql = "SELECT A.iConsecutivo,iYear,iModelo,sVIN,sPeso,sTipo,iTotalPremiumPD,sDescripcion AS sModelo ".
              "FROM   ct_unidades A ".
              "LEFT JOIN ct_unidad_modelo B ON A.iModelo = B.iConsecutivo ".
-             "WHERE  iConsecutivoCompania ='$iConsecutivoCompania' AND sTipo = '$tipo' $filtrotoken ORDER BY sDescripcion ASC"; 
-        $result = $conexion->query($sql);
-        $rows = $result->num_rows;   
+             "WHERE  iConsecutivoCompania ='$iConsecutivoCompania' $filtrotipo $filtrotoken ORDER BY sDescripcion ASC"; 
+      $result = $conexion->query($sql);
+      $rows = $result->num_rows;   
         if ($rows > 0) { 
             $paginas_total = $rows;   
             while ($items = $result->fetch_assoc()){        
@@ -557,6 +559,93 @@
       }
       $response = array("error"=>"$error","msj"=>"$msj","token"=>"$token");
       echo json_encode($response); 
+  } 
+  //Commodities:
+  function save_commodities(){
+      include("funciones_genericas.php"); 
+      //Conexion:
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      
+      #VARIABLES:
+      $error = '0'; 
+      $valores = array();
+      $campos  = array(); 
+      $msj = ""; 
+      $_POST['token'] != "" ? $token = trim($_POST['token']) : $token = "";
+      //create a token id:
+      if($token == ""){
+         $query = "SELECT iConsecutivo FROM cb_quote_format_commodities ORDER BY iConsecutivo DESC LIMIT 1";
+         $result = $conexion->query($query);
+         $items = $result->fetch_assoc();
+         $items["iConsecutivo"] != '' ? $token = $items["iConsecutivo"] + 1 : $token = 1; 
+      }
+      
+      //validar si ya existe el commodity para esta lista:
+      $query = "SELECT COUNT(iConsecutivo) AS total FROM cb_quote_format_commodities ".
+               "WHERE  iConsecutivoCommodity ='".trim($_POST['iConsecutivoCommodity'])."' AND iConsecutivo = '$token'";
+      $result = $conexion->query($query);
+      $valida = $result->fetch_assoc();
+      
+      if($valida['total'] != '0'){
+          $error = "1";
+          $msj = "Error: The commodity that you tried to add has already exist.";
+      }else{
+          
+          foreach($_POST as $campo => $valor){
+            if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivoCompania" and $campo != "token"){ 
+                if($valor != ''){array_push($campos,$campo); array_push($valores, trim($valor)); }
+            }
+          }
+          array_push($campos,"iConsecutivo");
+          array_push($valores,$token);
+          $sql = "INSERT INTO cb_quote_format_commodities (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
+          $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data have been added successfully.</p>';  
+          $conexion->query($sql);
+          $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
+          
+          if($error == '0' && $transaccion_exitosa){$conexion->commit();$conexion->close();}else{$conexion->rollback();$conexion->close();}
+          
+      }
+      $response = array("error"=>"$error","msj"=>"$msj","token"=>"$token");
+      echo json_encode($response);
+  }
+  function get_list_commodities(){
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      $error = "0";
+      $token = trim($_POST['token']);
+
+      $sql = "SELECT iConsecutivoCommodity,iPorcentajeHauled,iValorMinimo,iValorMaximo,sCommodities  ".
+             "FROM cb_quote_format_commodities A  ".
+             "LEFT JOIN ct_quotes_default_commodities B ON A.iConsecutivoCommodity = B.iConsecutivo ".
+             "WHERE A.iConsecutivo = '$token' ORDER BY  A.iConsecutivo ASC";
+        $result = $conexion->query($sql);
+        $rows = $result->num_rows;   
+        if ($rows > 0) { 
+            $paginas_total = $rows;   
+            while ($items = $result->fetch_assoc()){        
+                     $htmlTabla .= "<tr>".
+                                   "<td id=\"".$items['iConsecutivoCommodity']."\">".$items['sCommodities']."</td>".
+                                   "<td>".$items['iPorcentajeHauled']."</td>".
+                                   "<td>".$items['iValorMinimo']."</td>". 
+                                   "<td>".$items['iValorMaximo']."</td>".                                                                                                                                                                                                                   
+                                   "</tr>";
+            }
+            $conexion->rollback();
+            $conexion->close();                                                                                                                                                                       
+        }else{
+            
+            $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";
+            $mensaje = "There are no commodities for this company, please register them."; 
+            $paginas_total = 0;   
+        }  
+    
+     $htmlTabla = utf8_decode($htmlTabla);
+     $response = array("total"=>"$paginas_total","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error");   
+     echo json_encode($response); 
   }
   
 ?>

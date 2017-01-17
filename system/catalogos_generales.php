@@ -308,4 +308,27 @@
      $response = array("mensaje"=>"$mensaje","error"=>"$error","select"=>"$htmlTabla");   
      echo json_encode($response); 
   }
+  function get_commodities(){
+     include("cn_usuarios.php");
+     $conexion->autocommit(FALSE);
+     $error = "0";   
+     $sql = "SELECT iConsecutivo AS clave, sCommodities AS descripcion FROM ct_quotes_default_commodities ORDER BY sCommodities ASC";
+     $result = $conexion->query($sql);
+     $tipos = $result->num_rows;  
+        if($tipos > 0){
+            $htmlTabla .= "<option value=\"\">Select an option...</option>";      
+            while ($items = $result->fetch_assoc()){
+               if($items["clave"] != ""){
+                     $htmlTabla .= "<option value=\"".$items['clave']."\">".$items['descripcion']."</option>";
+                 }else{                             
+                     $htmlTabla .="";
+                 }    
+            }                                                                                                                                                                       
+        }else {$htmlTabla .="";}
+     $conexion->rollback();
+     $conexion->close();
+     $htmlTabla = utf8_encode($htmlTabla);  
+     $response = array("mensaje"=>"$mensaje","error"=>"$error","select"=>"$htmlTabla");   
+     echo json_encode($response);  
+  }
 ?>
