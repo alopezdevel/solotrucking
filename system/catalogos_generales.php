@@ -246,9 +246,9 @@
      $result = $conexion->query($sql);
      $tipos = $result->num_rows;  
         if($tipos > 0){     
-            while ($country = $result->fetch_assoc()) {
-               if($country["clave"] != ""){
-                     $htmlTabla .= "<option value=\"".$country['clave']."\">".$country['descripcion']."</option>";
+            while ($items = $result->fetch_assoc()) {
+               if($items["clave"] != ""){
+                     $htmlTabla .= "<option value=\"".$items['clave']."\">".utf8_decode($items['descripcion'])."</option>";
                  }else{                             
                      $htmlTabla .="";
                  }    

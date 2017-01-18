@@ -161,7 +161,7 @@ var fn_policies = {
                                 'accion':'upload_policy',
                                 'iConsecutivo':$(fn_policies.form + ' #iConsecutivoArchivoPFA').val(), 
                                 'iConsecutivoCompania':$(fn_policies.form +' #iConsecutivoCompania').val(),
-                                'sNombreCompania':$(fn_policies.form +'# iConsecutivoCompania option:selected').text(),
+                                'sNombreCompania':$(fn_policies.form +' #iConsecutivoCompania option:selected').text(),
                                 'iConsecutivoPoliza':$(fn_policies.form +' #iConsecutivo').val(),
                                 'eArchivo' : 'pfa' 
                             });
@@ -192,8 +192,8 @@ var fn_policies = {
             new AjaxUpload('#btnFile', {
                     action: 'funciones_policies.php',
                     onSubmit : function(file , ext){
-                        if (!(ext && (/^(xls)$/i.test(ext))  )){
-                            var mensaje = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Error: Invalid file format, please a TXT File.</p>';
+                        if (!(ext && (/^(xlsx)$/i.test(ext))  )){
+                            var mensaje = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Error: Invalid file format, please a Excel File.</p>';
                             fn_solotrucking.mensaje(mensaje);
                             return false;
                         }else{

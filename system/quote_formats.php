@@ -588,32 +588,48 @@ var fn_formats = {
            open_pdf : function(){
                //variables:
                var iConsecutivoCompania = $('#form_application_coverage #iConsecutivoCompania').val();
-               var sYearsExperiencia    = $('#form_application_coverage #sYearsExperiencia').val();
-               var iFEINNumb            = $('#form_application_coverage #sFEIN').val();
-               var sCommodities         = $('#form_application_coverage #sCommodities').val();
-               var iFillings            = $('#form_application_coverage input:radio[name=iFillings]:checked').val();
-               var iRadius              = $('#form_application_coverage input:radio[name=iRadius]:checked').val();
-               var iTokenDriver         = $('#form_application_coverage #driver_token').val(); 
-               var iTokenUnit           = $('#form_application_coverage #unit_token').val(); 
-               var iTokenTrailer        = $('#form_application_coverage #trailer_token').val(); 
-               var iAutoLiability       = $('#form_application_coverage input:radio[name=iAutoLiability]:checked').val(); 
-               if(iAutoLiability == 'other'){var iAutoLiabilityDescription = $('#form_application_coverage #iAutoLiability').val();}
-               else{var iAutoLiabilityDescription = "";}
-               var iAutoLiabilityD      = $('#form_application_coverage input:radio[name=iAutoLiabilityD]:checked').val();
-               var iInsuredMBI          = $('#form_application_coverage input:radio[name=iInsuredMBI]:checked').val();
-               var iCargo               = $('#form_application_coverage input:radio[name=iCargo]:checked').val();
-               var iCargoDescription    = $('#form_application_coverage #iCargo').val();
-               var iOtherCoverage1      = $('#form_application_coverage #iOtherCoverage1').val(); 
-               var iOtherCoverage2      = $('#form_application_coverage #iOtherCoverage2').val(); 
-               var iOtherCoverage3      = $('#form_application_coverage #iOtherCoverage3').val(); 
-               var iOtherCoverage4      = $('#form_application_coverage #iOtherCoverage4').val(); 
+               var radio = $('#form_application_coverage input:radio[name=iRadius]:checked').val(); 
+               if($('#form_application_coverage #iRefrigerated').prop('checked')){var com_re = '1';}else{var com_re = '0';}
+               if($('#form_application_coverage #iDryVan ').prop('checked')){var com_dv = '1';}else{var com_dv = '0';} 
+               if($('#form_application_coverage #iFlatbed').prop('checked')){var com_fl = '1';}else{var com_fl = '0';} 
+               var id_comm = $('#form_application_coverage #commodities_token').val();
+               var yb = $('#form_application_coverage #sYearsExperiencia').val();
+               var ybo = $('#form_application_coverage #sYearsOperation').val();
+               var cd = $('#form_application_coverage #driver_token').val(); 
+               var ce = $('#form_application_coverage #both_token').val();
+               var er = $('#form_application_coverage input:radio[name=iEndorsementR]:checked').val(); 
+               if($('#form_application_coverage #iPDdeductible ').prop('checked')){var pd_d = '1';}else{var pd_d = '0';} 
+               var pd_t = $('#form_application_coverage #iTotalValue').val(); 
+               var mtc = $('#form_application_coverage input:radio[name=iMTC]:checked').val(); 
+               if($('#form_application_coverage #iNonTruck ').prop('checked')){var ntl = '1';}else{var ntl = '0';}
+               var ti = $('#form_application_coverage input:radio[name=iMTC]:checked').val(); 
+               if(ti != '40m'){ti = $('#form_application_coverage #iTIValue').val();}
+               var r_sv = $('#form_application_coverage #iRateSV').val();
+               var r_p1 = $('#form_application_coverage #iRatePU1').val(); 
+               var r_p2 = $('#form_application_coverage #iRatePU2').val(); 
+               var r_de = $('#form_application_coverage #iRateDeductible').val(); 
                
-               window.open('PDF_formato_quotes_5.php?consecutivo_doc=5&id_compania='+iConsecutivoCompania+
-                           '&consecutivo_drivers='+iTokenDriver+
-                           '&consecutivo_equipment='+iTokenUnit+
-                           '&consecutivo_trailer='+iTokenTrailer+
-                           '&commodities_hauled='+sCommodities+
-                           '&radio='+iRadius);
+               window.open('PDF_application_for_coverage.php?consecutivo_doc=5&id_compania='+iConsecutivoCompania+
+                           '&radio='+radio+
+                           '&com_re='+com_re+
+                           '&com_dv='+com_dv+
+                           '&com_fl='+com_fl+
+                           '&id_comm='+id_comm+ 
+                           '&yb='+yb+ 
+                           '&ybo='+ybo+ 
+                           '&cd='+cd+
+                           '&ce='+ce+ 
+                           '&er='+er+ 
+                           '&pd_d='+pd_d+ 
+                           '&pd_t='+pd_t+ 
+                           '&mtc='+mtc+
+                           '&ntl='+ntl+
+                           '&ti='+ti+ 
+                           '&r_sv='+r_sv+
+                           '&r_p1='+r_p1+
+                           '&r_p2='+r_p2+
+                           '&r_de='+r_de
+                           );
            } 
         } 
 }     
@@ -1088,8 +1104,8 @@ var fn_formats = {
                         <td colspan="100%">
                             <div class="field_item">
                                 <label>Endorsement Requested:</label>
-                                <label class="lbl-check"><input tabindex="8"  id="iLossPayee"  type="checkbox" value="1"> Loss Payee</label>
-                                <label class="lbl-check"><input tabindex="9"  id="iAddInsured" type="checkbox" value="1"> Additional Insured</label>
+                                <label class="lbl-check"><input tabindex="8" name="iEndorsementR" type="radio" value="lp"> Loss Payee</label>
+                                <label class="lbl-check"><input tabindex="9" name="iEndorsementR" type="radio" value="ai"> Additional Insured</label>
                                 <br>    
                             </div>
                         </td>
@@ -1099,7 +1115,7 @@ var fn_formats = {
                             <div class="field_item">
                                 <label>Physical Damage:</label>
                                 <label class="lbl-check"><input tabindex="10"  id="iPDdeductible"  type="checkbox" value="1"> $1,000 Deductible</label>
-                                <label class="lbl-check">Total Value: <input tabindex="11" id="iTotalValue" name="iTotalValue" type="text" class="numb" style="width:120px;top: 0px;"></label>
+                                <label class="lbl-check">Total Value: <input tabindex="11" id="iTotalValue" name="iTotalValue" type="text" class="num" style="width:120px;top: 0px;"></label>
                                 <br>    
                             </div>
                             <div class="field_item">
@@ -1111,23 +1127,23 @@ var fn_formats = {
                             </div>
                             <div class="field_item">
                                 <label>Non-Trucking Liability:</label>
-                                <label class="lbl-check"><input tabindex="15"  name="iNonTruck" type="radio" value="1m"> $1,000,000</label> 
+                                <label class="lbl-check"><input tabindex="15"  id="iNonTruck" type="checkbox" value="1"> $1,000,000</label> 
                                 <br>    
                             </div>
                             <div class="field_item">
                                 <label>Trailer Interchange:</label>
-                                <label class="lbl-check"><input tabindex="16"  name="iTI"  type="radio" value="40"> $40,000</label>
-                                <label class="lbl-check"><input tabindex="17"  name="iTI"  type="radio" value="other"> $ <input tabindex="18" id="iTIValue" name="iTIValue" type="text" class="numb" style="width: 100px;top: -2px;"> (3% X Limit)</label> 
+                                <label class="lbl-check"><input tabindex="16"  name="iTI"  type="radio" value="40m"> $40,000</label>
+                                <label class="lbl-check"><input tabindex="17"  name="iTI"  type="radio" value="other"> $ <input tabindex="18" id="iTIValue" name="iTIValue" type="text" class="num" style="width: 100px;top: -2px;"> (3% X Limit)</label> 
                                 <br>    
                             </div>
                         </td>
                         <td colspan="40%">
                             <div class="field_item">
                                 <label>Rate:</label><br>  
-                                <label class="lbl-check">  <input tabindex="18" id="iRateSV" name="iTIValue" type="text" class="numb" style="width: 100px;top: -2px;margin-left: 10px!important;"> % of stated values</label><br> 
-                                <label class="lbl-check">$ <input tabindex="19" id="iRatePU1" name="iTIValue" type="text" class="numb" style="width: 100px;top: -2px;"> per power unit</label><br>
-                                <label class="lbl-check">$ <input tabindex="20" id="iRatePU2" name="iTIValue" type="text" class="numb" style="width: 100px;top: -2px;"> per power unit</label><br>  
-                                <label class="lbl-check">$ <input tabindex="21" id="iRateDeductible" name="iTIValue" type="text" class="numb" style="width: 100px;top: -2px;"> deductible</label><br>
+                                <label class="lbl-check">  <input tabindex="18" id="iRateSV" name="iTIValue" type="text" class="num" style="width: 100px;top: -2px;margin-left: 10px!important;"> % of stated values</label><br> 
+                                <label class="lbl-check">$ <input tabindex="19" id="iRatePU1" name="iTIValue" type="text" class="num" style="width: 100px;top: -2px;"> per power unit</label><br>
+                                <label class="lbl-check">$ <input tabindex="20" id="iRatePU2" name="iTIValue" type="text" class="num" style="width: 100px;top: -2px;"> per power unit</label><br>  
+                                <label class="lbl-check">$ <input tabindex="21" id="iRateDeductible" name="iTIValue" type="text" class="num" style="width: 100px;top: -2px;"> deductible</label><br>
                             </div>  
                         </td>
                     </tr>

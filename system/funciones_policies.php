@@ -209,7 +209,7 @@
       $domroot = $_POST['domroot'];
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                 
-      $sql = "SELECT A.iConsecutivo, sNumeroPoliza, A.iConsecutivoCompania, iConsecutivoBrokers, iTipoPoliza, ". 
+      $sql = "SELECT A.iConsecutivo, sNumeroPoliza, A.iConsecutivoCompania, iConsecutivoBrokers, iTipoPoliza,iConsecutivoAseguranza, ". 
              "DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio, DATE_FORMAT(dFechaCaducidad,'%m/%d/%Y') AS dFechaCaducidad, ".
              "B.sNombreArchivo AS txtPolicyJacker, iConsecutivoArchivo, iConsecutivoArchivoPFA, C.sNombreArchivo AS txtPolicyPFA ".
              "FROM ct_polizas A ".
@@ -474,6 +474,8 @@
           $content = addslashes($content);
           fclose($fp);
           $array_contenido = explode("\r\n",$content);
+          print_r($array_contenido);
+          exit;
           foreach($array_contenido as $key => $valor){
             $valores = array();
             $campos  = array();  
