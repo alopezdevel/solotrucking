@@ -196,12 +196,12 @@ if($com_fl == "1"){
       $x = 129;
       $y = 219;
       $pdf->SetXY($x,$y);
-      $pdf->Write(5, $pd_t ="12345"   );
+      $pdf->Write(5, $pd_t = $_GET['pd_t']);
 
       $x = 159;
       $y = 219;
       $pdf->SetXY($x,$y);
-      $pdf->Write(5, $r_sv = "1234"  );
+      $pdf->Write(5, $r_sv = $_GET['r_sv']);
       
   }
 $mtc = $_GET['mtc'];
@@ -220,16 +220,16 @@ switch($mtc){
            break;
     case "250":
            $x = 129;
-                      $y = 228;           
+           $y = 228;           
            $pdf->SetXY($x,$y);
-                 $pdf->Write(5, "X"   );
-              break;
+           $pdf->Write(5, "X");
+           break;
 }
 if($mtc != ""){
       $x = 159;
       $y = 228;
       $pdf->SetXY($x,$y);
-      $pdf->Write(5, $r_p1 = "1234"  );
+      $pdf->Write(5, $r_p1 = $_GET['r_p1']);
 
 }
 $ntl = $_GET['ntl'];
@@ -241,7 +241,7 @@ if($ntl == "1"){
       $x = 159;
       $y = 236;
       $pdf->SetXY($x,$y);
-      $pdf->Write(5, $r_p2 = "1234"  );
+      $pdf->Write(5, $r_p2 = $_GET['r_p2']);
       
 }
 $ti = $_GET['ti'];
@@ -250,17 +250,17 @@ switch($ti){
            $x = 62;
                       $y = 246;           
            $pdf->SetXY($x,$y);
-                 $pdf->Write(5, "X"   );
+                 $pdf->Write(5,"X");
               break;
     default:   if($ti != ""){
                $x = 89;
                           $y = 246;           
                $pdf->SetXY($x,$y);
-                     $pdf->Write(5, "X"   );    
+                     $pdf->Write(5,"X");    
                $x = 99;
                           $y = 246;           
                $pdf->SetXY($x,$y);
-                     $pdf->Write(5, $ti   );
+                     $pdf->Write(5,$ti);
                   break;
             }
 }
@@ -270,9 +270,9 @@ if( $ti != "" ){
       $pdf->SetXY($x,$y);
       
       
-      $pdf->Write(5, $r_de = "1234"  );
+      $pdf->Write(5, $r_de = $_GET['r_de']);
 
-}
+}   
 $fecha = getdate();
 
       $x = 159;
