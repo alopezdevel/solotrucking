@@ -2,8 +2,8 @@
   require('lib/fpdf153/fpdf.php');//Cargando  libreria
   include_once("funciones_documentos.php");
   //FORZADO
-  $consecutivo_doc = "5";
-  $id_compania = "2";
+  $consecutivo_doc = $_GET['consecutivo_doc'];
+  $id_compania = $_GET['id_compania'];
   //FORZADO
   if($consecutivo_doc != ""){
       getDocumentosPDF($consecutivo_doc,$arr_formato);      
@@ -13,9 +13,9 @@
   }
   
   //Variables
-  $consecutivo_drivers = "13";//$_GET['consecutivo_drivers']; 
-  $consecutivo_equipment = "37";
-  $consecutivo_trailer = "37";
+  $consecutivo_drivers = $_GET['cd']; 
+  $consecutivo_equipment = $_GET['ce'];
+  //$consecutivo_trailer = "37";
   $NAMED_INSURED = $arr_compania[0]['compania'];
   $FEIN = $arr_compania[0]['FEIN'];
   $USDOT = $arr_compania[0]['us_dot'];
@@ -32,7 +32,7 @@
   $NAMED_INSURED = $arr_compania[0]['compania'];
   $ADDRESS = $arr_compania[0]['direccion'];
   $PH = $arr_compania[0]['telefono_principal'];   
-  $consecutivo_commodities = "1";
+  $consecutivo_commodities = $_GET['id_comm'];
   //funciones
   $arr_drivers = NULL;
   $arr_equipment = NULL;
@@ -132,7 +132,7 @@
   $pdf->Write(5,$EMAIL   );     
   
   $y =70;
-  $RADIUS_OPERATION = "500p";
+  $RADIUS_OPERATION = $_GET['radio'];
   SWITCH($RADIUS_OPERATION){
       CASE "200": $x = 60;
                   $pdf->SetXY($x,$y);
@@ -174,7 +174,7 @@ if($com_fl == "1"){
       $pdf->Write(5, "X"   );  
 }
 
-  
+  $er = $_GET['er'];
   if($er == 'lp'){
       $x = 89;
       $y =211;
@@ -187,7 +187,7 @@ if($com_fl == "1"){
       $pdf->SetXY($x,$y);
       $pdf->Write(5, "X"   );
   }
-  $pd_d = "1";
+  $pd_d = $_GET['pd_d'];
   if($pd_d == "1"){
       $x = 60;
       $y = 219;
@@ -204,7 +204,7 @@ if($com_fl == "1"){
       $pdf->Write(5, $r_sv = "1234"  );
       
   }
-$mtc = "100";
+$mtc = $_GET['mtc'];
 switch($mtc){
     case "100":
            $x = 77;
@@ -232,7 +232,7 @@ if($mtc != ""){
       $pdf->Write(5, $r_p1 = "1234"  );
 
 }
-$ntl = "1";
+$ntl = $_GET['ntl'];
 if($ntl == "1"){
       $x = 69;
       $y = 236;
@@ -244,7 +244,7 @@ if($ntl == "1"){
       $pdf->Write(5, $r_p2 = "1234"  );
       
 }
-$ti = "5000";
+$ti = $_GET['ti'];
 switch($ti){
     case "400":
            $x = 62;

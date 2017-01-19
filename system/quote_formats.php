@@ -608,8 +608,11 @@ var fn_formats = {
                var r_p1 = $('#form_application_coverage #iRatePU1').val(); 
                var r_p2 = $('#form_application_coverage #iRatePU2').val(); 
                var r_de = $('#form_application_coverage #iRateDeductible').val(); 
-               
-               window.open('PDF_application_for_coverage.php?consecutivo_doc=5&id_compania='+iConsecutivoCompania+
+               //Dates:
+               var dbind = $('#form_application_coverage #sDateBindEffective').val();
+               var dquot = $('#form_application_coverage #sDateQuoteNeeded').val();   
+
+               window.open('PDF_application_for_coverage.php?consecutivo_doc=5&id_compania='+iConsecutivoCompania+'&dbind='+dbind+'&dquot='+dquot+
                            '&radio='+radio+
                            '&com_re='+com_re+
                            '&com_dv='+com_dv+
@@ -903,13 +906,13 @@ var fn_formats = {
                         <td>
                             <div class="field_item">
                                 <label class="lbl-check"><input tabindex="1" name="iBindEffective" type="checkbox" value="1" onchange="if($(this).prop('checked')){$('#form_application_coverage #sDateBindEffective').removeAttr('readonly');}else{$('#form_application_coverage #sDateBindEffective').attr('readonly','readonly').val('');}"> Bind Effective</label>  
-                                <input tabindex="2" id="sDateBindEffective" class="fecha" name="sDateBindEffective" type="text" readonly="readonly" style="width: 200px;">
+                                <input tabindex="2" id="sDateBindEffective" class="fecha" name="sDateBindEffective" type="text" readonly="readonly" style="width: 200px;" placeholder="mm/dd/yyyy">
                             </div>
                         </td>
                         <td>
                             <div class="field_item"> 
                                 <label class="lbl-check"><input tabindex="3" name="iQuoteNeeded" type="checkbox" value="1" onchange="if($(this).prop('checked')){$('#form_application_coverage #sDateQuoteNeeded').removeAttr('readonly');}else{$('#form_application_coverage #sDateQuoteNeeded').attr('readonly','readonly').val('');}"> Quote Needed By: </label>  
-                                <input tabindex="4" id="sDateQuoteNeeded" class="fecha" name="sDateQuoteNeeded" type="text" readonly="readonly" style="width: 200px;">
+                                <input tabindex="4" id="sDateQuoteNeeded" class="fecha" name="sDateQuoteNeeded" type="text" readonly="readonly" style="width: 200px;" placeholder="mm/dd/yyyy">
                             </div>
                         </td>
                     </tr>
