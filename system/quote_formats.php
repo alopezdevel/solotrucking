@@ -1143,7 +1143,7 @@ var fn_formats = {
                         <td colspan="40%">
                             <div class="field_item">
                                 <label>Rate:</label><br>  
-                                <label class="lbl-check">  <input tabindex="18" id="iRateSV" name="iTIValue" type="text" class="num" style="width: 100px;top: -2px;margin-left: 10px!important;"> % of stated values</label><br> 
+                                <label class="lbl-check">  <input tabindex="18" id="iRateSV"  name="iTIValue" type="text" class="num" style="width: 100px;top: -2px;margin-left: 10px!important;" maxlength="3"> % of stated values</label><br> 
                                 <label class="lbl-check">$ <input tabindex="19" id="iRatePU1" name="iTIValue" type="text" class="num" style="width: 100px;top: -2px;"> per power unit</label><br>
                                 <label class="lbl-check">$ <input tabindex="20" id="iRatePU2" name="iTIValue" type="text" class="num" style="width: 100px;top: -2px;"> per power unit</label><br>  
                                 <label class="lbl-check">$ <input tabindex="21" id="iRateDeductible" name="iTIValue" type="text" class="num" style="width: 100px;top: -2px;"> deductible</label><br>
