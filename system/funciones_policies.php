@@ -454,7 +454,7 @@
       
   }
   function upload_driver_txt(){
-      
+      require('./lib/excel/reader.php');
       include("cn_usuarios.php");  
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
       $transaccion_exitosa = true;
@@ -467,7 +467,24 @@
       $htmlTabla = ""; 
       $fileName = $_FILES['userfile']['name'];
       $tmpName  = $_FILES['userfile']['tmp_name'];
+      
       if($iConsecutivoCompania != '' && $iConsecutivoPolizas != ''){
+          #creamos instancia para la clase Excel Reader: 
+          $data = new Spreadsheet_Excel_Reader();
+          $data->setOutputEncoding('UTF-8');
+          $url =  $tmpName.'.xls'; 
+          //Crear archivo fisico en el Temporal:
+          $fp = fopen($tmpName, 'r'); 
+          $content = fread($fp, filesize($tmpName));  
+          $fp = fopen($url,"w") or die("Error al momento de crear el archivo. Favor de verificarlo.");
+          fwrite($fp,$content); 
+          fclose($fp);
+          $data->read($url);
+          error_reporting(E_ALL ^ E_NOTICE);
+          echo $data->sheets[0]['cells'][1][1];
+          exit;
+          
+          ///-------------------------------------------//
           #Revisamos contenido del archivo:
           $fp      = fopen($tmpName, 'r'); 
           $content = fread($fp, filesize($tmpName));
@@ -1199,5 +1216,136 @@
       $conexion->close(); 
       $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields");   
       echo json_encode($response);
+  }
+  
+  /*----- BACKUP ----*/
+  function upload_driver_txt_backup(){
+      
+      include("cn_usuarios.php");  
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      
+      #variables:
+      $iConsecutivoCompania = $_POST['iConsecutivoCompania'];
+      $iConsecutivoPolizas  = $_POST['iConsecutivoPolizas'];
+      $error = "0";
+      $mensaje = "";
+      $htmlTabla = ""; 
+      $fileName = $_FILES['userfile']['name'];
+      $tmpName  = $_FILES['userfile']['tmp_name'];
+      if($iConsecutivoCompania != '' && $iConsecutivoPolizas != ''){
+          #Revisamos contenido del archivo:
+          $fp      = fopen($tmpName, 'r'); 
+          $content = fread($fp, filesize($tmpName));
+          $content = addslashes($content);
+          fclose($fp);
+          $array_contenido = explode("\r\n",$content);
+          print_r($array_contenido);
+          exit;
+          foreach($array_contenido as $key => $valor){
+            $valores = array();
+            $campos  = array();  
+            if($transaccion_exitosa){    
+              if($array_contenido[$key] != ""){ 
+                  $array_driver = explode("|",$array_contenido[$key]);
+                  $sNombre = strtoupper($array_driver[0]);
+                  $dFechaNacimiento = format_date($array_driver[1]);
+                  $dFechaExpiracionLicencia = $array_driver[2];
+                  $iExperienciaYear = $array_driver[3];
+                  $iNumLicencia = strtoupper($array_driver[4]);
+                  $eTipoLicencia = $array_driver[5];
+                  //print_r($array_driver);
+                  
+                  //Header table:
+                  $htmlTabla = '&lt;tr style="background: rgb(55, 101, 176);color:#ffffff!important;">'.
+                               '&lt;td&gt; NAME</td>'.
+                               '&lt;td&gt; DOB</td>'.
+                               '&lt;td&gt; EXPIRE DATE</td>'.
+                               '&lt;td&gt; EXPERIENCE YEARS</td>'.
+                               '&lt;td&gt; LICENSE NUMBER</td>';
+                  
+                  #Verificamos si el driver no existe:
+                  $sql = "SELECT COUNT(iConsecutivo) AS total FROM ct_operadores WHERE iNumLicencia = '$iNumLicencia' AND iConsecutivoCompania = '$iConsecutivoCompania' ";
+                  $result = $conexion->query($sql);
+                  $items = $result->fetch_assoc();
+                  $existe = $items["total"];
+                  if($existe == "0"){
+                      
+                      #armando Array:
+                      array_push($campos ,"iConsecutivoCompania"); array_push($valores,trim($iConsecutivoCompania));
+                      if($sNombre != ''){array_push($campos ,"sNombre"); array_push($valores,trim($sNombre));}
+                      if($dFechaNacimiento != ''){array_push($campos ,"dFechaNacimiento"); array_push($valores,trim($dFechaNacimiento));}
+                      if($dFechaExpiracionLicencia != ''){array_push($campos ,"dFechaExpiracionLicencia"); array_push($valores,trim($dFechaExpiracionLicencia));}
+                      if($iExperienciaYear != ''){array_push($campos ,"iExperienciaYear"); array_push($valores,trim($iExperienciaYear));}
+                      if($iNumLicencia != ''){array_push($campos ,"iNumLicencia"); array_push($valores,trim($iNumLicencia));}
+                      if($eTipoLicencia != ''){array_push($campos ,"eTipoLicencia"); array_push($valores,trim($eTipoLicencia));}
+                      array_push($campos ,"dFechaIngreso"); array_push($valores,date("Y-m-d H:i:s"));
+                      array_push($campos ,"sIP"); array_push($valores,$_SERVER['REMOTE_ADDR']);
+                      array_push($campos ,"sUsuarioIngreso"); array_push($valores,$_SESSION['usuario_actual']);
+                      array_push($campos ,"siConsecutivosPolizas"); array_push($valores,$iConsecutivoPolizas); 
+                      array_push($campos ,"inPoliza"); array_push($valores,'1'); 
+                      
+                      $insert = "INSERT INTO ct_operadores (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
+                      $conexion->query($insert);
+                      if($conexion->affected_rows < 1){ 
+                         $transaccion_exitosa = false;
+                         $msj = "The data of driver was not saved properly, please try again.";               
+                      }else{
+                        $htmlTabla .= '&lt;tr style="background: rgb(234, 255, 226);">'.
+                                      '&lt;td&gt;'.$driver_name.'</td>'.
+                                      '&lt;td&gt;'.$driver_dob.'</td>'.
+                                      '&lt;td&gt;'.$driver_exp_lic.'</td>'.
+                                      '&lt;td&gt;'.$driver_exp_years.'</td>'.
+                                      '&lt;td&gt;'.$driver_license.'</td>'; 
+                      } 
+                      
+                  }else{
+                     #YA EXISTE actualizamos solo la parte de las polizas para incluirlos:
+                     //if($iNumLicencia != ''){array_push($valores,"iNumLicencia='".trim($iNumLicencia)."'");}
+                     if($sNombre != ''){array_push($valores,"sNombre='".trim($sNombre)."'");}
+                     if($dFechaNacimiento != ''){array_push($valores,"dFechaNacimiento='".trim($dFechaNacimiento)."'"); }
+                     if($dFechaExpiracionLicencia != ''){array_push($valores,"dFechaExpiracionLicencia='".trim($dFechaExpiracionLicencia)."'"); }
+                     if($iExperienciaYear != ''){array_push($valores,"iExperienciaYear='".trim($iExperienciaYear)."'"); }
+                     if($eTipoLicencia != ''){array_push($valores,"eTipoLicencia='".trim($eTipoLicencia)."'"); } 
+                     array_push($valores,"sIPActualizacion='".$_SERVER['REMOTE_ADDR']."'");
+                     array_push($valores,"dFechaActualizacion='".date_to_server(date("Y-m-d H:i:s"))."'");
+                     array_push($valores,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'");
+                     array_push($valores,"iConsecutivosPolizas='".trim(siConsecutivosPolizas)."'");
+                     array_push($valores,"inPoliza='1'");
+                     
+                     $update = "UPDATE ct_operadores SET ".implode(",",$valores)." WHERE iNumLicencia = '$iNumLicencia' AND iConsecutivoCompania = '$iConsecutivoCompania'";
+                     $conexion->query($update);
+                     
+                     if($conexion->affected_rows < 1){ 
+                         $transaccion_exitosa = false;
+                         $msj = "The data of driver was not saved properly, please try again.";               
+                      }else{
+                        $tabla_error .= '&lt;tr style="background: rgb(254, 232, 154);">'.
+                                     '&lt;td&gt;'.$driver_name.'</td>'.
+                                     '&lt;td&gt;'.$driver_dob.'</td>'.
+                                     '&lt;td&gt;'.$driver_exp_lic.'</td>'.
+                                     '&lt;td&gt;'.$driver_exp_years.'</td>'.
+                                     '&lt;td&gt;'.$driver_license.'</td>';
+                      }  
+                     
+                  }
+              }
+            }
+          }          
+      }
+      if($transaccion_exitosa){
+            $conexion->commit();
+            $conexion->close();
+            $mensaje = "The drivers has been uploaded successfully, please verify the data in the company policies.";
+      }else{
+            $conexion->rollback();
+            $conexion->close();
+            $error = "1";
+      }
+      $htmlTabla = $htmlTabla.$tabla_error;
+      //$htmlTabla = utf8_encode($htmlTabla);
+      $response = array("mensaje"=>"$mensaje","error"=>"$error", "name_file" => "$fileName","reporte"=>"$htmlTabla"); 
+      echo json_encode($response); 
+      
   }
 ?>

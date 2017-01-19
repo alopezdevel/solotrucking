@@ -726,10 +726,10 @@ var fn_endorsement_co = {
         validate_country : function(){
            
            if($('#eAccion_endoso').val() != 'D'){
-               if($('#endorsements_co_edit_form #eTipoLicencia_operador').val() == '2'){
+               if($('#endorsements_co_edit_form #eTipoLicencia_operador').val() == 'COMMERCIAL/CDL-A'){
                     $('#endorsements_co_edit_form .file_mvr').show(); 
                     $('#endorsements_co_edit_form .file_psp').hide();   
-               }else if($('#endorsements_co_edit_form #eTipoLicencia_operador').val() == '1'){
+               }else if($('#endorsements_co_edit_form #eTipoLicencia_operador').val() == 'FEDERAL/B1'){
                     $('#endorsements_co_edit_form .file_psp').show();
                     $('#endorsements_co_edit_form .file_mvr').hide();
                }
@@ -739,7 +739,7 @@ var fn_endorsement_co = {
            } 
             
             
-            if($('#endorsements_co_edit_form #eTipoLicencia_operador').val() == '2' && $('#eAccion_endoso').val() != 'D'){
+            if($('#endorsements_co_edit_form #eTipoLicencia_operador').val() == 'COMMERCIAL/CDL-A' && $('#eAccion_endoso').val() != 'D'){
                 $('#endorsements_co_edit_form .file_mvr').show();
             }else{
                 $('#endorsements_co_edit_form .file_mvr').hide(); 
@@ -1106,8 +1106,8 @@ var fn_endorsement_co = {
                       <label>Licence Type <span style="color:#ff0000;">*</span>: </label>
                       <Select id="eTipoLicencia_operador" onblur="fn_endorsement_co.validate_country();">
                         <option value="">Select an option...</option>
-                        <option value="1">FEDERAL / B1</option>
-                        <option value="2">COMMERCIAL / CDL-1</option>
+                        <option value="FEDERAL/B1">FEDERAL / B1</option>
+                        <option value="COMMERCIAL/CDL-A">COMMERCIAL / CDL-1</option>
                       </select>
                 </div>
                 <div class="field_item"> 
