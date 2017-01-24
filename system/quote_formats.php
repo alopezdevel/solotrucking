@@ -245,6 +245,33 @@ function inicio(){
                 }
             }
         });
+         $('#dialog_commodities_list').dialog({
+            modal: true,
+            autoOpen: false,
+            width : 500,
+            height : 500,
+            resizable : true,
+            buttons : {
+                'CONTINUE' : function() {
+                    var list = "";
+                    var form      = $('#dialog_commodities_list #form_select').val();
+                    $("#dialog_commodities_list table .list_id" ).each(function( index ){
+                        if(this.checked){
+                            if(list != ''){
+                                list += "," + $("#dialog_commodities_list table tbody input[value="+this.value+"]" ).attr('title');  
+                            }else{
+                                list += $("#dialog_commodities_list table tbody input[value="+this.value+"]" ).attr('title'); 
+                            } 
+                        }
+                    });
+                    $('#'+form+' #sCommodities').val(list);
+                    $(this).dialog('close');               
+                },
+                 'CANCEL' : function(){
+                    $(this).dialog('close');
+                }
+            }
+        });
 }  
 function validapantalla(usuario){if(usuario == ""  || usuario == null){location.href= "login.php";}}                   
 var fn_formats = {
@@ -313,7 +340,10 @@ var fn_formats = {
                      
                 }
             }); 
-            $.post("catalogos_generales.php", { accion: "get_commodities"},function(data){ $("#dialog_commodities_form #iConsecutivoCommodity").empty().append(data.select);},"json");
+            $.post("catalogos_generales.php", {accion: "get_commodities",table_list:'true'},function(data){ 
+                $("#dialog_commodities_form #iConsecutivoCommodity").empty().append(data.select);
+                $("#dialog_commodities_list table tbody").empty().append(data.table); 
+            },"json");
         },
         fillgrid: function(){
                $.ajax({             
@@ -478,9 +508,14 @@ var fn_formats = {
                        
                        $('#'+form+'input:text, #'+form+' input:hidden ').val('');
                        $('#'+form+' .datagrid tbody').empty().append('<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>'); 
-                       /*fn_formats.get_list_drivers(form);
-                       fn_formats.get_list_ut(form,'unit');
-                       fn_formats.get_list_ut(form,'trailer');*/
+                       fn_formats.get_list_drivers(form);
+                       if(form == 'form_commercial_auto_quick'){
+                          fn_formats.get_list_ut(form,'unit');
+                          fn_formats.get_list_ut(form,'trailer'); 
+                       }else{
+                          fn_formats.get_list_ut(form,'both'); 
+                       }
+                       
                        eval(data.fields); 
                        
                    }//else{fn_solotrucking.mensaje(data.msj);}
@@ -492,9 +527,13 @@ var fn_formats = {
           function(data){ 
                    if(data.error == '0'){
                        $('#'+form+' #commodities_list tbody').empty().append(data.tabla);
-                       //$('#dialog_commodities_form').dialog('close');
                    }else{fn_solotrucking.mensaje(data.msj);}   
           },"json");  
+        },
+        open_commodities_list : function(form){
+            $('#dialog_commodities_list input:checkbox').prop('checked',''); 
+            $('#dialog_commodities_list #form_select').val(form);
+            $('#dialog_commodities_list').dialog( 'open' );
         },
         //FORMULARIOS:
         form_commercial_auto_quick : {
@@ -553,10 +592,9 @@ var fn_formats = {
                //Cargar Catalogos:
                $.post("catalogos_generales.php", { accion: "get_companies"},function(data){ $("#form_application_coverage #iConsecutivoCompania").empty().append(data.select);},"json");
                //Limpiar form:
-               $('#form_application_coverage input:radio').prop('checked','');
+               $('#form_application_coverage input:radio,#form_application_coverage input:checkbox').prop('checked','');
                $('#form_application_coverage input.company_info, #form_application_coverage select').val('');
                $('#form_application_coverage .datagrid tbody').empty().append('<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>');
-               //fn_solotrucking.get_date(".fecha"); 
                fn_popups.resaltar_ventana('form_application_coverage');  
             },
             open_driver_dialog : function(){
@@ -739,8 +777,9 @@ var fn_formats = {
                     <tr>
                         <td colspan="100%">
                             <div class="field_item">
-                                <label>Commodities Hauled (Be specific about percent of time):</label> 
-                                <input tabindex="6" class="company_info" id="sCommodities" name="sCommodities" type="text" maxlength="138">
+                                <label style="float: left;">Commodities Hauled (Be specific about percent of time):</label>
+                                <div   style="margin: -5px 0 0 10px;" title="Select Default Commodities"  onclick="fn_formats.open_commodities_list('form_commercial_auto_quick');"><i class="fa fa-plus" style="color: #016bba!important;font-size: 18px;margin-left: 5px;cursor:pointer;"></i></div>  
+                                <input tabindex="6" class="company_info txt-uppercase" id="sCommodities" name="sCommodities" type="text" maxlength="130">
                             </div>
                         </td>
                     </tr>
@@ -906,13 +945,13 @@ var fn_formats = {
                         <td>
                             <div class="field_item">
                                 <label class="lbl-check"><input tabindex="1" name="iBindEffective" type="checkbox" value="1" onchange="if($(this).prop('checked')){$('#form_application_coverage #sDateBindEffective').removeAttr('readonly');}else{$('#form_application_coverage #sDateBindEffective').attr('readonly','readonly').val('');}"> Bind Effective</label>  
-                                <input tabindex="2" id="sDateBindEffective" class="fecha" name="sDateBindEffective" type="text" readonly="readonly" style="width: 200px;" placeholder="mm/dd/yyyy">
+                                <input tabindex="2" id="sDateBindEffective" class="fecha company_info" name="sDateBindEffective" type="text" readonly="readonly" style="width: 200px;" placeholder="mm/dd/yyyy">
                             </div>
                         </td>
                         <td>
                             <div class="field_item"> 
                                 <label class="lbl-check"><input tabindex="3" name="iQuoteNeeded" type="checkbox" value="1" onchange="if($(this).prop('checked')){$('#form_application_coverage #sDateQuoteNeeded').removeAttr('readonly');}else{$('#form_application_coverage #sDateQuoteNeeded').attr('readonly','readonly').val('');}"> Quote Needed By: </label>  
-                                <input tabindex="4" id="sDateQuoteNeeded" class="fecha" name="sDateQuoteNeeded" type="text" readonly="readonly" style="width: 200px;" placeholder="mm/dd/yyyy">
+                                <input tabindex="4" id="sDateQuoteNeeded" class="fecha company_info" name="sDateQuoteNeeded" type="text" readonly="readonly" style="width: 200px;" placeholder="mm/dd/yyyy">
                             </div>
                         </td>
                     </tr>
@@ -1244,8 +1283,8 @@ var fn_formats = {
   </form>  
 </div>  
 <!-----COMMODITIES DIALOG--->
-<!--<div id="dialog_commodities_list" title="SELECT DATA TO ADD">
-  <p>Please select the data of company list:</p>
+<div id="dialog_commodities_list" title="SELECT DATA TO ADD">
+  <p>Please select the data of default commodities list:</p>
   <input id="form_select" type="hidden" value=""> 
   <table style="width: 100%;">
    <thead>
@@ -1256,7 +1295,7 @@ var fn_formats = {
    </thead>
    <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
   </table>
-</div>  -->
+</div>
 <div id="dialog_commodities_form" title="COMMODITIES INFORMATION">
   <p>Please select an of following options:</p>
   <form class="p-container" style="overflow: hidden;">

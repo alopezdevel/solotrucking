@@ -188,7 +188,7 @@ var fn_policies = {
                     }        
             }); 
             
-            /*----- DRIVER UNIT TXT -------*/
+            /*----- DRIVER UNIT -------*/
             new AjaxUpload('#btnFile', {
                     action: 'funciones_policies.php',
                     onSubmit : function(file , ext){
@@ -214,7 +214,7 @@ var fn_policies = {
                                     'iConsecutivoPolizas':policies_selected,
                                 });
                                 $('#txtFile').val('loading...');
-                                this.disable();
+                                //this.disable();
                             }else{
                                 fn_solotrucking.actualizarMensajeAlerta('Please verify if all required fields has a value.');
                             }

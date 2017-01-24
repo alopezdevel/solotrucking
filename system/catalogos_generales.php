@@ -311,24 +311,31 @@
   function get_commodities(){
      include("cn_usuarios.php");
      $conexion->autocommit(FALSE);
-     $error = "0";   
+     $error = "0"; 
+     $htmlList = "";  
      $sql = "SELECT iConsecutivo AS clave, sCommodities AS descripcion FROM ct_quotes_default_commodities ORDER BY sCommodities ASC";
      $result = $conexion->query($sql);
      $tipos = $result->num_rows;  
-        if($tipos > 0){
-            $htmlTabla .= "<option value=\"\">Select an option...</option>";      
-            while ($items = $result->fetch_assoc()){
-               if($items["clave"] != ""){
-                     $htmlTabla .= "<option value=\"".$items['clave']."\">".$items['descripcion']."</option>";
-                 }else{                             
-                     $htmlTabla .="";
-                 }    
-            }                                                                                                                                                                       
-        }else {$htmlTabla .="";}
+     if($tipos > 0){
+        $htmlTabla .= "<option value=\"\">Select an option...</option>";      
+        while ($items = $result->fetch_assoc()){
+           if($items["clave"] != ""){
+                 $htmlTabla .= "<option value=\"".$items['clave']."\">".utf8_decode($items['descripcion'])."</option>";
+                 if($_POST['table_list'] == 'true'){
+                    $htmlList .= "<tr>".
+                                   "<td><input class=\"list_id\" name=\"list_id\" type=\"checkbox\" value=\"".$items['clave']."\" title=\"".strtoupper(utf8_decode($items['descripcion']))."\"></td>".
+                                   "<td>".strtoupper(utf8_decode($items['descripcion']))."</td>".                                                                                                                                                                                                                  
+                                   "</tr>";
+                 }
+             }else{                             
+                 $htmlTabla .="";
+             }    
+        }                                                                                                                                                                       
+     }else {$htmlTabla .="";}
      $conexion->rollback();
      $conexion->close();
      $htmlTabla = utf8_encode($htmlTabla);  
-     $response = array("mensaje"=>"$mensaje","error"=>"$error","select"=>"$htmlTabla");   
+     $response = array("mensaje"=>"$mensaje","error"=>"$error","select"=>"$htmlTabla","table"=>"$htmlList");   
      echo json_encode($response);  
   }
 ?>

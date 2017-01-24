@@ -2,8 +2,8 @@
   require('lib/fpdf153/fpdf.php');//Cargando  libreria
   include_once("funciones_documentos.php");
   //FORZADO
-  $consecutivo_doc = "5";
-  $id_compania = "2";
+  $consecutivo_doc = $_GET['consecutivo_doc'];
+  $id_compania = $_GET['id_compania'];
   //FORZADO
   if($consecutivo_doc != ""){
       getDocumentosPDF($consecutivo_doc,$arr_formato);      
@@ -13,9 +13,12 @@
   }
   
   //Variables
-  $consecutivo_drivers = "13";//$_GET['consecutivo_drivers']; 
-  $consecutivo_equipment = "37";
-  $consecutivo_trailer = "37";
+  $consecutivo_drivers = $_GET['cd']; 
+  $consecutivo_equipment = $_GET['ce'];
+  //Fechas Bind y Quote needed:
+  $date_bind = $_GET['dbind']; 
+  $date_quot = $_GET['dquot']; 
+  //$consecutivo_trailer = "37";
   $NAMED_INSURED = $arr_compania[0]['compania'];
   $FEIN = $arr_compania[0]['FEIN'];
   $USDOT = $arr_compania[0]['us_dot'];
@@ -32,7 +35,7 @@
   $NAMED_INSURED = $arr_compania[0]['compania'];
   $ADDRESS = $arr_compania[0]['direccion'];
   $PH = $arr_compania[0]['telefono_principal'];   
-  $consecutivo_commodities = "1";
+  $consecutivo_commodities = $_GET['id_comm'];
   //funciones
   $arr_drivers = NULL;
   $arr_equipment = NULL;
@@ -52,7 +55,7 @@
   }
   if($error >0){
       echo '<script language="javascript">alert(\''.$mensaje.'\'); window.close();</script>';  
-       exit;       
+      exit;       
   }
   $pdf = new FPDF(); //Declarando clase FPDF
   $pdf->AddPage(); // Agregando pagina
@@ -60,6 +63,36 @@
   $ruta_archivo = $arr_formato[0]['ruta']; 
   $pdf->Image($ruta_archivo,'0','0','215','290','JPG');
   //CUERPO DEL PDF
+  if($date_bind != ""){
+      $x = 22.5;
+      $y = 30.5;
+      $pdf->SetXY($x,$y);
+      $pdf->Write(5,"X");
+      $date_bind = strtotime($date_bind);
+      $x = 53;
+      $pdf->SetXY($x,$y);
+      $pdf->Write(5,date('m',$date_bind));
+      $pdf->SetXY($x+10,$y);
+      $pdf->Write(5,date('d',$date_bind));
+      $pdf->SetXY($x+19,$y);
+      $pdf->Write(5,date('Y',$date_bind));
+      
+  }
+  if($date_quot != ""){
+      $x = 111.5;
+      $y = 30.5;
+      $pdf->SetXY($x,$y);
+      $pdf->Write(5,"X");
+      $date_quot = strtotime($date_quot);
+      $x = 149;
+      $pdf->SetXY($x,$y);
+      $pdf->Write(5,date('m',$date_quot));
+      $pdf->SetXY($x+10,$y);
+      $pdf->Write(5,date('d',$date_quot));
+      $pdf->SetXY($x+19,$y);
+      $pdf->Write(5,date('Y',$date_quot));
+      
+  }
   $x = 50;
   $y =46;
   $pdf->SetXY($x,$y);
@@ -132,7 +165,7 @@
   $pdf->Write(5,$EMAIL   );     
   
   $y =70;
-  $RADIUS_OPERATION = "500p";
+  $RADIUS_OPERATION = $_GET['radio'];
   SWITCH($RADIUS_OPERATION){
       CASE "200": $x = 60;
                   $pdf->SetXY($x,$y);
@@ -149,12 +182,29 @@
       BREAK;
       
   }
-  
-      $x = 33;
-      $y =22;
+  $com_re = $_GET['com_re'];
+  $com_dv = $_GET['com_dv'];
+  $com_fl = $_GET['com_fl'];
+      
+  if($com_re == "1"){
+      $x = 22;
+      $y = 92;
       $pdf->SetXY($x,$y);
-      $pdf->Write(5, "XXX"   );  
-  
+      $pdf->Write(5,"X");  
+  }
+  if($com_dv == "1"){
+      $x = 22;
+      $y = 99.5;
+      $pdf->SetXY($x,$y);
+      $pdf->Write(5,"X"); 
+  }
+  if($com_fl == "1"){ 
+      $x = 22;
+      $y = 107;
+      $pdf->SetXY($x,$y);
+      $pdf->Write(5,"X");  
+  }
+  $er = $_GET['er'];
   if($er == 'lp'){
       $x = 89;
       $y =211;
@@ -167,7 +217,7 @@
       $pdf->SetXY($x,$y);
       $pdf->Write(5, "X"   );
   }
-  $pd_d = "1";
+  $pd_d = $_GET['pd_d'];
   if($pd_d == "1"){
       $x = 60;
       $y = 219;
@@ -176,16 +226,17 @@
       $x = 129;
       $y = 219;
       $pdf->SetXY($x,$y);
-      $pdf->Write(5, $pd_t ="12345"   );
+      $pdf->Write(5, $pd_t = $_GET['pd_t']);
 
       $x = 159;
       $y = 219;
       $pdf->SetXY($x,$y);
-      $pdf->Write(5, $r_sv = "1234"  );
+      $pdf->Write(5, $r_sv = $_GET['r_sv']);
       
   }
-$mtc = "100";
-switch($mtc){
+  #MTC
+  $mtc = $_GET['mtc'];
+  switch($mtc){
     case "100":
            $x = 77;
                       $y = 228;           
@@ -200,84 +251,68 @@ switch($mtc){
            break;
     case "250":
            $x = 129;
-                      $y = 228;           
+           $y = 228;           
            $pdf->SetXY($x,$y);
-                 $pdf->Write(5, "X"   );
-              break;
-}
-if($mtc != ""){
+           $pdf->Write(5, "X");
+           break;
+  }
+  if($mtc != ""){
       $x = 159;
       $y = 228;
       $pdf->SetXY($x,$y);
-      $pdf->Write(5, $r_p1 = "1234"  );
-
-}
-$ntl = "1";
-if($ntl == "1"){
-      $x = 69;
-      $y = 236;
-      $pdf->SetXY($x,$y);
-      $pdf->Write(5,"X"  );
-      $x = 159;
-      $y = 236;
-      $pdf->SetXY($x,$y);
-      $pdf->Write(5, $r_p2 = "1234"  );
-      
-}
-$ti = "5000";
-switch($ti){
-    case "400":
-           $x = 62;
-                      $y = 246;           
-           $pdf->SetXY($x,$y);
-                 $pdf->Write(5, "X"   );
-              break;
-    default:   if($ti != ""){
-               $x = 89;
+      $pdf->Write(5, $r_p1 = $_GET['r_p1']);
+  }
+    $ntl = $_GET['ntl'];
+    if($ntl == "1"){
+          $x = 69;
+          $y = 236;
+          $pdf->SetXY($x,$y);
+          $pdf->Write(5,"X"  );
+          $x = 159;
+          $y = 236;
+          $pdf->SetXY($x,$y);
+          $pdf->Write(5, $r_p2 = $_GET['r_p2']);
+    }
+    $ti = $_GET['ti'];
+    switch($ti){
+        case "400":
+               $x = 62;
                           $y = 246;           
                $pdf->SetXY($x,$y);
-                     $pdf->Write(5, "X"   );    
-               $x = 99;
-                          $y = 246;           
-               $pdf->SetXY($x,$y);
-                     $pdf->Write(5, $ti   );
+                     $pdf->Write(5,"X");
                   break;
-            }
-}
-if( $ti != "" ){
-      $x = 159;
-      $y = 246;
-      $pdf->SetXY($x,$y);
-      
-      
-      $pdf->Write(5, $r_de = "1234"  );
-
-}
-$fecha = getdate();
-
-      $x = 159;
-      $y = 271;
-      $pdf->SetXY($x,$y);
-      $pdf->Write(5, $fecha['mon']   );
+        default:   if($ti != ""){
+                   $x = 89;
+                              $y = 246;           
+                   $pdf->SetXY($x,$y);
+                         $pdf->Write(5,"X");    
+                   $x = 99;
+                              $y = 246;           
+                   $pdf->SetXY($x,$y);
+                         $pdf->Write(5,$ti);
+                      break;
+                }
+    }
+    if( $ti != "" ){
+          $x = 159;
+          $y = 246;
+          $pdf->SetXY($x,$y);
+          $pdf->Write(5, $r_de = $_GET['r_de']);
+    }   
+      $fecha = getdate(); 
       $x = 147;
       $y = 271;
       $pdf->SetXY($x,$y);
-      $pdf->Write(5, $fecha['mday']   );
+      $pdf->Write(5,date('m',$fecha['0']));
+      $x = 159;
+      $y = 271;
+      $pdf->SetXY($x,$y);
+      $pdf->Write(5,date('d',$fecha['0']));
       $x = 169;
       $y = 271;
       $pdf->SetXY($x,$y);
-      $pdf->Write(5, $fecha['year']   );
-
-
-
-      
-
-
-
-  
-  
-  
-  
+      $pdf->Write(5,date('Y',$fecha['0']));
+ 
   if(count($arr_trailer)>0 || count($arr_drivers)>0 || count($arr_equipment)>0){
       $pdf->AddPage(); // Agregando pagina
       //Pagina de Anexos
@@ -462,13 +497,5 @@ $fecha = getdate();
                 }     
       }
   }
-  
-  
-  
-  
-  
-  
-  
-  
   $pdf->Output();
 ?>

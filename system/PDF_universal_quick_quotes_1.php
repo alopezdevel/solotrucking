@@ -179,9 +179,10 @@
         $pdf->SetXY($x +41,$y);
         $pdf->Write(5,$FEIN);
         //COMMODITIES_HAULED
-        if(strlen($COMMODITIES_HAULED)>42){
-            $COMMODITIES_HAULED1 = substr($COMMODITIES_HAULED,0,42);
-            $COMMODITIES_HAULED2 = substr($COMMODITIES_HAULED,42,96);
+        $COMMODITIES_HAULED = strtoupper($COMMODITIES_HAULED);
+        if(strlen($COMMODITIES_HAULED)>39){
+            $COMMODITIES_HAULED1 = substr($COMMODITIES_HAULED,0,39);
+            $COMMODITIES_HAULED2 = substr($COMMODITIES_HAULED,39,88);
             $x = 114;
             $y += 7;   
             $pdf->SetXY($x,$y);
