@@ -77,7 +77,8 @@
                             
                              
                          }
-                         if($items['iTipoPoliza'] == 3){
+                         //if($items['iTipoPoliza'] == 3){
+                         if($dias > 0){
                             $btn_drivers  = "<div class=\"btn-icon view btn-left\" title=\"View list of Drivers\" onclick=\"fn_mypolicies.get_list_description('$iConsecutivoPoliza','D');\"><i class=\"fa fa-users\"></i> <span></span></div>"; 
                             $btn_drivers .= "<div class=\"btn-icon view btn-left\" title=\"View list of Units\" onclick=\"fn_mypolicies.get_list_description('$iConsecutivoPoliza','U');\"><i class=\"fa fa-truck\"></i> <span></span></div>";
                          }else{$btn_drivers = "";}

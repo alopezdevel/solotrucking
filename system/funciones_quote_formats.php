@@ -118,7 +118,7 @@
     $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields");   
     echo json_encode($response);
   } 
-  //drivers:
+  //drivers lista con checkbox:
   function get_drivers_list(){
       
       $iConsecutivoCompania = $_POST['iConsecutivoCompania'];

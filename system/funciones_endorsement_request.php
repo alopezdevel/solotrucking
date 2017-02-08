@@ -499,22 +499,15 @@
                       $cadena = array();
                       while ($items = $result->fetch_assoc()) {array_push($cadena, trim($items['eStatus']));}
                       //Revisando cadena:
-                      if(in_array('D',$cadena)){
-                          $eStatusGeneral = 'D';  
-                      }else if(in_array('P',$cadena)){
-                          $eStatusGeneral = 'P';
-                      }else if(in_array('SB',$cadena)){
-                            $eStatusGeneral = 'SB';
-                      }else if(in_array('A',$cadena)){
-                            $eStatusGeneral = 'A';
-                      }
+                           if(in_array('D',$cadena)) {$eStatusGeneral = 'D';}
+                      else if(in_array('P',$cadena)) {$eStatusGeneral = 'P';}
+                      else if(in_array('SB',$cadena)){$eStatusGeneral = 'SB';}
+                      else if(in_array('A',$cadena)) {$eStatusGeneral = 'A';}
                   }
                  
                  if($eStatusGeneral != ''){
                      $sql = "UPDATE cb_endoso SET eStatus ='$eStatusGeneral', sComentarios='$sComentarios', dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."',sUsuarioActualizacion='".$_SESSION['usuario_actual']."'".
                             "WHERE iConsecutivo = '$iConsecutivo'";
-                     //$conexion->query($sql);
-                     //$conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
                      if(!($conexion->query($sql))){
                         $error = '1';                                         
                         $msj = "Error: The Endorsement data was not found, please try again.";
@@ -522,64 +515,77 @@
                       //Revisamos si el Estatus es "APPROVED"  para actualizar la unidad o driver y agregarlo a las polizas.
                       if($eStatusGeneral == 'A'){
                          #1. saber que tipo de endoso es: 
-                         $query_endoso = "SELECT iConsecutivoTipoEndoso, sNumPolizas, iConsecutivoCompania, iConsecutivoOperador, iConsecutivoUnidad, eAccion FROM cb_endoso WHERE iConsecutivo = '$iConsecutivo'";
+                         $query_endoso = "SELECT iConsecutivoTipoEndoso, sNumPolizas, iConsecutivoCompania, iConsecutivoOperador, iConsecutivoUnidad, eAccion ".
+                                         "FROM cb_endoso WHERE iConsecutivo = '$iConsecutivo'";
                          $result = $conexion->query($query_endoso);
                          $items = $result->num_rows; 
                          
                          if($items > 0){     
                             $data = $result->fetch_assoc();
-                            #2. Revisamos que sea ADD y sea una unit o un driver:
-                            if($data['eAccion'] == 'A' && ($data['iConsecutivoTipoEndoso'] == '1' || $data['iConsecutivoTipoEndoso'] == '2')){
-                                $id_polizas = "";
-                                $PolizasEndoso = explode('|',$data['sNumPolizas']);
-                                for ($i = 0; $i < count($PolizasEndoso); $i++) {
-                                     $poliza = explode('/',$PolizasEndoso[$i]);
-                                     $policy_query = "SELECT iConsecutivo FROM ct_polizas WHERE sNumeroPoliza = '".$poliza[0]."' AND iTipoPoliza = '".$poliza[1]."' AND iConsecutivoCompania = '".$data['iConsecutivoCompania']."'";
-                                     $result2 = $conexion->query($policy_query);
-                                     $items2 = $result2->num_rows; 
-                                     if($items2 > 0 ){
-                                        $iConsecutivoPoliza = $result2->fetch_assoc();  
-                                        $id_polizas == '' ?  $id_polizas = $iConsecutivoPoliza['iConsecutivo'] : $id_polizas .= ','.$iConsecutivoPoliza['iConsecutivo']; 
-                                     }else{
-                                         $error = '1';
-                                         $mensaje = "Error: Policy data not found.";
-                                     }
-                                }
-                                 
-                                if($id_polizas != ''){
-                                    $Tabla = "";
-                                    $ConsecutivoContenido = "";
-                                    if($data['iConsecutivoTipoEndoso'] == '1' && $data['iConsecutivoUnidad'] != ''){ // UNITS
-                                      $Tabla = "ct_unidades";
-                                      $ConsecutivoContenido = trim($data['iConsecutivoUnidad']);  
-                                    }else if($data['iConsecutivoTipoEndoso'] == '2' && $data['iConsecutivoOperador'] != ''){ //DRIVERS
-                                       $Tabla = "ct_operadores";
-                                       $ConsecutivoContenido = trim($data['iConsecutivoOperador']); 
-                                    }
-                                    
-                                    #3. Actualizamos la tabla correspondiente:
-                                    if($Tabla != '' && $ConsecutivoContenido != ''){
-                                       $update_list = "UPDATE $Tabla SET inPoliza = '1', siConsecutivosPolizas = '$id_polizas' WHERE iConsecutivo = '$ConsecutivoContenido' AND iConsecutivoCompania = '".$datos['iConsecutivoCompania']."'";
-                                       if(!($conexion->query($update_list))){
-                                            $error = '1';
-                                            $transaccion_exitosa = false;                                         
-                                            $msj = "Error: The Unit or driver data was not found, please try again.";
-                                       }else{
-                                          $msj = "The data has been update successfully."; 
-                                       }
-                                       
-                                    }else{
-                                      $error = '1';
-                                      $mensaje = "Error: the policy description list was not updated successfully.";  
-                                    }
-                                    
-                                }else{
-                                    $error = '1';
-                                    $mensaje = "Error: Policy ids not found.";
-                                }
-                            }else{
-                                $msj = "The data has been update successfully.";
+                            #2. Revisamos la accion del endoso y sea una unit o un driver:
+                            $endoAccion = trim($data['eAccion']);
+                            $endoTipo   = trim($data['iConsecutivoTipoEndoso']);
+                            $CompaniaID = trim($data['iConsecutivoCompania']);
+                            $ct_actualiza = "";
+                            $Consecutivo_actualiza = "";
+                                 if($endoTipo == '1' && $data['iConsecutivoUnidad'] != '') {$ct_actualiza = "ct_unidades"; $Consecutivo_actualiza = trim($data['iConsecutivoUnidad']);}
+                            else if($endoTipo == '2' && $data['iConsecutivoOperador'] != ''){$ct_actualiza = "ct_operadores";$Consecutivo_actualiza = trim($data['iConsecutivoOperador']);}
+                            
+                            //policies of endorsement:
+                            $PolizasEndoso = explode('|',$data['sNumPolizas']);
+                            #1 - Obtener las polizas que se actualizaron. 
+                            $id_polizas = ""; 
+                            $count = count($PolizasEndoso); 
+                            for ($i = 0; $i < $count; $i++) {
+                                 $poliza = explode('/',$PolizasEndoso[$i]);
+                                 $policy_query = "SELECT iConsecutivo FROM ct_polizas ".
+                                                 "WHERE sNumeroPoliza = '".$poliza[0]."' AND iTipoPoliza = '".$poliza[1]."' ".
+                                                 "AND iConsecutivoCompania = '$CompaniaID' AND iDeleted = '0'";
+                                 $result = $conexion->query($policy_query);
+                                 $items  = $result->num_rows; 
+                                 if($items > 0 ){
+                                    $iConsecutivoPoliza = $result->fetch_assoc();  
+                                    $id_polizas == '' ?  $id_polizas = $iConsecutivoPoliza['iConsecutivo'] : $id_polizas .= ','.$iConsecutivoPoliza['iConsecutivo']; 
+                                 }else{$error = '1';$mensaje = "Error: Policy data not found.";}
                             }
+                            
+                            #Revisamos si es un ADD o un DELETE:
+                            if($endoAccion == 'A'){
+                                #2. Actualizamos la tabla correspondiente:
+                                $polizas_actualiza = $id_polizas;
+                                $inpolizas = "1";
+                                   
+                            }else if($endoAccion == 'D'){
+
+                                #2 - En caso que sea Delete, consultamos la tabla de la unidad o driver para saber a que polizas pertenece actualmente:
+                                $query = "SELECT siConsecutivosPolizas FROM $ct_actualiza WHERE iConsecutivo = '$Consecutivo_actualiza' AND iConsecutivoCompania = '$CompaniaID'";
+                                $result = $conexion->query($query);
+                                $items = $result->num_rows; 
+                                $items > 0 ? $polizas_actuales = $result->fetch_assoc() : $polizas_actuales = "";
+                                
+                                if($polizas_actuales != ''){
+                                    $polizas_actuales  = explode(',',$polizas_actuales);
+                                    $polizas_endoso    = explode(',',$id_polizas); 
+                                    $array_nuevo       = array_diff($polizas_endoso, $polizas_endoso);
+                                    $polizas_actualiza = implode(',',$array_nuevo);
+                                    $polizas_actualiza != "" ? $inpolizas = "1" : $inpolizas = "0";
+                                }else{
+                                    $polizas_actualiza = "";
+                                    $inpolizas = "0";
+                                }
+   
+                            }
+                         
+                            $update_list = "UPDATE $ct_actualiza SET inPoliza = '$inpolizas', siConsecutivosPolizas = '$polizas_actualiza' ".
+                                           "WHERE iConsecutivo = '$Consecutivo_actualiza' AND iConsecutivoCompania = '$CompaniaID'";
+                                       
+                            if(!($conexion->query($update_list))){
+                                    $error = '1';
+                                    $transaccion_exitosa = false;
+                                    $msj = "Error: The Unit or driver data was not found, please try again.";
+                                    
+                            }else{$msj = "The data has been update successfully.";}
+
                          }else{
                              $error = '1';
                              $mensaje = "Error: Policy ids not found.";

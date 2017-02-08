@@ -36,7 +36,7 @@ function inicio(){
         $('#dialog_driver_list').dialog({
             modal: true,
             autoOpen: false,
-            width : 600,
+            width : 750,
             height : 500,
             resizable : true,
             buttons : {
@@ -126,7 +126,7 @@ function inicio(){
         $('#dialog_unit_trailer_list').dialog({
             modal: true,
             autoOpen: false,
-            width : 600,
+            width : 750,
             height : 500,
             resizable : false,
             buttons : {
@@ -1213,10 +1213,12 @@ var fn_formats = {
   <table style="width: 100%;">
    <thead>
     <tr id="grid-head2">
-        <td class="etiqueta_grid" style="width:50px;text-align: center;"></td>
-        <td class="etiqueta_grid">Name</td>
-        <td class="etiqueta_grid">YRS EXP</td>
-        <td class="etiqueta_grid">DOB</td>
+        <td class="etiqueta_grid" style="width:50px;text-align: center;padding: 4px 10px 4px 5px;">
+            <input name="chk_all_drivers" type="checkbox" title="Select All drivers..." onchange="if($(this).is(':checked')){$('#dialog_driver_list tbody input:checkbox').prop('checked','true');}else{$('#dialog_driver_list tbody input:checkbox').prop('checked','');}" />
+        </td>
+        <td class="etiqueta_grid" style="padding: 4px 10px 4px 5px;">Name</td>
+        <td class="etiqueta_grid" style="padding: 4px 10px 4px 5px;">YRS EXP</td>
+        <td class="etiqueta_grid" style="padding: 4px 10px 4px 5px;">DOB</td>
     </tr>
    </thead>
    <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
@@ -1255,12 +1257,14 @@ var fn_formats = {
   <table style="width: 100%;">
    <thead>
     <tr id="grid-head2">
-        <td class="etiqueta_grid" style="width:50px;text-align: center;"></td>
-        <td class="etiqueta_grid">YEAR</td>
-        <td class="etiqueta_grid">MAKE</td>
-        <td class="etiqueta_grid">VIN#</td> 
-        <td class="etiqueta_grid">BODY TYPE</td> 
-        <td class="etiqueta_grid">DEDUCTIBLE</td> 
+        <td class="etiqueta_grid" style="width:50px;text-align: center;padding: 4px 10px 4px 5px;">
+            <input name="chk_all_units" type="checkbox" title="Select All..." onchange="if($(this).is(':checked')){$('#dialog_unit_trailer_list tbody input:checkbox').prop('checked','true');}else{$('#dialog_unit_trailer_list tbody input:checkbox').prop('checked','');}" /> 
+        </td>
+        <td class="etiqueta_grid" style="padding: 4px 10px 4px 5px;">YEAR</td>
+        <td class="etiqueta_grid" style="padding: 4px 10px 4px 5px;">MAKE</td>
+        <td class="etiqueta_grid" style="padding: 4px 10px 4px 5px;">VIN#</td> 
+        <td class="etiqueta_grid" style="padding: 4px 10px 4px 5px;">BODY TYPE</td> 
+        <td class="etiqueta_grid" style="padding: 4px 10px 4px 5px;">DEDUCTIBLE</td> 
     </tr>
    </thead>
    <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>

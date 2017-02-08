@@ -199,43 +199,40 @@ var fn_policies = {
                         }else{
                             
                             var policies_selected = "";
-                            $("#file_edit_form .company_policies .num_policies" ).each(function( index ){
-                                   if(this.checked){
-                                      if(policies_selected != ''){policies_selected += "," + this.value; }else{policies_selected += this.value;} 
-                                   }
-                                     
+                            $("#file_edit_form .company_policies .num_policies" ).each(function(index){
+                                if($(this).is(':checked')){if(policies_selected != ''){policies_selected += "," + this.value; }else{policies_selected += this.value;}}
                             });
-                            
-                            if(policies_selected != '' && $('#file_edit_form #iConsecutivoCompania').val() != '' && $('#file_edit_form #TypeFile').val() != ''){
-                                if($('#file_edit_form #TypeFile').val() == 'D'){var action = 'upload_driver_txt';}else if($('#file_edit_form #TypeFile').val() == 'U'){var action = 'upload_unit_txt';}
+                            if(policies_selected != '' && $('#file_edit_form #iConsecutivoCompania').val() != ''){
                                 this.setData({
-                                    'accion':action, 
+                                    'accion':'upload_list_file', 
                                     'iConsecutivoCompania':$('#file_edit_form #iConsecutivoCompania').val(),
                                     'iConsecutivoPolizas':policies_selected,
                                 });
                                 $('#txtFile').val('loading...');
-                                //this.disable();
+                                this.disable();
                             }else{
-                                fn_solotrucking.actualizarMensajeAlerta('Please verify if all required fields has a value.');
+                                fn_solotrucking.mensaje('Please verify if all required fields has a value.');
+                                return false;
                             }
                         }
                     },
                     onComplete : function(file,response){  
-                        var respuesta = JSON.parse(response);
-                        switch(respuesta.error){
-                            case '0':
-                                $('#txtFile').val(respuesta.name_file);
-                                this.enable();
-                                fn_solotrucking.mensaje(respuesta.mensaje);
-                                $('#reporte_policy_update').empty().append(respuesta.reporte);
-                            break;
-                            case '1':
-                               fn_solotrucking.mensaje(respuesta.mensaje);
-                               $('#txtFile').val(''); 
-                               this.enable();
-                               $('#reporte_policy_update').empty();
-                            break;
-                        }   
+                            //var respuesta = JSON.parse(response);
+                            var respuesta = $.parseJSON(response);
+                            switch(respuesta.error){
+                                case '0':
+                                    $('#txtFile').val(respuesta.name_file);
+                                    this.enable();
+                                    fn_solotrucking.mensaje(respuesta.mensaje);
+                                    $('#reporte_policy_update').empty().append(respuesta.reporte);
+                                break;
+                                case '1':
+                                   fn_solotrucking.mensaje(respuesta.mensaje);
+                                   $('#txtFile').val(''); 
+                                   this.enable();
+                                   $('#reporte_policy_update').empty();
+                                break;
+                            } 
                     }        
             }); 
             $("#driver_tabs").tabs();
@@ -1003,14 +1000,6 @@ var fn_policies = {
                         
                     </div>
                     <br>
-                </div>
-                <div class="field_item">
-                    <label>Type <span style="color:#ff0000;">*</span>:</label>  
-                    <select tabindex="3" id="TypeFile"  name="File_TypeFile">
-                        <option value="">Select an option...</option>
-                        <option value="D">Drivers</option> 
-                        <option value="U">Units</option> 
-                    </select> 
                 </div>
                 <div class="field_item"> 
                     <label>File: <span style="color:#9e2e2e;">Please upload an TXT File with the content.</span></label> 

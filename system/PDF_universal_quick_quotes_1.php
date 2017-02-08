@@ -403,36 +403,42 @@
             if(count($arr_drivers)>0){
                 $pdf->SetFont('Arial','',10);  
                 $pdf->SetXY($x, $y);
-                $pdf->Cell(30,5,"DRIVER(S)",0,0,'L',0);
+                $pdf->SetFont('Arial','B',10);  
+                $pdf->Cell(175,5,"DRIVER(S):",1,0,'L',1);  
                 $y += 5;                    
                 $pdf->SetFont('Arial','B',10);  
                 $pdf ->SetLineWidth(.5);
                 $pdf->SetXY($x, $y);
-                $pdf->Cell(60,5,"NAME",1,0,'L',1);
-                $x += 60;
+                $pdf->Cell(98,5,"NAME",1,0,'L',1);
+                $x += 98;
                 $pdf->SetXY($x, $y);
-                $pdf->Cell(30,5,"YRS_EXP",1,0,'L',1);
+                $pdf->Cell(28,5,"DOB",1,0,'C',1);
+                $x += 28;
+                $pdf->SetXY($x, $y);
+                $pdf->Cell(30,5,"LICENSE#",1,0,'L',1);
                 $x += 30;
                 $pdf->SetXY($x, $y);
-                $pdf->Cell(30,5,"ACCIDENTS",1,0,'L',1);    
+                $pdf->Cell(20,5,"YRS EXP",1,0,'C',1);   
                 //CUERPO
                        
-                 $pdf->SetFont('Arial','',10);
+                $pdf->SetFont('Arial','',10);
                 if(count($arr_drivers)>0){
                     $x = 20;
                     $y += 5;
                     foreach($arr_drivers as $driver){
-                $x = 20;
+                        $x = 20;
                         $pdf->SetXY($x, $y);
-                        $pdf->Cell(60,5,$driver["nombre"],1,0,'L',0);
-                        $x += 60;
+                        $pdf->Cell(98,5,$driver["nombre"],1,0,'L',0);
+                        $x += 98;
                         $pdf->SetXY($x, $y);
-                        $pdf->Cell(30,5,$driver["exp_year"],1,0,'L',0);
+                        $pdf->Cell(28,5,$driver["fecha_nacimiento"],1,0,'C',0);
+                        $x += 28;
+                        $pdf->SetXY($x, $y);
+                        $pdf->Cell(30,5,$driver["num_licencia"],1,0,'L',0);
                         $x += 30;
                         $pdf->SetXY($x, $y);
-                        $pdf->Cell(30,5,$driver["accidentes"],1,0,'L',0);
-                        $y += 5;
-                        
+                        $pdf->Cell(20,5,$driver["exp_year"],1,0,'C',0);
+                        $y += 5; 
                     }
                     
                 }
@@ -449,7 +455,7 @@
                         $pdf->Cell(30,5,"",1,0,'L',0);
                         $y += 5;
                     
-                }
+                }   
                 
                 //EQUIPMENT
                 if(count($arr_equipment)>0){    
@@ -458,7 +464,7 @@
                     $y += 5;
                     $pdf->SetXY($x, $y);
                     $pdf->SetFont('Arial','B',10);  
-                    $pdf->Cell(175,5,"EQUIPMENT:",1,0,'L',1); 
+                    $pdf->Cell(175,5,"EQUIPMENT:",1,0,'L',1);  
                     $y += 5;       
                     $pdf->SetXY($x, $y);
                     $pdf->Cell(15,5,"YEAR",1,0,'L',1);
@@ -547,7 +553,7 @@
                 $pdf->SetFont('Arial','',10); 
             }   
             //CUERPO        
-             $pdf->SetFont('Arial','',10);
+            $pdf->SetFont('Arial','',10);
             if(count($arr_trailer)>0){
                 $x = 20;       
                 $y += 5;     
