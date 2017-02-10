@@ -400,20 +400,18 @@
             $pdf->SetFillColor(232);
             $x = 20;
             $y = 35;
-            if(count($arr_drivers)>0){
-                $pdf->SetFont('Arial','',10);  
+            if(count($arr_drivers)>0){  
                 $pdf->SetXY($x, $y);
                 $pdf->SetFont('Arial','B',10);  
+                $pdf ->SetLineWidth(.5);  
                 $pdf->Cell(175,5,"DRIVER(S):",1,0,'L',1);  
                 $y += 5;                    
-                $pdf->SetFont('Arial','B',10);  
-                $pdf ->SetLineWidth(.5);
                 $pdf->SetXY($x, $y);
                 $pdf->Cell(98,5,"NAME",1,0,'L',1);
                 $x += 98;
                 $pdf->SetXY($x, $y);
-                $pdf->Cell(28,5,"DOB",1,0,'C',1);
-                $x += 28;
+                $pdf->Cell(27,5,"DOB",1,0,'C',1);
+                $x += 27;
                 $pdf->SetXY($x, $y);
                 $pdf->Cell(30,5,"LICENSE#",1,0,'L',1);
                 $x += 30;
@@ -421,7 +419,7 @@
                 $pdf->Cell(20,5,"YRS EXP",1,0,'C',1);   
                 //CUERPO
                        
-                $pdf->SetFont('Arial','',10);
+                $pdf->SetFont('Arial','',8);
                 if(count($arr_drivers)>0){
                     $x = 20;
                     $y += 5;
@@ -431,8 +429,8 @@
                         $pdf->Cell(98,5,$driver["nombre"],1,0,'L',0);
                         $x += 98;
                         $pdf->SetXY($x, $y);
-                        $pdf->Cell(28,5,$driver["fecha_nacimiento"],1,0,'C',0);
-                        $x += 28;
+                        $pdf->Cell(27,5,$driver["fecha_nacimiento"],1,0,'C',0);
+                        $x += 27;
                         $pdf->SetXY($x, $y);
                         $pdf->Cell(30,5,$driver["num_licencia"],1,0,'L',0);
                         $x += 30;
@@ -456,72 +454,72 @@
                         $y += 5;
                     
                 }   
+            }
+            //EQUIPMENT / UNITS
+            if(count($arr_equipment)>0){    
+                $pdf ->SetLineWidth(.5); 
+                $x = 20;        
+                $y += 5;
+                $pdf->SetXY($x, $y);
+                $pdf->SetFont('Arial','B',10);  
+                $pdf->Cell(175,5,"EQUIPMENT:",1,0,'L',1);  
+                $y += 5;       
+                $pdf->SetXY($x, $y);
+                $pdf->Cell(15,5,"YEAR",1,0,'L',1);
+                $x += 15;
+                $pdf->SetXY($x, $y);
+                $pdf->Cell(50,5,"MAKE",1,0,'L',1);
+                $x += 50;
+                $pdf->SetXY($x, $y);
+                $pdf->Cell(25,5,"BODY TYPE",1,0,'L',1); 
                 
-                //EQUIPMENT
-                if(count($arr_equipment)>0){    
-                    $pdf ->SetLineWidth(.5); 
-                    $x = 20;        
-                    $y += 5;
+                $x += 25;
+                $pdf->SetXY($x, $y);
+                $pdf->Cell(25,5,"GVW",1,0,'L',1);         
+                
+                $x += 25;
+                $pdf->SetXY($x, $y);
+                $pdf->Cell(30,5,"STATED VALUE",1,0,'L',1);         
+                
+                $x += 30;
+                $pdf->SetXY($x, $y);
+                $pdf->Cell(30,5,"DEDUCTIBLE",1,0,'L',1); 
+                $pdf->SetFont('Arial','',10); 
+            }
+               
+            //CUERPO        
+            $pdf->SetFont('Arial','',8);
+            if(count($arr_equipment)>0){
+                $x = 20;       
+                $y += 5;     
+                foreach($arr_equipment as $equipment){
+                    $x = 20;
                     $pdf->SetXY($x, $y);
-                    $pdf->SetFont('Arial','B',10);  
-                    $pdf->Cell(175,5,"EQUIPMENT:",1,0,'L',1);  
-                    $y += 5;       
-                    $pdf->SetXY($x, $y);
-                    $pdf->Cell(15,5,"YEAR",1,0,'L',1);
+                    $pdf->Cell(15,5,$equipment["year"],1,0,'L',0);
                     $x += 15;
                     $pdf->SetXY($x, $y);
-                    $pdf->Cell(50,5,"MAKE",1,0,'L',1);
+                    $pdf->Cell(50,5,$equipment["make"],1,0,'L',0);
                     $x += 50;
                     $pdf->SetXY($x, $y);
-                    $pdf->Cell(25,5,"BODY TYPE",1,0,'L',1); 
-                    
+                    $pdf->Cell(25,5,$equipment["body_type"],1,0,'L',0);
                     $x += 25;
                     $pdf->SetXY($x, $y);
-                    $pdf->Cell(25,5,"GVW",1,0,'L',1);         
-                    
+                    $pdf->Cell(25,5,$equipment["peso"],1,0,'L',0);
                     $x += 25;
                     $pdf->SetXY($x, $y);
-                    $pdf->Cell(30,5,"STATED VALUE",1,0,'L',1);         
-                    
+                    $equipment["stated_value"] != "" ? $stated_value  = '$ '.number_format($equipment["stated_value"]) : $stated_value = "";  
+                    $pdf->Cell(30,5,$stated_value,1,0,'R',0);
                     $x += 30;
                     $pdf->SetXY($x, $y);
-                    $pdf->Cell(30,5,"DEDUCTIBLE",1,0,'L',1); 
-                    $pdf->SetFont('Arial','',10); 
-                }
-                   
-                //CUERPO        
-                $pdf->SetFont('Arial','',10);
-                if(count($arr_equipment)>0){
-                    $x = 20;       
-                    $y += 5;     
-                    foreach($arr_equipment as $equipment){
-                $x = 20;
-                        $pdf->SetXY($x, $y);
-                        $pdf->Cell(15,5,$equipment["year"],1,0,'L',0);
-                        $x += 15;
-                        $pdf->SetXY($x, $y);
-                        $pdf->Cell(50,5,$equipment["make"],1,0,'L',0);
-                        $x += 50;
-                        $pdf->SetXY($x, $y);
-                        $pdf->Cell(25,5,$equipment["body_type"],1,0,'L',0);
-                        $x += 25;
-                        $pdf->SetXY($x, $y);
-                        $pdf->Cell(25,5,$equipment["GVW"],1,0,'L',0);
-                        $x += 25;
-                        $pdf->SetXY($x, $y);
-                        $pdf->Cell(30,5,$equipment["STATED VALUE"],1,0,'L',0);
-                        $x += 30;
-                        $pdf->SetXY($x, $y);
-                        $pdf->Cell(30,5,$equipment["deductible"],1,0,'L',0);
-                        $y += 5;
-                        
-                    }
+                    $equipment["deductible"] != "" ? $deductible  = '$ '.number_format($equipment["deductible"]) : $deductible = "";  
+                    $pdf->Cell(30,5,$deductible,1,0,'R',0);
+                    $y += 5;
                     
                 }
+                
             }
-            
-            
-            //EQUIPMENT
+
+            //TRAILERS
             if(count($arr_trailer)>0){   
                 $pdf ->SetLineWidth(.5); 
                 $x = 20;        
@@ -553,7 +551,7 @@
                 $pdf->SetFont('Arial','',10); 
             }   
             //CUERPO        
-            $pdf->SetFont('Arial','',10);
+            $pdf->SetFont('Arial','',8);
             if(count($arr_trailer)>0){
                 $x = 20;       
                 $y += 5;     
@@ -569,13 +567,15 @@
                     $pdf->Cell(25,5,$trailer["body_type"],1,0,'L',0);
                     $x += 25;
                     $pdf->SetXY($x, $y);
-                    $pdf->Cell(25,5,$trailer["GVW"],1,0,'L',0);
+                    $pdf->Cell(25,5,$trailer["peso"],1,0,'L',0);
                     $x += 25;
                     $pdf->SetXY($x, $y);
-                    $pdf->Cell(30,5,$trailer["STATED VALUE"],1,0,'L',0);
+                    $trailer["stated_value"] != "" ? $stated_value  = '$ '.number_format($trailer["stated_value"]) : $stated_value = "";
+                    $pdf->Cell(30,5,$stated_value,1,0,'R',0);
                     $x += 30;
                     $pdf->SetXY($x, $y);
-                    $pdf->Cell(30,5,$trailer["deductible"],1,0,'L',0);
+                    $trailer["deductible"] != "" ?  $deductible = '$ '.number_format($trailer["deductible"]) : $deductible = "";
+                    $pdf->Cell(30,5,$deductible,1,0,'R',0);
                     $y += 5;
                     
                 }

@@ -157,6 +157,7 @@ function inicio(){
                    var vin = $('#dialog_unit_trailer_form #sVIN').val();
                    var year = $('#dialog_unit_trailer_form #iYear').val();
                    var make = $('#dialog_unit_trailer_form #iModelo').val();
+                   var statedvalue = $('#dialog_unit_trailer_form #iValue').val(); 
                    var deductible = $('#dialog_unit_trailer_form #iTotalPremiumPD').val();
                    var form = $('#dialog_unit_trailer_form #form_select').val();
                    var tipo = $('#dialog_unit_trailer_form #sTipo').val(); 
@@ -173,6 +174,7 @@ function inicio(){
                             iModelo : make,
                             iTotalPremiumPD : deductible,
                             sTipo : tipo,
+                            iValue : statedvalue,
                             iConsecutivoCompania : iConsecutivoCompania,
                             edit_mode : edit_mode,
                             token : $('#'+form+' #'+tipo+'_token').val()
@@ -434,6 +436,7 @@ var fn_formats = {
               $("#dialog_driver_form").dialog( 'open' );
               
           }else if(parameter == "EXISTING"){
+              $('#dialog_driver_list input:checkbox[name="chk_all_drivers"]').prop('checked','');
               $.post("funciones_quote_formats.php", {accion: "get_drivers_list",iConsecutivoCompania : iConsecutivoCompania,token:token},
                function(data){ 
                    if(data.error == '0' && data.total != '0'){
@@ -481,6 +484,7 @@ var fn_formats = {
               $('#dialog_unit_trailer_form #iConsecutivoCompania').val(iConsecutivoCompania);
               $("#dialog_unit_trailer_form").dialog( 'open' );
            }else if(parameter == "EXISTING"){
+              $('#dialog_unit_trailer_list input:checkbox[name="chk_all_units"]').prop('checked',''); 
               $.post("funciones_quote_formats.php", {accion: "get_unit_trailer_list",iConsecutivoCompania : iConsecutivoCompania,token:token,tipo:tipo},
                function(data){ 
                    if(data.error == '0' && data.total != '0'){
@@ -523,7 +527,7 @@ var fn_formats = {
                },"json");
         },
         get_list_commodities : function(form){
-          $.post("funciones_quote_formats.php", {accion: "get_list_commodities",token: $('#'+form+' #commodities_token').val()},
+          $.post("funciones_quote_formats.php", {accion: "get_list_commodities",token: $('#'+form+' #commodities_token').val(),form:form},
           function(data){ 
                    if(data.error == '0'){
                        $('#'+form+' #commodities_list tbody').empty().append(data.tabla);
@@ -534,6 +538,15 @@ var fn_formats = {
             $('#dialog_commodities_list input:checkbox').prop('checked',''); 
             $('#dialog_commodities_list #form_select').val(form);
             $('#dialog_commodities_list').dialog( 'open' );
+        },
+        delete_commodities : function(clave,token,form){
+           $.post("funciones_quote_formats.php", {accion: "delete_commodity",iConsecutivo:token,iConsecutivoCommodity:clave},
+           function(data){ 
+                   if(data.error == '0'){
+                       fn_formats.get_list_commodities(form);
+                   }
+                   else{fn_solotrucking.mensaje(data.msj);}   
+           },"json"); 
         },
         //FORMULARIOS:
         form_commercial_auto_quick : {
@@ -810,9 +823,10 @@ var fn_formats = {
                                 <table id="driver_list" style="width:100%;" class="popup-datagrid datagrid">
                                 <thead>
                                     <tr id="grid-head2">
-                                        <td class="etiqueta_grid">Name</td>
-                                        <td class="etiqueta_grid">YRS EXP</td>
+                                        <td class="etiqueta_grid">NAME</td>
                                         <td class="etiqueta_grid">DOB</td>
+                                        <td class="etiqueta_grid">LICENSE</td>
+                                        <td class="etiqueta_grid">YRS EXP</td>
                                         <td class="etiqueta_grid" style="width: 100px;text-align: center;">
                                             <div class="btn-icon add btn-left" title="Add +"  onclick="fn_formats.form_commercial_auto_quick.open_driver_dialog();"><i class="fa fa-plus"></i></div>
                                         </td>
@@ -832,6 +846,7 @@ var fn_formats = {
                                 <table id="unit_list" style="width:100%;" class="popup-datagrid datagrid">
                                 <thead>
                                     <tr id="grid-head2">
+                                        <td class="etiqueta_grid">VIN</td>
                                         <td class="etiqueta_grid">YEAR</td>
                                         <td class="etiqueta_grid">MAKE</td>
                                         <td class="etiqueta_grid">BODY TYPE</td>
@@ -857,6 +872,7 @@ var fn_formats = {
                                 <table id="trailer_list" style="width:100%;" class="popup-datagrid datagrid">
                                 <thead>
                                     <tr id="grid-head2">
+                                        <td class="etiqueta_grid">VIN</td>
                                         <td class="etiqueta_grid">YEAR</td>
                                         <td class="etiqueta_grid">MAKE</td>
                                         <td class="etiqueta_grid">BODY TYPE</td>
@@ -1100,12 +1116,10 @@ var fn_formats = {
                                 <table id="driver_list" style="width:100%;" class="popup-datagrid datagrid">
                                 <thead>
                                     <tr id="grid-head2">
-                                        <td class="etiqueta_grid">Name</td>
+                                        <td class="etiqueta_grid">NAME</td>
                                         <td class="etiqueta_grid">DOB</td>
                                         <td class="etiqueta_grid">LICENSE</td>
                                         <td class="etiqueta_grid">YRS EXP</td>
-                                        <td class="etiqueta_grid">MOVING VIOLATIONS LAST 3 YEARS</td>
-                                        <td class="etiqueta_grid">NUMBER OF ACCIDENTS</td>
                                         <td class="etiqueta_grid" style="width: 100px;text-align: center;"> 
                                             <div class="btn-icon add btn-left" title="Add +"  onclick="fn_formats.form_application_coverage.open_driver_dialog();"><i class="fa fa-plus"></i></div>
                                         </td>
@@ -1130,7 +1144,7 @@ var fn_formats = {
                                         <td class="etiqueta_grid">BODY TYPE</td>
                                         <td class="etiqueta_grid">GBW</td>
                                         <td class="etiqueta_grid">STATED VALUE</td> 
-                                        <td class="etiqueta_grid">RADIUS</td> 
+                                        <td class="etiqueta_grid">DEDUCTIBLE</td> 
                                         <td class="etiqueta_grid" style="width: 100px;text-align: center;">
                                             <div class="btn-icon add btn-left" title="Add +"  onclick="fn_formats.form_application_coverage.open_unit_trailer_dialog('both');"><i class="fa fa-plus"></i></div> 
                                         </td>
@@ -1279,9 +1293,10 @@ var fn_formats = {
   <input id="iConsecutivoCompania" type="hidden" value="">  
   <table style="width: 100%;">
     <tr><td><br><br></td></tr>
-    <tr><td><div class="field_item"> <label>VIN#:</label><input  id="sVIN" type="text"  class="txt-uppercase"></div></td></tr>
+    <tr><td><div class="field_item"> <label>VIN#:</label><input  id="sVIN" type="text"  class="txt-uppercase" maxlength="18"></div></td></tr>
     <tr><td><div class="field_item"> <label>Year:</label><select id="iYear" type="text" placeholder=""><option value="" >Select an option...</option></select></div></td></tr>
     <tr><td><div class="field_item"> <label>Make:</label><select id="iModelo" type="text" placeholder=""><option value="" >Select an option...</option></select></div></td></tr> 
+    <tr><td><div class="field_item"> <label>Stated Value:</label><input id="iValue" type="text" class="num"></div></td></tr>   
     <tr><td><div class="field_item"> <label>Deductible:</label><input id="iTotalPremiumPD" type="text" class="num"></div></td></tr>
   </table>
   </form>  

@@ -326,7 +326,7 @@
       $pdf->SetXY($x, $y);    
       $pdf->Cell(210,5,"Physical Damage/ Motor Truck Cargo/ Non Trucking Liability",0,0,'C',0);
       $pdf->SetFillColor(232);
-      $x = 20;
+      $x = 15;
       $y = 40;
       if(count($arr_drivers)>0){
                 $pdf->SetFont('Arial','',10);  
@@ -336,62 +336,60 @@
                 $pdf->SetFont('Arial','',10);  
                 $pdf ->SetLineWidth(.3);
                 $pdf->SetXY($x, $y);
-                $pdf->Cell(50,15,"Driver Name",1,0,'C',1);
-                $x += 50;
+                $pdf->Cell(95,8,"Name",1,0,'C',1);
+                $x += 95;
                 $pdf->SetXY($x, $y);
-                $pdf->Cell(20,15,"DOB",1,0,'C',1);
+                $pdf->Cell(20,8,"DOB",1,0,'C',1);
                 $x += 20;
                 $pdf->SetXY($x, $y);
-                $pdf->Cell(25,15,"License #",1,0,'C',1);    
+                $pdf->Cell(25,8,"License #",1,0,'C',1);    
                 $x += 25;
                 $pdf->SetXY($x, $y);
-                $pdf->MultiCell(25,15,"License Type",1,'L',1);    
-                $x += 25;
+                $pdf->MultiCell(32,8,"License Type",1,'L',1);    
+                $x += 32;
                 $pdf->SetXY($x, $y);
-                $pdf->Cell(15,15,"Yrs Exp",1,0,'C',1); 
-                $x += 15;
+                $pdf->Cell(15,8,"Yrs Exp",1,0,'C',1); 
+                /*$x += 15;
                 $pdf->SetXY($x, $y);
                 $pdf->MultiCell(25,5,"Moving Violation last 3 years",1,'C',1);
                 $x += 25;
                 $pdf->SetXY($x, $y);
-                $pdf->MultiCell(20,7.5,"# of accidents",1,'C',1);   
+                $pdf->MultiCell(20,7.5,"# of accidents",1,'C',1);  */ 
                 //CUERPO
                        
                  $pdf->SetFont('Arial','',8);
                  if(count($arr_drivers)>0){
-                    $x = 20;
-                    $y += 15;
+                    $y += 8;
                     foreach($arr_drivers as $driver){
-                        $x = 20;
+                        $x = 15;
                         $pdf->SetXY($x, $y);
-                        $pdf->Cell(50,5,$driver["nombre"],1,0,'L',0);
-                        $x += 50;
+                        $pdf->Cell(95,5,$driver["nombre"],1,0,'L',0);
+                        $x += 95;
                         $pdf->SetXY($x, $y);
-                        $pdf->Cell(20,5,$driver["fecha_nacimiento"],1,0,'L',0);
+                        $pdf->Cell(20,5,$driver["fecha_nacimiento"],1,0,'C',0);
                         $x += 20;
                         $pdf->SetXY($x, $y);
                         $pdf->Cell(25,5,$driver["num_licencia"],1,0,'L',0);
                         $x += 25;
                         $pdf->SetXY($x, $y);
-                        $pdf->Cell(25,5,$driver["tipo_licencia"],1,0,'L',0);
-                        $x += 25;
+                        $pdf->Cell(32,5,$driver["tipo_licencia"],1,0,'L',0);
+                        $x += 32;
                         $pdf->SetXY($x, $y);
-                        $pdf->Cell(15,5,$driver["exp_year"],1,0,'L',0);
-                        $x += 15;
+                        $pdf->Cell(15,5,$driver["exp_year"],1,0,'C',0);
+                        /*$x += 15;
                         $pdf->SetXY($x, $y);
                         $pdf->Cell(25,5,$driver["accidentes"],1,0,'L',0);
                         $x += 25;
                         $pdf->SetXY($x, $y);
-                        $pdf->Cell(20,5,$driver["accidentes"],1,0,'L',0);
+                        $pdf->Cell(20,5,$driver["accidentes"],1,0,'L',0); */
                         $y += 5;
                     }
                     
-                }else{
                 }
       }
       //EQUIPMENT
       if(count($arr_equipment)>0){
-          $x = 20;        
+          $x = 15;        
           $y += 5;
           $pdf->SetFont('Arial','',10);  
           $pdf->SetXY($x, $y);
@@ -400,37 +398,42 @@
           $pdf->SetFont('Arial','',10);  
           $pdf ->SetLineWidth(.3);
           $pdf->SetXY($x, $y);
-          $pdf->Cell(25,10,"Year",1,0,'C',1);
-          $x += 25;
-          $pdf->SetXY($x, $y);
-          $pdf->Cell(25,10,"Make",1,0,'C',1);
-          $x += 25;
-          $pdf->SetXY($x, $y);
-          $pdf->Cell(20,10,"Type #",1,0,'C',1);    
-          $x += 20;
-          $pdf->SetXY($x, $y);
-          $pdf->MultiCell(20,10,"GVW",1,'C',1);    
-          $x += 20;
-          $pdf->SetXY($x, $y);
-          $pdf->Cell(40,10,"VIN #",1,0,'C',1); 
+          $pdf->Cell(40,8,"VIN #",1,0,'C',1);
           $x += 40;
           $pdf->SetXY($x, $y);
-          $pdf->MultiCell(20,5,"Stated Value",1,'C',1);
+          $pdf->Cell(20,8,"Year",1,0,'C',1);
           $x += 20;
           $pdf->SetXY($x, $y);
-          $pdf->MultiCell(30,10,"Radius",1,'C',1);
+          $pdf->Cell(20,8,"Make #",1,0,'C',1);    
+          $x += 20;
+          $pdf->SetXY($x, $y);
+          $pdf->MultiCell(20,8,"Type",1,'C',1);    
+          $x += 20;
+          $pdf->SetXY($x, $y);
+          $pdf->Cell(20,8,"GVW",1,0,'C',1); 
+          $x += 20;
+          $pdf->SetXY($x, $y);
+          $pdf->MultiCell(20,8,"Radius",1,'C',1);
+          $x += 20;
+          $pdf->SetXY($x, $y);
+          $pdf->MultiCell(30,8,"Stated Value",1,'C',1);
+          /*$x += 30;
+          $pdf->SetXY($x, $y);
+          $pdf->MultiCell(15,8,"Deductible",1,'C',1);*/
           $pdf->SetFont('Arial','',8);
                  if(count($arr_equipment)>0){
-                    $x = 20;
-                    $y += 10;
+                    $y += 8;
                     foreach($arr_equipment as $equipment){
-                        $x = 20;
+                        $x = 15;
                         $pdf->SetXY($x, $y);
-                        $pdf->Cell(25,5,$equipment["year"],1,0,'L',0);
-                        $x += 25;
+                        $pdf->Cell(40,5,$equipment["VIN"],1,0,'L',0);
+                        $x += 40;
                         $pdf->SetXY($x, $y);
-                        $pdf->Cell(25,5,$equipment["make"],1,0,'L',0);
-                        $x += 25;
+                        $pdf->Cell(20,5,$equipment["year"],1,0,'L',0);
+                        $x += 20;
+                        $pdf->SetXY($x, $y);
+                        $pdf->Cell(20,5,$equipment["make"],1,0,'L',0);
+                        $x += 20;
                         $pdf->SetXY($x, $y);
                         $pdf->Cell(20,5,$equipment["body_type"],1,0,'L',0);
                         $x += 20;
@@ -438,22 +441,19 @@
                         $pdf->Cell(20,5,$equipment["peso"],1,0,'L',0);
                         $x += 20;
                         $pdf->SetXY($x, $y);
-                        $pdf->Cell(40,5,$equipment["VIN"],1,0,'L',0);
-                        $x += 40;
-                        $pdf->SetXY($x, $y);
-                        $pdf->Cell(20,5,$equipment["deductible"],1,0,'L',0);
+                        $pdf->Cell(20,5,$equipment["radio_desc"],1,0,'C',0);
                         $x += 20;
                         $pdf->SetXY($x, $y);
-                        $pdf->Cell(30,5,$equipment["radio_desc"],1,0,'L',0);
+                        $equipment["stated_value"] != "" ? $stated_value  = '$ '.number_format($equipment["stated_value"]) : $stated_value = "";
+                        $pdf->Cell(30,5,$stated_value,1,0,'R',0);
                         $y += 5;
                     }
                     
-                }else{                                
                 }     
       }
       //COMMODITIES HAULED
       if(count($arr_commodities_hauled)>0){
-          $x = 20;        
+          $x = 15;        
           $y += 5;
           $pdf->SetFont('Arial','',10);  
           $pdf->SetXY($x, $y);
@@ -475,7 +475,7 @@
           
           $pdf->SetFont('Arial','',8);
                  if(count($arr_commodities_hauled)>0){
-                    $x = 20;
+                    $x = 15;
                     $y += 5;
                     foreach($arr_commodities_hauled as $commodities){
                         $x = 20;

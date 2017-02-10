@@ -217,9 +217,10 @@
             while ($items = $result->fetch_assoc()){        
                      $htmlTabla .= "<tr>".
                                    "<td id=\"".$items['iConsecutivo']."\">".$items['sNombre']."</td>".
-                                   "<td>".$items['iExperienciaYear']."</td>".
                                    "<td>".$items['dFechaNacimiento']."</td>".
-                                   "<td></td>".                                                                                                                                                                                                                   
+                                   "<td>".$items['iNumLicencia']."</td>".
+                                   "<td>".$items['iExperienciaYear']."</td>".
+                                   "<td><div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete from list\"><i class=\"fa fa-minus-circle\"></i><span></span></div></td>".                                                                                                                                                                                                                   
                                    "</tr>"; 
             }
             $conexion->rollback();
@@ -444,7 +445,7 @@
       $error = "0";
       $token = trim($_POST['token']);
 
-      $sql = "SELECT B.iConsecutivo,iYear,iModelo,sVIN,sPeso,sTipo,iTotalPremiumPD,sDescripcion AS sModelo  ".
+      $sql = "SELECT B.iConsecutivo,iYear,iModelo,sVIN,sPeso,sTipo,iTotalPremiumPD,sDescripcion AS sModelo,iValue  ".
              "FROM cb_quote_format_operadores A  ".
              "INNER JOIN ct_unidades B ON A.iConsecutivoOperador = B.iConsecutivo  ".
              "LEFT JOIN ct_unidad_modelo C ON B.iModelo = C.iConsecutivo ".
@@ -453,14 +454,18 @@
         $rows = $result->num_rows;   
         if ($rows > 0) { 
             $paginas_total = $rows;   
-            while ($items = $result->fetch_assoc()){        
+            while ($items = $result->fetch_assoc()){
+                     $items["iValue"] != "" ? $iValue  = '$ '.number_format($items["iValue"]) : $iValue = ""; 
+                     $items["iTotalPremiumPD"] != "" ? $iTotalPremiumPD  = '$ '.number_format($items["iTotalPremiumPD"]) : $iTotalPremiumPD = "";       
                      $htmlTabla .= "<tr>".
-                                   "<td id=\"".$items['iConsecutivo']."\">".$items['iYear']."</td>".
+                                   "<td id=\"".$items['iConsecutivo']."\">".$items['sVIN']."</td>".
+                                   "<td>".$items['iYear']."</td>".
                                    "<td>".$items['sModelo']."</td>".
                                    "<td>".$items['sTipo']."</td>". 
-                                   "<td></td>". 
-                                   "<td></td>". 
-                                   "<td>".$items['iTotalPremiumPD']."</td>".                                                                                                                                                                                                                  
+                                   "<td>".$items['sPeso']."</td>". 
+                                   "<td>".$iValue."</td>". 
+                                   "<td>".$iTotalPremiumPD."</td>". 
+                                   "<td><div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete from list\"><i class=\"fa fa-minus-circle\"></i><span></span></div></td>".                                                                                                                                                                                                                 
                                    "</tr>";
             }
             $conexion->rollback();
@@ -513,14 +518,14 @@
               $error = '1';
           }else{
              foreach($_POST as $campo => $valor){
-                if($campo != "accion" and $campo != "edit_mode"  and $campo != "iConsecutivo" and $campo != "sVIN"){ //Estos campos no se insertan a la tabla
+                if($campo != "accion" and $campo != "edit_mode"  and $campo != "iConsecutivo" and $campo != "sVIN" and $campo != 'token'){ //Estos campos no se insertan a la tabla
                     if($valor){array_push($valores,"$campo='".trim($valor)."'");}
                 }
              }   
           }
       }else if($_POST["edit_mode"] != 'true'){
          foreach($_POST as $campo => $valor){
-            if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo"){ //Estos campos no se insertan a la tabla
+            if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo" and $campo != 'token'){ //Estos campos no se insertan a la tabla
                 if($valor != ''){array_push($campos ,$campo); array_push($valores, trim($valor)); }
             }
          }  
@@ -543,6 +548,7 @@
             $sql = "INSERT INTO ct_unidades (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
             $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data have been added successfully.</p>';
           }
+          
           $conexion->query($sql);
           $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
           if($transaccion_exitosa){
@@ -626,12 +632,15 @@
         $rows = $result->num_rows;   
         if ($rows > 0) { 
             $paginas_total = $rows;   
-            while ($items = $result->fetch_assoc()){        
+            while ($items = $result->fetch_assoc()){ 
+                     $items["iValorMinimo"] != "" ? $iValorMinimo  = '$ '.number_format($items["iValorMinimo"]) : $iValorMinimo = ""; 
+                     $items["iValorMaximo"] != "" ? $iValorMaximo  = '$ '.number_format($items["iValorMaximo"]) : $iValorMaximo = "";       
                      $htmlTabla .= "<tr>".
                                    "<td id=\"".$items['iConsecutivoCommodity']."\">".$items['sCommodities']."</td>".
-                                   "<td>".$items['iPorcentajeHauled']."</td>".
-                                   "<td>".$items['iValorMinimo']."</td>". 
-                                   "<td>".$items['iValorMaximo']."</td>".                                                                                                                                                                                                                   
+                                   "<td>".$items['iPorcentajeHauled']." %</td>".
+                                   "<td>".$iValorMinimo."</td>". 
+                                   "<td>".$iValorMaximo."</td>".
+                                   "<td><div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete from list\" onclick=\"fn_formats.delete_commodities('".$items['iConsecutivoCommodity']."','$token','".$_POST['form']."');\"><i class=\"fa fa-minus-circle\"></i><span></span></div></td>".                                                                                                                                                                                                                   
                                    "</tr>";
             }
             $conexion->rollback();
@@ -646,6 +655,33 @@
      $htmlTabla = utf8_decode($htmlTabla);
      $response = array("total"=>"$paginas_total","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error");   
      echo json_encode($response); 
+  }
+  function delete_commodity(){
+      include("funciones_genericas.php"); 
+      //Conexion:
+      include("cn_usuarios.php"); 
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      
+      $token = trim($_POST['iConsecutivo']);
+      $iCommodity = trim($_POST['iConsecutivoCommodity']);
+      $error = "0";
+      $msj = "";
+      if($token != '' && $iCommodity !=''){
+         $query = "DELETE FROM cb_quote_format_commodities WHERE iConsecutivo ='$token' AND iConsecutivoCommodity = '$iCommodity'"; 
+         if($conexion->query($query)){
+             $conexion->commit();
+             $conexion->close();
+         }else{
+             $conexion->rollback();
+             $conexion->close();
+             $error = "1";
+             $msg = "Error to delete de commodity from list, please try again.";
+         }
+      }
+      
+      $response = array("error"=>"$error","msj"=>"$msj");
+      echo json_encode($response);
   }
   
 ?>

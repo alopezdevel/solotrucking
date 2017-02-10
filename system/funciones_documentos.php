@@ -92,7 +92,7 @@
   
   function getEquipmenTrailertPDF($consecutivo, &$arr_){
       include("cn_usuarios.php");
-      $query_sql = "SELECT  ct_unidad_radio.sDescripcion as radio_desc, ct_unidades.iYear, ct_unidad_modelo.sDescripcion, ct_unidades.sTipo, ct_unidades.iTotalPremiumPD, sPeso, sVIN   ".  
+      $query_sql = "SELECT  ct_unidad_radio.sDescripcion as radio_desc, ct_unidades.iYear, ct_unidad_modelo.sDescripcion, ct_unidades.sTipo, ct_unidades.iTotalPremiumPD, sPeso, sVIN,iValue   ".  
                    " FROM cb_quote_format_operadores
                      LEFT JOIN ct_unidades ON ct_unidades.iConsecutivo = cb_quote_format_operadores.iConsecutivoOperador
                      LEFT JOIN ct_unidad_modelo ON ct_unidad_modelo.iConsecutivo = ct_unidades.iModelo 
@@ -109,7 +109,8 @@
                             "peso" => $Recordset['sPeso'],
                             "radio_desc" => $Recordset['radio_desc'],
                             "VIN" => $Recordset['sVIN'],
-                            "deductible" => $Recordset['iTotalPremiumPD']);
+                            "deductible" => $Recordset['iTotalPremiumPD'],
+                            "stated_value"=>$Recordset['iValue']);
            }
       }
       mysql_free_result($result);
