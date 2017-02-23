@@ -15,7 +15,7 @@
         $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
             
         //Filtros de informacion //
-        $filtroQuery = " WHERE A.iConsecutivoCompania = '".$company."' AND iDeleted = '0'";
+        $filtroQuery = " WHERE A.iConsecutivoCompania = '".$company."' AND A.iDeleted = '0' AND dFechaCaducidad >= CURDATE()";
         $array_filtros = explode(",",$_POST["filtroInformacion"]);
         foreach($array_filtros as $key => $valor){
             if($array_filtros[$key] != ""){

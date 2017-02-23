@@ -28,7 +28,8 @@
   function getCompaniaPDF($consecutivo, &$arr_){
       include("cn_usuarios.php");
       $query_sql = "SELECT sUsdot, 
-      sMC, 
+      sMC,
+      sTexasDMV, 
       iConsecutivo, 
       sFEIN,       
       sNombreCompania, 
@@ -58,7 +59,8 @@
                             "email" => $Recordset['sEmailContacto'],                             
                             "compania" => stripslashes($Recordset['sNombreCompania']),
                             "telefono_principal" => $Recordset['sTelefonoPrincipal'],
-                            "direccion" => $Recordset['sDireccion']);
+                            "direccion" => $Recordset['sDireccion'],
+                            "DMV"=>$Recordset['sTexasDMV']);
            }
       }
       mysql_free_result($result);

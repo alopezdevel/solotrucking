@@ -23,7 +23,7 @@ var fn_UsersClients = {
         filtro : "",
         pagina_actual : "",
         sort : "ASC",
-        orden : "A.iConsecutivo",
+        orden : "C.dFechaActualizacion",
         init : function(){
             $('.num').keydown(fn_solotrucking.inputnumero); 
             $('.decimals').keydown(fn_solotrucking.inputdecimals);
@@ -39,6 +39,14 @@ var fn_UsersClients = {
                    fn_UsersClients.filtraInformacion();
                 }
             });
+            //INICIALIZA DATEPICKER PARA CAMPOS FECHA
+            $(".fecha").datepicker({
+                showOn: 'button',
+                buttonImage: 'images/layout.png',
+                dateFormat : 'mm/dd/yy',
+                buttonImageOnly: true
+            });
+            $(".fecha,.flt_fecha").mask("99/99/9999");
             new AjaxUpload('#btnsCertificatePDF', {
                 action: 'funciones_certificate_pdf_upload.php',
                 onSubmit : function(file , ext){
@@ -51,7 +59,8 @@ var fn_UsersClients = {
                             'accion': 'upload_certificate',
                             'iConsecutivoCompania': $("#certificate_edit_form #iConsecutivoCompania").val(),
                             'sNombreCompania': $("#certificate_edit_form #sNombreCompania").val(),
-                            'iConsecutivo' : $("#certificate_edit_form #iConsecutivoCertificate").val()
+                            'iConsecutivo' : $("#certificate_edit_form #iConsecutivoCertificate").val(),
+                            'dFechaVencimiento' : $('#certificate_edit_form #dFechaVencimiento').val()
                         });
                         $('#txtsCertificatePDF').val('loading...');
                         this.disable(); 
@@ -213,7 +222,8 @@ var fn_UsersClients = {
             if($(fn_UsersClients.data_grid+" .flt_id").val() != ""){ fn_UsersClients.filtro += "A.iConsecutivo|"+$(fn_UsersClients.data_grid+" .flt_id").val()+","}
             if($(fn_UsersClients.data_grid+" .flt_name").val() != ""){ fn_UsersClients.filtro += "sNombreCompania|"+$(fn_UsersClients.data_grid+" .flt_name").val()+","} 
             if($(fn_UsersClients.data_grid+" .flt_usdot").val() != ""){ fn_UsersClients.filtro += "sUsdot|"+$(fn_UsersClients.data_grid+" .flt_usdot").val()+","} 
-            if($(fn_UsersClients.data_grid+" .flt_date").val() != ""){ fn_UsersClients.filtro += "C.dFechaActualizacion|"+$(fn_UsersClients.data_grid+" .flt_date").val()+","} 
+            if($(fn_UsersClients.data_grid+" .flt_date").val() != ""){ fn_UsersClients.filtro += "C.dFechaActualizacion|"+$(fn_UsersClients.data_grid+" .flt_date").val()+","}
+            if($(fn_UsersClients.data_grid+" .flt_expiredate").val() != ""){ fn_UsersClients.filtro += "C.dFechaVencimiento|"+$(fn_UsersClients.data_grid+" .flt_expiredate").val()+","}  
             fn_UsersClients.fillgrid();
         }, 
            
@@ -232,7 +242,8 @@ var fn_UsersClients = {
                 <input class="flt_id" class="numeros" type="text" placeholder="ID:"></td>
                 <td><input class="flt_name" type="text" placeholder="Name:"></td>
                 <td><input class="flt_usdot" type="text" placeholder="USDOT:"></td> 
-                <td><input class="flt_date" type="text" placeholder="Upload Date:"></td> 
+                <td><input class="flt_date" type="text" placeholder="Upload Date:"></td>
+                <td><input class="flt_expiredate" type="text" placeholder="Expire Date:"></td>   
                 <td></td>  
                 <td style='width:100px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_UsersClients.filtraInformacion();"><i class="fa fa-search"></i></div>
@@ -243,6 +254,7 @@ var fn_UsersClients = {
                 <td class="etiqueta_grid"      onclick="fn_UsersClients.ordenamiento('sNombreCompania',this.cellIndex);">Name</td>
                 <td class="etiqueta_grid"      onclick="fn_UsersClients.ordenamiento('sUsdot',this.cellIndex);">USDOT</td>
                 <td class="etiqueta_grid"      onclick="fn_UsersClients.ordenamiento('C.dFechaActualizacion',this.cellIndex);">Upload Date</td> 
+                <td class="etiqueta_grid"      onclick="fn_UsersClients.ordenamiento('C.dFechaVencimiento',this.cellIndex);">Expire Date</td> 
                 <td class="etiqueta_grid"      onclick="fn_UsersClients.ordenamiento('eEstatusCertificadoUpload',this.cellIndex);">Files Status</td>
                 <td class="etiqueta_grid"></td>
             </tr>
@@ -285,21 +297,25 @@ var fn_UsersClients = {
                 <legend>General Information</legend>
                 <p class="mensaje_valido">&nbsp;To upload the files please click in the right buttons.</p> 
                 <div class="field_item">
-                <input id="iConsecutivoCompania" name="iConsecutivo" type="hidden">
-                <label>Company Name:</label> 
-                <input id="sNombreCompania"  type="text" class="readonly" readonly="readonly">
-            </div>
-            <div class="file_certificate files"> 
-                    <label>Certificate: <span style="color:#9e2e2e;">Please upload a copy of the form in PDF format.</span></label> 
-                    <input  id="txtsCertificatePDF" type="text" readonly="readonly" value="" size="40" style="width:85%;" />
-                    <button id="btnsCertificatePDF" type="button">Upload Certificate</button>
-                    <input  id="iConsecutivoCertificate" type="hidden">
-            </div> 
-            <div class="file_additional files" style="display:none;"> 
-                    <label>Additional: <span style="color:#9e2e2e;">Please upload a copy of the form in PDF format.</span></label> 
-                    <input  id="txtsAdditionalPDF" type="text" readonly="readonly" value="" size="40" style="width:85%;" />
-                    <button id="btnsAdditionalPDF" type="button">Upload Additional</button>
-            </div>
+                    <input id="iConsecutivoCompania" name="iConsecutivo" type="hidden">
+                    <label>Company Name:</label> 
+                    <input id="sNombreCompania"  type="text" class="readonly" readonly="readonly">
+                </div>
+                <div class="field_item">
+                   <label title="the limit date for certificate layout">Expire Date:</label> 
+                   <input id="dFechaVencimiento" type="text" class="fecha">
+                </div>
+                <div class="file_certificate files"> 
+                        <label>Certificate: <span style="color:#9e2e2e;">Please upload a copy of the form in PDF format.</span></label> 
+                        <input  id="txtsCertificatePDF" type="text" readonly="readonly" value="" size="40" style="width:85%;" />
+                        <button id="btnsCertificatePDF" type="button">Upload Certificate</button>
+                        <input  id="iConsecutivoCertificate" type="hidden">
+                </div> 
+                <div class="file_additional files" style="display:none;"> 
+                        <label>Additional: <span style="color:#9e2e2e;">Please upload a copy of the form in PDF format.</span></label> 
+                        <input  id="txtsAdditionalPDF" type="text" readonly="readonly" value="" size="40" style="width:85%;" />
+                        <button id="btnsAdditionalPDF" type="button">Upload Additional</button>
+                </div>
             </fieldset>
         </form>
     </div>

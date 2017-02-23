@@ -313,7 +313,7 @@
       $pdf->SetXY($x,$y);
       $pdf->Write(5,date('Y',$fecha['0']));
  
-  if(count($arr_trailer)>0 || count($arr_drivers)>0 || count($arr_equipment)>0){
+  if(count($arr_commodities_hauled)>0 || count($arr_drivers)>0 || count($arr_equipment)>0){
       $pdf->AddPage(); // Agregando pagina
       //Pagina de Anexos
       $pdf->SetFont('Arial','',17);  
@@ -475,10 +475,9 @@
           
           $pdf->SetFont('Arial','',8);
                  if(count($arr_commodities_hauled)>0){
-                    $x = 15;
                     $y += 5;
                     foreach($arr_commodities_hauled as $commodities){
-                        $x = 20;
+                        $x = 15;
                         $pdf->SetXY($x, $y);
                         $pdf->Cell(40,5,$commodities["commoditie"],1,0,'L',0);
                         $x += 40;

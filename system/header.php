@@ -32,7 +32,7 @@
                     <ul>
                         <li><a href="companies"><i class="fa fa-briefcase"></i> Companies</a></li>
                         <li><a href="users"> <i class="fa fa-users"></i> Users</a></li>
-                        <li><a href="certificate_request_pdf_upload">COMPANY CERTIFICATES</a></li>   
+                        <li><a href="certificate_request_pdf_upload"> <i class="fa fa-cloud-upload"></i> Company Certificates (upload)</a></li>   
                         <li><a href="brokers"><i class="fa fa-usd"></i> Brokers</a></li>
                         <li><a href="insurances"><i class="fa fa-building"></i> Insurances</a></li> 
                     </ul>
@@ -65,7 +65,7 @@
                     <ul>
                         <li><a href="companies"><i class="fa fa-briefcase"></i> Companies</a></li>
                         <li><a href="users"> <i class="fa fa-users"></i> Company Users</a></li> 
-                        <li><a href="certificate_request_pdf_upload">COMPANY CERTIFICATES</a></li>                         
+                        <li><a href="certificate_request_pdf_upload"> <i class="fa fa-cloud-upload"></i> Company Certificates (upload)</a></li>                         
                         <li><a href="brokers"><i class="fa fa-usd"></i> Brokers</a></li>
                         <li><a href="insurances"><i class="fa fa-building"></i> Insurances</a></li>  
                     </ul>
@@ -96,7 +96,7 @@
                     <ul>
                         <li><a href="companies"><i class="fa fa-briefcase"></i> Companies</a></li>
                         <li><a href="users"> <i class="fa fa-users"></i> Company Users</a></li>
-                        <li><a href="certificate_request_pdf_upload">COMPANY CERTIFICATES</a></li> 
+                        <li><a href="certificate_request_pdf_upload"> <i class="fa fa-cloud-upload"></i> Company Certificates (upload)</a></li>  
                         <li><a href="brokers"><i class="fa fa-usd"></i> Brokers</a></li>
                         <li><a href="insurances"><i class="fa fa-building"></i> Insurances</a></li>  
                     </ul>

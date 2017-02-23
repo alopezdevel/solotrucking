@@ -152,7 +152,8 @@
              "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
              "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
              "WHERE iConsecutivoCompania = '".$company."' ".
-             "AND iDeleted = '0'  AND (D.iConsecutivo = '1' OR D.iConsecutivo = '3' OR D.iConsecutivo = '5' OR D.iConsecutivo = '2')  ORDER BY sNumeroPoliza ASC";  
+             "AND  A.iDeleted = '0' AND dFechaCaducidad >= CURDATE() AND (D.iConsecutivo = '1' OR D.iConsecutivo = '3' OR D.iConsecutivo = '5' OR D.iConsecutivo = '2') ".
+             "ORDER BY sNumeroPoliza ASC";  
       $result = $conexion->query($sql);
       $NUM_ROWs_Usuario = $result->num_rows;
       

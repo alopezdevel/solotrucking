@@ -25,10 +25,6 @@
     }
     // ordenamiento//
     $ordenQuery = " ORDER BY ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"];
-    
-    
-    
-    //
     //contando registros // 
     $query_rows = "SELECT COUNT(A.iConsecutivo) AS total FROM  ct_companias A 
                    LEFT JOIN cb_certificate_file C ON A.iConsecutivo = C.iConsecutivoCompania ".$filtroQuery;
@@ -48,18 +44,16 @@
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
         $sql = "SELECT  C.hContenidoDocumentoDigitalizadoAdd, A.iConsecutivo as id, sNombreCompania, eEstatusCertificadoUpload as estatus_upload, sUsdot,
                 CASE WHEN eEstatusCertificadoUpload = '0' then 'Pending' Else 'Loaded' END AS  hActivado, iOnRedList, 
-                DATE_FORMAT(C.dFechaIngreso,'%m/%d/%Y') AS dFechaIngreso, DATE_FORMAT(C.dFechaActualizacion,'%m/%d/%Y') AS dFechaActualizacion  
+                DATE_FORMAT(C.dFechaIngreso,'%m/%d/%Y') AS dFechaIngreso, DATE_FORMAT(C.dFechaActualizacion,'%m/%d/%Y') AS dFechaActualizacion, DATE_FORMAT(C.dFechaVencimiento,'%m/%d/%Y') AS dFechaVencimiento  
                 FROM  ct_companias A 
                 LEFT JOIN cb_certificate_file C ON A.iConsecutivo = C.iConsecutivoCompania ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
         $result = $conexion->query($sql);
-        $rows = $result->num_rows;    
-        if ($rows > 0) {
-            //$items = mysql_fetch_all($result);      
-            while ($usuario = $result->fetch_assoc()) {
-               if($usuario["sNombreCompania"] != ""){                       
+        $rows   = $result->num_rows; 
+        if($rows > 0){     
+            while ($items = $result->fetch_assoc()){                   
                      $color = "#800000";
                      //Redlist:
-                     if($usuario['iOnRedList'] == '1'){
+                     if($items['iOnRedList'] == '1'){
                         $redlist_class = "class=\"row_red\"";
                         $redlist_icon = "<i class=\"fa fa-star\" style=\"color:#e8051b;margin-right:4px;\"></i>"; 
                      }else{
@@ -69,30 +63,26 @@
                      
                      //Variables para usar Preview PDF:
                      $variables = "";
-                     $variables = "?id=".$usuario['id']."&ca=COMPANY%20NAME&cb=NUMBER%20AND%20ADDRESS&cc=CITY&cd=STATE&ce=ZIPCODE";
+                     $variables = "?id=".$items['id']."&ca=COMPANY%20NAME&cb=NUMBER%20AND%20ADDRESS&cc=CITY&cd=STATE&ce=ZIPCODE";
                      
-                     $htmlTabla .= "<tr ".$redlist_class.">
-                                        <td>".$usuario['id']."</td>".
-                                       "<td>".$redlist_icon.$usuario['sNombreCompania']."</td>".
-                                       "<td>".$usuario['sUsdot']."</td>".
-                                       "<td>".$usuario['dFechaActualizacion']."</td>";
-                                       if($usuario['hActivado'] == "Loaded"){
-                                           $color = "#000080";
-                                           $usuario['hActivado'] = "<i class=\"fa fa-check-circle\" style=\"color:#6ddc00;\"></i> Certificate Loaded";
-                                       }else{
-                                           $usuario['hActivado'] = "<i class=\"fa fa-times-circle\"></i> Certificate not Loaded";
-                                       }
-                                       if($usuario['hContenidoDocumentoDigitalizadoAdd'] != ""){                                       
-                                           $usuario['hActivado'] =  $usuario['hActivado']. ",<br /><i class=\"fa fa-check-circle\"></i> Additional remarks schedule Loaded";
-                                       }                                 
-                                       $htmlTabla .= "<td><b><font color ='$color'> ".$usuario['hActivado']."</font></b></td>";
-                                       $htmlTabla .= "<td>".
-                                                         "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Certificate\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>".
-                                                         "<div class=\"btn-icon btn-left pdf\" title=\"View the PDF\" onclick=\"window.open('pdf_certificate.php".$variables."');\"><i class=\"fa fa-file-pdf-o\"></i><span></span></div>".
-                                                      "</td>";  
-                                                                                                                                                                                                                                              
-                                    "</tr>";
-                 }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}    
+                     $htmlTabla .= "<tr ".$redlist_class."><td>".$items['id']."</td>".
+                                   "<td>".$redlist_icon.$items['sNombreCompania']."</td>".
+                                   "<td>".$items['sUsdot']."</td>".
+                                   "<td>".$items['dFechaActualizacion']."</td>".
+                                   "<td>".$items['dFechaVencimiento']."</td>";
+    
+                                   if($items['hActivado'] == "Loaded"){$color = "#000080";$items['hActivado'] = "<i class=\"fa fa-check-circle\" style=\"color:#6ddc00;\"></i> Certificate Loaded";}
+                                   else{$items['hActivado'] = "<i class=\"fa fa-times-circle\"></i> Certificate not Loaded";}
+                                       
+                                   if($items['hContenidoDocumentoDigitalizadoAdd'] != ""){$items['hActivado'] =  $items['hActivado']. ",<br /><i class=\"fa fa-check-circle\"></i> Additional remarks schedule Loaded";}                                 
+                                   $htmlTabla .= "<td><b><font color ='$color'> ".$items['hActivado']."</font></b></td>";
+                                   $htmlTabla .= "<td>".
+                                                     "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Certificate\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>".
+                                                     "<div class=\"btn-icon btn-left pdf\" title=\"View the PDF\" onclick=\"window.open('pdf_certificate.php".$variables."');\"><i class=\"fa fa-file-pdf-o\"></i><span></span></div>".
+                                                  "</td>";  
+                                                                                                                                                                                                                                          
+                                "</tr>";
+                    
             }
             $conexion->rollback();
             $conexion->close();                                                                                                                                                                       
@@ -109,7 +99,9 @@
        $transaccion_exitosa = true;
        
        $iConsecutivoCompania =  $_POST['iConsecutivoCompania'];
-           if($iConsecutivoCompania != ''){
+       if($iConsecutivoCompania != ''){
+           
+           $FechaVencimiento = format_date($_POST['dFechaVencimiento']);
            $oFichero = fopen($_FILES['userfile']["tmp_name"], 'r'); 
            $sContenido = fread($oFichero, filesize($_FILES['userfile']["tmp_name"]));  
            $sContenido =  $conexion->real_escape_string($sContenido);
@@ -121,10 +113,10 @@
                   $valores_update  = ",dFechaActualizacion='".date("Y-m-d H:i:s")."'";
                   $valores_update .= ",sIP='".$_SERVER['REMOTE_ADDR']."'";
                   $valores_update .= ",sUsuarioActualizacion='".$_SESSION['usuario_actual']."'";
-                $sql = "UPDATE cb_certificate_file SET sNombreArchivo ='".$name_file."', sTipoArchivo ='".$_FILES['userfile']["type"]."', iTamanioArchivo ='".$_FILES['userfile']["size"]."', hContenidoDocumentoDigitalizado='$sContenido'".$valores_update." WHERE iConsecutivo ='".$_POST['iConsecutivo']."'"; 
+                $sql = "UPDATE cb_certificate_file SET dFechaVencimiento ='$FechaVencimiento', sNombreArchivo ='".$name_file."', sTipoArchivo ='".$_FILES['userfile']["type"]."', iTamanioArchivo ='".$_FILES['userfile']["size"]."', hContenidoDocumentoDigitalizado='$sContenido'".$valores_update." WHERE iConsecutivo ='".$_POST['iConsecutivo']."'"; 
            }else{
-                $sql = "INSERT INTO cb_certificate_file (iConsecutivoCompania,sNombreArchivo,sTipoArchivo,iTamanioArchivo,hContenidoDocumentoDigitalizado,dFechaIngreso,sIP,sUsuarioIngreso,dFechaActualizacion)
-                        VALUES('$iConsecutivoCompania','$name_file','".$_FILES['userfile']["type"]."','".$_FILES['userfile']["size"]."','$sContenido','".date("Y-m-d H:i:s")."', '".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."','".date("Y-m-d H:i:s")."')"; 
+                $sql = "INSERT INTO cb_certificate_file (iConsecutivoCompania,dFechaVencimiento,sNombreArchivo,sTipoArchivo,iTamanioArchivo,hContenidoDocumentoDigitalizado,dFechaIngreso,sIP,sUsuarioIngreso,dFechaActualizacion)
+                        VALUES('$iConsecutivoCompania','$FechaVencimiento','$name_file','".$_FILES['userfile']["type"]."','".$_FILES['userfile']["size"]."','$sContenido','".date("Y-m-d H:i:s")."', '".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."','".date("Y-m-d H:i:s")."')"; 
            }
            $conexion->query($sql);
            $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
@@ -145,15 +137,15 @@
                 $mensaje = "A general system error ocurred : internal error";
                 $error = "1";
            }
-           
-           
-       }else{
-           $error = '1';
-           $mensaje = "A general system error ocurred : internal error";
-       } 
        
-       $response = array("mensaje"=>"$mensaje","error"=>"$error", "id_file"=>"$id_file", "name_file" => "$name_file"); 
-       echo json_encode($response); 
+       
+   }else{
+       $error = '1';
+       $mensaje = "A general system error ocurred : internal error";
+   } 
+   
+   $response = array("mensaje"=>"$mensaje","error"=>"$error", "id_file"=>"$id_file", "name_file" => "$name_file"); 
+   echo json_encode($response); 
        
   }
   function upload_additional(){
