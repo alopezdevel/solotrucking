@@ -281,8 +281,8 @@ var fn_formats = {
         data_grid: "#data_grid_companies",
         filtro : "",
         pagina_actual : "",
-        sort : "ASC",
-        orden : "iConsecutivo",
+        sort : "DESC",
+        orden : "sNombreFormularioCaptura",
         init : function(){
             fn_formats.fillgrid();
             $('.num').keydown(fn_solotrucking.inputnumero); 
@@ -781,7 +781,7 @@ var fn_formats = {
                 <td style='width:45px;'><input class="flt_id" class="numeros" type="text" placeholder="ID:"></td>
                 <td><input class="flt_name"     type="text" placeholder="Format Name:"></td>
                 <td><input class="flt_filename" type="text" placeholder="File Name:"  ></td>
-                <td style='width:100px;'>
+                <td style='width:150px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_formats.filtraInformacion();"><i class="fa fa-search"></i></div>
                     <!---<div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_formats.add();"><i class="fa fa-plus"></i></div>-->
                 </td> 

@@ -44,7 +44,7 @@
         $pagina_actual == "0" ? $pagina_actual = 1 : false;
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-        $sql = "SELECT iConsecutivo, sNombreJPGSistema, sNombreArchivoEmpresa, sTituloArchivoEmpresa, sComentarios ,sRuta ,sPDFRelacionFormatoSistema,sRutaArchivoOriginal,sNombreFormularioCaptura ".
+        $sql = "SELECT iConsecutivo, sNombreJPGSistema, sNombreArchivoEmpresa, sTituloArchivoEmpresa, sComentarios ,sRuta ,sPDFRelacionFormatoSistema,sRutaArchivoOriginal,sNombreFormularioCaptura,sRutaArchivoWord ".
                "FROM  ct_formatos_PDF ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
         $result = $conexion->query($sql);
         $rows = $result->num_rows;    
@@ -52,6 +52,7 @@
             while ($items = $result->fetch_assoc()) { 
                if($items["iConsecutivo"] != ""){
                      $items['sNombreFormularioCaptura'] != "" ? $funcion = " <div class=\"btn_new send-email btn-icon btn-left\" title=\"Generate this format\" onclick=\"fn_formats.".$items['sNombreFormularioCaptura'].".init();\" ><i class=\"fa fa-plus\"></i></div>" : $funcion = "";
+                     $items['sRutaArchivoWord'] != "" ? $btn_word = "<div class=\"btn_new send-email btn-icon btn-left\" title=\"Download WordFile\"><a href=\"".$items['sRutaArchivoWord']."\"><i class=\"fa fa-file-word-o\"></i></a></div>" : $btn_word = "";
                      $htmlTabla .= "<tr>
                                         <td>".$items['iConsecutivo']."</td>".
                                        "<td>".$items['sTituloArchivoEmpresa']."</td>".
@@ -59,6 +60,7 @@
                                        "<td>
                                             $funcion
                                             <div class=\"btn_new send-email btn-icon btn-left\" title=\"Open original format in a new window\"><a href=\"".$items['sRutaArchivoOriginal']."\" target=\"_blank\"><i class=\"fa fa-external-link\"></i></a></div>  
+                                            $btn_word
                                        </td></tr>";
                                        //<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Format Name\"><i class=\"fa fa-pencil-square-o\"></i><span></span></div>
                                        //<div style=\"display:none;\" class=\"btn_delete btn-icon trash btn-left\" title=\"Delete Company\"><i class=\"fa fa-trash\"></i> <span></span></div>
