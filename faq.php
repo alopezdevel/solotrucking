@@ -72,7 +72,7 @@
           		<p>The use of our online system allows you to consult and do their transactions from anywhere with internet access, which helps save time.</p>
         	</div>
         <h3>What do I need to register?</h3>
-        	<p>To register in our system, you need to contact us so we can otorgorarnos the information needed to create your account.</p>
+        	<p>To register in our system, you need to contact us and send us your company information and an e-mail to create your account. <br>Please send that information to system support@solo-trucking.com.</p>
         <h3>What do I do if I forget my User ID or Password?</h3>
         	<p>If you have forgotten your User ID or Password, please return to the Login page and click on the "Forgot your User ID or Password?" link and follow the steps to retrieve your User ID and reset your Password.</p>
       </div>

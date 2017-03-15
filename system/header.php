@@ -124,7 +124,13 @@
             <?php }  if($_SESSION['acceso'] == "2"){ ?>
       			<li><a href="inicio">Home</a></li>
                 <li style="display: none;"><a href="#">MY COMPANY</a></li>
-                <li><a href="mypolicies">MY Policies</a></li> 
+                <li class="submenu"><a href="#">Catalogs</a>
+                    <ul>
+                        <li><a href="mydrivers"><i class="fa fa-users"></i> My Drivers' List</a></li>
+                        <li><a href="myvehicles"><i class="fa fa-truck"></i> My Vehicles' List</a></li>
+                    </ul>
+                </li> 
+                <li><a href="mypolicies">Policies</a></li> 
                 <li><a href="endorsements">ENDORSEMENTS</a></li>
         		<li><a href="certificates">Certificates</a></li>
             	<li><a href="claims">Claims</a></li>  

@@ -79,13 +79,12 @@
                          }
                          //if($items['iTipoPoliza'] == 3){
                          if($dias > 0){
-                            $btn_drivers  = "<div class=\"btn-icon view btn-left\" title=\"View list of Drivers\" onclick=\"fn_mypolicies.get_list_description('$iConsecutivoPoliza','D');\"><i class=\"fa fa-users\"></i> <span></span></div>"; 
-                            $btn_drivers .= "<div class=\"btn-icon view btn-left\" title=\"View list of Units\" onclick=\"fn_mypolicies.get_list_description('$iConsecutivoPoliza','U');\"><i class=\"fa fa-truck\"></i> <span></span></div>";
+                            $btn_drivers  = "<div class=\"btn-icon view btn-left\" title=\"View list of Drivers\" onclick=\"fn_mypolicies.get_list_description('".$items['clave']."','D');\"><i class=\"fa fa-users\"></i> <span></span></div>"; 
+                            $btn_drivers .= "<div class=\"btn-icon view btn-left\" title=\"View list of Units\" onclick=\"fn_mypolicies.get_list_description('".$items['clave']."','U');\"><i class=\"fa fa-truck\"></i> <span></span></div>";
                          }else{$btn_drivers = "";}
                          $htmlTabla .= "<tr $EstatusPoliza >
                                             <td>".$items['clave']."</td>".
-                                           "<td>".$items['sNumeroPoliza']."</td>".
-                                           "<td>".$items['sName']."</td>". 
+                                           "<td>".$items['sNumeroPoliza']."</td>". 
                                            "<td>".$items['sDescripcion']."</td>".  
                                            "<td>".$items['dFechaInicio']."</td>".
                                            "<td>".$items['dFechaCaducidad']."</td>".                                                                                                                                                                                                                     
@@ -137,7 +136,7 @@
     //contando registros // 
     $query_rows = "SELECT COUNT(iConsecutivo) AS total FROM ct_operadores ".$filtroQuery;
     $Result = $conexion->query($query_rows);
-    $itemssNombre = $Result->fetch_assoc();
+    $items = $Result->fetch_assoc();
     $registros = $items["total"];
     if($registros == "0"){$pagina_actual = 0;}
     $paginas_total = ceil($registros / $registros_por_pagina);
@@ -188,7 +187,7 @@
     
       $registros_por_pagina = $_POST["registros_por_pagina"];
       $pagina_actual = (isset($_POST["pagina_actual"]) && $_POST["pagina_actual"] != '' ? $_POST["pagina_actual"] : 1);
-      $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
+      $registros_por_pagina == "" ? $registros_por_pagina = 30 : false;
         
       //Filtros de informacion //
       $filtroQuery = " WHERE siConsecutivosPolizas != '' AND inPoliza = '1' AND iConsecutivoCompania = '$iConsecutivoCompania' AND siConsecutivosPolizas LIKE '%$iConsecutivoPoliza%' ";
@@ -207,9 +206,9 @@
                   "LEFT JOIN ct_unidad_radio B ON A.iConsecutivoRadio = B.iConsecutivo ".
                   "LEFT JOIN ct_unidad_modelo C ON A.iModelo = C.iConsecutivo ".$filtroQuery;
     $Result = $conexion->query($query_rows);
-    $itemssNombre = $Result->fetch_assoc();
+    $items = $Result->fetch_assoc();
     $registros = $items["total"];
-    if($registros == "0"){$pagina_actual = 0;}
+    if($registros == "0"){$pagina_actual = 0;}   
     $paginas_total = ceil($registros / $registros_por_pagina);
     if($registros == "0"){
         $limite_superior = 0;

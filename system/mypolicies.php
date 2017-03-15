@@ -118,7 +118,7 @@ var fn_mypolicies = {
                 fn_mypolicies.filtro = "";
                 if($(fn_mypolicies.data_grid+" .flt_pid").val() != ""){ fn_mypolicies.filtro += "A.iConsecutivo|"+$(fn_mypolicies.data_grid+" .flt_pid").val()+","}
                 if($(fn_mypolicies.data_grid+" .flt_policynumber").val() != ""){ fn_mypolicies.filtro += "sNumeroPoliza|"+$(fn_mypolicies.data_grid+" .flt_policynumber").val()+","} 
-                if($(fn_mypolicies.data_grid+" .flt_pbroker").val() != ""){ fn_mypolicies.filtro += "sName|"+$(fn_mypolicies.data_grid+" .flt_pbroker").val()+","}  
+                //if($(fn_mypolicies.data_grid+" .flt_pbroker").val() != ""){ fn_mypolicies.filtro += "sName|"+$(fn_mypolicies.data_grid+" .flt_pbroker").val()+","}  
                 if($(fn_mypolicies.data_grid+" .flt_policytype").val() != ""){ fn_mypolicies.filtro += "sDescripcion|"+$(fn_mypolicies.data_grid+" .flt_policytype").val()+","} 
                 if($(fn_mypolicies.data_grid+" .flt_policystartdate").val() != ""){ fn_mypolicies.filtro += "dFechaInicio|"+$(fn_mypolicies.data_grid+" .flt_policystartdate").val()+","} 
                 if($(fn_mypolicies.data_grid+" .flt_policyexpdate").val() != ""){ fn_mypolicies.filtro += "dFechaCaducidad|"+$(fn_mypolicies.data_grid+" .flt_policyexpdate").val()+","}    
@@ -162,8 +162,8 @@ var fn_mypolicies = {
                         $(fn_mypolicies.list_drivers.domroot_nav+" #drivers_active_table tbody").empty().append(data.tabla);
                         $(fn_mypolicies.list_drivers.domroot_nav+" #drivers_active_table tbody tr:even").addClass('gray');
                         $(fn_mypolicies.list_drivers.domroot_nav+" #drivers_active_table tbody tr:odd").addClass('white');
-                        $(fn_mypolicies.list_drivers.domroot_nav+" #drivers_active_table tfoot #paginas_total").val(data.total);
-                        $(fn_mypolicies.list_drivers.domroot_nav+" #drivers_active_table tfoot #pagina_actual").val(data.pagina);
+                        $(fn_mypolicies.list_drivers.domroot_nav+" #drivers_active_table tfoot .paginas_total").val(data.total);
+                        $(fn_mypolicies.list_drivers.domroot_nav+" #drivers_active_table tfoot .pagina_actual").val(data.pagina);
                         fn_mypolicies.list_drivers.pagina_actual = data.pagina; 
                     }
                 }); 
@@ -178,7 +178,31 @@ var fn_mypolicies = {
                 if($(fn_mypolicies.list_drivers.domroot_nav+" .flt_dExpire").val() != ""){ fn_mypolicies.list_drivers.filtro += "dFechaExpiracionLicencia|"+$(fn_mypolicies.list_drivers.domroot_nav+" .flt_dExpire").val()+","} 
                 if($(fn_mypolicies.list_drivers.domroot_nav+" .flt_dYears").val() != ""){ fn_mypolicies.list_drivers.filtro += "iExperienciaYear|"+$(fn_mypolicies.list_drivers.domroot_nav+" .flt_dYears").val()+","} 
                 fn_mypolicies.list_drivers.fill_actives();
-            },    
+            },
+            firstPage : function(){
+                if($("#drivers_active_table .pagina_actual").val() != "1"){
+                    fn_mypolicies.list_drivers.pagina_actual = "";
+                    fn_mypolicies.list_drivers.fill_actives();
+                }
+            },
+            previousPage : function(){
+                if($("#drivers_active_table .pagina_actual").val() != "1"){
+                    fn_mypolicies.list_drivers.pagina_actual = (parseInt($("#drivers_active_table .pagina_actual").val()) - 1) + "";
+                    fn_mypolicies.list_drivers.fill_actives();
+                }
+            },
+            nextPage : function(){
+                if($("#drivers_active_table .pagina_actual").val() != $("#drivers_active_table .paginas_total").val()){
+                    fn_mypolicies.list_drivers.pagina_actual = (parseInt($("#drivers_active_table .pagina_actual").val()) + 1) + "";
+                    fn_mypolicies.list_drivers.fill_actives();
+                }
+            },
+            lastPage : function(){
+                if($("#drivers_active_table .pagina_actual").val() != $("#drivers_active_table .paginas_total").val()){
+                    fn_mypolicies.list_drivers.pagina_actual = $("#drivers_active_table .paginas_total").val();
+                    fn_mypolicies.list_drivers.fill_actives();
+                }
+            },     
         },
         list_units : {
             domroot_nav : "#units_list_form",
@@ -206,8 +230,8 @@ var fn_mypolicies = {
                         $(fn_mypolicies.list_units.domroot_nav+" #unit_active_table tbody").empty().append(data.tabla);
                         $(fn_mypolicies.list_units.domroot_nav+" #unit_active_table tbody tr:even").addClass('gray');
                         $(fn_mypolicies.list_units.domroot_nav+" #unit_active_table tbody tr:odd").addClass('white');
-                        $(fn_mypolicies.list_units.domroot_nav+" #unit_active_table tfoot #paginas_total").val(data.total);
-                        $(fn_mypolicies.list_units.domroot_nav+" #unit_active_table tfoot #pagina_actual").val(data.pagina);
+                        $(fn_mypolicies.list_units.domroot_nav+" #unit_active_table tfoot .paginas_total").val(data.total);
+                        $(fn_mypolicies.list_units.domroot_nav+" #unit_active_table tfoot .pagina_actual").val(data.pagina);
                         fn_mypolicies.list_units.pagina_actual = data.pagina; 
                     }
                 }); 
@@ -222,7 +246,31 @@ var fn_mypolicies = {
                 if($(fn_mypolicies.list_units.domroot_nav+" .flt_uType").val() != ""){ fn_mypolicies.list_units.filtro += "sTipo|"+$(fn_mypolicies.list_units.domroot_nav+" .flt_uType").val()+","} 
                 if($(fn_mypolicies.list_units.domroot_nav+" .flt_uWeight").val() != ""){ fn_mypolicies.list_units.filtro += "sPeso|"+$(fn_mypolicies.list_units.domroot_nav+" .flt_uWeight").val()+","} 
                 fn_mypolicies.list_units.fill_actives();
-            },    
+            }, 
+            firstPage : function(){
+                if($("#unit_active_table .pagina_actual").val() != "1"){
+                    fn_mypolicies.list_units.pagina_actual = "";
+                    fn_mypolicies.list_units.fill_actives();
+                }
+            },
+            previousPage : function(){
+                if($("#unit_active_table .pagina_actual").val() != "1"){
+                    fn_mypolicies.list_units.pagina_actual = (parseInt($("#unit_active_table .pagina_actual").val()) - 1) + "";
+                    fn_mypolicies.list_units.fill_actives();
+                }
+            },
+            nextPage : function(){
+                if($("#unit_active_table .pagina_actual").val() != $("#unit_active_table .paginas_total").val()){
+                    fn_mypolicies.list_units.pagina_actual = (parseInt($("#unit_active_table .pagina_actual").val()) + 1) + "";
+                    fn_mypolicies.list_units.fill_actives();
+                }
+            },
+            lastPage : function(){
+                if($("#unit_active_table .pagina_actual").val() != $("#unit_active_table .paginas_total").val()){
+                    fn_mypolicies.list_units.pagina_actual = $("#unit_active_table .paginas_total").val();
+                    fn_mypolicies.list_units.fill_actives();
+                }
+            },   
         }
         
             
@@ -241,7 +289,6 @@ var fn_mypolicies = {
             <tr id="grid-head1">
                 <td style="width:50px!important;"><input class="flt_pid" type="text" placeholder="ID:"></td> 
                 <td><input class="flt_policynumber" type="text" placeholder="Policy Numer:"></td>
-                <td><input class="flt_pbroker" type="text" placeholder="Broker:"></td> 
                 <td><input class="flt_policytype" type="text" placeholder="Policy Type:"></td> 
                 <td><input class="flt_policystartdate" type="text" placeholder="MM-DD-YY"></td> 
                 <td><input class="flt_policyexpdate" type="text" placeholder="MM-DD-YY"></td>  
@@ -252,7 +299,6 @@ var fn_mypolicies = {
             <tr id="grid-head2">
                 <td class="etiqueta_grid down" onclick="fn_mypolicies.ordenamiento('A.iConsecutivo',this.cellIndex);">ID</td> 
                 <td class="etiqueta_grid"      onclick="fn_mypolicies.ordenamiento('sNumeroPoliza',this.cellIndex);">Policy Number</td>
-                <td class="etiqueta_grid"      onclick="fn_mypolicies.ordenamiento('sName',this.cellIndex);">Broker</td>
                 <td class="etiqueta_grid"      onclick="fn_mypolicies.ordenamiento('sDescripcion',this.cellIndex);">Type</td>
                 <td class="etiqueta_grid"      onclick="fn_mypolicies.ordenamiento('dFechaInicio',this.cellIndex);">EFFECTIVE DATE </td> 
                 <td class="etiqueta_grid"      onclick="fn_mypolicies.ordenamiento('dFechaCaducidad',this.cellIndex);">Expiration Date</td> 
@@ -341,6 +387,27 @@ var fn_mypolicies = {
                     </tr>
                 </thead>
                 <tbody></tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="100%">
+                            <div class="datagrid-pages">
+                                <input class="pagina_actual" type="text" readonly="readonly" size="3">
+                                <label> / </label>
+                                <input class="paginas_total" type="text" readonly="readonly" size="3">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="100%">
+                            <div class="datagrid-menu-pages">
+                                <button class="pgn-inicio"    onclick="fn_mypolicies.list_drivers.firstPage();" title="First page"><span></span></button>
+                                <button class="pgn-anterior"  onclick="fn_mypolicies.list_drivers.previousPage();" title="Previous"><span></span></button>
+                                <button class="pgn-siguiente" onclick="fn_mypolicies.list_drivers.nextPage();" title="Next"><span></span></button>
+                                <button class="pgn-final"     onclick="fn_mypolicies.list_drivers.lastPage();" title="Last Page"><span></span></button>
+                            </div>
+                        </td>
+                    </tr>
+                </tfoot>
         </table>
     </div>
 </div>
@@ -381,6 +448,27 @@ var fn_mypolicies = {
                     </tr>
                 </thead>
                 <tbody></tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="100%">
+                            <div class="datagrid-pages">
+                                <input class="pagina_actual" type="text" readonly="readonly" size="3">
+                                <label> / </label>
+                                <input class="paginas_total" type="text" readonly="readonly" size="3">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="100%">
+                            <div class="datagrid-menu-pages">
+                                <button class="pgn-inicio"    onclick="fn_mypolicies.list_units.firstPage();" title="First page"><span></span></button>
+                                <button class="pgn-anterior"  onclick="fn_mypolicies.list_units.previousPage();" title="Previous"><span></span></button>
+                                <button class="pgn-siguiente" onclick="fn_mypolicies.list_units.nextPage();" title="Next"><span></span></button>
+                                <button class="pgn-final"     onclick="fn_mypolicies.list_units.lastPage();" title="Last Page"><span></span></button>
+                            </div>
+                        </td>
+                    </tr>
+                </tfoot>
         </table>
     </div>
 </div>

@@ -200,6 +200,7 @@
       
       
   }
+  #CARGAR TABLA NO LA DE DIALOGO... LA OTRA:
   function get_list_drivers(){
       
       include("cn_usuarios.php");
@@ -207,6 +208,8 @@
       $transaccion_exitosa = true;
       $error = "0";
       $token = trim($_POST['token']);
+      $form  = trim($_POST['form']);
+      $type  = trim($_POST['type']);
 
       $sql = "SELECT B.iConsecutivo, sNombre, iExperienciaYear, iNumLicencia,sAccidentesNum,DATE_FORMAT(dFechaNacimiento,  '%m/%d/%Y') AS dFechaNacimiento ".
              "FROM cb_quote_format_operadores A  ".
@@ -222,7 +225,7 @@
                                    "<td>".$items['dFechaNacimiento']."</td>".
                                    "<td>".$items['iNumLicencia']."</td>".
                                    "<td>".$items['iExperienciaYear']."</td>".
-                                   "<td><div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete from list\"><i class=\"fa fa-minus-circle\"></i><span></span></div></td>".                                                                                                                                                                                                                   
+                                   "<td><div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete from list\" onclick=\"fn_formats.delete_tmp_du('".$items['iConsecutivo']."','$token','$form','$type');\"><i class=\"fa fa-minus-circle\"></i><span></span></div></td>".                                                                                                                                                                                                                   
                                    "</tr>"; 
             }
             $conexion->rollback();
@@ -446,14 +449,16 @@
       $transaccion_exitosa = true;
       $error = "0";
       $token = trim($_POST['token']);
+      $form  = trim($_POST['form']);
+      $type  = trim($_POST['type']);
 
-      $sql = "SELECT B.iConsecutivo,iYear,iModelo,sVIN,sPeso,sTipo,iTotalPremiumPD,sDescripcion AS sModelo,iValue  ".
+      $sql = "SELECT B.iConsecutivo,iYear,iModelo,sVIN,sPeso,sTipo,A.iTotalPremiumPD,sDescripcion AS sModelo,iValue  ".
              "FROM cb_quote_format_operadores A  ".
              "INNER JOIN ct_unidades B ON A.iConsecutivoOperador = B.iConsecutivo  ".
              "LEFT JOIN ct_unidad_modelo C ON B.iModelo = C.iConsecutivo ".
              "WHERE A.iConsecutivo = '$token' ORDER BY sDescripcion ASC";
-        $result = $conexion->query($sql);
-        $rows = $result->num_rows;   
+      $result = $conexion->query($sql);
+      $rows = $result->num_rows;   
         if ($rows > 0) { 
             $paginas_total = $rows;   
             while ($items = $result->fetch_assoc()){
@@ -467,7 +472,7 @@
                                    "<td>".$items['sPeso']."</td>". 
                                    "<td>".$iValue."</td>". 
                                    "<td>".$iTotalPremiumPD."</td>". 
-                                   "<td><div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete from list\"><i class=\"fa fa-minus-circle\"></i><span></span></div></td>".                                                                                                                                                                                                                 
+                                   "<td><div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete from list\" onclick=\"fn_formats.delete_tmp_du('".$items['iConsecutivo']."','$token','$form','$type');\"><i class=\"fa fa-minus-circle\"></i><span></span></div></td>".                                                                                                                                                                                                                 
                                    "</tr>";
             }
             $conexion->rollback();
@@ -678,12 +683,41 @@
              $conexion->rollback();
              $conexion->close();
              $error = "1";
-             $msg = "Error to delete de commodity from list, please try again.";
+             $msg = "Error to delete the commodity from list, please try again.";
          }
       }
       
       $response = array("error"=>"$error","msj"=>"$msj");
       echo json_encode($response);
   }
+  #DELETE TEMPORAL DRIVERS AND UNITS BY TOKEN ID:
+  function delete_tmp_du(){
+      
+      include("funciones_genericas.php"); 
+      include("cn_usuarios.php"); 
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      
+      $token = trim($_POST['iConsecutivo']);
+      $iConsecutivoDU = trim($_POST['iConsecutivodu']);
+      $error = "0";
+      $msj = "";
+      if($token != '' && $iConsecutivoDU !=''){
+         $query = "DELETE FROM cb_quote_format_operadores WHERE iConsecutivo ='$token' AND iConsecutivoOperador = '$iConsecutivoDU'"; 
+         if($conexion->query($query)){
+             $conexion->commit();
+             $conexion->close();
+         }else{
+             $conexion->rollback();
+             $conexion->close();
+             $error = "1";
+             $msg = "Error to delete the data from list, please try again.";
+         }
+      }
+      
+      $response = array("error"=>"$error","msj"=>"$msj");
+      echo json_encode($response);
+  }
+  
   
 ?>

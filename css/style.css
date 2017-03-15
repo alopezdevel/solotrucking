@@ -267,7 +267,8 @@ a{	font-family:'FontAwesome','luzsans-bookluzsans-book', Arial, Helvetica, sans-
 	font-family: 'Montserrat', sans-serif;
 	text-decoration: none;
 	line-height:20px;
-	margin:17px 20px;
+	margin: 10px 20px;
+    padding: 10px 5px;
 	transition:all 0.3s ease-in-out;
 	-moz-transition:all 0.3s ease-in-out;
 	-webkit-transition:all 0.3s ease-in-out;

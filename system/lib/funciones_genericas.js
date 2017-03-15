@@ -147,7 +147,7 @@ var fn_solotrucking = {
         var mes = fn_solotrucking.pad((parseInt(t.getMonth()) + 1)+"",2,'0',STR_PAD_LEFT);
         $(input_name).val(mes+"/"+dia+"/"+t.getFullYear());
       },
-      pad : function(str, len, pad, dir){
+     pad : function(str, len, pad, dir){
         if (typeof(len) == "undefined") { var len = 0; }
         if (typeof(pad) == "undefined") { var pad = ' '; }
         if (typeof(dir) == "undefined") { var dir = STR_PAD_RIGHT; }
@@ -169,6 +169,47 @@ var fn_solotrucking = {
         }
         return str;
       },
+     daysInMonth : function( month, year) {
+            
+            var m = [ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]; 
+            
+            if (month != 2) 
+                return m[month - 1]; 
+            
+            if (year%4 != 0) 
+                return m[1]; 
+            
+            if (year%100 == 0 && year%400 != 0) 
+                return m[1]; 
+            
+            return m[1] + 1; 
+      },
+     obtener_fechas : function() {
+            
+            var today = new Date();
+
+            var d = today.getDate();
+            var m = today.getMonth();
+            var m = m + 1;
+
+            var y = today.getFullYear();
+
+            var m2 = m;
+
+            if( m < 10 ) {m = '0' + m;}
+            
+            if( d < 10 ) {d = '0' + d;}
+            
+            var fecha_mes_inicio = m + '/' + '01' + '/' + y;
+            var fecha_hoy = m + '/' + d + '/' + y;
+
+            d = fn_solotrucking.daysInMonth(m2, y);
+
+            var fecha_mes_fin = m + '/' + d + '/' + y;
+            
+            fechas = new Array(fecha_hoy, fecha_mes_inicio, fecha_mes_fin);
+            return fechas;
+        }
 }
 var struct_data_post = {
     action         : "",

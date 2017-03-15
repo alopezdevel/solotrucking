@@ -41,12 +41,15 @@ function onValidarAcceso(){
      valid = valid && checkLength( $('#loginUser'), "user", 3, 80 );
      //valid = valid && checkRegexp( $('#loginUser'), emailRegex, "eg. ui@solotrucking.com" );
      
-     valid = valid && checkLength( $("#loginPassword"), "password", 8, 9 );
+     //valid = valid && checkLength( $("#loginPassword"), "password", 1, 9 );
      //valid = valid && checkRegexp( $("#loginPassword"), /^([0-9a-zA-Z])+$/, "Password field only allow : a-z 0-9" );
      
-     if ( valid ) {
-        conexion($("#loginUser").val(), $("#loginPassword").val());
+     if($("#loginPassword").val() == ""){
+        valid = false; 
+        $("#loginPassword").addClass('error');
+        actualizarMensajeAlerta("Please verify if all fields has a valid value.");
      }
+     if(valid){conexion($("#loginUser").val(), $("#loginPassword").val());}
 }
 function conexion(u, p){
      $.post("funciones_login.php", { accion: "conexion", usuario: u , password: p}, 

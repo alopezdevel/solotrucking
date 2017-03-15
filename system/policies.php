@@ -33,6 +33,48 @@ function inicio(){
             }
         });
         
+        $('#dialog_report_policies').dialog({
+            modal: true,
+            autoOpen: false,
+            width : 650,
+            height : 510,
+            resizable : false,
+            buttons : {
+                'DOWNLOAD EXCEL FILE' : function() {
+                   //Parametros:
+                   var company   = $("#dialog_report_policies .flt_company").val();
+                   var broker    = $("#dialog_report_policies .flt_broker").val(); 
+                   var insurance = $("#dialog_report_policies .flt_insurance").val(); 
+                   var politype  = $("#dialog_report_policies .flt_type").val();  
+                   var dExp_init = $("#dialog_report_policies #flt_dateFrom").val(); 
+                   var dExp_endi = $("#dialog_report_policies #flt_dateTo").val();   
+                   
+                   if(dExp_init != "" && dExp_endi != ""){
+                        window.open('xls_policies_report.php?company='+company+'&broker='+broker+'&insurance='+insurance+'&policytype='+politype+'&dExp_init='+dExp_init+'&dExp_endi='+dExp_endi);
+                   }else{fn_solotrucking.mensaje("Please select before a valid dates."); }             
+                },
+                 'CANCEL' : function(){
+                    $(this).dialog('close');
+                }
+            }
+        });
+        
+        //DATEPICKERS
+        var dates_rp = $( "#flt_dateFrom, #flt_dateTo" ).datepicker({
+            changeMonth: true,
+            dateFormat: 'mm/dd/yy',
+            onSelect: function( selectedDate ) {
+                var option = this.id == "flt_dateFrom" ? "minDate" : "maxDate",
+                instance = $( this ).data( "datepicker" );
+                date = $.datepicker.parseDate(
+                instance.settings.dateFormat ||
+                $.datepicker._defaults.dateFormat,
+                selectedDate, instance.settings );
+                dates_rp.not( this ).datepicker( "option", option, date );
+            },
+        });
+        
+        
         
     
 }  
@@ -60,6 +102,10 @@ var fn_policies = {
                 success : function(data){
                     $(fn_policies.form + " #iConsecutivoCompania").empty().append(data.select);
                     $("#file_edit_form #iConsecutivoCompania").empty().append(data.select); 
+                    
+                    //Reportes Select:
+                    $("#dialog_report_policies .flt_company").empty().append(data.select);
+                    $("#dialog_report_policies .flt_company option:first-child").text('All');   
                 }
             });
             $.ajax({             
@@ -68,7 +114,12 @@ var fn_policies = {
                 data:{accion:"get_brokers"},
                 async : true,
                 dataType : "json",
-                success : function(data){$(fn_policies.form + " #iConsecutivoBrokers").empty().append(data.select);}
+                success : function(data){
+                    $(fn_policies.form + " #iConsecutivoBrokers").empty().append(data.select);
+                    //Reportes Select:
+                    $("#dialog_report_policies .flt_broker").empty().append(data.select);
+                    $("#dialog_report_policies .flt_broker option:first-child").text('All'); 
+                }
             });
             $.ajax({             
                 type:"POST", 
@@ -76,7 +127,12 @@ var fn_policies = {
                 data:{accion:"get_policy_types"},
                 async : true,
                 dataType : "json",
-                success : function(data){$(fn_policies.form + " #iTipoPoliza").empty().append(data.select);}
+                success : function(data){
+                    $(fn_policies.form + " #iTipoPoliza").empty().append(data.select);
+                    //Reportes Select:
+                    $("#dialog_report_policies .flt_type").empty().append(data.select);
+                    $("#dialog_report_policies .flt_type option:first-child").text('All');  
+                }
             });
             $.ajax({             
                 type:"POST", 
@@ -84,7 +140,12 @@ var fn_policies = {
                 data:{accion:"get_insurances"},
                 async : true,
                 dataType : "json",
-                success : function(data){$(fn_policies.form + " #iConsecutivoAseguranza").empty().append(data.select);}
+                success : function(data){
+                    $(fn_policies.form + " #iConsecutivoAseguranza").empty().append(data.select);
+                    //Reportes Select:
+                    $("#dialog_report_policies .flt_insurance").empty().append(data.select);
+                    $("#dialog_report_policies .flt_insurance option:first-child").text('All'); 
+                }
             });
             //Filtrado con la tecla enter
             $(fn_policies.data_grid + ' #grid-head1 input').keyup(function(event){
@@ -843,9 +904,19 @@ var fn_policies = {
                     }); 
               });  
             },
-        }
+        },
+        //FUNCIONES PARA REPORTE DE POLIZAS:
+        dialog_report_open : function(){
+            $("#dialog_report_policies :text, #dialog_report_policies select").val("");
+            var fechas = fn_solotrucking.obtener_fechas();
+            $("#dialog_report_policies #flt_dateFrom").val(fechas[1]); 
+            $("#dialog_report_policies #flt_dateTo").val(fechas[2]); 
+            $("#dialog_report_policies").dialog('open'); 
+        }, 
                
-}    
+}   
+
+ 
 
  
 </script> 
@@ -874,6 +945,7 @@ var fn_policies = {
             <tr id="grid-head-tools">
                 <td colspan="100%">
                     <ul>
+                        <li><div class="btn-icon report btn-left" title="Generate a Report"  onclick="fn_policies.dialog_report_open();"><i class="fa fa-folder-open"></i></div></li>  
                         <li><div class="btn-icon add btn-left active active_policies" title="View Actived Policies "  onclick="fn_policies.pagina_actual='';fn_policies.fillgrid();"><i class="fa fa-file-text"></i></div></li> 
                         <li><div class="btn-icon edit btn-left expired_policies" title="View Canceled & Expired Policies "  onclick="fn_policies.pagina_actual='';fn_policies.fillgrid_expired();"><i class="fa fa-file-text"></i></div></li>
                         <li><div class="btn-icon add btn-left" title="Upload drivers or units of a company"  onclick="fn_policies.upload_file_form();"><i class="fa fa-upload"></i></div></li>
@@ -1237,7 +1309,35 @@ var fn_policies = {
     </div>
 </div>
 <!--- DIALOGUES --->
-<div id="dialog_delete_policy" title="SYSTEM ALERT" style="dipolicies_edit_formsplay:none;">
+<div id="dialog_report_policies" title="REPORT OF POLICIES" style="display:none;">
+    <p>Please select the parameters to generate a report of the policies:</p>
+    <form id="frm_report_policies" method="post">
+        <div class="field_item"> 
+            <label>Company: </label>
+            <select class="flt_company"><option>All</option></select>
+        </div>
+        <div class="field_item"> 
+            <label>Broker: </label>
+            <select class="flt_broker"><option>All</option></select>
+        </div> 
+        <div class="field_item"> 
+            <label>Insurance: </label>
+            <select class="flt_insurance"><option>All</option></select>
+        </div> 
+        <div class="field_item"> 
+            <label>Type: </label>
+            <select class="flt_type"><option>All</option></select>
+        </div> 
+        <div class="field_item"> 
+            <label>Expiration Date: </label>
+            <div>
+                <label class="check-label" style="position: relative;top: 0px;">From</label><input id="flt_dateFrom" type="text"  placeholder="MM/DD/YY" style="width: 140px;">
+                <label class="check-label" style="position: relative;top: 0px;">To</label><input   id="flt_dateTo"   type="text"  placeholder="MM/DD/YY" style="width: 140px;">
+            </div>
+        </div> 
+    </form>  
+</div>
+<div id="dialog_delete_policy" title="SYSTEM ALERT" style="display:none;">
     <p>If you check the policy as canceled this will no longer be visible in the module. Are you sure?</p>
     <form id="elimina" method="post">
            <input type="hidden" name="id_policy" id="id_policy">

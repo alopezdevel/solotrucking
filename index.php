@@ -84,7 +84,6 @@
 	<div class="fluid_container">
         <div class="camera_wrap camera_emboss" id="camera_wrap_3">
             <div data-src="camera/images/slides/1.jpg"></div>
-            <div data-src="camera/images/slides/5.jpg"></div>
             <div data-src="camera/images/slides/2.jpg"></div>
             <div data-src="camera/images/slides/3.jpg"></div>
             <div data-src="camera/images/slides/4.jpg"></div>
@@ -168,15 +167,11 @@
             	</div>
             	<div class="contact-info-box address clearfix">
                 	<h3><i class=" icon-map-marker"></i>Address:</h3>
-                	<span>PO BOX 451564 <br>Laredo TX. 78045</span>
+                	<span>6414 McPherson Rd. Suite 01, <br> Laredo TX. 78041</span>
                 </div>
                 <div class="contact-info-box phone clearfix">
                 	<h3><i class="fa-phone"></i>Phone:</h3>
-                	<span>(956) 791.6511 / (956) 568.4340</span>
-                </div>
-                <div class="contact-info-box phone clearfix">
-                	<h3><i class="fa-mobile-phone"></i>Agent Phone:</h3>
-                	<span>(956) 568.5264</span>
+                	<span>(956) 606-4478</span>
                 </div>
             	<div class="contact-info-box hours clearfix">
                 	<h3><i class="fa-clock-o"></i>Hours:</h3>
@@ -212,7 +207,7 @@
     	    
    	</div>
 </footer>
-<div class="copyright">SoloTrucking 2015 . © All rights reserved.</div>
+<div class="copyright">SoloTrucking 2017 . © All rights reserved.</div>
 
 <script type="text/javascript">
     $(document).ready(function(e) {

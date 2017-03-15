@@ -463,7 +463,7 @@ var fn_formats = {
             }else{fn_solotrucking.mensaje('Please first select a driver before to continue.');}
         },
         get_list_drivers : function(form){
-           $.post("funciones_quote_formats.php", {accion: "get_list_drivers",token: $('#'+form+' #driver_token').val()},
+           $.post("funciones_quote_formats.php", {accion: "get_list_drivers",token: $('#'+form+' #driver_token').val(),form : form,type:'driver'},
            function(data){ 
                    if(data.error == '0'){
                        $('#'+form+' #driver_list tbody').empty().append(data.tabla);
@@ -497,12 +497,26 @@ var fn_formats = {
            }else{fn_solotrucking.mensaje('Please first select an option before to continue.');}
         },
         get_list_ut : function(form,type){
-           $.post("funciones_quote_formats.php", {accion: "get_list_ut",token: $('#'+form+' #'+type+'_token').val()},
+           $.post("funciones_quote_formats.php", {accion: "get_list_ut",token: $('#'+form+' #'+type+'_token').val(),form:form,type:type},
            function(data){ 
                    if(data.error == '0'){
                        $('#'+form+' #'+type+'_list tbody').empty().append(data.tabla);
                        $('#dialog_unit_trailer_list,#dialog_unit_trailer_options').dialog('close');
                    }else{fn_solotrucking.mensaje(data.msj);}   
+           },"json"); 
+        },
+        delete_tmp_du : function(clave,token,form,type){
+           $.post("funciones_quote_formats.php", {accion: "delete_tmp_du",iConsecutivo:token,iConsecutivodu:clave},
+           function(data){ 
+                   if(data.error == '0'){
+                       if(type == 'driver'){
+                            fn_formats.get_list_drivers(form);
+                       }else if(type == 'unit' || type == 'trailer' || type == 'both'){
+                            fn_formats.get_list_ut(form,type);
+                       }
+                
+                   }
+                   else{fn_solotrucking.mensaje(data.msj);}   
            },"json"); 
         },
         get_company_info : function(id_company,form){

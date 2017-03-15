@@ -383,6 +383,9 @@ div.btn-icon span{font-weight: bold;font-size: 13px;}
 /*--BUY--*/
 .buy:hover, .buy:hover i{color:#52bc12!important;}
 .buy:hover  {background: #e9ffdb!important;border: 1px solid #56cf0c!important;}
+/*-- REPORT --*/
+.report:hover i, .report.active  i {color:#f9c12b!important;}
+.report:hover, .report.active {background: #f5e8c4!important;border: 1px solid #f9c12b!important;}
 
 
 /*-----ALINEACION DE LOS BOTONES ----------- IZQUIERDA - DERECHA ------*/

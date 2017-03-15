@@ -507,7 +507,7 @@
                                       $error = '1';
                                       $mensaje = "Error: Please verify the VIN on the column $z row $i from XLS file."; 
                                   }else{
-                                      if(strlen($sVIN) > 17){
+                                      if(strlen($sVIN) > 18){
                                          $error = '1';
                                          $mensaje = "Error: Please verify the VIN on the column $z row $i from XLS file.";   
                                       }else{  

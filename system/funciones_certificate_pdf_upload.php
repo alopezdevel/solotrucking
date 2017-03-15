@@ -198,7 +198,7 @@
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);
       
-      $sql = "SELECT iConsecutivo, sNombreArchivo, sNombreArchivoAdd  FROM cb_certificate_file 
+      $sql = "SELECT iConsecutivo, sNombreArchivo, sNombreArchivoAdd, DATE_FORMAT(dFechaVencimiento,'%m/%d/%Y') AS dFechaVencimiento  FROM cb_certificate_file 
               WHERE  iConsecutivoCompania = '".$clave."'";
       $result = $conexion->query($sql); 
       $items_files = $result->fetch_assoc();
@@ -208,6 +208,9 @@
       }
       if($items_files["sNombreArchivoAdd"] != ''){
             $fields .= "\$('#$domroot :input[id=txtsAdditionalPDF]').val('".$items_files['sNombreArchivoAdd']."');";  
+      }
+      if($items_files["dFechaVencimiento"] != ''){
+            $fields .= "\$('#$domroot :input[id=dFechaVencimiento]').val('".$items_files['dFechaVencimiento']."');";  
       }
       $conexion->rollback();
       $conexion->close(); 
