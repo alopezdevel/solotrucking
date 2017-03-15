@@ -304,6 +304,7 @@ tfoot{border-top:2px solid #b9dcf6;}
 /*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
 /*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/ 
 .btn-icon, .btn-icon-2, .btnicon, .btn-text{cursor:pointer;} 
+a.btn-text{display:block;}
 .btn-text{
     
     width: auto;
@@ -319,7 +320,6 @@ tfoot{border-top:2px solid #b9dcf6;}
     margin: 2px;
     text-align: center;
     color:#43a3ea;
-   
 }
 .btn-text:hover{
     

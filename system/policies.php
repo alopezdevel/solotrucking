@@ -1078,8 +1078,9 @@ var fn_policies = {
                     <input id="txtFile" type="text" readonly="readonly" value="" size="40" />
                 </div>
                 <table id="reporte_policy_update"></table>
-                
                 <br> 
+                <a class="btn-text" title="Download Layout XLS" href="documentos/plantilla_ejemplo.xls" target="_blank"><i class="fa fa-file-excel-o"></i><span>Download Layout XLS</span></a>
+                <a class="btn-text" title="Download PDF Manual" href="documentos/manual_para_subir_y_crear_plantillas.pdf" target="_blank"><i class="fa fa-file-pdf-o"></i><span>Download PDF Manual</span></a>
                 <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('file_edit_form');" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
                 <button id="btnFile" type="button" class="btn-1" style="width:230px;">Upload & Save file</button>
             </fieldset>
