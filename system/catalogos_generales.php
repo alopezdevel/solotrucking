@@ -216,9 +216,9 @@
   function get_unit_radio(){
      include("cn_usuarios.php");
      $conexion->autocommit(FALSE);
-      
+
      $sql = "SELECT iConsecutivo AS clave, sDescripcion AS descripcion 
-             FROM ct_unidad_radio ORDER BY iConsecutivo ASC";
+             FROM ct_unidad_radio ORDER BY sDescripcion ASC";
      $result = $conexion->query($sql);
      $tipos = $result->num_rows;  
         if($tipos > 0){

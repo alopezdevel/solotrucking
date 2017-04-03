@@ -40,8 +40,9 @@
                 <li><a href="policies">POLICIES</a></li>
                 <li class="submenu"><a href="#">Endorsements</a>
                    <ul>
-                        <li><a href="endorsement_request"><i class="fa fa-users"></i> DRIVERS</a></li>
-                        <li><a href="endorsement_request_units"> <i class="fa fa-truck"></i> UNITS</a></li>
+                        <li><a href="endorsements"><i class="fa fa-plus-circle"></i>Create a New Endorsement</a></li>
+                        <li><a href="endorsement_request"><i class="fa fa-users"></i>Applications to Drivers</a></li>
+                        <li><a href="endorsement_request_units"> <i class="fa fa-truck"></i> Applications to Units</a></li> 
                         <li><a href="endorsement_files"> <i class="fa fa-file-text"></i> UPLOAD FILES</a></li>  
                     </ul>
                 </li>
@@ -73,9 +74,10 @@
                   <li><a href="policies">POLICIES</a></li>
                   <li class="submenu"><a href="#">Endorsements</a>
                    <ul>
-                        <li><a href="endorsement_request"><i class="fa fa-users"></i> DRIVERS</a></li>
-                        <li><a href="endorsement_request_units"> <i class="fa fa-truck"></i> UNITS</a></li> 
-                        <li><a href="endorsement_files"> <i class="fa fa-file-text"></i> UPLOAD FILES</a></li> 
+                        <li><a href="endorsements"><i class="fa fa-plus-circle"></i>Create a New Endorsement</a></li>
+                        <li><a href="endorsement_request"><i class="fa fa-users"></i>Applications to Drivers</a></li>
+                        <li><a href="endorsement_request_units"> <i class="fa fa-truck"></i> Applications to Units</a></li> 
+                        <li><a href="endorsement_files"> <i class="fa fa-file-text"></i> UPLOAD FILES</a></li> > 
                     </ul>
                 </li>
                 <li><a href="claims_requests">CLAIMS</a></li> 
@@ -104,8 +106,9 @@
                   <li><a href="policies">POLICIES</a></li>
                   <li class="submenu"><a href="#">Endorsements</a>
                    <ul>
-                        <li><a href="endorsement_request"><i class="fa fa-users"></i> DRIVERS</a></li>
-                        <li><a href="endorsement_request_units"> <i class="fa fa-truck"></i> UNITS</a></li> 
+                        <li><a href="endorsements"><i class="fa fa-plus-circle"></i>Create a New Endorsement</a></li>
+                        <li><a href="endorsement_request"><i class="fa fa-users"></i>Applications to Drivers</a></li>
+                        <li><a href="endorsement_request_units"> <i class="fa fa-truck"></i> Applications to Units</a></li> 
                         <li><a href="endorsement_files"> <i class="fa fa-file-text"></i> UPLOAD FILES</a></li> 
                     </ul>
                 </li>

@@ -6,6 +6,8 @@
 
 /* Layout helpers
 ----------------------------------*/
+/*---------dialogos   --*/
+.without-close-button .ui-dialog-titlebar-close { display: none!important; }
 .ui-helper-hidden {
 	display: none;
 }

@@ -23,7 +23,6 @@ table input, table textarea, table select{margin:5px auto!important;width: 99%;}
 form input, form select, form textarea, .form input, .form select, .form textarea{
                                                                    
     width:100%;
-    /*height:37px; */
     height: 30px;
     margin:5px 0px;
     clear:both;
