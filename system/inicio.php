@@ -18,53 +18,46 @@ if ( !($_SESSION["acceso"] != '')  && ($_SESSION["usuario_actual"] != "" && $_SE
      
 <div id="layer_content" class="main-section">
 	<div class="container">
-		<h2 class="txt-center">Welcome to Solo-Trucking System</h2>
-        <p style ="text-align:center;">The System is UNDER CONSTRUCTION</p>
-		<div style="clear:both;padding-top: 40px;">
-        <?php if($_SESSION['acceso'] == "U"){  ?>
-                <div class="col_3 left">
-                    <div class="bann">
-                        <h3>Certificates</h3>
-                        <br>
-                        <ul>
-                            <li><a href="certificate_request_pdf_upload"><span><i class="fa fa-upload color-blue"></i> </span>Upload Certificates</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col_3 left">
-                    <div class="bann">
-                        <h3>Quotes</h3>
-                        <br>
-                        <ul>
-                            <li><a href="#"><span><i class="fa fa-external-link-square color-blue"></i> </span>Get a Quote</a> </li>
-                            <li><a href="#"><span><i class="fa fa-eye color-blue"></i> </span>Consult One</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col_3 left">
-                    <div class="bann">
-                        <h3>Endorsements</h3>
-                        <br>
-                        <ul>
-                            <li><a href="#"><span><i class="fa fa-external-link-square color-blue"></i> </span>Request One</a></li>
-                        </ul>
-                    </div>
-                </div>
-        <?php }?>
-        <?php if($_SESSION['acceso'] == "C"){  ?>
-                <div class="col_3 left" style="margin: 0 auto; float:none!important;">
-                    <div class="bann">
-                        <h3>Certificates</h3>
-                        <br>
-                        <p>Now you can edit your certificate:</p>
-                        <ul>
-                            <li><a href="certificate_request_company"><span><i class="fa fa-external-link-square color-blue"></i> </span> Go Now!</a></li>
-                        </ul>
-                    </div>
-                </div>
-        <?php }?>
+	<h2 class="txt-center">Welcome to Solo-Trucking System</h2>
+    <?php if($_SESSION['acceso'] != "2"){ //USUARIOS SOLO-TRUCKING ?>
+        <div class="col_3 left">
+            <div class="bann">
+                <img src="images/home/img_monitor_homepage.png" border="0" width="344" height="254" alt="img_monitor_homepage.png">
+                <h3>The NEWEST</h3>
+                <p>Section Underconstruction</p>
+            </div>
         </div>
-	</div>
+        <div class="col_3 left">
+            <div class="bann">
+                <img src="images/home/img_gears_homepage.png" border="0" width="160" height="135" alt="img_gears_homepage.png">  
+                <h3 style="color:#a22c2c;">Quick Access</h3>
+                <br>
+                <ul style="list-style:none;">
+                    <li><a href="endorsements"><i class="fa fa-plus-circle"></i> Create a New Endorsement</a></li>
+                    <li><a href="companies"><i class="fa fa-briefcase"></i> Companies</a></li> 
+                    <li><a href="users"> <i class="fa fa-users"></i> Users</a></li>
+                    <li><a href="certificate_request_pdf_upload"> <i class="fa fa-cloud-upload"></i> Company Certificates (upload)</a></li>
+                    <li><a href="quote_formats"><i class="fa fa-file-text"></i> Quotes Formats</a></li>  
+                </ul>
+            </div>
+        </div>
+        <div class="col_3 left">
+            <div class="bann">
+                <img src="images/home/img_faqs_homepage.png" border="0" width="262" height="46" alt="img_faqs_homepage.png">  
+                <h3>Frequently asked questions</h3>
+                <br>
+                <ul>
+                    <li><a href="documentos/support/how_can_add_a_new_company(ESP).pdf" target="_blank">How can I add a new company?</a></li>
+                    <li><a href="documentos/support/how_can_add_a_new_user(ESP).pdf">How can I add a new user?</a></li> 
+                    <li><a href="#">How are endorsements managed in the system?</a></li> 
+                    <li><a href="documentos/support/how_can_upload_a_new_certificate(ESP).pdf">How can I upload a new certificate?</a></li> 
+                    <li><a href="documentos/support/How_can_upload_lists_of_drivers_and_units.pdf" target="_blank">How can I upload the drivers and units lists?</a></li> 
+                </ul>
+            </div>
+        </div>
+    <?php }?>
+    </div>
+</div>
 <!---- FOOTER ----->
 <?php include("footer.php"); ?> 
 </div>

@@ -71,7 +71,6 @@
     			<img src="images/cont/img_logo_aic.png" alt="logo provider">
     			<img src="images/cont/img_logo_greatlakes.png" alt="logo provider">
     			<br><br>
-    			<img src="images/cont/img_logo_lloyds.png" alt="logo provider">
     			<img src="images/cont/img_logo_markel.png" alt="logo provider">
     			<img src="images/cont/img_logo_scottdale.png" alt="logo provider">
     		</div>

@@ -837,7 +837,8 @@
       $rows > 0 ? $endorsement = $result->fetch_assoc() : $endorsement = "";
       if($endorsement['iConsecutivo'] != ""){    
           #2- Second step: Check the endorsement type.
-          $email_destinatario = "celina@globalpc.com"; // <---- pruebasss.. 
+          //$email_destinatario = "celina@globalpc.com"; // <---- pruebasss.. 
+          $email_destinatario = "customerservice@solo-trucking.com";
           //DRIVERS
           if($endorsement['iConsecutivoTipoEndoso'] == '2' && $endorsement['iConsecutivoOperador'] != ''){ 
              #Driver: Consult the driver information:
@@ -959,7 +960,6 @@
                         $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
                         $mail->MsgHTML($htmlEmail);
                         $mail->IsHTML(true); 
-                        //$email_destinatario = "customerservice@solo-trucking.com"; 
                         $mail->AddAddress($email_destinatario,'Customer service Solo-Trucking');
                         
                         //VALIDAR QUE SI ES UN ENDOSO ADD VENGAN LOS ARCHIVOS NECESARIOS PARA PROCEDER:
@@ -1164,7 +1164,6 @@
                     $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
                     $mail->MsgHTML($htmlEmail);
                     $mail->IsHTML(true); 
-                    //$email_destinatario = "customerservice@solo-trucking.com"; 
                     $mail->AddAddress($email_destinatario,'Customer service Solo-Trucking');
                      
                     $mail_error = false; 
