@@ -793,8 +793,8 @@ var fn_formats = {
         <thead>
             <tr id="grid-head1">
                 <td style='width:45px;'><input class="flt_id" class="numeros" type="text" placeholder="ID:"></td>
+                <td><input class="flt_filename" type="text" placeholder="File Name:"  ></td> 
                 <td><input class="flt_name"     type="text" placeholder="Format Name:"></td>
-                <td><input class="flt_filename" type="text" placeholder="File Name:"  ></td>
                 <td style='width:150px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_formats.filtraInformacion();"><i class="fa fa-search"></i></div>
                     <!---<div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_formats.add();"><i class="fa fa-plus"></i></div>-->
@@ -802,8 +802,8 @@ var fn_formats = {
             </tr>
             <tr id="grid-head2">
                 <td class="etiqueta_grid down" onclick="fn_formats.ordenamiento('iConsecutivo',this.cellIndex);">ID</td>
-                <td class="etiqueta_grid"      onclick="fn_formats.ordenamiento('sTituloArchivoEmpresa',this.cellIndex);">FORMAT NAME</td>
                 <td class="etiqueta_grid"      onclick="fn_formats.ordenamiento('sNombreArchivoEmpresa',this.cellIndex);">ORIGINAL FILE NAME</td>
+                <td class="etiqueta_grid"      onclick="fn_formats.ordenamiento('sTituloArchivoEmpresa',this.cellIndex);">FORMAT CATEGORY</td> 
                 <td class="etiqueta_grid"></td> 
             </tr>
         </thead>

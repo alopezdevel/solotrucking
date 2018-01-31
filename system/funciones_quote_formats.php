@@ -26,7 +26,7 @@
         }
     }
     // ordenamiento//
-    $ordenQuery = " ORDER BY ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"];
+    $ordenQuery = " ORDER BY ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"].", sNombreArchivoEmpresa ASC";
     
     //contando registros // 
     $query_rows = "SELECT COUNT(iConsecutivo) AS total FROM ct_formatos_PDF ".$filtroQuery;
@@ -55,8 +55,8 @@
                      $items['sRutaArchivoWord'] != "" ? $btn_word = "<div class=\"btn_new send-email btn-icon btn-left\" title=\"Download WordFile\"><a href=\"".$items['sRutaArchivoWord']."\"><i class=\"fa fa-file-word-o\"></i></a></div>" : $btn_word = "";
                      $htmlTabla .= "<tr>
                                         <td>".$items['iConsecutivo']."</td>".
-                                       "<td>".$items['sTituloArchivoEmpresa']."</td>".
-                                       "<td>".$items['sNombreArchivoEmpresa']."</td>".                                                                                                                                                                                                                         
+                                        "<td>".strtoupper($items['sNombreArchivoEmpresa'])."</td>".
+                                       "<td>".strtoupper($items['sTituloArchivoEmpresa'])."</td>".
                                        "<td>
                                             $funcion
                                             <div class=\"btn_new send-email btn-icon btn-left\" title=\"Open original format in a new window\"><a href=\"".$items['sRutaArchivoOriginal']."\" target=\"_blank\"><i class=\"fa fa-external-link\"></i></a></div>  
@@ -79,6 +79,7 @@
             
         } 
     }
+     $htmlTabla = utf8_decode($htmlTabla);
      $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
      echo json_encode($response); 
   }
