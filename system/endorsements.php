@@ -123,10 +123,15 @@ function inicio(){
             height : 230,
             resizable : false,
             buttons : {
-                'CONTINUE' : function() {
+                'CONTINUE' : function() { 
                     type = $('#dialog_types #TipoEndoso').val();
-                    fn_endorsement_co.new_endorsement(type);
-                    $(this).dialog('close');
+                    
+                    if(type != ""){
+                        fn_endorsement_co.new_endorsement(type);
+                        $(this).dialog('close');
+                    }else{
+                        fn_solotrucking.mensaje('Please select a valid type.');
+                    }
                 },
                 'CANCEL' : function(){$(this).dialog('close');}
             }
@@ -619,19 +624,25 @@ var fn_endorsement_co = {
         },
         //NUEVAS FUNCIONES:
         new_endorsement : function(type){
-            if(type == '1'){ var form = "frm_endorsements_unit";} else if(type == '2'){var form = "frm_endorsements_driver";}
-            
-            $('#'+form+' input, #'+form+' select').removeClass('readonly').removeAttr('readonly').removeAttr('disabled');
-            $('#'+form+' :text, #'+form+' select').val('').removeClass('error');
-            $('#'+form+' .mensaje_valido').empty().append('The fields containing an (<span style="color:#ff0000;">*</span>) are required.');
-            $('#'+form+' .btn-1').show(); 
-            $('#'+form+' .msg-error').empty().hide();
-            $('#'+form+' #policies_endorsement').empty();
-            $('#'+form+' .frm_information').hide();              
-            $('#'+form+' :checkbox').prop("checked","");
-            $('#'+form+' .mensaje_valido + .field_item, #'+form+' .mensaje_valido').show(); 
-            $('#'+form+' #iConsecutivoTipoEndoso').val(type); 
-            fn_popups.resaltar_ventana(form); 
+            if(type == '1'){ var form = "frm_endorsements_unit";} 
+            else if(type == '2'){var form = "frm_endorsements_driver";}
+
+            if(form != ""){
+                $('#'+form+' input, #'+form+' select').removeClass('readonly').removeAttr('readonly').removeAttr('disabled');
+                $('#'+form+' :text, #'+form+' select').val('').removeClass('error');
+                $('#'+form+' .mensaje_valido').empty().append('The fields containing an (<span style="color:#ff0000;">*</span>) are required.');
+                $('#'+form+' .btn-1').show(); 
+                $('#'+form+' .msg-error').empty().hide();
+                $('#'+form+' #policies_endorsement').empty();
+                $('#'+form+' .frm_information').hide();              
+                $('#'+form+' :checkbox').prop("checked","");
+                $('#'+form+' .mensaje_valido + .field_item, #'+form+' .mensaje_valido').show(); 
+                $('#'+form+' #iConsecutivoTipoEndoso').val(type); 
+                fn_popups.resaltar_ventana(form);
+            }else{
+                
+            }
+             
         },
         edit : function (){
             $(fn_endorsement_co.data_grid + " tbody td .edit").bind("click",function(){

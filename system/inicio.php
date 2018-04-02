@@ -56,6 +56,37 @@ if ( !($_SESSION["acceso"] != '')  && ($_SESSION["usuario_actual"] != "" && $_SE
             </div>
         </div>
     <?php }?>
+    <?php if($_SESSION['acceso'] == "2"){ //USUARIOS COMPANIES?>
+        <div class="col_3 left">
+            <div class="bann">
+                <img src="images/home/img_monitor_homepage.png" border="0" width="344" height="254" alt="img_monitor_homepage.png">
+                <h3>The NEWEST</h3>
+                <p>Section Underconstruction</p>
+            </div>
+        </div>
+        <div class="col_3 left">
+            <div class="bann">
+                <img src="images/home/img_gears_homepage.png" border="0" width="160" height="135" alt="img_gears_homepage.png">  
+                <h3 style="color:#a22c2c;">Quick Access</h3>
+                <br>
+                <ul style="list-style:none;">
+                    <li><a href="mydrivers"><i class="fa fa-users"></i> My Drivers' list</a></li> 
+                    <li><a href="myvehicles"> <i class="fa fa-truck"></i> Me Vehicles' list</a></li>
+                    <li><a href="mypolicies"><i class="fa fa-file-text"></i> My Policies</a></li> 
+                    <li><a href="endorsements"><i class="fa fa-plus-circle"></i> Create a New Endorsement</a></li>
+                    <li><a href="certificates"> <i class="fa fa-cloud-upload"></i> Certificate Layouts</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="col_3 left">
+            <div class="bann">
+                <img src="images/home/img_faqs_homepage.png" border="0" width="262" height="46" alt="img_faqs_homepage.png">  
+                <h3>Frequently asked questions</h3>
+                <br>
+                <p>Section Underconstruction</p>
+            </div>
+        </div>
+    <?php }?>
     </div>
 </div>
 <!---- FOOTER ----->

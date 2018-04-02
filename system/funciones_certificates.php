@@ -11,6 +11,37 @@
     $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
     $transaccion_exitosa = true;
     
+    #VERIFICAR INFORMACION DEL CERTIFICADO:
+    $sql    = "SELECT iConsecutivo, DATE_FORMAT(dFechaVencimiento,'%m/%d/%Y') AS dFechaVencimiento, IF(dFechaVencimiento != '' AND dFechaVencimiento >= CURDATE(), 'OK','VENCIDO') AS EstatusCert ".
+              "FROM cb_certificate_file WHERE iConsecutivoCompania = '$company' ";
+    $result = $conexion->query($sql);
+    $rows   = $result->num_rows;
+    
+    $htmlCertificadoInfo  = "<span style=\"display: block;text-align: right;position: relative;top:-50px;font-size: 0.9em;margin-bottom:-30px;right: 15px;\">";
+    
+    if($rows > 0){ 
+          $items = $result->fetch_assoc();
+          if($items['EstatusCert'] != 'OK'){
+              if($items['dFechaVencimiento'] != ""){
+                  $htmlCertificadoInfo .= 'Your certificate has expired, please contact the system administrator to request it.';
+                  $htmlCertificadoInfo .= "<br><span style=\"margin-right:10px;\"><b>Expired Date: </b>".$items['dFechaVencimiento']."</span>";
+              }else{
+                  $htmlCertificadoInfo .= 'Your certificate has not been successfully loaded, please verify with our system administrator: '.
+                                          '<br><span style=\"margin-right:10px;\"><b><a href="mailto:systemsupport@solo-trucking.com">systemsupport@solo-trucking.com</a></b></span>';
+              }
+              $isVencido = true; 
+          }else{
+              $htmlCertificadoInfo .= 'Your certificate has been successfully loaded, please verify your information before sending it.';
+              $htmlCertificadoInfo .= "<br><span style=\"margin-right:10px;\"><b>Expired Date: </b>".$items['dFechaVencimiento']."</span>";
+              $isVencido = false;
+          }
+           
+    }else{
+        $htmlCertificadoInfo = "";
+    }  
+    
+    $htmlCertificadoInfo .= "</span>"; 
+    
     $registros_por_pagina = $_POST["registros_por_pagina"];
     $pagina_actual = (isset($_POST["pagina_actual"]) && $_POST["pagina_actual"] != '' ? $_POST["pagina_actual"] : 1);
     $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
@@ -60,20 +91,28 @@
                                        "<td>".$certificates['email']."</td>".  
                                        "<td>".$certificates['sCholderA']."</td>". 
                                        "<td>".$certificates['dFechaIngreso']."</td>". 
-                                       "<td>
-                                            <div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Layout\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>
-                                            <div class=\"btn-icon btn-left pdf\" title=\"View the PDF\" onclick=\"window.open('pdf_certificate.php".$variables."');\"><i class=\"fa fa-file-pdf-o\"></i> <span></span></div>
-                                            <div class=\"btn_send_email btn-icon send-email btn-left\" title=\"Send certificate to the customer\"><i class=\"fa fa-envelope\"></i> <span></span></div>
-                                            <div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete certificate layout\"><i class=\"fa fa-trash\"></i> <span></span></div>
-                                       </td>".                                                                                                                                                                                                        
-                                    "</tr>";
+                                       "<td><div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Layout\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>";
+                     if(!($isVencido)){
+                        $htmlTabla .= "<div class=\"btn-icon btn-left pdf\" title=\"View the PDF\" onclick=\"window.open('pdf_certificate.php".$variables."');\"><i class=\"fa fa-file-pdf-o\"></i> <span></span></div>".
+                                      "<div class=\"btn_send_email btn-icon send-email btn-left\" title=\"Send certificate to the customer\"><i class=\"fa fa-envelope\"></i> <span></span></div>";
+                     }
+                     $htmlTabla .= "<div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete certificate layout\"><i class=\"fa fa-trash\"></i> <span></span></div></td>".                                                                                                                                                                                                        
+                                   "</tr>";
                  }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}    
             }
             $conexion->rollback();
             $conexion->close();                                                                                                                                                                       
         }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}
     }
-    $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
+    $response = array(
+        "total"=>"$paginas_total",
+        "pagina"=>"$pagina_actual",
+        "tabla"=>"$htmlTabla",
+        "mensaje"=>"$mensaje",
+        "error"=>"$error",
+        "tabla"=>"$htmlTabla",
+        "certificate_info"=> "$htmlCertificadoInfo"
+        );   
     echo json_encode($response);
   } 
   function find_certificate(){
@@ -83,9 +122,9 @@
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
       $transaccion_exitosa = true;
       
-      $sql = "SELECT iConsecutivo FROM cb_certificate_file WHERE iConsecutivoCompania ='".$company."'";
+      $sql    = "SELECT iConsecutivo FROM cb_certificate_file WHERE iConsecutivoCompania = '$company' AND dFechaVencimiento >= CURDATE() ";
       $result = $conexion->query($sql);
-      $rows = $result->num_rows;    
+      $rows   = $result->num_rows;    
       if($rows > 0){ 
           $items = $result->fetch_assoc();
           if($items['iConsecutivo'] != ''){

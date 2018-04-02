@@ -42,7 +42,7 @@ function createKeyWS(){
   }
   return trim(md5(sha1($Key)));
 }
-function randomPassword() {
+function randomPassword() { 
     $alphabet = "abcdefghijklmnopqrstuwxyzABCDEFGHIJKLMNOPQRSTUWXYZ0123456789";
     //$alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789``-=~!@#$%^&*()_+,./<>?;:[]{}\|";
     $pass = array();

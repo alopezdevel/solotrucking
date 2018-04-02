@@ -209,7 +209,7 @@ var fn_solotrucking = {
             
             fechas = new Array(fecha_hoy, fecha_mes_inicio, fecha_mes_fin);
             return fechas;
-        }
+        }  
 }
 var struct_data_post = {
     action         : "",

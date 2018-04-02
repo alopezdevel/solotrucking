@@ -66,13 +66,13 @@
                      }else{
                         $btn_lock = "<div class=\"btn_status_user btn-icon btn-green btn-left\" onclick=\"fn_users.change_user_status(".$usuario["id"].",1);\" title=\"Unlock user access\"><i class=\"fa fa-unlock\"></i><span></span></div>";  
                      }
-                     
+                     $usuario['sNombreCompania'] != "" ? $nombreCompania = $usuario['sNombreCompania'] : $nombreCompania = "SOLO-TRUCKING INSURANCE";
                      $htmlTabla .= "<tr>
                                         <td>".$usuario['id']."</td>".
                                        "<td>".$usuario['sUsuario']."</td>".
                                        "<td>".$usuario['sCorreo']."</td>". 
                                        //"<td>".$usuario['sDescripcionTipo']."</td>".
-                                       "<td>".$usuario['sNombreCompania']."</td>".
+                                       "<td>".$nombreCompania."</td>".
                                        "<td>".$usuario['hActivado']."</td>".                                                                                                                                                                                                                       
                                        "<td>
                                             $btn_lock
@@ -110,14 +110,14 @@
             }                                                                                                                                                                       
         }else {$htmlTabla .="";}
         
-      $query = "SELECT iConsecutivo AS clave, sNombreCompania AS descripcion FROM ct_companias ORDER BY iConsecutivo ASC";
+      $query = "SELECT iConsecutivo AS clave, sUsdot , sNombreCompania AS descripcion FROM ct_companias ORDER BY sNombreCompania ASC";
       $result2 = $conexion->query($query);
       $companias = $result2->num_rows;
         if($companias > 0){ 
             $companies_select .= "<option value=\"\">Select an option...</option>";      
             while ($companies = $result2->fetch_assoc()) {
                if($companies["clave"] != ""){
-                     $companies_select .= "<option value=\"".$companies['clave']."\">".$companies['descripcion']."</option>";
+                     $companies_select .= "<option value=\"".$companies['clave']."\">".$companies['descripcion']." (".$companies['sUsdot'].")"."</option>";
                  }else{                             
                      $companies_select .="";
                  }    
@@ -290,50 +290,52 @@
       echo json_encode($response);
   }
   function send_email_confirmation(){
+      
       include("cn_usuarios.php"); //<-- conexion.
-      $codigo1 = randomPassword();
-      $codigo2 = randomPassword();
-      //$codigo2 = substr( md5(microtime()), 1, 8).$codigo1.substr( md5(microtime()), 1, 5);
+      
+      //Generando codigo de confirmacion:
+      $codigo1       = randomPassword();
+      $codigo2       = randomPassword();
       $codigoconfirm = $codigo1.$codigo2;
-      $ruta = "http://www.solotrucking.laredo2.net/system/confirm_mail_user.php?cuser=$codigoconfirm";
-      $ruta = trim($ruta);
-      $error = '0';
+      $ruta          = "http://".$_SERVER["HTTP_HOST"]."/system/confirm_mail_user.php?cuser=$codigoconfirm";
+      $ruta          = trim($ruta);
+      $error         = '0';
+      $iConsecutivo  = trim($_POST['clave']);
+      
+      //Begin:
       $conexion->autocommit(FALSE);
       $transaccion_exitosa = true;
       
-      $sql = "SELECT sUsuario, sCorreo, hClave, hActivado FROM cu_control_acceso WHERE iConsecutivo = '".trim($_POST['clave'])."' LOCK IN SHARE MODE";
+      $sql    = "SELECT sUsuario, sCorreo, hClave, hActivado ".
+                "FROM cu_control_acceso WHERE iConsecutivo = '$iConsecutivo' LOCK IN SHARE MODE";
       $result = $conexion->query($sql);
-      $items = $result->num_rows;
+      $items  = $result->num_rows;
+      
+      //actualizamos el codigo de confirmacion:
       if($items > 0){
-          //actualizamos el codigo de confirmacion:
-          $sql = "UPDATE cu_control_acceso SET sCodigoVal = '".$codigoconfirm."' WHERE iConsecutivo = '".trim($_POST['clave'])."'";
+          $sql = "UPDATE cu_control_acceso SET sCodigoVal = '$codigoconfirm', hActivado = '0' WHERE iConsecutivo = '$iConsecutivo'";
           $conexion->query($sql);   
-          if ($conexion->affected_rows < 1 ) {$error = "1";}     
+          if ($conexion->affected_rows < 1 ) {$error = "1";$transaccion_exitosa = false;}     
       }
-      if($error == '0'){
-          $usuario = $result->fetch_assoc();
-          //Proceso para enviar correo                 
-          require_once("./lib/phpmailer_master/class.phpmailer.php");
+      if($error == '0' && $transaccion_exitosa){
           
-          $mail = new PHPMailer(); 
-          $mail->IsSendmail(); // telling the class to use SendMail transport
-          //$mail->IsSMTP(); // telling the class to use SMTP
-          //$mail->SMTPDebug  = 2;
-          //$mail->SMTPAuth   = true;                  // enable SMTP authentication
-          $mail->Host       = "mail.solo-trucking.com"; // SMTP server
-          //$mail->Port       = 26;
-         // $mail->Username   = "customerservice@solo-trucking.com";
-          $mail->AddReplyTo("customerservice@solo-trucking.com","Solo-Trucking Insurance");
+           //ARMANDO E-MAIL:
+           #Building Email Body:                                   
+           require_once("./lib/phpmailer_master/class.phpmailer.php");
+           require_once("./lib/phpmailer_master/class.smtp.php"); 
+           
+           $usuario = $result->fetch_assoc();                
+           $subject = "Welcome to Solo-Trucking Insurance System, please confirm your account.";
           
-          $body .= "<!DOCTYPE html>".
-                    "<html>".
-                        "<head>".
-                            "<meta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\">".
-                            "<title>solo-trucking insurance e-mail</title>".
-                        "</head>";   
-          $body .= "<body style=\"font-family: Arial, Helvetica, sans-serif;font-size:12px;\">".
-                        "<table style=\"border:1px solid #6191df;border-radius:3px;padding:10px;width:95%; margin:5px auto;\">".
-                            "<tr>".
+          //header
+           $htmlEmail .= "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"\"http://www.w3.org/TR/html4/strict.dtd\"><html>
+                          <head><meta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\">
+                            <title>Solo-Trucking Insurance System</title>
+                          </head>";
+           //Body
+           $htmlEmail .= "<body>".
+                          "<table style=\"font-size:12px;border:1px solid #6191df;border-radius:3px;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">".
+                          "<tr>".
                             "<td>"."<h2 style=\"color:#313131;text-transform: uppercase; text-align:center;\">Welcome to Solo-Trucking Insurance System!</h2>"."</td>".
                             "</tr><tr>".
                             "<td>"."<b>".trim($usuario['sUsuario'])."</b>, Thank you for joining Solo-Trucking the best option to choose the most convenient for you insurance. Feel protected!"."</td>".
@@ -344,58 +346,83 @@
                             "<li style=\"line-height:15px;\"><strong style=\"color:#044e8d;\">Login: </strong>".$usuario['sCorreo']."</li>".
                             "<li style=\"line-height:15px;\"><strong style=\"color:#044e8d;\">Password: </strong>".$usuario['hClave']."</li>".
                             "</ul></td>". 
-                            "</tr><tr><td><a href=\"http://www.solo-trucking.com/\">www.solo-trucking.com</a></td></tr>".
-                            "<tr>".
-                            "<td><p style=\"color:#858585;margin:5px auto; text-align:left;font-size:10px;\">e-mail sent from Solo-trucking Insurance System.</p></td>".
-                            "</tr>".
-                        "</table>".
-                        "</body>";
-          //footer              
-          $body .= "</html>";
-          
-          $body =  utf8_encode($body);
-          
-          
-          $mail->SetFrom('customerservice@solo-trucking.com', 'Solo-Trucking Insurance');
-          $address = trim($usuario['sCorreo']);
-          $mail->AddAddress($address);          
-          $mail->Subject = "solo-trucking insurance system, please confirm your new account";
-          $mail->AltBody = "to view the message, please use an HTML compatible email viewer!";
-          $mail->MsgHTML($body);
-          $mail->IsHTML(true); 
-          
-          if(!$mail->Send()) {
-              $mensaje = "Error e-mail.";
-              $error = "1";  
-              $conexion->rollback();
-              $conexion->close;
-          }else{
-              $error = "0";
-              $conexion->commit();
-              $conexion->close();
-          }
+                            "</tr><tr><td><a href=\"$ruta\">Please click here to confirm your account.</a></td></tr>".
+                            "<tr><td><p style=\"color:#858585;margin:5px auto; text-align:left;font-size:10px;\">E-mail sent from Solo-trucking System.</p></tr></td>".  
+                          "</table>".
+                          "</body>";
+           //footer              
+           $htmlEmail .= "</html>";
+           
+           
+           #TERMINA CUERPO DEL MENSAJE
+           $mail = new PHPMailer();   
+           $mail->IsSMTP(); // telling the class to use SMTP
+           $mail->Host       = "mail.solo-trucking.com"; // SMTP server
+           //$mail->SMTPDebug  = 2; // enables SMTP debug information (for testing) 1 = errors and messages 2 = messages only
+           $mail->SMTPAuth   = true;                  // enable SMTP authentication
+           $mail->SMTPSecure = "TLS";                 // sets the prefix to the servier
+           $mail->Host       = "smtp.gmail.com";      // sets GMAIL as the SMTP server
+           $mail->Port       = 587;                   // set the SMTP port for the GMAIL server
+           $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
+           $mail->Password   = "SL09100242"; 
+           $mail->SetFrom('systemsupport@solo-trucking.com', 'Solo-Trucking Insurance');
+           $mail->AddReplyTo('systemsupport@solo-trucking.com', 'Solo-Trucking Insurance');
+           $mail->Subject    = $subject;
+           $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
+           $mail->MsgHTML($htmlEmail);
+           $mail->IsHTML(true);  
+           $mail->AddAddress(trim($usuario['sCorreo']));                          
+           
+           $mail_error = false;
+           if(!$mail->Send()){
+               $mail_error = true; 
+               $mail->ClearAddresses();
+               $transaccion_exitosa = false;
+               $error = "1";
+           }
+           if(!$mail_error){
+               $msj = "The e-mail was successfully sent.";
+           }
+           else{
+            $msj                 = "Error: The e-mail cannot be sent.";
+            $error               = "1";
+            $transaccion_exitosa = false;
+           }
      
       }else{
          $mensaje = "Error: e-mail confirmation to the user was not sent successfully.."; 
+      }
+      
+      if($transaccion_exitosa){
+            $conexion->commit();
+            $conexion->close();
+            
+      }else{
+            $conexion->rollback();
+            $conexion->close();
+            $error = "1"; 
+      
       }
       $response = array("msj"=>"$mensaje","error"=>"$error");   
       echo json_encode($response);
       
   }
   function confirm_user(){
-      $code = trim($_POST["code"]);
+      
       include("cn_usuarios.php");
-      //$conexion->begin_transaction();
       $conexion->autocommit(FALSE);
       $transaccion_exitosa = true;
-      $error = "0";
-      $sql = "SELECT iConsecutivo, sUsuario, sCorreo , hActivado FROM cu_control_acceso WHERE sCodigoVal = '".$code."'  LOCK IN SHARE MODE";
+      
+      $code   = trim($_POST["code"]);
+      $error  = "0";
+      $sql    = "SELECT iConsecutivo, sUsuario, sCorreo , hActivado FROM cu_control_acceso WHERE sCodigoVal = '$code' LOCK IN SHARE MODE";
       $result = $conexion->query($sql);
-      $rows = $result->num_rows;
+      $rows   = $result->num_rows;
+      
       if ($rows > 0) {
            while ($usuario = $result->fetch_assoc()) {
-               if($usuario['hActivado']  == "0"){
-                   $sql = "UPDATE cu_control_acceso SET  hActivado = '1' WHERE sCodigoVal = '".$code."'";
+               if($usuario['hActivado'] == "0"){
+                   $sql = "UPDATE cu_control_acceso SET  hActivado = '1', sCodigoVal = '' WHERE sCodigoVal = '".$code."'";
                    $conexion->query($sql);   
                    if ($conexion->affected_rows < 1 ) {
                         $error = "1";
@@ -452,6 +479,20 @@
         
       $response = array("msj"=>"$msj","error"=>"$error");   
       echo json_encode($response); 
+  }
+  function randomPass(){
+     
+      $total       = trim($_POST['chars']);
+      $alphabet    = "abcdefghijklmnopqrstuwxyzABCDEFGHIJKLMNOPQRSTUWXYZ0123456789";
+      $pass        = array();
+      $alphaLength = strlen($alphabet) - 1;
+    
+      for($i = 0; $i < $total; $i++){
+            $n      = rand(0, $alphaLength);
+            $pass[] = $alphabet[$n];
+      }
+      $pass     = implode($pass);   
+      echo $pass;
   }
   
 ?>

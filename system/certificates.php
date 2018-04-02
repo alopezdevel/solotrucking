@@ -84,6 +84,10 @@ var fn_certificate = {
                 fn_certificate.edit(); 
                 fn_certificate.delete_confirm();
                 fn_certificate.send_email();
+                
+                if(data.certificate_info != ""){
+                    $(fn_certificate.domroot+" .page-title").append(data.certificate_info);
+                }
             }
         }); 
     },
@@ -254,7 +258,7 @@ function onAbrirDownloadAdd(id){window.open('download_certificate_add.php?cve='+
 <div id="layer_content" class="main-section">
     <div id="ct_certificate" class="container">
         <div class="page-title">
-            <h1>Catalogs</h1>
+            <h1>CERTIFICATES</h1>
             <h2>Certificate Layouts</h2>
         </div>
         <table id="data_grid_certificates" class="data_grid">
@@ -267,7 +271,7 @@ function onAbrirDownloadAdd(id){window.open('download_certificate_add.php?cve='+
                 <td><input class="flt_date" type="text" placeholder="Income Date:"></td>
                 <td style='width:160px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick=""><i class="fa fa-search"></i></div>
-                    <div class="btn-icon-2 btn-left" title="New Certificate +"  onclick="fn_certificate.add();"><i class="fa fa-plus"></i></div>
+                    <div class="new btn-icon-2 btn-left" title="New Certificate +"  onclick="fn_certificate.add();"><i class="fa fa-plus"></i></div>
                 </td> 
             </tr>
             <tr id="grid-head2">

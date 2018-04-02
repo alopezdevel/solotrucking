@@ -1,8 +1,7 @@
 <?php $codigo = $_GET['cuser']; ?>
 <?php include("libs_header.php"); ?>
 <script type="text/javascript">   
-function inicio(){
-    
+function confirmarUser(){
     $.get = function(key)   {  
         key = key.replace(/[\[]/, '\\[');  
         key = key.replace(/[\]]/, '\\]');  
@@ -16,12 +15,9 @@ function inicio(){
             return results[1];  
         }  
     }  
-    var code = $.get("cuser");    
-    confirmarUser(code);
-    
-}
-function confirmarUser(code){ 
-     $.post("funciones_users.php", { accion: "confirm_user", code: code },
+    var code = $.get("cuser");
+    if(code != ""){
+        $.post("funciones_users.php", { accion: "confirm_user", code: code},
         function(data){ 
              switch(data.error){
              case "0": $("#correct").show();
@@ -34,10 +30,12 @@ function confirmarUser(code){
                        $("#error").show();
                        break;
              }
-         }
-         ,"json");
+        },"json");   
+    }else{
+        window.location = "http://www.solo-trucking.com/";
+    } 
 }
-//$(document).ready(confirmarUser);
+$(document).ready(confirmarUser);
 </script>
 <!DOCTYPE>
 <html>

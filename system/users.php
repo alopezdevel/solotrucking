@@ -41,7 +41,7 @@ var fn_users = {
         filtro : "",
         pagina_actual : "",
         sort : "ASC",
-        orden : "A.iConsecutivo",
+        orden : "sNombreCompania",
         init : function(){
             $('.num').keydown(fn_solotrucking.inputnumero());  
             //Cargar Tipos de Usuario y Companias:
@@ -100,6 +100,7 @@ var fn_users = {
         add : function(){
            $('#users_edit_form input, #users_edit_form select').val('').removeClass('error');
            $('#users_edit_form .mensaje_valido').empty().append('The fields containing an (*) are required.');
+           $("#users_edit_form .companies_option").hide();
            $('#hClave').attr('type','password');
            fn_popups.resaltar_ventana('users_edit_form');  
         },
@@ -114,7 +115,8 @@ var fn_users = {
                 },
                 function(data){
                     if(data.error == '0'){
-                       $('#users_edit_form input, #users_edit_form select').val('').removeClass('error'); 
+                       $('#users_edit_form input, #users_edit_form select').val('').removeClass('error');
+                       $("#users_edit_form .companies_option").hide(); 
                        eval(data.fields); 
                        $('#users_edit_form #hClave2').val($('#users_edit_form #hClave').val());
                        fn_users.validate_type();
@@ -144,7 +146,7 @@ var fn_users = {
            //valid = valid && fn_solotrucking.checkRegexp( sUsuario, /^[0-9a-zA-ZáéíóúàèìòùÀÈÌÒÙÁÉÍÓÚñÑüÜ_\s]+$/, "The field for the Name must contain only letters." );
            valid = valid && fn_solotrucking.checkLength( sCorreo, "E-mail", 1, 50 );
            valid = valid && fn_solotrucking.checkRegexp( sCorreo, emailRegex, "The field for the e-mail must contain 'Ex: user@domain.com'." );  
-           valid = valid && fn_solotrucking.checkLength( hClave, "Password", 6, 9 );
+           valid = valid && fn_solotrucking.checkLength( hClave, "Password", 6, 8 );
            
            if(hClave.val() != hClave2.val()){fn_solotrucking.actualizarMensajeAlerta('Please make sure that the passwords match.');hClave.addClass('error');hClave2.addClass('error');valid = false;}
            if(iConsecutivoTipoUsuario.val() == ''){fn_solotrucking.actualizarMensajeAlerta('Please check the user type field has a value.');iConsecutivoTipoUsuario.addClass('error');valid=false;}
@@ -195,7 +197,7 @@ var fn_users = {
         user_email_confirm : function(){
             $(fn_users.data_grid + " tbody .btn_confirm_email").bind("click",function(){
                var clave = $(this).parent().parent().find("td:eq(0)").html();
-               var user = $(this).parent().parent().find("td:eq(1)").html();
+               var user  = $(this).parent().parent().find("td:eq(1)").html();
                $.post("funciones_users.php",{accion:"send_email_confirmation", clave: clave},
                 function(data){
                     if(data.error == '0'){
@@ -271,7 +273,7 @@ var fn_users = {
         filtraInformacion : function(){
             fn_users.pagina_actual = 0;
             fn_users.filtro = "";
-            if($(fn_users.data_grid+" .flt_id").val() != ""){ fn_users.filtro += "iConsecutivo|"+$(fn_users.data_grid+" .flt_id").val()+","}
+            if($(fn_users.data_grid+" .flt_id").val() != ""){ fn_users.filtro += "A.iConsecutivo|"+$(fn_users.data_grid+" .flt_id").val()+","}
             if($(fn_users.data_grid+" .flt_name_user").val() != ""){ fn_users.filtro += "sUsuario|"+$(fn_users.data_grid+" .flt_name_user").val()+","} 
             if($(fn_users.data_grid+" .flt_email_user").val() != ""){ fn_users.filtro += "sCorreo|"+$(fn_users.data_grid+" .flt_email_user").val()+","} 
             //if($(fn_users.data_grid+" .flt_type_user").val() != ""){ fn_users.filtro += "sDescripcionTipo|"+$(fn_users.data_grid+" .flt_type_user").val()+","} 
@@ -283,8 +285,21 @@ var fn_users = {
             $("#view_password").bind("click",function(){ 
                  $('#hClave').attr('type','text');
             });
+        },
+        randomPass : function(input_name){
+            $.ajax({             
+                type:"POST", 
+                url:"funciones_users.php", 
+                data:{accion:"randomPass","chars":8},
+                async : true,
+                dataType : "text",
+                success : function(data){                               
+                    if(data != ""){
+                        $("#"+input_name).val(data);
+                    }
+                }
+           });  
         }  
-            
 }    
 $(document).ready(inicio);  
 </script> 
@@ -295,7 +310,7 @@ $(document).ready(inicio);
             <h2>USERS</h2>
         </div>
         <table id="data_grid_users" class="data_grid">
-        <thead id="grid-head2">
+        <thead>
             <tr id="grid-head1">
                 <td style='width:45px;'><input class="flt_id" class="numeros" type="text" placeholder="ID:"></td>
                 <td><input class="flt_name_user" type="text" placeholder="Name:"></td>
@@ -309,7 +324,7 @@ $(document).ready(inicio);
                 </td> 
             </tr>
             <tr id="grid-head2">
-                <td class="etiqueta_grid down" onclick="fn_users.ordenamiento('iConsecutivo',this.cellIndex);">ID</td> 
+                <td class="etiqueta_grid down" onclick="fn_users.ordenamiento('A.iConsecutivo',this.cellIndex);">ID</td> 
                 <td class="etiqueta_grid"      onclick="fn_users.ordenamiento('sUsuario',this.cellIndex);">Name</td>
                 <td class="etiqueta_grid"      onclick="fn_users.ordenamiento('sCorreo',this.cellIndex);">E-mail</td>
                 <!--<td class="etiqueta_grid"      onclick="fn_users.ordenamiento('sDescripcionTipo',this.cellIndex);">User Type</td> -->
@@ -373,7 +388,12 @@ $(document).ready(inicio);
             <div class="field_item">
                 <label>Password <span style="color:#ff0000;">*</span>: (6 to 8 characters)</label>  
                 <input tabindex="3" id="hClave" name="hClave" type="password" maxlength="9" style="width:90%;float:left;margin-right:1%">
-                <div id="view_password" class="btn-icon-2 btn-left" title="View Password" style="position: relative;top: 10px;"><i class="fa fa-eye"></i></div> 
+                <div id="view_password" class="btn-icon-2 btn-left" title="View Password" style="position: relative;top: 6px;">
+                <i class="fa fa-eye"></i>
+                </div> 
+                <div class="btn-icon-2 btn-left" title="Generate a Random Password" style="position: relative;top: 6px;" onclick="fn_users.randomPass('hClave');">
+                <i class="fa fa-refresh"></i>
+                </div> 
             </div>
             <div class="field_item" style="clear:both;">
                 <label>Repeat Password <span style="color:#ff0000;">*</span>:</label>  
