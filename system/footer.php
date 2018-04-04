@@ -4,3 +4,5 @@
     <a href="mailto:systemsupport@solo-trucking.com" target="_blank" style="color:#c1dff7;">systemsupport@solo-trucking.com</a> or call us: (956) 606-4478</div>
     <div class="copyright">Solo-Trucking Insurance Agency © . All rights reserved.</div>
 </footer>
+</body>
+</html>
