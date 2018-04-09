@@ -109,26 +109,48 @@
   } 
   function get_company_policies(){
       include("cn_usuarios.php");   
-      $company = $_SESSION['company']; 
-      $error = "0";
-      $mensaje = "";
+      $company     = $_SESSION['company']; 
+      $error       = "0";
+      $mensaje     = "";
       $check_items = "";
       
-      $query = "SELECT A.iConsecutivo, sNumeroPoliza, sName, sDescripcion ".
-               "FROM ct_polizas A ".
-               "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
-               "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
-               "WHERE A.iConsecutivoCompania = '$company' AND A.iDeleted = '0'";
+      $query  = "SELECT A.iConsecutivo, sNumeroPoliza, C.sName AS BrokerName,D.iConsecutivo AS iTipoPoliza, sDescripcion, E.sName AS InsuranceName ".
+                "FROM ct_polizas          AS A ".
+                "LEFT JOIN ct_brokers     AS C ON A.iConsecutivoBrokers = C.iConsecutivo ". 
+                "LEFT JOIN ct_tipo_poliza AS D ON A.iTipoPoliza = D.iConsecutivo ".
+                "LEFT JOIN ct_aseguranzas AS E ON A.iConsecutivoAseguranza = E.iConsecutivo ".
+                "WHERE A.iConsecutivoCompania = '$company' AND A.iDeleted = '0' AND dFechaCaducidad >= CURDATE()";
       $result = $conexion->query($query);
-      $rows = $result->num_rows;   
+      $rows   = $result->num_rows;   
       
       if($rows > 0){    
         while ($items = $result->fetch_assoc()){
-           $check_items .= "<input class=\"num_policies\" type=\"checkbox\" value=\"".$items['iConsecutivo']."\" ><label class=\"check-label\"> ".$items['sNumeroPoliza']." / ".$items['sDescripcion']." / ".$items['sName']."</label><br>"; 
+            
+           switch($items['iTipoPoliza']){
+               case '1' : $tipoPoliza = "PD"; break;
+               case '2' : $tipoPoliza = "MTC"; break;
+               case '3' : $tipoPoliza = "AL"; break;
+               case '5' : $tipoPoliza = "MTC"; break;
+           } 
+           #checkbox
+           $check_items .= "<input class=\"num_policies $tipoPoliza\" type=\"checkbox\" value=\"".$items['iConsecutivo']."\">".
+                           "<label class=\"check-label\"> ".$items['sNumeroPoliza']." / ".$items['sDescripcion']."</label><br>"; 
+           #table
+           if($items["sNumeroPoliza"] != ""){
+                 $htmlTabla .= "<tr>".
+                               "<td style=\"border: 1px solid #dedede;\">".$items['sNumeroPoliza']."</td>".
+                               "<td style=\"border: 1px solid #dedede;\">".$items['BrokerName']."</td>".
+                               "<td style=\"border: 1px solid #dedede;\">".$items['InsuranceName']."</td>". 
+                               "<td style=\"border: 1px solid #dedede;\">".$items['sDescripcion']."</td>".
+                               "</tr>";
+                                   
+           }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}    
         }
+      }else{
+          $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";
       }
 
-      $response = array("checkboxes"=>"$check_items","mensaje"=>"$mensaje","error"=>"$error");   
+      $response = array("checkboxes"=>"$check_items","mensaje"=>"$mensaje","error"=>"$error","policies_information"=>"$htmlTabla");   
       echo json_encode($response);
       
   }
@@ -305,7 +327,7 @@
           if($_POST['edit_mode'] == 'true'){
             #UPDATE DATA:
             foreach($_POST as $campo => $valor){
-                if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo" and $campo != "sDriver" and $campo != "sUnitTrailer"){ //Estos campos no se insertan a la tabla
+                if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivo" && $campo != "sDriver" && $campo != "sUnitTrailer" && $campo != "iConsecutivoPolizas"){ //Estos campos no se insertan a la tabla
                     array_push($valores,"$campo='".trim($valor)."'"); 
                 }
             }
@@ -327,7 +349,7 @@
           }else{
             #INSERT DATA:
             foreach($_POST as $campo => $valor){
-                if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo" and $campo != "sDriver" and $campo != "sUnitTrailer"){ //Estos campos no se insertan a la tabla
+                if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo" and $campo != "sDriver" and $campo != "sUnitTrailer" and $campo != "iConsecutivoPolizas"){ //Estos campos no se insertan a la tabla
                     array_push($campos,$campo); 
                     array_push($valores,trim($valor));
                 }   
@@ -354,12 +376,30 @@
           //TRANSACTION...
           if($sql != ""){
               if($conexion->query($sql)){
-                  $_POST['edit_mode'] != 'true' ? $iConsecutivoClaim = $conexion->insert_id :  $iConsecutivoClaim = "";
-                  $conexion->commit();
-                  $conexion->close();
-              }else{
-                 $conexion->rollback();
-                 $conexion->close(); 
+                  $_POST['edit_mode'] != 'true' ? $iConsecutivoClaim = $conexion->insert_id :  $iConsecutivoClaim = trim($_POST['iConsecutivo']);
+                  
+                  //Actualizar tabla de polizas:
+                  /*if($_POST['iConsecutivoPolizas'] != ""){
+                      
+                      if($_POST['edit_mode']){ 
+                          $query   = "DELETE FROM cb_claim_poliza WHERE iConsecutivoClaim = '$iConsecutivoClaim'";
+                          $success = $conexion->query($query);
+                          if(!($success)){$transaccion_exitosa = false;}
+                      }  
+                      if($transaccion_exitosa){ 
+                          $polizas = explode("|",$_POST['iConsecutivoPolizas']);
+                          $count   = count($polizas);
+                          
+                          for($x=0;$x < $count;$x++){
+                              $query   = "INSERT INTO cb_claim_poliza (iConsecutivoClaim,iConsecutivoPoliza) ".
+                                         "VALUES('$iConsecutivoClaim','".$polizas[$x]."')"; 
+                              $success = $conexion->query($query);
+                              if(!($success)){$transaccion_exitosa = false;}
+                          }
+                      }
+                  }  */  
+          
+              }else{ 
                  $error = "1";
                  $mensaje = "The data was not saved properly, please try again.";
               }
@@ -372,6 +412,9 @@
           $error = '1';
           $mensaje = "Error: Please select a driver or unit/trailer of your lists.";
       }
+      
+      if($transaccion_exitosa && $error = "0"){$conexion->commit();$conexion->close();}
+      else{$conexion->rollback();$conexion->close();}
       
       $response = array("error"=>"$error","msj"=>"$mensaje", "iConsecutivoClaim" => "$iConsecutivoClaim");
       echo json_encode($response);
@@ -387,7 +430,8 @@
       $company = $_SESSION['company'];
       $conexion->autocommit(FALSE);
       
-      $sql = "SELECT A.iConsecutivo,A.iConsecutivoCompania,sMensaje,DATE_FORMAT(dHoraIncidente,'%H:%i') AS dHoraIncidente, DATE_FORMAT(dFechaIncidente,'%m/%d/%Y') AS dFechaIncidente,sCiudad,sEstado,CONCAT(B.iConsecutivo,'-',sNombre) AS sDriver, CONCAT(C.iConsecutivo,'-',sVIN) AS sUnitTrailer ".
+      $sql = "SELECT A.iConsecutivo,A.iConsecutivoCompania,sMensaje,DATE_FORMAT(dHoraIncidente,'%H:%i') AS dHoraIncidente, DATE_FORMAT(dFechaIncidente,'%m/%d/%Y') AS dFechaIncidente,sCiudad,sEstado,CONCAT(B.iConsecutivo,'-',sNombre) AS sDriver, CONCAT(C.iConsecutivo,'-',sVIN) AS sUnitTrailer, ".
+             "sDescripcionSuceso, eDanoTerceros, eDanoFisico, eDanoMercancia ".   
              "FROM cb_claims A ".
              "LEFT JOIN ct_operadores B ON A.iConsecutivoOperador = B.iConsecutivo ".
              "LEFT JOIN ct_unidades C ON A.iConsecutivoUnidad = C.iConsecutivo ".
@@ -399,7 +443,7 @@
         $llaves  = array_keys($data);
         $datos   = $data;
         foreach($datos as $i => $b){ 
-            if($i == 'sMensaje'){
+            if($i == 'sDescripcionSuceso'){
                $descripcion = utf8_decode(utf8_encode($datos[$i]));  
             }else{
                $fields .= "\$('#$domroot :input[id=".$i."]').val('".htmlentities($datos[$i])."');\n"; 
@@ -614,6 +658,20 @@
         
       $response = array("msj"=>"$msj","error"=>"$error");   
       echo json_encode($response); 
+  }
+  
+  #Funcion para solo-trucking users:
+  function definir_compania(){
+       $mensaje = "";
+       $error   = "0";
+       if($_POST['iConsecutivoCompania'] != ""){
+          $_SESSION["company"] = $_POST['iConsecutivoCompania'];  
+       }else{
+          $error = "1";
+          $_SESSION["company"] = ""; 
+       }
+       $response = array("mensaje"=>"$mensaje","error"=>"$error");   
+       echo json_encode($response);
   }
   
 ?>

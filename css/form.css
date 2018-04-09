@@ -49,7 +49,7 @@ form input[type=radio], form input[type=checkbox], .form input[type=radio], .for
 .lbl-check{position: relative;padding: 5px;top: 2px;height: 27px;color: #33568f!important;}
 .lbl-check input{position: relative;top: 5px;margin-right: 2px;}
 
-select{height:45px!important;width: 100%!important;}
+select{height:35px!important;width: 100%!important;}
 textarea{height:120px!important;padding-top:10px!important;}
 .frm-btns{
     width:99%;
@@ -214,7 +214,7 @@ button:hover, .btn-1:hover{background-color:#61b1df;}
 }
 
 /*---campos de solo lectura ---*/
-.readonly, input[readonly="readonly"]{background: #ececec;color:#585858!important;border: 1px solid #c0c0c0;}
+.readonly, input[readonly="readonly"], select[disabled="disabled"]{background: #ececec;color:#585858!important;border: 1px solid #c0c0c0;}
 .check-label{
     color: #044c8b!important;
     position: relative;

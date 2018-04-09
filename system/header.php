@@ -26,7 +26,7 @@
 		</ul>
         <ul class="main-nav">  
       		<?php if($_SESSION['acceso'] == "1"){ ?>
-      		<!---- Admin MASTER navigation ---->
+      		<!-- Admin MASTER navigation -->
       			<li><a href="inicio">Home</a></li>
       			<li class="submenu"><a href="#">CATALOGS</a>
                     <ul>
@@ -40,13 +40,18 @@
                 <li><a href="policies">POLICIES</a></li>
                 <li class="submenu"><a href="#">Endorsements</a>
                    <ul>
-                        <li><a href="endorsements"><i class="fa fa-plus-circle"></i>Create a New Endorsement</a></li>
+                        <li><a href="endorsements"><i class="fa fa-plus-circle"></i>New Endorsement</a></li>
                         <li><a href="endorsement_request"><i class="fa fa-users"></i>Applications to Drivers</a></li>
                         <li><a href="endorsement_request_units"> <i class="fa fa-truck"></i> Applications to Units</a></li> 
                         <li><a href="endorsement_files"> <i class="fa fa-file-text"></i> UPLOAD FILES</a></li>  
                     </ul>
                 </li>
-                <li><a href="claims_requests">CLAIMS</a></li> 
+                <li class="submenu"><a href="#">CLAIMS</a>
+                    <ul>
+                        <li><a href="claims"><i class="fa fa-plus-circle"></i>New Claim</a></li>
+                        <li><a href="claims_requests"><i class="fa fa-envelope"></i>Applications for Claims</a></li>
+                    </ul>
+                </li> 
                 <li class="submenu"><a href="#">QUOTES</a>
                    <ul>
                         <li><a href="quote_formats"><i class="fa fa-file-text"></i> QUOTE FORMATS</a></li>  
@@ -58,9 +63,9 @@
                         <li><a href="bitacora_actividades"><i class="fa fa-list-alt"></i> SYSTEM DEVELOPMENT ACTIVITIES</a></li>
                     </ul>
                 </li>
-            <!---- End Admin navigation ---->
+            <!-- End Admin navigation -->
             <?php } if($_SESSION['acceso'] == "4"){?>
-              <!---- SOLO-TRUCKING USER ---->
+              <!-- SOLO-TRUCKING USER -->
                   <li><a href="inicio">Home</a></li>
                   <li class="submenu"><a href="#">CATALOGS</a>
                     <ul>
@@ -74,7 +79,7 @@
                   <li><a href="policies">POLICIES</a></li>
                   <li class="submenu"><a href="#">Endorsements</a>
                    <ul>
-                        <li><a href="endorsements"><i class="fa fa-plus-circle"></i>Create a New Endorsement</a></li>
+                        <li><a href="endorsements"><i class="fa fa-plus-circle"></i>New Endorsement</a></li>
                         <li><a href="endorsement_request"><i class="fa fa-users"></i>Applications to Drivers</a></li>
                         <li><a href="endorsement_request_units"> <i class="fa fa-truck"></i> Applications to Units</a></li> 
                         <li><a href="endorsement_files"> <i class="fa fa-file-text"></i> UPLOAD FILES</a></li> > 
@@ -92,7 +97,7 @@
                     </ul>
                 </li> 
             <?php } if($_SESSION['acceso'] == "3"){ //SOLO TRUCKING ADMIN?>
-              <!---- Admin MASTER navigation ---->
+              <!-- Admin MASTER navigation -->
                   <li><a href="inicio">Home</a></li>
                   <li class="submenu"><a href="#">CATALOGS</a>
                     <ul>
@@ -106,7 +111,7 @@
                   <li><a href="policies">POLICIES</a></li>
                   <li class="submenu"><a href="#">Endorsements</a>
                    <ul>
-                        <li><a href="endorsements"><i class="fa fa-plus-circle"></i>Create a New Endorsement</a></li>
+                        <li><a href="endorsements"><i class="fa fa-plus-circle"></i>New Endorsement</a></li>
                         <li><a href="endorsement_request"><i class="fa fa-users"></i>Applications to Drivers</a></li>
                         <li><a href="endorsement_request_units"> <i class="fa fa-truck"></i> Applications to Units</a></li> 
                         <li><a href="endorsement_files"> <i class="fa fa-file-text"></i> UPLOAD FILES</a></li> 
@@ -123,7 +128,7 @@
                         <li><a href="bitacora_actividades"><i class="fa fa-list-alt"></i> SYSTEM DEVELOPMENT ACTIVITIES</a></li>
                     </ul>
                 </li>
-            <!---- COMPANY NAVIGATION --->	
+            <!-- COMPANY NAVIGATION -->	
             <?php }  if($_SESSION['acceso'] == "2"){ ?>
       			<li><a href="inicio">Home</a></li>
                 <li style="display: none;"><a href="#">MY COMPANY</a></li>
@@ -140,7 +145,7 @@
             	<li style="display: none;"><a href="#">Quotes</a></li> */?>
             	<li style="display: none;"><a href="#">Support</a></li>	
             <?php } ?>
-            <!---- END COMPANY NAVIGATION ----> 
+            <!-- END COMPANY NAVIGATION --> 
       	</ul>
         <!--<a class="res-nav_click right" href="#"><i class="fa-bars"></i></a>-->
     </div>

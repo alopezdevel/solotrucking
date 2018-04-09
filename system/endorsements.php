@@ -4,7 +4,7 @@ if (!($_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  
     header("Location: login.php");
     exit;
 }else{ ?>
-<!---- HEADER ----->
+<!-- HEADER -->
 <?php include("header.php"); ?>  
 <script type="text/javascript"> 
 $(document).ready(inicio);
@@ -1299,6 +1299,7 @@ var fn_endorsement_co = {
                 <tr id="grid-head2"> 
                     <td class="etiqueta_grid">Policy Number</td>
                     <td class="etiqueta_grid">Broker</td>
+                    <td class="etiqueta_grid">Insurance</td> 
                     <td class="etiqueta_grid">Policy Type</td>
                 </tr>
             </thead>

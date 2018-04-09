@@ -1,20 +1,81 @@
-﻿<?php session_start();    
-if ( !($_SESSION["acceso"] == '2'  && $_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  )  ){ //No ha iniciado session, redirecciona a la pagina de login
+<?php 
+session_start();    
+if (!($_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  )){
+    //No ha iniciado session, redirecciona a la pagina de login
     header("Location: login.php");
     exit;
 }else{ ?>
-<!---- HEADER ----->
+<!-- HEADER -->
 <?php include("header.php"); ?>  
 <script type="text/javascript"> 
 $(document).ready(inicio);
 function inicio(){  
         $.blockUI();
         var usuario_actual = <?php echo json_encode($_SESSION['usuario_actual']);?>        
-        var tipo_usuario = <?php echo json_encode($_SESSION['acceso']);?> 
+        var tipo_usuario   = <?php echo json_encode($_SESSION['acceso']);?> 
         validapantalla(usuario_actual);
-        fn_claims.init();
-        fn_claims.fillgrid();
         $.unblockUI();
+        
+        //Si el usuario es diferente de company...
+        if(tipo_usuario != '2'){
+            
+            //Declaramos dialogo:
+            $('#dialog_select_company').dialog({
+                modal: true,
+                autoOpen: false,
+                width : 550,
+                height : 200,
+                resizable : false,
+                dialogClass: "without-close-button",
+                buttons : {
+                    'CONTINUE' : function() {
+                        var clave = $('#dialog_select_company #iConsecutivoCompania').val();
+                        var name  = $('#dialog_select_company #iConsecutivoCompania option:selected').text(); 
+                        //Crear variable de sesion Temp:
+                        $.ajax({             
+                            type:"POST", 
+                            url:"funciones_claims.php", 
+                            data:{accion:"definir_compania",'iConsecutivoCompania':clave},
+                            async : true,
+                            dataType : "json",
+                            success : function(data){
+                                switch(data.error){
+                                    case '0':
+                                        $("#ct_claims h2").empty().append('APPLICATIONS TO THE COMPANY: ' + name); 
+                                        fn_claims.init();
+                                        fn_claims.fillgrid();
+                                        $('#dialog_select_company').dialog('close');
+                                    break;
+                                    case '1':  fn_solotrucking.mensaje('Please select a valid company.');break;  
+                                }
+                                
+                                
+                            }
+                        });
+                    },
+                     'CANCEL' : function(){
+                        $(this).dialog('close');
+                        location.href= "inicio.php";
+                    }
+                }
+            });
+            
+            //Cargamos catalogo:
+            $.ajax({             
+                type:"POST", 
+                url:"catalogos_generales.php", 
+                data:{accion:"get_companies"},
+                async : true,
+                dataType : "json",
+                success : function(data){$("#dialog_select_company #iConsecutivoCompania").empty().append(data.select);}
+            });
+            
+            $('#dialog_select_company').dialog('open');
+        }
+        else{
+            fn_claims.init();
+            fn_claims.fillgrid();
+        }
     
 }  
 function validapantalla(usuario){if(usuario == ""  || usuario == null){location.href= "login.php";}  }                   
@@ -54,7 +115,7 @@ var fn_claims = {
             }); 
             
             //GET POLICIES:
-            /*$.ajax({             
+            $.ajax({             
                 type:"POST", 
                 url:"funciones_claims.php", 
                 data:{accion:"get_company_policies"},
@@ -62,10 +123,11 @@ var fn_claims = {
                 dataType : "json",
                 success : function(data){                               
                     if(data.error == '0'){
-                        $("#edit_form .company_policies").empty().append(data.checkboxes); 
+                        $("#edit_form .company_policies").empty().append(data.checkboxes).hide();
+                        $("#info_policies table tbody").empty().append(data.policies_information);  
                     }
                 }
-            }); */
+            }); 
             $.ajax({             
                 type:"POST", 
                 url:"catalogos_generales.php", 
@@ -118,7 +180,7 @@ var fn_claims = {
                     $("#sUnitTrailer").autocomplete();
                     $("#sUnitTrailer").autocomplete({source:datos});
                 }
-            });sUnitTrailer
+            });
             
             
             // UPLOAD FILES SCRIPT
@@ -243,14 +305,18 @@ var fn_claims = {
             
                 fn_claims.fillgrid();
        },
-       add : function(){
-          $('#edit_form input, #edit_form select, #edit_form textarea').val('').removeClass('error');
+        add : function(){
+          $('#general_information input:text, #general_information select, #general_information textarea,#general_information input:hidden').val('').removeClass('error');
+          $('#edit_form input[type=checkbox]').prop("checked",false); 
           $('#edit_form .mensaje_valido').empty().append('The fields containing an (<span style="color:#ff0000;">*</span>) are required.');
           $('#edit_form .p-header h2').empty().append('CLAIMS - NEW APPLICATION');
+          $("#edit_form .policy_apply select").val("NOAPPLY").prop("disabled","disabled").addClass("readonly");
+         
           fn_solotrucking.get_date(".fecha"); 
+          fn_claims.revisar_tipos_polizas();
           fn_popups.resaltar_ventana('edit_form'); 
-       },
-       save : function(){
+        },
+        save : function(){
            var valid = true;
            todosloscampos = $('#edit_form :text, #edit_form select');
            todosloscampos.removeClass("error");
@@ -271,7 +337,7 @@ var fn_claims = {
            if(!valid){fn_solotrucking.mensaje("Please select at least one driver or one unit from your list.");} 
            
            //Validando mensaje:
-           valid = valid && fn_solotrucking.checkLength($('#edit_form #sMensaje'),'Message',5,1000);
+           valid = valid && fn_solotrucking.checkLength($('#edit_form #sDescripcionSuceso'),'Message',5,1000);
            if(!valid){fn_solotrucking.mensaje("Please write what happened.");} 
            
            if($('#edit_form #sEstado').val() == ''){valid = false; $(this).addClass('error');}
@@ -279,10 +345,20 @@ var fn_claims = {
            if($('#edit_form #sCiudad').val() == ''){valid = false; $(this).addClass('error');}
            if(!valid){fn_solotrucking.mensaje("Please select the city where the incident occurred.");} 
            
+           //Revisando polizas en las que aplica:
+           var polizas = "";
+           $("#edit_form .company_policies input:checkbox").each(function(){
+               if($(this).is(':checked')){
+                  if(polizas != ""){polizas +="|"+$(this).val();}else{polizas = $(this).val();} 
+               }
+           });
+           
+           if(polizas != ""){$("#general_information #iConsecutivoPolizas").val(polizas);}
+           
            if(valid){
                if($('#edit_form #iConsecutivo').val() != ''){struct_data_post.edit_mode = "true";}else{struct_data_post.edit_mode = "false";}         
-               struct_data_post.action="save_claim";
-               struct_data_post.domroot= "#edit_form #general_information"; 
+               struct_data_post.action  = "save_claim";
+               struct_data_post.domroot = "#edit_form #general_information"; 
                $.post("funciones_claims.php",struct_data_post.parse(),
                function(data){
                     switch(data.error){
@@ -297,7 +373,7 @@ var fn_claims = {
            
            
        },
-       edit: function(){
+        edit: function(){
             $(fn_claims.data_grid + " tbody td .edit").bind("click",function(){
                     var clave = $(this).parent().parent().find("td:eq(0)").html();
                     $.post("funciones_claims.php",
@@ -308,9 +384,10 @@ var fn_claims = {
                     },
                     function(data){
                         if(data.error == '0'){
-                           $('#edit_form input, #edit_form textarea').val('').removeClass('error'); 
+                           $('#general_information input:text, #general_information select, #general_information textarea,#general_information input:hidden').val('').removeClass('error'); 
+                           $('#edit_form input:checkbox').prop("checked",false);  
                            eval(data.fields); 
-                           $('#edit_form #sMensaje').val(data.descripcion);
+                           $('#edit_form #sDescripcionSuceso').val(data.descripcion);
                            //Llenar grid de archivos:
                            fn_claims.files.iConsecutivoClaim = clave;
                            fn_claims.files.fillgrid();
@@ -321,7 +398,7 @@ var fn_claims = {
             },"json");
             });
        },
-       send : function(){
+        send : function(){
          $(fn_claims.data_grid + " tbody td .btn_send").bind("click",function(){
                     var clave = $(this).parent().parent().find("td:eq(0)").html();
                     $.post("funciones_claims.php",{accion:"send_claim", clave: clave},
@@ -331,7 +408,7 @@ var fn_claims = {
             },"json");
          });  
        },
-       unsent : function(){
+        unsent : function(){
           $(fn_claims.data_grid + " tbody td .btn_unsent").bind("click",function(){
                     var clave = $(this).parent().parent().find("td:eq(0)").html();
                     $.post("funciones_claims.php",{accion:"unsent_claim", clave: clave},
@@ -341,7 +418,28 @@ var fn_claims = {
             },"json");
          });   
        },
-       files : {
+        //VALIDACIONES
+        revisar_tipos_polizas : function(){
+            $("#edit_form .company_policies input[type=checkbox]").each(function(){
+                if($(this).hasClass("PD")){$("#edit_form #eDanoFisico").val("").removeProp("disabled").removeClass("readonly");}
+                if($(this).hasClass("MTC")){$("#edit_form #eDanoMercancia").val("").removeProp("disabled").removeClass("readonly");}  
+                if($(this).hasClass("AL")){$("#edit_form #eDanoTerceros").val("").removeProp("disabled").removeClass("readonly");}  
+            });    
+        },
+        valida_tipo_dano : function(input){
+            if(input){
+                var tipo = input.prop("id");
+                if(tipo == "eDanoTerceros"){$("#edit_form .company_policies input[type=checkbox].AL").prop("checked",true);}
+                else{$("#edit_form .company_policies input[type=checkbox].AL").prop("checked",false);}
+                
+                if(tipo == "eDanoFisico"){$("#edit_form .company_policies input[type=checkbox].PD").prop("checked",true);}
+                else{$("#edit_form .company_policies input[type=checkbox].PD").prop("checked",false);}
+                 
+                if(tipo == "eDanoMercancia"){$("#edit_form .company_policies input[type=checkbox].MTC").prop("checked",true);} 
+                else{$("#edit_form .company_policies input[type=checkbox].MTC").prop("checked",false);}
+            }
+        },
+        files : {
            pagina_actual : "",
            sort : "ASC",
            orden : "iConsecutivo",
@@ -460,8 +558,7 @@ var fn_claims = {
                     $('#edit_form .p-container').animate({ scrollTop: 0 }, 1000); 
                 }
            }
-       }*/
-              
+       }*/        
 }    
 
  
@@ -472,6 +569,22 @@ var fn_claims = {
             <h1>CLAIMS</h1>
             <h2 style="margin-bottom: 5px;">CLAIMS APPLICATIONS</h2>
         </div>
+        <div id="info_policies">
+        <h3 class="popup-gridtit clear"></h3>
+        <p style="width: 98%;margin: 10px auto 5px;">Your claims will apply in following policies:</p>
+        <table class="popup-datagrid">
+            <thead>
+                <tr id="grid-head2"> 
+                    <td class="etiqueta_grid">Policy Number</td>
+                    <td class="etiqueta_grid">Broker</td> 
+                    <td class="etiqueta_grid">Insurance</td>
+                    <td class="etiqueta_grid">Policy Type</td>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        </div>
+        <br>
         <table id="data_grid" class="data_grid">
         <thead>
             <tr id="grid-head1">
@@ -541,41 +654,42 @@ var fn_claims = {
         </table> 
     </div>
 </div>
-<!---- FORMULARIOS ------>
+<!-- FORMULARIOS -->
 <div id="edit_form" class="popup-form">
     <div class="p-header">
         <h2>CLAIMS</h2>
-        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('edit_form');"><i class="fa fa-times"></i></div>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('edit_form');fn_claims.filtraInformacion();"><i class="fa fa-times"></i></div>
     </div>
     <div class="p-container">
     <p class="mensaje_valido" style="display:none;">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p> 
     <div>
         <form>
-            <!---<table>
+            <table>
              <tr>
              <td>
-                <div class="field_item"> 
+                <div class="field_item" style="display: none;"> 
                     <label style="margin-left:15px;">select the policies in which you want to apply your claim <span style="color:#ff0000;">*</span>:</label> 
                     <div class="company_policies" style="padding: 10px 10px 10px 23px;"></div>
                 </div>
              </td>
              </tr>
-            </table> ---->
-            <fieldset id="general_information">
+            </table> 
+            <fieldset>
                 <legend>INFORMATION FROM INCIDENT</legend>
-                <table style="width: 100%;">
+                <table id="general_information" style="width: 100%;">
                 <tr>
                     <td style="width: 50%;">
                     <div class="field_item">
                         <input id="iConsecutivo" type="hidden" value=""> 
+                        <input id="iConsecutivoPolizas" type="hidden" value=""> 
                         <label>Date: <span style="color:#ff0000;">*</span>:</label><br> 
-                        <input tabindex="1" id="dFechaIncidente" type="text" class="fecha" style="width: 85%;">
+                        <input tabindex="1" id="dFechaIncidente" type="text" class="fecha" style="width: 85%;" placeholder="MM/DD/YYYY">
                     </div>
                     </td>
                     <td style="width: 50%;">
                     <div class="field_item"> 
                         <label>Hour: <span style="color:#ff0000;">*</span>:</label><br>
-                        <input tabindex="1" id="dHoraIncidente" type="text" class="hora" title="Please capture the hour in 24/h format" style="width: 98%;">
+                        <input tabindex="1" id="dHoraIncidente" type="text" class="hora" title="Please capture the hour in 24/h format" style="width: 98%;" placeholder="HH:MM">
                     </div>
                     </td>
                 </tr>
@@ -595,9 +709,45 @@ var fn_claims = {
                 </tr>
                 <tr>
                     <td colspan="100%">
+                    <div class="field_item policy_apply"> 
+                        <label>There was damage to third parties? (Persons and/or properties) <span style="color:#ff0000;">*</span>:</label> 
+                        <select id="eDanoTerceros" onblur="fn_claims.valida_tipo_dano($(this));">
+                            <option value="NOAPPLY">NO APPLY</option>
+                            <option value="YES">YES</option> 
+                            <option value="NO">NO</option> 
+                        </select>
+                    </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="100%">
+                    <div class="field_item policy_apply"> 
+                        <label>There was damage to your Unit/Trailer?<span style="color:#ff0000;">*</span>:</label> 
+                        <select id="eDanoFisico" onblur="fn_claims.valida_tipo_dano($(this));">
+                            <option value="NOAPPLY">NO APPLY</option>
+                            <option value="YES">YES</option> 
+                            <option value="NO">NO</option> 
+                        </select>
+                    </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="100%">
+                    <div class="field_item policy_apply"> 
+                        <label>There was damage on your Cargo?<span style="color:#ff0000;">*</span>:</label> 
+                        <select id="eDanoMercancia" onblur="fn_claims.valida_tipo_dano($(this));">
+                            <option value="NOAPPLY">NO APPLY</option>
+                            <option value="YES">YES</option> 
+                            <option value="NO">NO</option> 
+                        </select>
+                    </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="100%">
                     <div class="field_item"> 
                         <label>What happend? <span style="color:#ff0000;">*</span>:</label> 
-                        <textarea tabindex="1" id="sMensaje" maxlenght="1000" style="resize: none;" title="please write what happend in the incident."></textarea>
+                        <textarea tabindex="1" id="sDescripcionSuceso" maxlenght="1000" style="resize: none;" title="please write what happend in the incident."></textarea>
                     </div>
                     </td>
                 </tr>
@@ -616,54 +766,46 @@ var fn_claims = {
                     </td>
                 </tr>
                 </table>
-            </fieldset>  
-            <fieldset style="clear: both;">
-                <legend>Files of Claim:</legend>
-                <table style="width: 100%;">
-                <tr>
-                    <td colspan="2">
-                    <table id="files_datagrid" class="popup-datagrid">
-                        <thead>
-                            <tr id="grid-head2">
-                                <td class="etiqueta_grid">File Name</td>
-                                <td class="etiqueta_grid">Type</td>
-                                <td class="etiqueta_grid">Size</td>
-                                <td class="etiqueta_grid" style="width: 100px;text-align: center;"><button id="btnFile" type="button" title="Please upload the pictures in JPG format">Upload file</button></td>
-                            </tr>
-                        </thead>
-                        <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No uploaded files.</td></tr></tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="100%">
-                                    <div class="datagrid-pages">
-                                        <input class="pagina_actual" type="text" readonly="readonly" size="3">
-                                        <label> / </label>
-                                        <input class="paginas_total" type="text" readonly="readonly" size="3">
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="100%">
-                                    <div class="datagrid-menu-pages">
-                                        <button class="pgn-inicio"    onclick="fn_claims.files.firstPage();" title="First page"><span></span></button>
-                                        <button class="pgn-anterior"  onclick="fn_claims.files.previousPage();" title="Previous"><span></span></button>
-                                        <button class="pgn-siguiente" onclick="fn_claims.files.nextPage();" title="Next"><span></span></button>
-                                        <button class="pgn-final"     onclick="fn_claims.files.lastPage();" title="Last Page"><span></span></button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                    </td>
-                </tr>
+                <table id="files_datagrid" class="popup-datagrid">
+                    <thead>
+                        <tr id="grid-head2">
+                            <td class="etiqueta_grid">File Name</td>
+                            <td class="etiqueta_grid">Type</td>
+                            <td class="etiqueta_grid">Size</td>
+                            <td class="etiqueta_grid" style="width: 100px;text-align: center;"><button id="btnFile" type="button" title="Please upload the pictures in JPG format">Upload file</button></td>
+                        </tr>
+                    </thead>
+                    <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No uploaded files.</td></tr></tbody>
+                    <tfoot>
+                    <tr><td colspan="100%">
+                            <div class="datagrid-pages">
+                                <input class="pagina_actual" type="text" readonly="readonly" size="3">
+                                <label> / </label>
+                                <input class="paginas_total" type="text" readonly="readonly" size="3">
+                            </div>
+                    </td></tr>
+                    <tr><td colspan="100%">
+                        <div class="datagrid-menu-pages">
+                            <button class="pgn-inicio"    onclick="fn_claims.files.firstPage();" title="First page"><span></span></button>
+                            <button class="pgn-anterior"  onclick="fn_claims.files.previousPage();" title="Previous"><span></span></button>
+                            <button class="pgn-siguiente" onclick="fn_claims.files.nextPage();" title="Next"><span></span></button>
+                            <button class="pgn-final"     onclick="fn_claims.files.lastPage();" title="Last Page"><span></span></button>
+                        </div>
+                    </td></tr>
+                    </tfoot>
                 </table>
             </fieldset>
             <button type="button" class="btn-1" onclick="fn_claims.save();">SAVE</button>
-            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('edit_form');" style="margin-right:10px;background:#e8051b;">CLOSE</button>
+            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('edit_form');fn_claims.filtraInformacion();" style="margin-right:10px;background:#e8051b;">CLOSE</button>
         </form> 
     </div>
     </div>
 </div>
+<!-- DIALOGOS -->
+<div id="dialog_select_company" title="SYSTEM MESSAGE" style="display:none;">
+    <p>Please select a company first:</p>
+    <form><div> <Select id="iConsecutivoCompania"><option value="">Select an option...</option></select></div></form>   
+</div> 
 <!---- FOOTER ----->
 <?php include("footer.php"); ?> 
 

@@ -3,7 +3,7 @@ if ( !($_SESSION["acceso"] != '2'  && $_SESSION["usuario_actual"] != "" && $_SES
     header("Location: login.php");
     exit;
 }else{ ?>
-<!---- HEADER ----->
+<!-- HEADER -->
 <?php include("header.php"); ?>  
 <script type="text/javascript"> 
 $(document).ready(inicio);
@@ -255,14 +255,14 @@ var fn_claims = {
             
                 fn_claims.fillgrid();
        },
-       add : function(){
+        add : function(){
           $('#edit_form :text, #edit_form select').val('').removeClass('error');
           $('#edit_form .mensaje_valido').empty().append('The fields containing an (<span style="color:#ff0000;">*</span>) are required.');
           $('#edit_form .p-header h2').empty().append('CLAIMS - NEW APPLICATION');
           fn_solotrucking.get_date(".fecha"); 
           fn_popups.resaltar_ventana('edit_form'); 
        },
-       save : function(){
+        save : function(){
            var valid = true;
            todosloscampos = $('#edit_form :text, #edit_form select');
            todosloscampos.removeClass("error");
@@ -283,7 +283,7 @@ var fn_claims = {
            if(!valid){fn_solotrucking.mensaje("Please select at least one driver or one unit from your list.");} 
            
            //Validando mensaje:
-           valid = valid && fn_solotrucking.checkLength($('#edit_form #sMensaje'),'Message',5,1000);
+           valid = valid && fn_solotrucking.checkLength($('#edit_form #sDescripcionSuceso'),'What is Happend?',5,1000);
            if(!valid){fn_solotrucking.mensaje("Please write what happened.");} 
            
            if($('#edit_form #sEstado').val() == ''){valid = false; $(this).addClass('error');}
@@ -308,7 +308,7 @@ var fn_claims = {
            
            
        },
-       edit: function(){
+        edit: function(){
             $(fn_claims.data_grid + " tbody td .btn_edit").bind("click",function(){
                     var clave = $(this).parent().parent().find("td:eq(0)").html();
                     $.post("funciones_claims_requests.php",
@@ -320,8 +320,11 @@ var fn_claims = {
                     function(data){
                         if(data.error == '0'){
                            $('#edit_form input, #edit_form textarea').val('').removeClass('error'); 
+                           $("#edit_form .policy_apply select").val("NOAPPLY").prop("disabled","disabled").addClass("readonly");
+                           $('#edit_form .company_policies').empty().append(data.checkbox);
                            eval(data.fields); 
-                           $('#edit_form #sMensaje').val(data.descripcion);
+                           $('#edit_form #sDescripcionSuceso').val(data.descripcion);
+                           
                            //Llenar grid de archivos:
                            fn_claims.files.iConsecutivoClaim = clave;
                            fn_claims.files.fillgrid();
@@ -331,28 +334,58 @@ var fn_claims = {
                         }       
             },"json");
             });
-       },
-       send_claim: function(){
+        },
+        send_claim: function(){
             $(fn_claims.data_grid + " tbody td .btn_send_claim").bind("click",function(){
-                    var clave = $(this).parent().parent().find("td:eq(0)").html();
-                   /* $.post("funciones_claims_requests.php",{accion:"get_claim_policies", clave: clave, domroot : "form_send_claim"},
-                    function(data){
+                var clave = $(this).parent().parent().find("td:eq(0)").html();
+                
+                $.ajax({
+                    type: "POST",
+                    url : "funciones_claims_requests.php",
+                    data: {"accion" : "get_company_policies", "clave" : clave, "domroot" : "form_send_claim"},
+                    async : true,
+                    dataType : "json",
+                    success : function(data){
                         if(data.error == '0'){
-                           $('#form_send_claim input, #form_send_claim textarea').val('').removeClass('error');
-                           $('#form_send_claim #policies_claim').empty().append(data.select); 
-                           eval(data.fields); 
-                           fn_popups.resaltar_ventana('form_send_claim');   
+                            $('#form_send_claim input, #form_send_claim textarea').val('').removeClass('error');
+                            $('#form_send_claim .company_policies tbody').empty().append(data.policies_information); 
+                            $('#form_send_claim #sEmail').val(data.emails);
+                            
+                            if(data.fields != ""){eval(data.fields);}else{$('#form_send_claim #iConsecutivoClaim').val(clave);}
+                            fn_popups.resaltar_ventana('form_send_claim');   
                         }else{
                            fn_solotrucking.mensaje(data.msj);  
-                        }       
-                    },"json"); */
-                    $('#form_send_claim input, #form_send_claim textarea').val('').removeClass('error');
-                    $('#form_send_claim #iConsecutivo').val(clave);
-                    fn_popups.resaltar_ventana('form_send_claim');
-            
+                        }  
+                    }
+                });
             });
-       },
-       send : function(){
+        },
+        save_email: function(){
+            var valid   = true;
+            var mensaje = "";
+            $('#form_send_claim input, #form_send_claim textarea').removeClass('error');
+            if($("#sEmail").val() == ""){valid = false; mensaje = "Please write the email accounts that you will want  to send the message.";}
+            
+            if(valid){
+              if($('#form_send_claim #iConsecutivo').val() != ''){struct_data_post.edit_mode = "true";}else{struct_data_post.edit_mode = "false";}         
+               struct_data_post.action  = "save_claim_email";
+               struct_data_post.domroot = "#form_send_claim"; 
+                 
+              $.ajax({
+                type: "POST",
+                url : "funciones_claims_requests.php",
+                data: struct_data_post.parse(),
+                async : true,
+                dataType : "json",
+                success : function(data){
+                    if(data.error == '0'){$('#form_send_claim #iConsecutivo').val(data.iConsecutivo);}
+                    fn_solotrucking.mensaje(data.msj);  
+                }
+              });  
+            }else{fn_solotrucking.mensaje(mensaje);}
+            
+        },
+        send : function(){
          $(fn_claims.data_grid + " tbody td .btn_send").bind("click",function(){
                     var clave = $(this).parent().parent().find("td:eq(0)").html();
                     $.post("funciones_claims_requests.php",{accion:"send_claim", clave: clave},
@@ -361,8 +394,8 @@ var fn_claims = {
                         if(data.error == '0'){fn_claims.fillgrid();}     
             },"json");
          });  
-       },
-       unsent : function(){
+        },
+        unsent : function(){
           $(fn_claims.data_grid + " tbody td .btn_unsent").bind("click",function(){
                     var clave = $(this).parent().parent().find("td:eq(0)").html();
                     $.post("funciones_claims_requests.php",{accion:"unsent_claim", clave: clave},
@@ -372,7 +405,7 @@ var fn_claims = {
             },"json");
          });   
        },
-       files : {
+        files : {
            pagina_actual : "",
            sort : "ASC",
            orden : "iConsecutivo",
@@ -456,7 +489,7 @@ var fn_claims = {
             }, 
            
        },
-       preview_email : function(){
+        preview_email : function(){
           //$('#form_send_claim #policies_claim').removeClass('error'); 
           //if($('#form_send_claim #policies_claim').val() != ''){
              $.ajax({             
@@ -480,17 +513,18 @@ var fn_claims = {
              });   
          // }else{fn_solotrucking.mensaje('Please first select an option from your policies');$('#form_send_claim #policies_claim').addClass('error');} 
        },    
-       send_email : function(){
+        send_email : function(){
           $('#form_send_claim input').removeClass('error'); 
           if($('#form_send_claim #sEmail').val() != ''){
              $.ajax({             
                 type:"POST", 
                 url:"funciones_claims_requests.php", 
                 data:{
-                    accion:"send_email",
-                    iConsecutivoClaim  : $('#form_send_claim #iConsecutivo').val(),
-                    sEmail             : $('#form_send_claim #sEmail').val(),
-                    sMensaje           : $('#form_send_claim #sMensajeEmail').val(),
+                    "accion"             :"send_email",
+                    "iConsecutivo"       : $('#form_send_claim #iConsecutivo').val(),
+                    "iConsecutivoClaim"  : $('#form_send_claim #iConsecutivoClaim').val(),
+                    "sEmail"             : $('#form_send_claim #sEmail').val(),
+                    "sMensaje"           : $('#form_send_claim #sMensajeEmail').val(),
                 },
                 async : true,
                 dataType : "json",
@@ -505,7 +539,7 @@ var fn_claims = {
              });   
          }else{fn_solotrucking.mensaje('Please write the emails to send the claim');$('#form_send_claim #sEmail').addClass('error');} 
        },
-       edit_estatus : function(){
+        edit_estatus : function(){
            $(fn_claims.data_grid + " tbody td .btn_change_status").bind("click",function(){
                     var clave = $(this).parent().parent().find("td:eq(0)").html();
                     $('#form_change_estatus input, #form_change_estatus select').val('');
@@ -514,7 +548,7 @@ var fn_claims = {
                     
            });  
        },
-       save_estatus : function(){
+        save_estatus : function(){
           $('#form_change_estatus #eStatus').removeClass('error'); 
           if($('#form_change_estatus #eStatus').val() != ''){
              $.ajax({             
@@ -538,10 +572,22 @@ var fn_claims = {
              });   
           }else{fn_solotrucking.mensaje('Please first select a status before you press save.');$('#form_change_estatus #eStatus').addClass('error');}  
            
-       },                  
+       },  
+        //VALIDACIONES
+        valida_tipo_dano : function(input){
+            if(input){
+                var tipo = input.prop("id");
+                if(tipo == "eDanoTerceros"){$("#edit_form .company_policies input[type=checkbox].AL").prop("checked",true);}
+                else{$("#edit_form .company_policies input[type=checkbox].AL").prop("checked",false);}
+                
+                if(tipo == "eDanoFisico"){$("#edit_form .company_policies input[type=checkbox].PD").prop("checked",true);}
+                else{$("#edit_form .company_policies input[type=checkbox].PD").prop("checked",false);}
+                 
+                if(tipo == "eDanoMercancia"){$("#edit_form .company_policies input[type=checkbox].MTC").prop("checked",true);} 
+                else{$("#edit_form .company_policies input[type=checkbox].MTC").prop("checked",false);}
+            }
+        },                
 }    
-
- 
 </script> 
 <div id="layer_content" class="main-section">
     <div id="ct_claims" class="container">
@@ -619,7 +665,7 @@ var fn_claims = {
         </table> 
     </div>
 </div>
-<!---- FORMULARIOS ------>
+<!-- FORMULARIOS -->
 <div id="edit_form" class="popup-form">
     <div class="p-header">
         <h2>CLAIMS</h2>
@@ -629,19 +675,19 @@ var fn_claims = {
     <p class="mensaje_valido" style="display:none;">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p> 
     <div>
         <form>
-            <!---<table>
+            <table>
              <tr>
              <td>
                 <div class="field_item"> 
-                    <label style="margin-left:15px;">select the policies in which you want to apply your claim <span style="color:#ff0000;">*</span>:</label> 
+                    <label style="margin-left:15px;">Policies in which the claim applies<span style="color:#ff0000;">*</span>:</label> 
                     <div class="company_policies" style="padding: 10px 10px 10px 23px;"></div>
                 </div>
              </td>
              </tr>
-            </table> ---->
-            <fieldset id="general_information">
+            </table>
+            <fieldset>
                 <legend>INFORMATION FROM INCIDENT</legend>
-                <table style="width: 100%;"> 
+                <table style="width: 100%;" id="general_information"> 
                 <tr>
                     <td colspan="2">
                     <div class="field_item">
@@ -683,9 +729,45 @@ var fn_claims = {
                 </tr>
                 <tr>
                     <td colspan="100%">
+                    <div class="field_item policy_apply"> 
+                        <label>There was damage to third parties? (Persons and/or properties) <span style="color:#ff0000;">*</span>:</label> 
+                        <select id="eDanoTerceros" onblur="fn_claims.valida_tipo_dano($(this));">
+                            <option value="NOAPPLY">NO APPLY</option>
+                            <option value="YES">YES</option> 
+                            <option value="NO">NO</option> 
+                        </select>
+                    </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="100%">
+                    <div class="field_item policy_apply"> 
+                        <label>There was damage to your Unit/Trailer?<span style="color:#ff0000;">*</span>:</label> 
+                        <select id="eDanoFisico" onblur="fn_claims.valida_tipo_dano($(this));">
+                            <option value="NOAPPLY">NO APPLY</option>
+                            <option value="YES">YES</option> 
+                            <option value="NO">NO</option> 
+                        </select>
+                    </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="100%">
+                    <div class="field_item policy_apply"> 
+                        <label>There was damage on your Cargo?<span style="color:#ff0000;">*</span>:</label> 
+                        <select id="eDanoMercancia" onblur="fn_claims.valida_tipo_dano($(this));">
+                            <option value="NOAPPLY">NO APPLY</option>
+                            <option value="YES">YES</option> 
+                            <option value="NO">NO</option> 
+                        </select>
+                    </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="100%">
                     <div class="field_item"> 
                         <label>What happend? <span style="color:#ff0000;">*</span>:</label> 
-                        <textarea tabindex="1" id="sMensaje" maxlenght="1000" style="resize: none;" title="please write what happend in the incident."></textarea>
+                        <textarea tabindex="1" id="sDescripcionSuceso" maxlenght="1000" style="resize: none;" title="please write what happend in the incident."></textarea>
                     </div>
                     </td>
                 </tr>
@@ -704,9 +786,6 @@ var fn_claims = {
                     </td>
                 </tr>
                 </table>
-            </fieldset>  
-            <fieldset style="clear: both;">
-                <legend>Files of Claim:</legend>
                 <table style="width: 100%;">
                 <tr>
                     <td colspan="2">
@@ -745,14 +824,14 @@ var fn_claims = {
                     </td>
                 </tr>
                 </table>
-            </fieldset>
+            </fieldset>  
             <button type="button" class="btn-1" onclick="fn_claims.save();">SAVE</button>
             <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('edit_form');" style="margin-right:10px;background:#e8051b;">CLOSE</button>
         </form> 
     </div>
     </div>
 </div>
-<!--- formulario send claim --->
+<!-- formulario send claim -->
 <div id="form_send_claim" class="popup-form">
     <div class="p-header">
         <h2>CLAIMS</h2>
@@ -761,9 +840,26 @@ var fn_claims = {
     <div class="p-container"> 
     <div>
         <form>
+            <div class="field_item"> 
+                <label style="margin-left:15px;">Policies in which the claim applies:</label> 
+                <div class="company_policies" style="padding: 10px 10px 10px 23px;">
+                    <table class="popup-datagrid">
+                    <thead>
+                        <tr id="grid-head2"> 
+                            <td class="etiqueta_grid">Policy Number</td>
+                            <td class="etiqueta_grid">Policy Type</td> 
+                            <td class="etiqueta_grid">Insurance</td>
+                            <td class="etiqueta_grid">Email to send</td>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                    </table>
+                </div>
+            </div>
             <fieldset>
                 <legend>INFORMATION TO SEND BY E-MAIL</legend>
                 <input id="iConsecutivo" type="hidden" value="">
+                <input id="iConsecutivoClaim" type="hidden" value=""> 
                 <table style="width: 100%;">
                 <!--<tr>
                     <td colspan="100%">
@@ -772,33 +868,34 @@ var fn_claims = {
                         <select tabindex="1" id="policies_claim"><option value="">Select an option...</option></select>
                     </div>
                     </td>
-                </tr>--->
+                </tr>-->
                 <tr>
                     <td colspan="100%">
                     <div class="field_item">
                         <label>Write the e-mail(s) to send the claim: <span style="color:#ff0000;">*</span>:</label><br> 
-                        <input tabindex="2" id="sEmail" type="text" title="If you need to write more than one email, please separate them by comma symbol (,)." placeholder="For Ex: email@domain.com,email@domain.com"> 
+                        <input class="required_field" tabindex="2" id="sEmail" type="text" title="If you need to write more than one email, please separate them by comma symbol (,)." placeholder="For Ex: email@domain.com,email@domain.com"> 
                     </div>
                     </td>
                 </tr>
                 <tr>
                     <td colspan="100%">
                     <div class="field_item"> 
-                        <label>Message to send:</label> 
+                        <label>Message to send: (This message will be displayed before the claim information.)</label> 
                         <textarea tabindex="1" id="sMensajeEmail" maxlenght="1000" style="resize: none;" title="Max. 1000 characters."></textarea>
                     </div>
                     </td>
                 </tr>
                 </table>
             </fieldset>  
-            <button type="button" class="btn-1" onclick="fn_claims.send_email();">SEND E-MAIL</button>
+            <button type="button" class="btn-1" onclick="fn_claims.save_email();">SAVE</button>  
+            <button type="button" class="btn-1" onclick="fn_claims.send_email();" style="margin-right:10px;background: #87c540;">SEND E-MAIL</button>
             <button type="button" class="btn-1" onclick="fn_claims.preview_email();" style="margin-right:10px;background:#5ec2d4;">PREVIEW E-MAIL</button> 
             <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_send_claim');" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
         </form> 
     </div>
     </div>
 </div>
-<!---- preview email --->
+<!-- preview email -->
 <div id="form_preview_email" class="popup-form">
     <div class="p-header">
         <h2>CLAIMS / Preview E-mail to send</h2>
@@ -811,8 +908,8 @@ var fn_claims = {
     </div>
     </div>
 </div>
-<!---- change the status of claim --->
-<!---- FORMULARIOS ------>
+<!-- change the status of claim -->
+<!-- FORMULARIOS -->
 <div id="form_change_estatus" class="popup-form">
     <div class="p-header">
         <h2>CLAIMS / Change the status of claim</h2>
@@ -845,10 +942,8 @@ var fn_claims = {
     </div>
     </div>
 </div>
-<!---- FOOTER ----->
+<!-- FOOTER -->
 <?php include("footer.php"); ?> 
-
 </body>
-
 </html>
 <?php } ?>

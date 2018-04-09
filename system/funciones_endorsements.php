@@ -158,10 +158,11 @@
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
       $transaccion_exitosa = true;
       $error = '0';
-      $sql = "SELECT sNumeroPoliza, sName, sDescripcion, D.iConsecutivo AS TipoPoliza ".
+      $sql = "SELECT sNumeroPoliza, C.sName AS BrokerName, E.sName AS InsuranceName, sDescripcion, D.iConsecutivo AS TipoPoliza ".
              "FROM ct_polizas A ".
              "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
              "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
+             "LEFT JOIN ct_aseguranzas E ON A.iConsecutivoAseguranza = E.iConsecutivo ".
              "WHERE iConsecutivoCompania = '".$company."' ".
              "AND  A.iDeleted = '0' AND dFechaCaducidad >= CURDATE() AND (D.iConsecutivo = '1' OR D.iConsecutivo = '3' OR D.iConsecutivo = '5' OR D.iConsecutivo = '2') ".
              "ORDER BY sNumeroPoliza ASC";  
@@ -171,10 +172,10 @@
       if($rows > 0) {   
             while ($items = $result->fetch_assoc()) { 
                if($items["sNumeroPoliza"] != ""){
-                     $htmlTabla .= "<tr>
-                                        <td>".$items['sNumeroPoliza']."</td>".
-                                       "<td>".$items['sName']."</td>". 
-                                       "<td>".$items['sDescripcion']."</td>";
+                     $htmlTabla .= "<tr><td style=\"border: 1px solid #dedede;\">".$items['sNumeroPoliza']."</td>".
+                                   "<td style=\"border: 1px solid #dedede;\">".$items['BrokerName']."</td>". 
+                                   "<td style=\"border: 1px solid #dedede;\">".$items['InsuranceName']."</td>". 
+                                   "<td style=\"border: 1px solid #dedede;\">".$items['sDescripcion']."</td></tr>";
                  }else{                                                                                                                                                                                                        
                      $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;
                  }    

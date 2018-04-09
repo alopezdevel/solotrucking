@@ -222,7 +222,7 @@ var struct_data_post = {
         var datakey = {};
         datakey["accion"] = this.action;
         datakey["tupla_existente"] = this.tupla_existente;
-        datakey["edit_mode"] = this.edit_mode;
+        datakey["edit_mode"] = this.edit_mode; 
         for(i=0; i<id_len; i++){
             if(obj_dom[i].type=="checkbox"){
                 check=$(this.domroot+" :checkbox[id="+obj_dom[i].id+"]").is(":checked");

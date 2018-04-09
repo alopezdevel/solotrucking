@@ -925,7 +925,7 @@ var fn_policies = {
         <div class="page-title">
             <h1>Catalogs</h1>
             <h2>INSURANCE POLICIES</h2>
-            <img src="images/data-grid/policy_status.jpg" alt="policy_status.jpg" style="float:right;position: relative;top: -110px;margin-bottom: -100px;"> 
+            <img src="images/data-grid/policy_status.jpg" alt="policy_status.jpg" style="float:right;position: relative;top: -90px;margin-bottom: -100px;"> 
         </div>
         <table id="data_grid_policies" class="data_grid">
         <thead id="grid-head2">

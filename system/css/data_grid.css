@@ -499,6 +499,9 @@ input.fecha.error{width: 95%!important;}
    background: transparent!important;
    border: 0 !important; 
    height:20px;
+   -webkit-box-shadow: none!important;
+    -moz-box-shadow:none!important;
+    box-shadow: none!important;
 }    
 
 /*----------------------cmsm---------------------------*/
