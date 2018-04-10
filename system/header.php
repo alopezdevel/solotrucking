@@ -28,13 +28,17 @@
       		<?php if($_SESSION['acceso'] == "1"){ ?>
       		<!-- Admin MASTER navigation -->
       			<li><a href="inicio">Home</a></li>
-      			<li class="submenu"><a href="#">CATALOGS</a>
+      			<li class="submenu"><a href="#">ADMINISTRATOR</a>
                     <ul>
-                        <li><a href="companies"><i class="fa fa-briefcase"></i> Companies</a></li>
-                        <li><a href="users"> <i class="fa fa-users"></i> Users</a></li>
-                        <li><a href="certificate_request_pdf_upload"> <i class="fa fa-cloud-upload"></i> Company Certificates (upload)</a></li>   
+                        <li><a href="users"> <i class="fa fa-users"></i> Users</a></li>  
                         <li><a href="brokers"><i class="fa fa-usd"></i> Brokers to endorsements</a></li>
                         <li><a href="insurances"><i class="fa fa-building"></i> Insurances to claims</a></li> 
+                    </ul>
+                </li>
+                <li class="submenu"><a href="#">COMPANIES</a>
+                    <ul>
+                        <li><a href="companies"><i class="fa fa-briefcase"></i>Companies</a></li>
+                        <li><a href="certificate_request_pdf_upload"> <i class="fa fa-cloud-upload"></i> Company Certificates (upload)</a></li>   
                     </ul>
                 </li>
                 <li><a href="policies">POLICIES</a></li>
@@ -57,23 +61,23 @@
                         <li><a href="quote_formats"><i class="fa fa-file-text"></i> QUOTE FORMATS</a></li>  
                     </ul>
                 </li>
-                <li class="submenu"><a href="invoices">INVOICES</a> 
-            	<li class="submenu"><a href="#">SYSTEM SUPPORT</a>
-                    <ul>
-                        <li><a href="bitacora_actividades"><i class="fa fa-list-alt"></i> SYSTEM DEVELOPMENT ACTIVITIES</a></li>
-                    </ul>
-                </li>
+                <li class="submenu" style="display: none;"><a href="invoices">INVOICES</a></li> 
+
             <!-- End Admin navigation -->
             <?php } if($_SESSION['acceso'] == "4"){?>
-              <!-- SOLO-TRUCKING USER -->
+            <!-- SOLO-TRUCKING USER -->
                   <li><a href="inicio">Home</a></li>
-                  <li class="submenu"><a href="#">CATALOGS</a>
+                  <li class="submenu"><a href="#">ADMINISTRATOR</a>
                     <ul>
-                        <li><a href="companies"><i class="fa fa-briefcase"></i> Companies</a></li>
-                        <li><a href="users"> <i class="fa fa-users"></i> Company Users</a></li> 
-                        <li><a href="certificate_request_pdf_upload"> <i class="fa fa-cloud-upload"></i> Company Certificates (upload)</a></li>                         
                         <li><a href="brokers"><i class="fa fa-usd"></i> Brokers to endorsements</a></li>
                         <li><a href="insurances"><i class="fa fa-building"></i> Insurances to claims</a></li>  
+                    </ul>
+                  </li>
+                  <li class="submenu"><a href="#">COMPANIES</a>
+                    <ul> 
+                        <li><a href="companies"><i class="fa fa-briefcase"></i>Companies</a></li>  
+                        <li><a href="users"> <i class="fa fa-users"></i> Company Users</a></li> 
+                        <li><a href="certificate_request_pdf_upload"> <i class="fa fa-cloud-upload"></i> Company Certificates (upload)</a></li>   
                     </ul>
                   </li>
                   <li><a href="policies">POLICIES</a></li>
@@ -85,13 +89,18 @@
                         <li><a href="endorsement_files"> <i class="fa fa-file-text"></i> UPLOAD FILES</a></li> > 
                     </ul>
                 </li>
-                <li><a href="claims_requests">CLAIMS</a></li> 
+                <li class="submenu"><a href="#">CLAIMS</a>
+                    <ul>
+                        <li><a href="claims"><i class="fa fa-plus-circle"></i>New Claim</a></li>
+                        <li><a href="claims_requests"><i class="fa fa-envelope"></i>Applications for Claims</a></li>
+                    </ul>
+                </li>  
                 <li class="submenu"><a href="#">QUOTES</a>
                    <ul>
                         <li><a href="quote_formats"><i class="fa fa-file-text"></i> QUOTE FORMATS</a></li>  
                     </ul>
                 </li>
-                <li class="submenu"><a href="#">SYSTEM SUPPORT</a>
+                <li class="submenu" style="display: none;"><a href="#">SYSTEM SUPPORT</a>
                     <ul>
                         <li><a href="bitacora_actividades"><i class="fa fa-list-alt"></i> SYSTEM DEVELOPMENT ACTIVITIES</a></li>
                     </ul>
@@ -99,13 +108,17 @@
             <?php } if($_SESSION['acceso'] == "3"){ //SOLO TRUCKING ADMIN?>
               <!-- Admin MASTER navigation -->
                   <li><a href="inicio">Home</a></li>
-                  <li class="submenu"><a href="#">CATALOGS</a>
+                  <li class="submenu"><a href="#">ADMINISTRATOR</a>
                     <ul>
-                        <li><a href="companies"><i class="fa fa-briefcase"></i> Companies</a></li>
-                        <li><a href="users"> <i class="fa fa-users"></i> Company Users</a></li>
-                        <li><a href="certificate_request_pdf_upload"> <i class="fa fa-cloud-upload"></i> Company Certificates (upload)</a></li>  
                         <li><a href="brokers"><i class="fa fa-usd"></i> Brokers to endorsements</a></li>
-                        <li><a href="insurances"><i class="fa fa-building"></i> Insurances to claims</a></li> 
+                        <li><a href="insurances"><i class="fa fa-building"></i> Insurances to claims</a></li>  
+                    </ul>
+                  </li>
+                  <li class="submenu"><a href="#">COMPANIES</a>
+                    <ul> 
+                        <li><a href="companies"><i class="fa fa-briefcase"></i>Companies</a></li>  
+                        <li><a href="users"> <i class="fa fa-users"></i> Company Users</a></li> 
+                        <li><a href="certificate_request_pdf_upload"> <i class="fa fa-cloud-upload"></i> Company Certificates (upload)</a></li>   
                     </ul>
                   </li>
                   <li><a href="policies">POLICIES</a></li>
@@ -117,7 +130,12 @@
                         <li><a href="endorsement_files"> <i class="fa fa-file-text"></i> UPLOAD FILES</a></li> 
                     </ul>
                 </li>
-                <? php /*<li><a href="claims_requests">CLAIMS</a></li> */?>
+                <li class="submenu"><a href="#">CLAIMS</a>
+                    <ul>
+                        <li><a href="claims"><i class="fa fa-plus-circle"></i>New Claim</a></li>
+                        <li><a href="claims_requests"><i class="fa fa-envelope"></i>Applications for Claims</a></li>
+                    </ul>
+                </li> 
                 <li class="submenu"><a href="#">QUOTES</a>
                    <ul>
                         <li><a href="quote_formats"><i class="fa fa-file-text"></i> QUOTE FORMATS</a></li>  
@@ -141,9 +159,8 @@
                 <li><a href="mypolicies">Policies</a></li> 
                 <li><a href="endorsements">ENDORSEMENTS</a></li>
         		<li><a href="certificates">Certificates</a></li>
-            	<? php /*<li><a href="claims">Claims</a></li>  
-            	<li style="display: none;"><a href="#">Quotes</a></li> */?>
-            	<li style="display: none;"><a href="#">Support</a></li>	
+            	<li style="display: none;"><a href="claims">Claims</a></li>  
+            	<?php //<li style="display: none;"><a href="#">Quotes</a></li><li style="display: none;"><a href="#">Support</a></li> ?>	
             <?php } ?>
             <!-- END COMPANY NAVIGATION --> 
       	</ul>

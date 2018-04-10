@@ -489,24 +489,38 @@ var fn_claims = {
             }, 
            
        },
-        preview_email : function(){
+        preview_email : function(iConsecutivoClaim){
           //$('#form_send_claim #policies_claim').removeClass('error'); 
           //if($('#form_send_claim #policies_claim').val() != ''){
+          if(!(iConsecutivoClaim)){ 
+              var iConsecutivoClaim  = $('#form_send_claim #iConsecutivoClaim').val();
+              var iConsecutivoPoliza = $('#form_send_claim #policies_claim').val();
+              var sMensaje           = $('#form_send_claim #sMensajeEmail').val();
+              var mode               = "preview";
+              
+          }else{
+              var mode               = "openemail"; 
+          }
              $.ajax({             
                 type:"POST", 
                 url:"funciones_claims_requests.php", 
                 data:{
-                    accion:"preview_email",
-                    iConsecutivoClaim  : $('#form_send_claim #iConsecutivo').val(),
-                    iConsecutivoPoliza : $('#form_send_claim #policies_claim').val(),
-                    sMensaje           : $('#form_send_claim #sMensajeEmail').val(),
+                    'accion'             : "preview_email",
+                    'iConsecutivoClaim'  : iConsecutivoClaim,
+                    'iConsecutivoPoliza' : iConsecutivoPoliza,
+                    'sMensaje'           : sMensaje,
+                    'mode'               : mode,
                 },
                 async : true,
                 dataType : "json",
                 success : function(data){                               
                     if(data.error == '0'){
                         $("#form_preview_email #preview_email").empty().append(data.tabla); 
-                        $('#form_preview_email').show();
+                        $("#form_preview_email input.mode").val(mode);
+                        if(mode == "preview"){ $('#form_preview_email').show();}
+                        else{
+                           fn_popups.resaltar_ventana('form_preview_email');  
+                        }
                     }
                     
                 }
@@ -717,13 +731,13 @@ var fn_claims = {
                     <td>
                     <div class="field_item"> 
                         <label>Driver:</label> 
-                        <input tabindex="1" id="sDriver" type="text" placeholder="Write the name or system id of your driver" style="width: 98%;">
+                        <input tabindex="1" id="sDriver" type="text" placeholder="Write the name or system id of your driver" style="width: 98%;" title="Please check before that the driver is in the selected policy.">
                     </div>
                     </td>
                     <td>
                     <div class="field_item"> 
                         <label>Unit/Trailer:</label> 
-                        <input tabindex="1" id="sUnitTrailer" type="text" placeholder="Write the VIN or system id of your Unit or Trailer" style="width: 98%;">
+                        <input tabindex="1" id="sUnitTrailer" type="text" placeholder="Write the VIN or system id of your Unit or Trailer" style="width: 98%;" title="Please check before that the unit/trailer is in the selected policy.">
                     </div>
                     </td>
                 </tr>
@@ -899,12 +913,13 @@ var fn_claims = {
 <div id="form_preview_email" class="popup-form">
     <div class="p-header">
         <h2>CLAIMS / Preview E-mail to send</h2>
-        <div class="btn-close" title="Close Window" onclick="$('#form_preview_email').hide();"><i class="fa fa-times"></i></div>
+        <div class="btn-close" title="Close Window" onclick="if($('#form_preview_email input.mode').val() == 'openemail'){fn_popups.cerrar_ventana('form_preview_email');}else{$('#form_preview_email').hide();}"><i class="fa fa-times"></i></div>
     </div>
     <div class="p-container"> 
+        <input class="mode" type="hidden" value="">
         <div id="preview_email" class="letter-back"></div>
     <div>
-        <button type="button" class="btn-1" onclick="$('#form_preview_email').hide();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
+        <button type="button" class="btn-1" onclick="if($('#form_preview_email input.mode').val() == 'openemail'){fn_popups.cerrar_ventana('form_preview_email');}else{$('#form_preview_email').hide();}" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
     </div>
     </div>
 </div>

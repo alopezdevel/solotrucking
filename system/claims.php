@@ -386,6 +386,7 @@ var fn_claims = {
                         if(data.error == '0'){
                            $('#general_information input:text, #general_information select, #general_information textarea,#general_information input:hidden').val('').removeClass('error'); 
                            $('#edit_form input:checkbox').prop("checked",false);  
+                           fn_claims.revisar_tipos_polizas();
                            eval(data.fields); 
                            $('#edit_form #sDescripcionSuceso').val(data.descripcion);
                            //Llenar grid de archivos:
@@ -660,8 +661,7 @@ var fn_claims = {
         <h2>CLAIMS</h2>
         <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('edit_form');fn_claims.filtraInformacion();"><i class="fa fa-times"></i></div>
     </div>
-    <div class="p-container">
-    <p class="mensaje_valido" style="display:none;">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p> 
+    <div class="p-container"> 
     <div>
         <form>
             <table>
@@ -677,6 +677,7 @@ var fn_claims = {
             <fieldset>
                 <legend>INFORMATION FROM INCIDENT</legend>
                 <table id="general_information" style="width: 100%;">
+                <tr><td colspan="100%"><p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p></td></tr>
                 <tr>
                     <td style="width: 50%;">
                     <div class="field_item">
@@ -697,13 +698,13 @@ var fn_claims = {
                     <td>
                     <div class="field_item"> 
                         <label>Driver:</label> 
-                        <input tabindex="1" id="sDriver" type="text" placeholder="Write the name or system id of your driver" style="width: 98%;">
+                        <input tabindex="1" id="sDriver" type="text" placeholder="Write the name or system id of your driver" style="width: 98%;" title="Please check before that the driver is in the selected policy.">
                     </div>
                     </td>
                     <td>
                     <div class="field_item"> 
                         <label>Unit/Trailer:</label> 
-                        <input tabindex="1" id="sUnitTrailer" type="text" placeholder="Write the VIN or system id of your Unit or Trailer" style="width: 98%;">
+                        <input tabindex="1" id="sUnitTrailer" type="text" placeholder="Write the VIN or system id of your Unit or Trailer" style="width: 98%;" title="Please check before that the unit/trailer is in the selected policy.">
                     </div>
                     </td>
                 </tr>
@@ -711,7 +712,7 @@ var fn_claims = {
                     <td colspan="100%">
                     <div class="field_item policy_apply"> 
                         <label>There was damage to third parties? (Persons and/or properties) <span style="color:#ff0000;">*</span>:</label> 
-                        <select id="eDanoTerceros" onblur="fn_claims.valida_tipo_dano($(this));">
+                        <select id="eDanoTerceros" onblur="fn_claims.valida_tipo_dano($(this));" title="Auto-Liability Policy">
                             <option value="NOAPPLY">NO APPLY</option>
                             <option value="YES">YES</option> 
                             <option value="NO">NO</option> 
@@ -723,7 +724,7 @@ var fn_claims = {
                     <td colspan="100%">
                     <div class="field_item policy_apply"> 
                         <label>There was damage to your Unit/Trailer?<span style="color:#ff0000;">*</span>:</label> 
-                        <select id="eDanoFisico" onblur="fn_claims.valida_tipo_dano($(this));">
+                        <select id="eDanoFisico" onblur="fn_claims.valida_tipo_dano($(this));" title="Physical Damage Policy">
                             <option value="NOAPPLY">NO APPLY</option>
                             <option value="YES">YES</option> 
                             <option value="NO">NO</option> 
@@ -735,7 +736,7 @@ var fn_claims = {
                     <td colspan="100%">
                     <div class="field_item policy_apply"> 
                         <label>There was damage on your Cargo?<span style="color:#ff0000;">*</span>:</label> 
-                        <select id="eDanoMercancia" onblur="fn_claims.valida_tipo_dano($(this));">
+                        <select id="eDanoMercancia" onblur="fn_claims.valida_tipo_dano($(this));" title="Motor Truck Cargo Policy">
                             <option value="NOAPPLY">NO APPLY</option>
                             <option value="YES">YES</option> 
                             <option value="NO">NO</option> 
