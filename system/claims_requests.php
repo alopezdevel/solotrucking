@@ -135,7 +135,7 @@ var fn_claims = {
             new AjaxUpload('#btnFile', {
                     action: 'funciones_claims_requests.php',
                     onSubmit : function(file , ext){
-                        if (!(ext && /^(jpg|png)$/i.test(ext))){
+                        if (!(ext && (/^(pdf)$/i.test(ext) || /^(jpg)$/i.test(ext) || /^(png)$/i.test(ext) || /^(docx)$/i.test(ext) || /^(xls)$/i.test(ext) || /^(xlsx)$/i.test(ext)))){ 
                             var mensaje = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Error: Invalid file format, please upload JPG or PNG.</p>';
                             fn_solotrucking.mensaje(mensaje);
                             return false;
@@ -291,6 +291,16 @@ var fn_claims = {
            if($('#edit_form #sCiudad').val() == ''){valid = false; $(this).addClass('error');}
            if(!valid){fn_solotrucking.mensaje("Please select the city where the incident occurred.");} 
            
+           //Revisando polizas en las que aplica:
+           var polizas = "";
+           $("#edit_form .company_policies input[type=checkbox]").each(function(){
+               if($(this).is(':checked')){
+                  if(polizas != ""){polizas +="|"+$(this).val();}else{polizas = $(this).val();} 
+               }
+           });
+           
+           if(polizas != ""){$("#general_information #iConsecutivoPolizas").val(polizas);}
+           
            if(valid){
                if($('#edit_form #iConsecutivo').val() != ''){struct_data_post.edit_mode = "true";}else{struct_data_post.edit_mode = "false";}         
                struct_data_post.action="save_claim";
@@ -322,7 +332,14 @@ var fn_claims = {
                            $('#edit_form input, #edit_form textarea').val('').removeClass('error'); 
                            $("#edit_form .policy_apply select").val("NOAPPLY").prop("disabled","disabled").addClass("readonly");
                            $('#edit_form .company_policies').empty().append(data.checkbox);
-                           eval(data.fields); 
+                           eval(data.fields);
+                           fn_claims.revisar_tipos_polizas();  
+                           
+                           //Calcular nuevamente a  que polizas aplicaria el claim:
+                           $("#edit_form .policy_apply select").each(function(){
+                             if($(this).val() == "YES"){fn_claims.valida_tipo_dano($(this));}
+                           });
+                            
                            $('#edit_form #sDescripcionSuceso').val(data.descripcion);
                            
                            //Llenar grid de archivos:
@@ -588,17 +605,34 @@ var fn_claims = {
            
        },  
         //VALIDACIONES
+        revisar_tipos_polizas : function(){  
+            if($("#edit_form .company_policies input[type=checkbox]").html() != undefined){
+                $("#edit_form .company_policies input[type=checkbox]").each(function(){
+                    if($(this).hasClass("PD")){$("#edit_form #eDanoFisico").removeProp("disabled").removeClass("readonly");}
+                    if($(this).hasClass("MTC")){$("#edit_form #eDanoMercancia").removeProp("disabled").removeClass("readonly");}  
+                    if($(this).hasClass("AL")){$("#edit_form #eDanoTerceros").removeProp("disabled").removeClass("readonly");}  
+                });
+            }else{
+                $("#edit_form .policy_apply select").val("NOAPPLY").prop("disabled","disabled").addClass("readonly");
+            }    
+        },
         valida_tipo_dano : function(input){
             if(input){
-                var tipo = input.prop("id");
-                if(tipo == "eDanoTerceros"){$("#edit_form .company_policies input[type=checkbox].AL").prop("checked",true);}
-                else{$("#edit_form .company_policies input[type=checkbox].AL").prop("checked",false);}
+                var value = input.val();
+                var tipo  = input.prop("id");
                 
-                if(tipo == "eDanoFisico"){$("#edit_form .company_policies input[type=checkbox].PD").prop("checked",true);}
-                else{$("#edit_form .company_policies input[type=checkbox].PD").prop("checked",false);}
-                 
-                if(tipo == "eDanoMercancia"){$("#edit_form .company_policies input[type=checkbox].MTC").prop("checked",true);} 
-                else{$("#edit_form .company_policies input[type=checkbox].MTC").prop("checked",false);}
+                switch(tipo){
+                    case 'eDanoTerceros' : var clase = "AL"; break;
+                    case 'eDanoMercancia': var clase = "MTC"; break;
+                    case 'eDanoFisico'   : var clase = "PD"; break;
+                }
+                
+                if(value == "YES"){ 
+                    $("#edit_form .company_policies input[type=checkbox]."+clase).prop("checked",true);
+                }else{
+                    $("#edit_form .company_policies input[type=checkbox]."+clase).prop("checked",false);
+                } 
+                
             }
         },                
 }    
@@ -612,7 +646,7 @@ var fn_claims = {
         <table id="data_grid" class="data_grid">
         <thead>
             <tr id="grid-head1">
-                <td style="width:50px!important;"><input class="flt_id" type="text" placeholder="ID:"></td> 
+                <td style="width:30px!important;"><input class="flt_id" type="text" placeholder="ID:"></td> 
                 <td style="width:300px!important;"><input class="flt_nombre" type="text" placeholder="Company:"></td> 
                 <td>
                     <select class="flt_type" onblur="fn_claims.filtraInformacion();">
@@ -624,8 +658,8 @@ var fn_claims = {
                 </td> 
                 <td><input class="flt_dateIncident flt_fecha"   type="text" placeholder="MM-DD-YY"></td> 
                 <td><input class="flt_hourIncident hora"   type="text" placeholder="00:00"></td> 
-                <td><input class="flt_cityIncident" type="text" placeholder="City: "></td>
-                <td><input class="flt_stateIncident" type="text" placeholder="State: "></td>
+                <td style="width:100px!important;"><input class="flt_cityIncident" type="text" placeholder="City: "></td>
+                <td style="width:80px!important;"><input class="flt_stateIncident" type="text" placeholder="State: "></td>
                 <td>
                     <select class="flt_statusclaim" onblur="fn_claims.filtraInformacion();">
                         <option value="">All</option>
@@ -637,7 +671,7 @@ var fn_claims = {
                     </select>
                 </td> 
                 <td><input class="flt_dateAplication flt_fecha" type="text" placeholder="MM-DD-YY"></td> 
-                <td style='width:120px;'>
+                <td style='width:75px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_claims.filtraInformacion();"><i class="fa fa-search"></i></div> 
                 </td> 
             </tr>
@@ -716,6 +750,7 @@ var fn_claims = {
                     <td style="width: 50%;">
                     <div class="field_item">
                         <input id="iConsecutivo" type="hidden" value=""> 
+                        <input id="iConsecutivoPolizas" type="hidden" value=""> 
                         <label>Date: <span style="color:#ff0000;">*</span>:</label><br> 
                         <input tabindex="1" id="dFechaIncidente" type="text" class="fecha" style="width: 85%;">
                     </div>
@@ -724,20 +759,6 @@ var fn_claims = {
                     <div class="field_item"> 
                         <label>Hour: <span style="color:#ff0000;">*</span>:</label><br>
                         <input tabindex="1" id="dHoraIncidente" type="text" class="hora" title="Please capture the hour in 24/h format" style="width: 98%;">
-                    </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                    <div class="field_item"> 
-                        <label>Driver:</label> 
-                        <input tabindex="1" id="sDriver" type="text" placeholder="Write the name or system id of your driver" style="width: 98%;" title="Please check before that the driver is in the selected policy.">
-                    </div>
-                    </td>
-                    <td>
-                    <div class="field_item"> 
-                        <label>Unit/Trailer:</label> 
-                        <input tabindex="1" id="sUnitTrailer" type="text" placeholder="Write the VIN or system id of your Unit or Trailer" style="width: 98%;" title="Please check before that the unit/trailer is in the selected policy.">
                     </div>
                     </td>
                 </tr>
@@ -784,7 +805,7 @@ var fn_claims = {
                         <textarea tabindex="1" id="sDescripcionSuceso" maxlenght="1000" style="resize: none;" title="please write what happend in the incident."></textarea>
                     </div>
                     </td>
-                </tr>
+                </tr> 
                 <tr>
                     <td>
                     <div class="field_item"> 
@@ -796,6 +817,20 @@ var fn_claims = {
                     <div class="field_item"> 
                         <label>What City?:</label> 
                         <input tabindex="1" id="sCiudad" type="text" class="txt-uppercase">
+                    </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                    <div class="field_item"> 
+                        <label>Driver <span style="color:#ff0000;">*</span>:</label> 
+                        <input tabindex="1" id="sDriver" type="text" placeholder="Write the name or system id of your driver" style="width: 98%;" title="Please check before that the driver is in the selected policy.">
+                    </div>
+                    </td>
+                    <td>
+                    <div class="field_item"> 
+                        <label>Unit/Trailer <span style="color:#ff0000;">*</span>:</label> 
+                        <input tabindex="1" id="sUnitTrailer" type="text" placeholder="Write the VIN or system id of your Unit or Trailer" style="width: 98%;" title="Please check before that the unit/trailer is in the selected policy.">
                     </div>
                     </td>
                 </tr>
@@ -882,7 +917,7 @@ var fn_claims = {
                         <select tabindex="1" id="policies_claim"><option value="">Select an option...</option></select>
                     </div>
                     </td>
-                </tr>-->
+                </tr>
                 <tr>
                     <td colspan="100%">
                     <div class="field_item">
@@ -890,7 +925,7 @@ var fn_claims = {
                         <input class="required_field" tabindex="2" id="sEmail" type="text" title="If you need to write more than one email, please separate them by comma symbol (,)." placeholder="For Ex: email@domain.com,email@domain.com"> 
                     </div>
                     </td>
-                </tr>
+                </tr>-->
                 <tr>
                     <td colspan="100%">
                     <div class="field_item"> 

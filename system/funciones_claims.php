@@ -62,9 +62,10 @@
                                                "<div class=\"btn_send btn-icon send-email btn-left\" title=\"Send Claim To Solo-Trucking\"><i class=\"fa fa-envelope\"></i><span></span></div>";  
                              break;
                              case 'SENT': 
-                                $class = "class = \"blue\""; 
-                                $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Data\"><i class=\"fa fa-pencil-square-o\"></i><span></span></div>".
-                                               "<div class=\"btn_unsent btn-icon trash btn-left\" title=\"Cancel Sending\"><i class=\"fa fa-times\"></i><span></span></div>";  
+                                $items["eStatus"] .= " TO SOLO-TRUCKING"; 
+                                $class             = "class = \"blue\""; 
+                                $btn_confirm       = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Data\"><i class=\"fa fa-pencil-square-o\"></i><span></span></div>".
+                                                     "<div class=\"btn_unsent btn-icon trash btn-left\" title=\"Cancel Sending\"><i class=\"fa fa-times\"></i><span></span></div>";  
                              break;
                              case 'INPROCESS': 
                                 $class = "class = \"yellow\""; 
@@ -133,8 +134,8 @@
                case '5' : $tipoPoliza = "MTC"; break;
            } 
            #checkbox
-           $check_items .= "<input class=\"num_policies $tipoPoliza\" type=\"checkbox\" value=\"".$items['iConsecutivo']."\">".
-                           "<label class=\"check-label\"> ".$items['sNumeroPoliza']." / ".$items['sDescripcion']."</label><br>"; 
+           $check_items .= "<input class=\"num_policies $tipoPoliza\" type=\"checkbox\" value=\"".$items['iConsecutivo']."\" style=\"display:none;\">".
+                           "<label class=\"check-label  $tipoPoliza\" style=\"display:none;\"> ".$items['sNumeroPoliza']." / ".$items['sDescripcion']."</label><br>"; 
            #table
            if($items["sNumeroPoliza"] != ""){
                  $htmlTabla .= "<tr>".
@@ -296,34 +297,41 @@
                 $error = '1';
                 $mensaje = "Error: The data driver are invalid";
             }  
-      }else{$driverID="";}
-                       
-      if($_POST['sUnitTrailer'] != ''){  //<--- UnitTrailer
-            $unitdata = explode('-',$_POST['sUnitTrailer']); 
-            $unitID   = $unitdata[0];
-            $unitName = $unitdata[1];
-            
-            if($unitID != ''){
-                
-                $query = "SELECT iConsecutivo,iConsecutivoRadio,iYear,iModelo,sVIN,siConsecutivosPolizas,inPoliza ".
-                         "FROM ct_unidades ".
-                         "WHERE iConsecutivo='$unitID'";
-                $result = $conexion->query($query);
-                $rows = $result->num_rows;
-                if($rows > 0 ){
-                   $unittrailer = $result->fetch_assoc(); 
-                }else{
-                   $error = '1';
-                   $mensaje = "Error: The data Unit / Trailer was not found"; 
-                }
-                
-            }else{
-                $error = '1';
-                $mensaje = "Error: The data Unit / Trailer are invalid";
-            }  
-      }else{$unitID = "";}
+      }
+      else{$driverID="";}
       
-      if($unitID != "" || $driverID != ""){
+      #unidades:
+      if($error == "0"){
+          if($_POST['sUnitTrailer'] != ''){  //<--- UnitTrailer
+                $unitdata = explode('-',$_POST['sUnitTrailer']); 
+                $unitID   = $unitdata[0];
+                $unitName = $unitdata[1];
+                
+                if($unitID != ''){
+                    
+                    $query = "SELECT iConsecutivo,iConsecutivoRadio,iYear,iModelo,sVIN,siConsecutivosPolizas,inPoliza ".
+                             "FROM ct_unidades ".
+                             "WHERE iConsecutivo='$unitID'";
+                    $result = $conexion->query($query);
+                    $rows = $result->num_rows;
+                    if($rows > 0 ){
+                       $unittrailer = $result->fetch_assoc(); 
+                    }else{
+                       $error = '1';
+                       $mensaje = "Error: The data Unit / Trailer was not found"; 
+                    }
+                    
+                }else{
+                    $error = '1';
+                    $mensaje = "Error: The data Unit / Trailer are invalid";
+                }  
+          }
+          else{$unitID = "";}
+      }
+                       
+      
+      
+      if(($unitID != "" || $driverID != "") && $error == "0"){
           if($_POST['edit_mode'] == 'true'){
             #UPDATE DATA:
             foreach($_POST as $campo => $valor){
@@ -379,9 +387,9 @@
                   $_POST['edit_mode'] != 'true' ? $iConsecutivoClaim = $conexion->insert_id :  $iConsecutivoClaim = trim($_POST['iConsecutivo']);
                   
                   //Actualizar tabla de polizas:
-                  /*if($_POST['iConsecutivoPolizas'] != ""){
+                  if($_POST['iConsecutivoPolizas'] != ""){
                       
-                      if($_POST['edit_mode']){ 
+                      if($_POST['edit_mode'] == 'true'){ 
                           $query   = "DELETE FROM cb_claim_poliza WHERE iConsecutivoClaim = '$iConsecutivoClaim'";
                           $success = $conexion->query($query);
                           if(!($success)){$transaccion_exitosa = false;}
@@ -397,7 +405,7 @@
                               if(!($success)){$transaccion_exitosa = false;}
                           }
                       }
-                  }  */  
+                  }    
           
               }else{ 
                  $error = "1";
@@ -408,12 +416,10 @@
             $error = '1';
             $mensaje = "Error: Please try again later.";  
           }   
-      }else{
-          $error = '1';
-          $mensaje = "Error: Please select a driver or unit/trailer of your lists.";
       }
+      else{$error = '1';$mensaje = "Error: Please select a valid driver or unit/trailer of your lists.";}
       
-      if($transaccion_exitosa && $error = "0"){$conexion->commit();$conexion->close();}
+      if($transaccion_exitosa && $error == "0"){$conexion->commit();$conexion->close();}
       else{$conexion->rollback();$conexion->close();}
       
       $response = array("error"=>"$error","msj"=>"$mensaje", "iConsecutivoClaim" => "$iConsecutivoClaim");

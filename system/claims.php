@@ -123,7 +123,7 @@ var fn_claims = {
                 dataType : "json",
                 success : function(data){                               
                     if(data.error == '0'){
-                        $("#edit_form .company_policies").empty().append(data.checkboxes).hide();
+                        $("#edit_form .company_policies").empty().append(data.checkboxes); 
                         $("#info_policies table tbody").empty().append(data.policies_information);  
                     }
                 }
@@ -184,17 +184,16 @@ var fn_claims = {
             
             
             // UPLOAD FILES SCRIPT
-            new AjaxUpload('#btnFile', {
+            new AjaxUpload('#btnFile',{
                     action: 'funciones_claims.php',
-                    onSubmit : function(file , ext){
-                        if (!(ext && /^(jpg|png|pdf)$/i.test(ext))){
+                    onSubmit : function(file , ext){   
+                        if (!(ext && (/^(pdf)$/i.test(ext) || /^(jpg)$/i.test(ext) || /^(png)$/i.test(ext) || /^(docx)$/i.test(ext) || /^(xls)$/i.test(ext) || /^(xlsx)$/i.test(ext)))){
                             var mensaje = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Error: Invalid file format, please upload JPG or PNG.</p>';
                             fn_solotrucking.mensaje(mensaje);
                             return false;
                         }else{
                            if($('#edit_form #iConsecutivo').val() != ''){
                               this.setData({'accion':'upload_files','iConsecutivoClaim':$('#edit_form #iConsecutivo').val(),});
-                              //$('#txtFile').val('loading...');
                               this.disable();  
                            }else{
                                fn_solotrucking.mensaje('To upload the pictures of incident, please save first the general data of claim making click in save button.'); 
@@ -311,13 +310,15 @@ var fn_claims = {
           $('#edit_form .mensaje_valido').empty().append('The fields containing an (<span style="color:#ff0000;">*</span>) are required.');
           $('#edit_form .p-header h2').empty().append('CLAIMS - NEW APPLICATION');
           $("#edit_form .policy_apply select").val("NOAPPLY").prop("disabled","disabled").addClass("readonly");
+          $("#edit_form #files_datagrid").hide();
          
           fn_solotrucking.get_date(".fecha"); 
           fn_claims.revisar_tipos_polizas();
           fn_popups.resaltar_ventana('edit_form'); 
         },
         save : function(){
-           var valid = true;
+            
+           var valid      = true;
            todosloscampos = $('#edit_form :text, #edit_form select');
            todosloscampos.removeClass("error");
 
@@ -333,7 +334,9 @@ var fn_claims = {
            valid = valid && fn_solotrucking.checkLength($('#edit_form #dHoraIncidente'),'Hour',1,6);
            
            //Validando que por lo menos sea un driver o una unidad...
-           if($('#edit_form #sDriver').val() == '' && $('#edit_form #sUnitTrailer').val() == ''){ valid = false; $('#edit_form #sUnitTrailer, #edit_form #sDriver').addClass('error');}
+           if($('#edit_form #sDriver').val() == '' && $('#edit_form #sUnitTrailer').val() == ''){
+               valid = false; $('#edit_form #sUnitTrailer, #edit_form #sDriver').addClass('error');
+           }
            if(!valid){fn_solotrucking.mensaje("Please select at least one driver or one unit from your list.");} 
            
            //Validando mensaje:
@@ -347,7 +350,7 @@ var fn_claims = {
            
            //Revisando polizas en las que aplica:
            var polizas = "";
-           $("#edit_form .company_policies input:checkbox").each(function(){
+           $("#edit_form .company_policies input[type=checkbox]").each(function(){
                if($(this).is(':checked')){
                   if(polizas != ""){polizas +="|"+$(this).val();}else{polizas = $(this).val();} 
                }
@@ -364,7 +367,10 @@ var fn_claims = {
                     switch(data.error){
                      case '0':
                         fn_solotrucking.mensaje(data.msj);
-                        if(data.iConsecutivoClaim != ''){$('#edit_form #iConsecutivo').val(data.iConsecutivoClaim);}
+                        if(data.iConsecutivoClaim != ''){
+                            $('#edit_form #iConsecutivo').val(data.iConsecutivoClaim);
+                            $("#edit_form #files_datagrid").show(); 
+                        }
                      break;
                      case '1': fn_solotrucking.mensaje(data.msj); break;
                     }
@@ -372,7 +378,7 @@ var fn_claims = {
            }
            
            
-       },
+        },
         edit: function(){
             $(fn_claims.data_grid + " tbody td .edit").bind("click",function(){
                     var clave = $(this).parent().parent().find("td:eq(0)").html();
@@ -385,18 +391,27 @@ var fn_claims = {
                     function(data){
                         if(data.error == '0'){
                            $('#general_information input:text, #general_information select, #general_information textarea,#general_information input:hidden').val('').removeClass('error'); 
-                           $('#edit_form input:checkbox').prop("checked",false);  
-                           fn_claims.revisar_tipos_polizas();
+                           $('#edit_form input:checkbox').prop("checked",false); 
+                           $("#edit_form .policy_apply select").val("NOAPPLY").prop("disabled","disabled").addClass("readonly");    
                            eval(data.fields); 
+                           fn_claims.revisar_tipos_polizas();
+                           
+                           //Calcular nuevamente a  que polizas aplicaria el claim:
+                           $("#edit_form .policy_apply select").each(function(){
+                             if($(this).val() == "YES"){fn_claims.valida_tipo_dano($(this));}
+                           });
+                           
                            $('#edit_form #sDescripcionSuceso').val(data.descripcion);
                            //Llenar grid de archivos:
                            fn_claims.files.iConsecutivoClaim = clave;
-                           fn_claims.files.fillgrid();
+                           fn_claims.files.fillgrid(); 
+                           $("#edit_form #files_datagrid").show(); 
+                           
                            fn_popups.resaltar_ventana('edit_form');   
                         }else{
                            fn_solotrucking.mensaje(data.msj);  
                         }       
-            },"json");
+                    },"json");
             });
        },
         send : function(){
@@ -420,24 +435,36 @@ var fn_claims = {
          });   
        },
         //VALIDACIONES
-        revisar_tipos_polizas : function(){
-            $("#edit_form .company_policies input[type=checkbox]").each(function(){
-                if($(this).hasClass("PD")){$("#edit_form #eDanoFisico").val("").removeProp("disabled").removeClass("readonly");}
-                if($(this).hasClass("MTC")){$("#edit_form #eDanoMercancia").val("").removeProp("disabled").removeClass("readonly");}  
-                if($(this).hasClass("AL")){$("#edit_form #eDanoTerceros").val("").removeProp("disabled").removeClass("readonly");}  
-            });    
+        revisar_tipos_polizas : function(){  
+            if($("#edit_form .company_policies input[type=checkbox]").html() != undefined){
+                $("#edit_form .company_policies input[type=checkbox]").each(function(){
+                    if($(this).hasClass("PD")){$("#edit_form #eDanoFisico").removeProp("disabled").removeClass("readonly");}
+                    if($(this).hasClass("MTC")){$("#edit_form #eDanoMercancia").removeProp("disabled").removeClass("readonly");}  
+                    if($(this).hasClass("AL")){$("#edit_form #eDanoTerceros").removeProp("disabled").removeClass("readonly");}  
+                });
+            }else{
+                $("#edit_form .policy_apply select").val("NOAPPLY").prop("disabled","disabled").addClass("readonly");
+            }    
         },
         valida_tipo_dano : function(input){
             if(input){
-                var tipo = input.prop("id");
-                if(tipo == "eDanoTerceros"){$("#edit_form .company_policies input[type=checkbox].AL").prop("checked",true);}
-                else{$("#edit_form .company_policies input[type=checkbox].AL").prop("checked",false);}
+                var value = input.val();
+                var tipo  = input.prop("id");
                 
-                if(tipo == "eDanoFisico"){$("#edit_form .company_policies input[type=checkbox].PD").prop("checked",true);}
-                else{$("#edit_form .company_policies input[type=checkbox].PD").prop("checked",false);}
-                 
-                if(tipo == "eDanoMercancia"){$("#edit_form .company_policies input[type=checkbox].MTC").prop("checked",true);} 
-                else{$("#edit_form .company_policies input[type=checkbox].MTC").prop("checked",false);}
+                switch(tipo){
+                    case 'eDanoTerceros' : var clase = "AL"; break;
+                    case 'eDanoMercancia': var clase = "MTC"; break;
+                    case 'eDanoFisico'   : var clase = "PD"; break;
+                }
+                
+                if(value == "YES"){ 
+                    $("#edit_form .company_policies input[type=checkbox]."+clase).prop("checked",true);
+                    $("#edit_form .company_policies label."+clase).show();
+                }else{
+                    $("#edit_form .company_policies input[type=checkbox]."+clase).prop("checked",false);
+                    $("#edit_form .company_policies label."+clase).hide();
+                } 
+                
             }
         },
         files : {
@@ -667,8 +694,8 @@ var fn_claims = {
             <table>
              <tr>
              <td>
-                <div class="field_item" style="display: none;"> 
-                    <label style="margin-left:15px;">select the policies in which you want to apply your claim <span style="color:#ff0000;">*</span>:</label> 
+                <div class="field_item"> 
+                    <label style="margin-left:15px;">Your claims will apply in following policies:</label> 
                     <div class="company_policies" style="padding: 10px 10px 10px 23px;"></div>
                 </div>
              </td>
@@ -691,20 +718,6 @@ var fn_claims = {
                     <div class="field_item"> 
                         <label>Hour: <span style="color:#ff0000;">*</span>:</label><br>
                         <input tabindex="1" id="dHoraIncidente" type="text" class="hora" title="Please capture the hour in 24/h format" style="width: 98%;" placeholder="HH:MM">
-                    </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                    <div class="field_item"> 
-                        <label>Driver:</label> 
-                        <input tabindex="1" id="sDriver" type="text" placeholder="Write the name or system id of your driver" style="width: 98%;" title="Please check before that the driver is in the selected policy.">
-                    </div>
-                    </td>
-                    <td>
-                    <div class="field_item"> 
-                        <label>Unit/Trailer:</label> 
-                        <input tabindex="1" id="sUnitTrailer" type="text" placeholder="Write the VIN or system id of your Unit or Trailer" style="width: 98%;" title="Please check before that the unit/trailer is in the selected policy.">
                     </div>
                     </td>
                 </tr>
@@ -763,6 +776,20 @@ var fn_claims = {
                     <div class="field_item"> 
                         <label>What City?:</label> 
                         <input tabindex="1" id="sCiudad" type="text" class="txt-uppercase">
+                    </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                    <div class="field_item"> 
+                        <label>Driver <span style="color:#ff0000;">*</span>:</label> 
+                        <input tabindex="1" id="sDriver" type="text" placeholder="Write the name or system id of your driver" style="width: 98%;" title="Please check before that the driver is in the selected policy.">
+                    </div>
+                    </td>
+                    <td>
+                    <div class="field_item"> 
+                        <label>Unit/Trailer <span style="color:#ff0000;">*</span>:</label> 
+                        <input tabindex="1" id="sUnitTrailer" type="text" placeholder="Write the VIN or system id of your Unit or Trailer" style="width: 98%;" title="Please check before that the unit/trailer is in the selected policy.">
                     </div>
                     </td>
                 </tr>

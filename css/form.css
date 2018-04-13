@@ -75,7 +75,7 @@ button, .btn-1{
     border-radius:4px;
     -moz-border-radius:4px;
     -webkit-border-radius:4px;
-    padding:5px;
+    /*padding:5px; */
     color:#ffffff;
     
     -webkit-transition: left 0.3s linear;

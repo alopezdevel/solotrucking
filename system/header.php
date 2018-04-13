@@ -159,7 +159,7 @@
                 <li><a href="mypolicies">Policies</a></li> 
                 <li><a href="endorsements">ENDORSEMENTS</a></li>
         		<li><a href="certificates">Certificates</a></li>
-            	<li style="display: none;"><a href="claims">Claims</a></li>  
+            	<li><a href="claims">Claims</a></li>  
             	<?php //<li style="display: none;"><a href="#">Quotes</a></li><li style="display: none;"><a href="#">Support</a></li> ?>	
             <?php } ?>
             <!-- END COMPANY NAVIGATION --> 
