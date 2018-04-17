@@ -393,10 +393,13 @@ div.btn-icon span{font-weight: bold;font-size: 13px;}
     
     /* centrar popup */  
     position: absolute;
-    top: 20px;
+    /*top: 20px; */
     width: 900px;
+    /*left: 50%;
+    margin-left: -450px; */
+    top: 49%;
     left: 50%;
-    margin-left: -450px;
+    transform: translate(-50%, -50%); 
     display: none;
     z-index: 100;
     /*--estilo colores ---*/

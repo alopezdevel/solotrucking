@@ -16,7 +16,7 @@
         $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
             
         //Filtros de informacion //
-        $filtroQuery = " WHERE iConsecutivoCompania = '".$company."' ";
+        $filtroQuery = " WHERE iConsecutivoCompania = '".$company."' AND bEliminado = '0' ";
         $array_filtros = explode(",",$_POST["filtroInformacion"]);
         foreach($array_filtros as $key => $valor){
             if($array_filtros[$key] != ""){
@@ -57,26 +57,32 @@
                         $btn_confirm = "";
                         $class = "";
                         switch($items["eStatus"]){
-                             case 'EDITABLE': 
-                                $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Data\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>".
-                                               "<div class=\"btn_send btn-icon send-email btn-left\" title=\"Send Claim To Solo-Trucking\"><i class=\"fa fa-envelope\"></i><span></span></div>";  
+                             case 'EDITABLE':
+                                $statusTitle  = "EDITABLE: Data can still be edited and has not yet been sent to solo-trucking employees."; 
+                                $btn_confirm  = "<div class=\"btn_edit btn-icon edit       btn-left\" title=\"Edit Data\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>";
+                                $btn_confirm .= "<div class=\"btn_send btn-icon send-email btn-left\" title=\"Send Claim To Solo-Trucking\"><i class=\"fa fa-envelope\"></i><span></span></div>"; 
+                                $btn_confirm .= "<div class=\"delete   btn-icon trash      btn-left\" title=\"Delete Claim\"><i class=\"fa fa-trash\"></i><span></span></div>"; 
                              break;
-                             case 'SENT': 
+                             case 'SENT':
+                                $statusTitle       = "SENT TO SOLO-TRUCKING: The data can be edited by you or by the employees of just-trucking.";
                                 $items["eStatus"] .= " TO SOLO-TRUCKING"; 
                                 $class             = "class = \"blue\""; 
                                 $btn_confirm       = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Data\"><i class=\"fa fa-pencil-square-o\"></i><span></span></div>".
                                                      "<div class=\"btn_unsent btn-icon trash btn-left\" title=\"Cancel Sending\"><i class=\"fa fa-times\"></i><span></span></div>";  
                              break;
-                             case 'INPROCESS': 
-                                $class = "class = \"yellow\""; 
+                             case 'INPROCESS':
+                                $statusTitle = "INPROCESS: Your claim has been sent to the insurers and is in process."; 
+                                $class       = "class = \"yellow\""; 
                                 $btn_confirm = ""; 
                              break;
                              case 'APPROVED': 
-                                $class = "class = \"green\"";
-                                $btn_confirm =""; 
+                                $statusTitle = "APPROVED: Your claim has been approved successfully.";
+                                $class       = "class = \"green\"";
+                                $btn_confirm = ""; 
                                 break;
                              case 'CANCELED': 
-                                $class = "class = \"red\"";
+                                $statusTitle = "CANCELED: Your claim has been approved canceled, please see the reasons on the edit button."; 
+                                $class       = "class = \"red\"";
                                 $btn_confirm = "";    
                              break;
                          }
@@ -88,7 +94,7 @@
                                            "<td>".$items['dHoraIncidente']."</td>".  
                                            "<td>".$items['sCiudad']."</td>".
                                            "<td>".$items['sEstado']."</td>".
-                                           "<td>".$items['eStatus']."</td>".
+                                           "<td title=\"$statusTitle\">".$items['eStatus']."</td>".
                                            "<td>".$items['dFechaAplicacion']."</td>".                                                                                                                                                                                                                     
                                            "<td>$btn_confirm</td></tr>";  
                                            
@@ -273,65 +279,64 @@
       $_POST['dFechaIncidente'] = format_date(trim($_POST['dFechaIncidente']));
       
       
-      #PASO 1 REVISAR SI EL DRIVER O UNIDAD EXISTE y Traer Datos:
-      if($_POST['sDriver'] != ''){  //<--- Driver
-            $driverdata = explode('-',$_POST['sDriver']); 
-            $driverID   = $driverdata[0];
-            $driverName = $driverdata[1];
-            
-            if($driverID != ''){
+      #PASO 1 REVISAR SI EL DRIVER EXISTE o SE ALMACENA SOLO EL NOMBRE
+      if($_POST['sDriver'] != ''){ 
+       
+            //Si la cadena tiene un - quiere decir que fue de la lista del autocomplete.
+            if(strpos($_POST['sDriver'],"-") > 0){
+                $driverdata = explode('-',$_POST['sDriver']); 
+                $driverID   = $driverdata[0];
+                $driverName = $driverdata[1];
                 
-                $query = "SELECT iConsecutivo,iNumLicencia,eTipoLicencia,siConsecutivosPolizas,inPoliza ".
-                         "FROM ct_operadores ".
-                         "WHERE iConsecutivo='$driverID'";
-                $result = $conexion->query($query);
-                $rows = $result->num_rows;
-                if($rows > 0 ){
-                   $driver = $result->fetch_assoc(); 
-                }else{
-                   $error = '1';
-                   $mensaje = "Error: The data driver was not found"; 
+                if($driverID != ''){
+                
+                    $query  = "SELECT iConsecutivo,iNumLicencia,eTipoLicencia,siConsecutivosPolizas,inPoliza ".
+                              "FROM ct_operadores WHERE iConsecutivo='$driverID'";
+                    $result = $conexion->query($query);
+                    $rows   = $result->num_rows;
+                    if($rows > 0 ){$driver = $result->fetch_assoc();}
+                    else{$error = '1';$mensaje = "Error: The data driver was not found"; }
+                    
                 }
-                
-            }else{
-                $error = '1';
-                $mensaje = "Error: The data driver are invalid";
-            }  
+                else{$error = '1';$mensaje = "Error: The data driver was not found";} 
+            }
+            else{
+                $driverName = $_POST['sDriver'];
+            }
+            
+        
       }
       else{$driverID="";}
       
-      #unidades:
+      #PASO 2 REVISAR SI LA UNIDAD EXISTE y Traer Datos:
       if($error == "0"){
-          if($_POST['sUnitTrailer'] != ''){  //<--- UnitTrailer
-                $unitdata = explode('-',$_POST['sUnitTrailer']); 
-                $unitID   = $unitdata[0];
-                $unitName = $unitdata[1];
-                
-                if($unitID != ''){
-                    
-                    $query = "SELECT iConsecutivo,iConsecutivoRadio,iYear,iModelo,sVIN,siConsecutivosPolizas,inPoliza ".
-                             "FROM ct_unidades ".
-                             "WHERE iConsecutivo='$unitID'";
-                    $result = $conexion->query($query);
-                    $rows = $result->num_rows;
-                    if($rows > 0 ){
-                       $unittrailer = $result->fetch_assoc(); 
-                    }else{
-                       $error = '1';
-                       $mensaje = "Error: The data Unit / Trailer was not found"; 
-                    }
-                    
-                }else{
-                    $error = '1';
-                    $mensaje = "Error: The data Unit / Trailer are invalid";
-                }  
+          if($_POST['sUnitTrailer'] != ''){  
+              
+                if(strpos($_POST['sUnitTrailer'],"-") > 0){
+                     
+                     $unitdata = explode('-',$_POST['sUnitTrailer']); 
+                     $unitID   = $unitdata[0];
+                     $unitName = $unitdata[1];
+                     
+                     if($unitID != ''){
+                        $query  = "SELECT iConsecutivo,iConsecutivoRadio,iYear,iModelo,sVIN,siConsecutivosPolizas,inPoliza ".
+                                  "FROM ct_unidades ".
+                                  "WHERE iConsecutivo='$unitID'";
+                        $result = $conexion->query($query);
+                        $rows   = $result->num_rows;
+                        
+                        if($rows > 0 ){$unittrailer = $result->fetch_assoc(); }
+                        else{$error = '1';$mensaje = "Error: The data Unit / Trailer was not found"; }
+                        
+                     }else{$error = '1';$mensaje = "Error: The data Unit / Trailer are invalid";}  
+                }else{$unitName = $_POST['sUnitTrailer'];}
           }
           else{$unitID = "";}
       }
                        
       
       
-      if(($unitID != "" || $driverID != "") && $error == "0"){
+      if(($unitID != "" || $unitName != "") && ($driverID != "" || $driverName != "") && $error == "0"){
           if($_POST['edit_mode'] == 'true'){
             #UPDATE DATA:
             foreach($_POST as $campo => $valor){
@@ -344,14 +349,26 @@
             array_push($valores ,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
             array_push($valores ,"sIP='".$_SERVER['REMOTE_ADDR']."'");
             array_push($valores ,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'");
-            if($driverID != "") array_push($valores ,"iConsecutivoOperador='".trim($driverID)."'");
-            if($unitID != "")   array_push($valores ,"iConsecutivoUnidad='".trim($unitID)."'"); 
             
-            if($driverID != '' && $unitID != ''){array_push($valores ,"eCategoria='BOTH'");}
-            else if($driverID != ''){array_push($valores ,"eCategoria='DRIVER'");}
-            else if($unitID != ''){array_push($valores ,"eCategoria='UNIT/TRAILER'"); } 
+            #Driver:
+            if($driverID != "")       {array_push($valores ,"iConsecutivoOperador='".trim($driverID)."'");
+                                       array_push($valores ,"sNombreOperador=''");}
+            else if($driverName != ""){array_push($valores ,"sNombreOperador='".trim($driverName)."'");
+                                       array_push($valores ,"iConsecutivoOperador=null");}
             
-            $sql = "UPDATE cb_claims SET ".implode(",",$valores)." WHERE iConsecutivo = '".trim($_POST['iConsecutivo'])."' AND iConsecutivoCompania = '$company'";
+            #Unit:
+            if($unitID != "")       {array_push($valores ,"iConsecutivoUnidad='".trim($unitID)."'");
+                                     array_push($valores ,"sVINUnidad=''");} 
+            else if($unitName != ""){array_push($valores ,"sVINUnidad='".trim($unitName)."'");
+                                     array_push($valores ,"iConsecutivoUnidad=null");} 
+            
+            #Categoria del Claim:
+            if(($driverID != "" || $driverName != "") && ($unitID != "" || $unitName != "")){array_push($valores ,"eCategoria='BOTH'");}
+            else if($driverID != "" || $driverName != "")                                   {array_push($valores ,"eCategoria='DRIVER'");}
+            else if($unitID != "" || $unitName != "")                                       {array_push($valores ,"eCategoria='UNIT/TRAILER'");} 
+            
+            $sql     = "UPDATE cb_claims SET ".implode(",",$valores)." WHERE iConsecutivo = '".trim($_POST['iConsecutivo'])."' ".
+                       "AND iConsecutivoCompania = '$company'";
             $mensaje = "The data was updated successfully.";
             
           }else{
@@ -371,19 +388,28 @@
             array_push($valores,$_SERVER['REMOTE_ADDR']);
             array_push($campos,"sUsuarioIngreso");
             array_push($valores,$_SESSION['usuario_actual']);
-            if($driverID != ""){array_push($campos,"iConsecutivoOperador"); array_push($valores,trim($driverID));}
-            if($unitID != "")  {array_push($campos,"iConsecutivoUnidad"); array_push($valores,trim($unitID));}
-            if($driverID != '' && $unitID != ''){array_push($campos,"eCategoria"); array_push($valores,'BOTH');}
-            else if($driverID != ''){array_push($campos,"eCategoria"); array_push($valores,'DRIVER');}
-            else if($unitID != ''){array_push($campos,"eCategoria"); array_push($valores,'UNIT/TRAILER');} 
+            
+            #Driver:
+            if($driverID != "")       {array_push($campos,"iConsecutivoOperador"); array_push($valores,trim($driverID));}
+            else if($driverName != ""){array_push($campos,"sNombreOperador"); array_push($valores,trim($driverName));}
+            
+            #Unidad:
+            if($unitID != "")       {array_push($campos,"iConsecutivoUnidad"); array_push($valores,trim($unitID));}
+            else if($unitName != ""){array_push($campos,"sVINUnidad"); array_push($valores,trim($unitName));}  
+            
+            #Categoria Claim:
+            if(($driverID != "" || $driverName != "") && ($unitID != "" || $unitName != "")){array_push($campos,"eCategoria"); array_push($valores,'BOTH');}
+            else if($driverID != "" || $driverName != ""){array_push($campos,"eCategoria"); array_push($valores,'DRIVER');}
+            else if($unitID != "" || $unitName != "")    {array_push($campos,"eCategoria"); array_push($valores,'UNIT/TRAILER');} 
             
             $sql = "INSERT INTO cb_claims (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
             $mensaje = "The data was saved successfully.";  
           }
-          
+
           //TRANSACTION...
           if($sql != ""){
-              if($conexion->query($sql)){
+              $success = $conexion->query($sql);
+              if($success){
                   $_POST['edit_mode'] != 'true' ? $iConsecutivoClaim = $conexion->insert_id :  $iConsecutivoClaim = trim($_POST['iConsecutivo']);
                   
                   //Actualizar tabla de polizas:
@@ -436,7 +462,9 @@
       $company = $_SESSION['company'];
       $conexion->autocommit(FALSE);
       
-      $sql = "SELECT A.iConsecutivo,A.iConsecutivoCompania,sMensaje,DATE_FORMAT(dHoraIncidente,'%H:%i') AS dHoraIncidente, DATE_FORMAT(dFechaIncidente,'%m/%d/%Y') AS dFechaIncidente,sCiudad,sEstado,CONCAT(B.iConsecutivo,'-',sNombre) AS sDriver, CONCAT(C.iConsecutivo,'-',sVIN) AS sUnitTrailer, ".
+      $sql = "SELECT A.iConsecutivo,A.iConsecutivoCompania,sMensaje,DATE_FORMAT(dHoraIncidente,'%H:%i') AS dHoraIncidente, DATE_FORMAT(dFechaIncidente,'%m/%d/%Y') AS dFechaIncidente,".
+             "sCiudad,sEstado,IF(B.iConsecutivo != '',CONCAT(B.iConsecutivo, '-', sNombre),A.sNombreOperador) AS sDriver,".
+             "IF(C.iConsecutivo != '', CONCAT(C.iConsecutivo, '-', sVIN), A.sVINUnidad) AS sUnitTrailer, ".
              "sDescripcionSuceso, eDanoTerceros, eDanoFisico, eDanoMercancia ".   
              "FROM cb_claims A ".
              "LEFT JOIN ct_operadores B ON A.iConsecutivoOperador = B.iConsecutivo ".
@@ -664,6 +692,30 @@
         
       $response = array("msj"=>"$msj","error"=>"$error");   
       echo json_encode($response); 
+  }
+  function delete_claim(){
+       $error = "0";
+       $msj   = "";
+       $clave = trim($_POST['iConsecutivo']);
+       include("cn_usuarios.php");
+       $company = $_SESSION['company'];
+       $conexion->autocommit(FALSE);
+       
+       $query   = "UPDATE cb_claims SET bEliminado = '1' WHERE iConsecutivo = '$clave' AND iConsecutivoCompania = '$company'"; 
+       $success = $conexion->query($query); 
+       
+       if(!($success)){
+           $msj   = "Error deleting the record, please try again.";
+           $error = "1";
+           $conexion->rollback();
+       }else{
+           $conexion->commit(); 
+           $msj = "The record has been successfully deleted.";
+       }
+       
+       $conexion->close();  
+       $response = array("mensaje"=>"$msj","error"=>"$error");   
+       echo json_encode($response);
   }
   
   #Funcion para solo-trucking users:

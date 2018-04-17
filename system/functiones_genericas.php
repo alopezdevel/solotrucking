@@ -200,4 +200,19 @@ function array2json($arr) {
     if($is_list) return '[' . $json . ']';//Return numerical JSON 
     return '{' . $json . '}';//Return associative JSON 
 } 
+function valida_email($email){
+     $emailRegex   = "/^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/"; 
+     $validaemail  = preg_match($emailRegex,trim($email)); 
+     return $validaemail;
+}
+/*----- calcular tipo de poliza ---*/
+function get_policy_type($iTipo){
+    switch($iTipo){
+               case '1' : $tipoPoliza = "PD"; break;
+               case '2' : $tipoPoliza = "MTC"; break;
+               case '3' : $tipoPoliza = "AL"; break;
+               case '5' : $tipoPoliza = "MTC"; break;
+    } 
+    return $tipoPoliza;
+}
 ?>
