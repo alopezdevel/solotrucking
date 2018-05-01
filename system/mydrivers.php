@@ -239,26 +239,18 @@ var fn_drivers = {
                     </select>
                 </td> 
                 <td><input class="flt_fechaExpiracion" type="text" placeholder="MM-DD-YY"></td>  
-                <td><input class="flt_experiencia" type="text" placeholder="##" maxlength="2"></td> 
-                <td>
-                    <select class="flt_status">
-                        <option value="">Select an option...</option>
-                        <option value="1">ACTIVE</option>
-                        <option value="0">NON-ACTIVE</option>
-                    </select>
-                </td>  
-                <td style='width:120px;'>
+                <td><input class="flt_experiencia" type="text" placeholder="##" maxlength="2"></td>  
+                <td style='width:80px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_drivers.filtraInformacion();"><i class="fa fa-search"></i></div>
                 </td> 
             </tr>
             <tr id="grid-head2">
                 <td class="etiqueta_grid down" onclick="fn_drivers.ordenamiento('sNombre',this.cellIndex);">NAME</td> 
                 <td class="etiqueta_grid"      onclick="fn_drivers.ordenamiento('dFechaNacimiento',this.cellIndex);">DOB</td>
-                <td class="etiqueta_grid"      onclick="fn_drivers.ordenamiento('iNumLicencia',this.cellIndex);">LICENSE NUMBER</td>
+                <td class="etiqueta_grid"      onclick="fn_drivers.ordenamiento('iNumLicencia',this.cellIndex);">LICENSE #</td>
                 <td class="etiqueta_grid"      onclick="fn_drivers.ordenamiento('eTipoLicencia',this.cellIndex);">LICENSE TYPE </td> 
                 <td class="etiqueta_grid"      onclick="fn_drivers.ordenamiento('dFechaExpiracionLicencia',this.cellIndex);">EXPIRE DATE</td> 
                 <td class="etiqueta_grid"      onclick="fn_drivers.ordenamiento('iExperienciaYear',this.cellIndex);">EXPERIENCE YEARS</td> 
-                <td class="etiqueta_grid"      onclick="fn_drivers.ordenamiento('inPoliza',this.cellIndex);">STATUS IN POLICIES</td>  
                 <td class="etiqueta_grid"></td>
             </tr>
         </thead>

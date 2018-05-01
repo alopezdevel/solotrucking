@@ -3,7 +3,7 @@ if ( !($_SESSION["acceso"] != '2'  && $_SESSION["usuario_actual"] != "" && $_SES
     header("Location: login.php");
     exit;
 }else{ ?>
-<!---- HEADER ----->
+<!-- HEADER -->
 <?php include("header.php"); ?>   
 <script type="text/javascript"> 
 $(document).ready(inicio);
@@ -332,6 +332,15 @@ var fn_policies = {
                     $("#unit_edit_form #iYear").empty().append(data.select);
                      
                 }
+            });
+            //Filtrar listas grid:
+            $('#driver_tabs #drivers_active_table #grid-head1 input').keyup(function(event){
+                if (event.keyCode == '13') {event.preventDefault();fn_policies.list.filtraInformacion();}
+                if(event.keyCode == '27'){event.preventDefault();$(this).val('');fn_policies.list.filtraInformacion();}
+            });
+            $('#driver_tabs #units_active_table #grid-head1 input').keyup(function(event){
+                if (event.keyCode == '13') {event.preventDefault();fn_policies.list.units_filtraInformacion();}
+                if(event.keyCode == '27'){event.preventDefault();$(this).val('');fn_policies.list.units_filtraInformacion();}
             });
         },
         fillgrid: function(){
@@ -705,7 +714,7 @@ var fn_policies = {
                        }
                          
                 });
-                if(policies_selected == ''){valid = false;}else{$("#data_driver_form #siConsecutivosPolizas").val(policies_selected); }
+                //if(policies_selected == ''){valid = false;}else{$("#data_driver_form #siConsecutivosPolizas").val(policies_selected); }
                 
                 
                 if(valid){
@@ -823,7 +832,7 @@ var fn_policies = {
                 }
             },
             unit_add : function(){
-                $('#unit_edit_form :text ').val(''); 
+                $('#unit_edit_form :text,#unit_edit_form select').val(''); 
                 $('#unit_edit_form #iConsecutivoCompania').val(fn_policies.list.id_company);
                 fn_policies.list.cargar_polizas('#unit_edit_form');
                 $('#units_active_table').hide();
@@ -832,10 +841,10 @@ var fn_policies = {
             }, 
             unit_save : function(){
                 
-                todosloscampos = $('#data_unit_form input, #data_unit_form select');
-                todosloscampos.removeClass( "error" );
-                valid = true;
+                var todosloscampos    = $('#data_unit_form input, #data_unit_form select');
+                var valid             = true;
                 var policies_selected = "";
+                todosloscampos.removeClass( "error" ); 
                 
                 //Revsamos los valores marcados como required:
                 $("#unit_edit_form .required-field" ).each(function( index ){
@@ -852,7 +861,7 @@ var fn_policies = {
                        }
                          
                 });
-                if(policies_selected == ''){valid = false;}else{$("#unit_edit_form #siConsecutivosPolizas").val(policies_selected); }
+                //if(policies_selected == ''){valid = false;}else{$("#unit_edit_form #siConsecutivosPolizas").val(policies_selected); }
                 
                 
                 if(valid){
@@ -988,7 +997,7 @@ var fn_policies = {
         </table>   
     </div>
 </div>
-<!---- FORMULARIOS ------>
+<!-- FORMULARIOS -->
 <div id="policies_edit_form" class="popup-form">
     <div class="p-header">
         <h2>EDIT OR ADD COMPANY POLICY</h2>
@@ -1049,7 +1058,7 @@ var fn_policies = {
     </div>
     </div>
 </div>
-<!---- upload file form --->
+<!-- upload file form -->
 <div id="file_edit_form" class="popup-form">
     <div class="p-header">
         <h2>UPLOAS DRIVER/UNITS FILE</h2>
@@ -1088,9 +1097,8 @@ var fn_policies = {
     </div>
     </div>
 </div>
-<!----- DRIVERS & UNITS --->
-<!---- upload file form --->
-<div id="driver_list_form" class="popup-form" style="width:90%!important;margin-left: -45%;">
+<!-- DRIVERS & UNITS -->
+<div id="driver_list_form" class="popup-form" style="width:90%!important;">
     <div class="p-header">
         <h2>LIST OF DRIVERS</h2>
         <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('driver_list_form');"><i class="fa fa-times"></i></div>
@@ -1155,7 +1163,7 @@ var fn_policies = {
                     </tr>
                 </tfoot>
         </table>
-        <!---- FORMULARIOS DE EDICION DRIVERS----->
+        <!-- FORMULARIOS DE EDICION DRIVERS-->
         <div id="drivers_edit_form" style="display:none;">
            <form>
                 <div class="field_item">
@@ -1257,7 +1265,7 @@ var fn_policies = {
                     </tr>
                 </tfoot>
         </table>
-        <!---- FORMULARIOS DE EDICION DRIVERS----->
+        <!-- FORMULARIOS DE EDICION DRIVERS -->
         <div id="unit_edit_form" style="display:none;">
            <form>
                 <div class="field_item">
@@ -1309,7 +1317,7 @@ var fn_policies = {
     </div>
     </div>
 </div>
-<!--- DIALOGUES --->
+<!-- DIALOGUES -->
 <div id="dialog_report_policies" title="REPORT OF POLICIES" style="display:none;">
     <p>Please select the parameters to generate a report of the policies:</p>
     <form id="frm_report_policies" method="post">
@@ -1344,7 +1352,7 @@ var fn_policies = {
            <input type="hidden" name="id_policy" id="id_policy">
     </form>  
 </div>
-<!---- FOOTER ----->
+<!-- FOOTER -->
 <?php include("footer.php"); ?> 
 
 </body>

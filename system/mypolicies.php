@@ -3,7 +3,7 @@ if ( !($_SESSION["acceso"] == '2'  && $_SESSION["usuario_actual"] != "" && $_SES
     header("Location: login.php");
     exit;
 }else{ ?>
-<!---- HEADER ----->
+<!-- HEADER -->
 <?php include("header.php"); ?>  
 <script type="text/javascript"> 
 $(document).ready(inicio);
@@ -43,6 +43,16 @@ var fn_mypolicies = {
             });    
             
             $(".flt_policyexpdate,.flt_policystartdate, .fecha,.flt_fecha").mask("99-99-9999"); 
+            
+            //Filtrar listas grid:
+            $('#drivers_active_table #grid-head1 input').keyup(function(event){
+                if (event.keyCode == '13') {event.preventDefault();fn_mypolicies.list_drivers.filtraInformacion();}
+                if(event.keyCode == '27'){event.preventDefault();$(this).val('');fn_mypolicies.list_drivers.filtraInformacion();}
+            });
+            $('#unit_active_table #grid-head1 input').keyup(function(event){
+                if (event.keyCode == '13') {event.preventDefault();fn_mypolicies.list_units.filtraInformacion();}
+                if(event.keyCode == '27'){event.preventDefault();$(this).val('');fn_mypolicies.list_units.filtraInformacion();}
+            });
         },
         fillgrid: function(){
                $.ajax({             
@@ -331,7 +341,7 @@ var fn_mypolicies = {
         <p style="margin:5px auto; text-align:center;"><span style="font-weight:bold;color:#00518a;">System Message:</span> We are working on this section to show all the information of your policies, please be patient.</p>   
     </div>
 </div>
-<!---- FORMULARIOS ------>
+<!-- FORMULARIOS -->
 <div id="mypolicies_edit_form" class="popup-form">
     <div class="p-header">
         <h2>MY POLICY UNITS AND DRIVERS</h2>
@@ -350,8 +360,8 @@ var fn_mypolicies = {
     </div>
     </div>
 </div>
-<!---- upload file form --->
-<div id="driver_list_form" class="popup-form" style="width:90%!important;margin-left: -45%;">
+<!-- upload file form -->
+<div id="driver_list_form" class="popup-form" style="width:90%!important;">
     <div class="p-header">
         <h2>LIST OF DRIVERS</h2>
         <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('driver_list_form');"><i class="fa fa-times"></i></div>
@@ -411,7 +421,7 @@ var fn_mypolicies = {
         </table>
     </div>
 </div>
-<div id="units_list_form" class="popup-form" style="width:90%!important;margin-left: -45%;">
+<div id="units_list_form" class="popup-form" style="width:90%!important;">
     <div class="p-header">
         <h2>LIST OF UNITS</h2>
         <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('units_list_form');"><i class="fa fa-times"></i></div>
@@ -473,7 +483,7 @@ var fn_mypolicies = {
     </div>
 </div>
 
-<!---- FOOTER ----->
+<!-- FOOTER -->
 <?php include("footer.php"); ?> 
 
 </body>

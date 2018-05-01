@@ -42,7 +42,7 @@
           $pagina_actual == "0" ? $pagina_actual = 1 : false;
           $limite_superior = $registros_por_pagina;
           $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-          $sql = "SELECT A.iConsecutivo, sVIN, B.sDescripcion AS sModelo, C.sDescripcion AS sRadio, iYear, sPeso, sTipo,inPoliza ".
+          $sql = "SELECT A.iConsecutivo, sVIN, B.sDescripcion AS sModelo, C.sDescripcion AS sRadio, iYear, sPeso, sTipo,inPoliza, siConsecutivosPolizas ".
                  "FROM ct_unidades A ".
                  "LEFT JOIN ct_unidad_modelo B ON A.iModelo = B.iConsecutivo ".
                  "LEFT JOIN ct_unidad_radio  C ON A.iConsecutivoRadio = C.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
@@ -53,7 +53,26 @@
                 while($items = $result->fetch_assoc()) { 
                     
                     //$items['iConsecutivoArchivo'] == '' ? $btn_pdf = "" : $btn_pdf = "<div class=\"btn_view_pdf btn-icon pdf btn-left\" title=\"view Policy File\" onclick=\"window.open('open_pdf.php?idfile=".$items['iConsecutivoArchivo']."&type=company');\"><i class=\"fa fa-file-pdf-o\"></i> <span></span></div>" ;  
-                    $items['inPoliza'] == '1' ? $estatus = "ACTIVE" : $estatus = "NON-ACTIVE";
+                    //$items['inPoliza'] == '1' ? $estatus = "ACTIVE" : $estatus = "NON-ACTIVE";
+                    if($items['siConsecutivosPolizas'] != ""){
+                        $polizas = explode(",",$items['siConsecutivosPolizas']);
+                        $count   = count($polizas);
+                        for($x=0;$x<$count;$x++){
+                           $filtro_polizas == "" ? $filtro_polizas .= "iConsecutivo ='".$polizas[$x]."' " : $filtro_polizas .= "OR iConsecutivo ='".$polizas[$x]."'"; 
+                        }
+                        if($filtro_polizas != ""){
+                            $query   = "SELECT sNumeroPoliza, iTipoPoliza FROM ct_polizas ".
+                                       "WHERE iConsecutivoCompania = '".$company."' AND iDeleted = '0' AND dFechaCaducidad >= CURDATE()".
+                                       "AND ($filtro_polizas)";
+                            $result2 = $conexion->query($query); 
+                            $estatus = "";
+                            while($items2 = $result2->fetch_assoc()) { 
+                                 $estatus == "" ? $estatus .= $items2['sNumeroPoliza'] : $estatus .= " / ".$items2['sNumeroPoliza'];
+                            }
+                        }
+                        
+
+                    }
                     $htmlTabla .= "<tr><td id=\"".$items['iConsecutivo']."\">".strtoupper($items['sVIN'])."</td>".
                                    "<td>".$items['iYear']."</td>". 
                                    "<td>".$items['sTipo']."</td>".  

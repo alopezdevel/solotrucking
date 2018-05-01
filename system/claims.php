@@ -346,7 +346,9 @@ var fn_claims = {
           $('#edit_form input[type=checkbox]').prop("checked",false); 
           $('#edit_form .mensaje_valido').empty().append('The fields containing an (<span style="color:#ff0000;">*</span>) are required.');
           $('#edit_form .p-header h2').empty().append('CLAIMS - NEW APPLICATION');
+          //Polizas:
           $("#edit_form .policy_apply select").val("NOAPPLY").prop("disabled","disabled").addClass("readonly");
+          $("#edit_form .company_policies label").hide();
           $("#edit_form #files_datagrid").hide();
          
           fn_solotrucking.get_date(".fecha"); 
@@ -444,7 +446,11 @@ var fn_claims = {
                         if(data.error == '0'){
                            $('#general_information input:text, #general_information select, #general_information textarea,#general_information input:hidden').val('').removeClass('error'); 
                            $('#edit_form input:checkbox').prop("checked",false); 
-                           $("#edit_form .policy_apply select").val("NOAPPLY").prop("disabled","disabled").addClass("readonly");    
+                           
+                           //polizas:
+                           $("#edit_form .policy_apply select").val("NOAPPLY").prop("disabled","disabled").addClass("readonly"); 
+                           $("#edit_form .company_policies label").hide();
+                              
                            eval(data.fields); 
                            fn_claims.revisar_tipos_polizas();
                            
@@ -472,6 +478,24 @@ var fn_claims = {
                 $('#dialog_delete_claim input[name=iConsecutivoClaim]').val(clave);
                 $('#dialog_delete_claim').dialog("open");
             });
+        },
+        open_claim : function(iConsecutivoClaim){
+             if(iConsecutivoClaim != ""){
+                  $.ajax({             
+                    type     :"POST", 
+                    url      :"funciones_claims.php", 
+                    data     :{'accion' : "open_claim",'iConsecutivoClaim' : iConsecutivoClaim},
+                    async    :true,
+                    dataType :"json",
+                    success  : function(data){                               
+                        if(data.error == '0'){
+                            $("#form_open_claim .preview_email").empty().append(data.html); 
+                            fn_popups.resaltar_ventana('form_open_claim');  
+                        }
+                        
+                    }
+                  });    
+             }
         },
         //SENT TO SOLO-TRUCKING:
         send : function(){
@@ -509,7 +533,7 @@ var fn_claims = {
         valida_tipo_dano : function(input){
             if(input){
                 var value = input.val();
-                var tipo  = input.prop("id");
+                var tipo  = input.prop("id"); 
                 
                 switch(tipo){
                     case 'eDanoTerceros' : var clase = "AL"; break;
@@ -656,6 +680,7 @@ var fn_claims = {
         <div class="page-title">
             <h1>CLAIMS</h1>
             <h2 style="margin-bottom: 5px;">CLAIMS APPLICATIONS</h2>
+            <img src="images/data-grid/claims_status.jpg" alt="policy_status.jpg" style="float:right;position: relative;top: -66px;margin-bottom: -100px;">
         </div>
         <div id="info_policies">
         <h3 class="popup-gridtit clear"></h3>
@@ -886,6 +911,20 @@ var fn_claims = {
             <button type="button" class="btn-1" onclick="fn_claims.save();">SAVE</button>
             <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('edit_form');fn_claims.filtraInformacion();" style="margin-right:10px;background:#e8051b;">CLOSE</button>
         </form> 
+    </div>
+    </div>
+</div>
+<!-- OPEN CLAIM -->
+<div id="form_open_claim" class="popup-form" style="width: 80%;">
+    <div class="p-header">
+        <h2>CLAIMS</h2>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('form_open_claim');"><i class="fa fa-times"></i></div>
+    </div>
+    <div class="p-container"> 
+        <input class="mode" type="hidden" value="">
+        <div class="preview_email"></div>
+    <div>
+        <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_open_claim');">CLOSE</button> 
     </div>
     </div>
 </div>

@@ -150,15 +150,15 @@ var fn_vehicles = {
         <thead>
             <tr id="grid-head1">
                 <td style="width:300px"><input class="flt_vin" type="text" placeholder="VIN #:"></td> 
-                <td><input class="flt_year num" type="text" placeholder="####" maxlength="4"></td> 
-                <td>
+                <td style='width:80px;'><input class="flt_year num" type="text" placeholder="####" maxlength="4"></td> 
+                <td style='width:100px;'>
                     <select class="flt_type">
                         <option value="">Select an option...</option>
                         <option value="UNIT">UNIT</option> 
                         <option value="TRAILER">TRAILER</option>
                     </select>
                 </td> 
-                <td>
+                <td style='width:100px;'>
                     <select class="flt_radio">
                         <option value="">Select an option...</option>
                         <option value="4">0-50</option> 
@@ -168,15 +168,9 @@ var fn_vehicles = {
                     </select>
                 </td> 
                 <td><input class="flt_marca" type="text" placeholder="Make:"></td>  
-                <td><input class="flt_peso" type="text" placeholder="Weight:"></td> 
-                <td>
-                    <select class="flt_status">
-                        <option value="">Select an option...</option>
-                        <option value="1">ACTIVE</option>
-                        <option value="0">NON-ACTIVE</option>
-                    </select>
-                </td>  
-                <td style='width:120px;'>
+                <td style='width:80px;'><input class="flt_peso" type="text" placeholder="Weight:"></td> 
+                <td style='width:300px;'></td>  
+                <td style='width:35px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_vehicles.filtraInformacion();"><i class="fa fa-search"></i></div>
                 </td> 
             </tr>
@@ -187,7 +181,7 @@ var fn_vehicles = {
                 <td class="etiqueta_grid"      onclick="fn_vehicles.ordenamiento('iConsecutivoRadio',this.cellIndex);">RADIO</td> 
                 <td class="etiqueta_grid"      onclick="fn_vehicles.ordenamiento('iModelo',this.cellIndex);">MAKE</td> 
                 <td class="etiqueta_grid"      onclick="fn_vehicles.ordenamiento('sPeso',this.cellIndex);">WEIGHT</td> 
-                <td class="etiqueta_grid"      onclick="fn_vehicles.ordenamiento('inPoliza',this.cellIndex);">STATUS IN POLICIES</td>  
+                <td class="etiqueta_grid"     >IS IN POLICIES</td>  
                 <td class="etiqueta_grid"></td>
             </tr>
         </thead>

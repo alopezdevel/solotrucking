@@ -379,7 +379,8 @@ var fn_claims = {
                     dataType : "json",
                     success : function(data){
                         if(data.error == '0'){
-                            $('#form_send_claim input, #form_send_claim textarea').val('').removeClass('error');
+                            var mensaje_default = "Please create new claim for the following insured.";
+                            $('#form_send_claim input, #form_send_claim textarea').val(mensaje_default).removeClass('error');
                             $('#form_send_claim .company_policies tbody').empty().append(data.policies_information); 
                             
                             if(data.fields != ""){eval(data.fields);}else{$('#form_send_claim #iConsecutivoClaim').val(clave);}
@@ -623,31 +624,68 @@ var fn_claims = {
         },
         edit_estatus : function(){
            $(fn_claims.data_grid + " tbody td .btn_change_status").bind("click",function(){
-                    var clave = $(this).parent().parent().find("td:eq(0)").html();
-                    $('#form_change_estatus input, #form_change_estatus select').val('');
-                    $('#form_change_estatus #iConsecutivo').val(clave);
-                    fn_popups.resaltar_ventana('form_change_estatus');
-                    
+               var clave = $(this).parent().parent().find("td:eq(0)").html();
+               var name  = $(this).parent().parent().find("td:eq(1)").html();
+               $.ajax({             
+                    type:"POST", 
+                    url:"funciones_claims_requests.php", 
+                    data:{
+                        "accion"             : "cargar_estatus_claims",
+                        "iConsecutivoClaim"  : clave,
+                        "domroot"            : "form_change_estatus",
+                    },
+                    async : true,
+                    dataType : "json",
+                    success : function(data){                               
+                        if(data.error == '0'){
+                              $('#form_change_estatus input[name=iConsecutivo]').val(clave);
+                              $("#form_change_estatus fieldset legend").empty().append(name); 
+                              $("#form_change_estatus .company_policies tbody").empty().append(data.html);
+                              eval(data.fields);                   
+                              fn_popups.resaltar_ventana('form_change_estatus'); 
+                        }
+                        
+                    }
+               });   
            });  
-       },
+        },
         save_estatus : function(){
-          $('#form_change_estatus #eStatus').removeClass('error'); 
-          if($('#form_change_estatus #eStatus').val() != ''){
+          
+          $('#form_change_estatus input,#form_change_estatus textarea ').removeClass('error'); 
+          var valid   = true;
+          var msj     = "";
+          var polizas = "";
+          
+          $("#form_change_estatus .company_policies tbody tr.data_policy").each(function(){
+              var estatus  = $(this).find("select[name=eStatus]").val();
+              var comments = $(this).find("textarea[name=sComentarios]").val();
+              var NoClaim  = $(this).find("input[name=sNumeroClaimAseguranza]").val();
+              var AjName   = $(this).find("input[name=sNombreAjustador]").val();
+              var AjPhone  = $(this).find("input[name=sTelefonoAjustador]").val(); 
+              var AjPExt   = $(this).find("input[name=sTelefonoExtAjustador]").val(); 
+              var AjEmail  = $(this).find("input[name=sEmailAjustador]").val(); 
+              var idPoliza = $(this).prop("id");
+                  idPoliza = idPoliza.split("dataPolicy_");
+                  
+                  polizas += idPoliza[1]+"|"+estatus+"|"+comments+"|"+NoClaim+"|"+AjName+"|"+AjPhone+"|"+AjPExt+"|"+AjEmail+";";
+          });
+          
+          if(valid){
              $.ajax({             
                 type:"POST", 
                 url:"funciones_claims_requests.php", 
                 data:{
-                    accion:"save_estatus",
-                    iConsecutivoClaim  : $('#form_change_estatus #iConsecutivo').val(),
-                    eStatus : $('#form_change_estatus #eStatus').val(),
+                    'accion'             :"save_estatus",
+                    'iConsecutivoClaim'  : $('#form_change_estatus input[name=iConsecutivo]').val(),
+                    'sMensaje'           : $('#form_change_estatus textarea[name=sMensaje]').val(),
+                    'polizas'            : polizas,
                 },
                 async : true,
                 dataType : "json",
                 success : function(data){                               
                     if(data.error == '0'){
                           fn_solotrucking.mensaje(data.msj);
-                          fn_claims.fillgrid();
-                          fn_popups.cerrar_ventana('form_send_claim');
+                          /*fn_claims.fillgrid();fn_popups.cerrar_ventana('form_change_estatus');*/
                     }
                     
                 }
@@ -693,6 +731,7 @@ var fn_claims = {
         <div class="page-title">
             <h1>CLAIMS</h1>
             <h2 style="margin-bottom: 5px;">CLAIMS REQUESTS</h2>
+            <img src="images/data-grid/claims_status.jpg" alt="policy_status.jpg" style="float:right;position: relative;top: -66px;margin-bottom: -100px;"> 
         </div>
         <table id="data_grid" class="data_grid">
         <thead>
@@ -1011,31 +1050,47 @@ var fn_claims = {
 </div>
 <!-- change the status of claim -->
 <!-- FORMULARIOS -->
-<div id="form_change_estatus" class="popup-form">
+<div id="form_change_estatus" class="popup-form" style="width:95%;">
     <div class="p-header">
         <h2>CLAIMS / Change the status of claim</h2>
         <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('form_change_estatus');"><i class="fa fa-times"></i></div>
     </div>
     <div class="p-container"> 
-    <input id="iConsecutivo" type="hidden" value="">
     <form>
     <fieldset>
-    <legend>Change the status of claim</legend>
+    <legend></legend>
+    <input name="iConsecutivo" type="hidden" value=""> 
     <table style="width: 100%;">
     <tr class="claim_estatus">
         <td colspan="2">
         <div class="field_item">
-            <label>If the claim is already approved or denied please confirm with the following field, to have a record in the system.</label>  
-            <select id="eStatus"  name="eStatus">
+            <label style="margin-left:5px;margin-bottom:3px;">You can manage each claim status for each individual policy and add comment about it into the system:</label>
+            <table class="company_policies popup-datagrid" style="width: 100%;margin-top: 5px;">
+                <!--<thead class="grid-head2">
+                    <tr>
+                        <td class="etiqueta_grid">Policy Number / Policy Type / Insurance</td>
+                        <td class="etiqueta_grid" style="width:150px;">Claim Data</td>
+                        <td class="etiqueta_grid" style="width:200px;">Adjuster Data</td> 
+                        <td class="etiqueta_grid" style="width:300px;">Comments</td> 
+                    </tr>
+                </thead>-->
+                <tbody></tbody>
+            </table>  
+            <!--<select id="eStatus"  name="eStatus">
                 <option value="">Select an option...</option>
                 <option value="CANCELED">Canceled or Denied</option>
                 <option value="APPROVED">Approved</option>
-            </select>
+            </select>-->
+        </div>
+        <br>
+        <div class="field_item">
+            <label>General Comments for this Claim: <span style="color: #5e8bd4;;">(These comments are those that will be shown to the client.)</span></label>
+            <textarea name="sMensaje" rows="5" maxlenght="1000" style="resize: none;" title="Max. 1000 characters."></textarea>  
         </div> 
         </td>
     </tr>
-    </table> 
-    </fieldset>
+    </table>
+    </fieldset> 
     </form>   
     <div>
         <button type="button" class="btn-1" onclick="fn_claims.save_estatus();">SAVE</button> 

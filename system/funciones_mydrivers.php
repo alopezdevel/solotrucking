@@ -49,23 +49,14 @@
             if ($rows > 0) {    
                 while($items = $result->fetch_assoc()) { 
                     
-                    //$items['iConsecutivoArchivo'] == '' ? $btn_pdf = "" : $btn_pdf = "<div class=\"btn_view_pdf btn-icon pdf btn-left\" title=\"view Policy File\" onclick=\"window.open('open_pdf.php?idfile=".$items['iConsecutivoArchivo']."&type=company');\"><i class=\"fa fa-file-pdf-o\"></i> <span></span></div>" ;  
-                    if($items['inPoliza'] == '1'){
-                        $estatus = "ACTIVE";
-                        $btn_viewpolicies = "<div class=\"btn-icon btn_view_policies add btn-left\" title=\"View policies in which it is active\"><i class=\"fa fa-info-circle\"></i><span></span></div>";
-                    }else{
-                        $estatus = "NON-ACTIVE";
-                        $btn_viewpolicies = "";
-                        //$btn_viewpolicies = "<div class=\"btn-icon trash btn-left\" title=\"Delete this drivers permanentely from my list\"><i class=\"fa fa-trash\"></i><span></span></div>";
-                    }
                     
+                    $btn_viewpolicies = "<div class=\"btn-icon btn_view_policies add btn-left\" title=\"View policies in which it is active\"><i class=\"fa fa-info-circle\"></i><span></span></div>";
                     $htmlTabla .= "<tr><td id=\"".$items['iConsecutivo']."\">".strtoupper($items['sNombre'])."</td>".
                                    "<td>".$items['dFechaNacimiento']."</td>". 
                                    "<td>".$items['iNumLicencia']."</td>".  
                                    "<td>".$items['eTipoLicencia']."</td>".
                                    "<td>".$items['dFechaExpiracionLicencia']."</td>".   
-                                   "<td>".$items['iExperienciaYear']."</td>".
-                                   "<td class=\"txt-center\">".$estatus."</td>".                                                                                                                                                                                                                     
+                                   "<td>".$items['iExperienciaYear']."</td>".                                                                                                                                                                                                                     
                                    "<td> 
                                         <div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit\"><i class=\"fa fa-pencil-square-o\"></i><span></span></div>
                                         $btn_viewpolicies
@@ -92,19 +83,20 @@
         $error = "0";
         $mensaje = "";
         if($iConsecutivo != ""){
-            $query  = "SELECT siConsecutivosPolizas FROM ct_operadores WHERE iConsecutivo = '$iConsecutivo' AND iConsecutivoCompania = '$company'";
-            $result = $conexion->query($query);
-            $items  = $result->fetch_assoc();
-            $polizas = $items["siConsecutivosPolizas"];
-            $polizas = explode(',',$polizas);
-            $total = count($polizas);
+            $query     = "SELECT siConsecutivosPolizas FROM ct_operadores WHERE iConsecutivo = '$iConsecutivo' AND iConsecutivoCompania = '$company'";
+            $result    = $conexion->query($query);
+            $items     = $result->fetch_assoc();
+            $polizas   = $items["siConsecutivosPolizas"];
+            $polizas   = explode(',',$polizas);
+            $total     = count($polizas);
             $htmlTabla = "";
             if($total > 0){
                 for($i = 0 ; $i < $total ; $i++){
                     $query = "SELECT sNumeroPoliza, sDescripcion, DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio, DATE_FORMAT(dFechaCaducidad,'%m/%d/%Y') AS dFechaCaducidad, iConsecutivoArchivo, A.iTipoPoliza ".
                              "FROM ct_polizas A ".
                              "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
-                             "WHERE A.iConsecutivo = '".$polizas[$i]."' AND iConsecutivoCompania = '$company'";
+                             "WHERE A.iConsecutivo = '".$polizas[$i]."' AND iConsecutivoCompania = '$company' ".
+                             "AND iDeleted = '0' AND dFechaCaducidad >= CURDATE()";
                     $result = $conexion->query($query);
                     $rows = $result->num_rows;
                     if($rows > 0){
@@ -114,13 +106,14 @@
                                      "<td>".$items['sDescripcion']."</td>".  
                                      "<td>".$items['dFechaInicio']."</td>".
                                      "<td>".$items['dFechaCaducidad']."</td></tr>";   
-                    } 
+                    }  
                 }    
             }else{$htmlTabla ="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";} 
-        }else{
-            $error = "1";
-            $mensaje = "The driver data were not found, please try again.";
-        }
+            
+        }else{$error = "1";$mensaje = "The driver data were not found, please try again.";}
+        
+        if($htmlTabla == ""){$htmlTabla ="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}
+        
         $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
         echo json_encode($response);
   }

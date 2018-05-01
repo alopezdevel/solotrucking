@@ -71,9 +71,9 @@
                                                      "<div class=\"btn_unsent btn-icon trash btn-left\" title=\"Cancel Sending\"><i class=\"fa fa-times\"></i><span></span></div>";  
                              break;
                              case 'INPROCESS':
-                                $statusTitle = "INPROCESS: Your claim has been sent to the insurers and is in process."; 
-                                $class       = "class = \"yellow\""; 
-                                $btn_confirm = ""; 
+                                $statusTitle  = "INPROCESS: Your claim has been sent to the insurers and is in process."; 
+                                $class        = "class = \"yellow\""; 
+                                $btn_confirm .= "<div class=\"btn-icon send-email btn-left\" title=\"Open claim data\" onclick=\"fn_claims.open_claim('".$items['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i><span></span></div>";  
                              break;
                              case 'APPROVED': 
                                 $statusTitle = "APPROVED: Your claim has been approved successfully.";
@@ -716,6 +716,196 @@
        $conexion->close();  
        $response = array("mensaje"=>"$msj","error"=>"$error");   
        echo json_encode($response);
+  }
+  function open_claim(){
+      
+      $error              = '0';
+      $msj                = "";
+      $fields             = "";
+      $iConsecutivoClaim  = trim($_POST['iConsecutivoClaim']);
+      $company            = $_SESSION['company']; 
+      $htmlTabla          = ""; 
+      $styleheader        = "style=\"height: 30px;\"";
+      $styleheader2       = "style=\"padding:5px!important;font-size:12px\"";
+      $styleheader3       = "style=\"text-align:left;font-weight: bold;width:110px;\""; 
+      $style              = "margin-bottom: 3px;color: #016bba!important;text-transform: uppercase;"; 
+      
+      include("cn_usuarios.php"); 
+      
+      #DATA OF CLAIM:
+      $sql    = "SELECT A.iConsecutivo,A.iConsecutivoCompania,sMensaje,DATE_FORMAT(dHoraIncidente,'%h:%i %p') AS dHoraIncidente, DATE_FORMAT(dFechaIncidente,'%m/%d/%Y') AS dFechaIncidente,sNombre AS sDriver, sVIN AS sUnitTrailer, ".
+                "iYear AS UnitYear, sTipo AS UnitType, E.sDescripcion AS UnitMake, iNumLicencia, (CASE WHEN eTipoLicencia = '1' THEN 'Federal/B1' WHEN eTipoLicencia = '2' THEN 'Commercial/CDL - A' END) AS eTipoLicencia, ".
+                "B.siConsecutivosPolizas AS polizas_operador, C.siConsecutivosPolizas AS polizas_unidad, sNombreCompania, A.sEstado, A.sCiudad, eCategoria, sMensaje, eStatus, sDescripcionSuceso, sVINUnidad, sNombreOperador ".
+                "FROM cb_claims A ".
+                "LEFT JOIN ct_operadores B ON A.iConsecutivoOperador = B.iConsecutivo ".
+                "LEFT JOIN ct_unidades   C ON A.iConsecutivoUnidad   = C.iConsecutivo ".
+                "LEFT JOIN ct_companias  D ON A.iConsecutivoCompania = D.iConsecutivo ".
+                "LEFT JOIN ct_unidad_modelo E ON C.iModelo = E.iConsecutivo ".
+                "WHERE A.iConsecutivo = '$iConsecutivoClaim'"; 
+      $result = $conexion->query($sql); 
+      $dClaim = $result->fetch_assoc();  //<-- Datos del Claim. 
+      
+      $CompanyName = $dClaim['sNombreCompania'];
+      $DateofLoss  = $dClaim['dFechaIncidente'];
+      $HourofLoss  = $dClaim['dHoraIncidente'];
+      $ClaimCity   = $dClaim['sCiudad'];
+      $ClaimState  = $dClaim['sEstado'];
+      $ClaimAppend = $dClaim['sDescripcionSuceso']; 
+      
+      $htmlTabla  .= "<table style=\"font-size:12px;border:1px solid #6191df;border-radius:3px;padding:5px;width:100%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">"; 
+      
+      //HTML - Claim Data:
+      $htmlTabla .= "<tr><td colspan=\"100%\">".
+                    "<table style=\"width:100%;font-family: Arial, Helvetica, sans-serif!important;\">".
+                        "<tr class=\"grid-head2\" $styleheader><td colspan=\"2\" class=\"etiqueta_grid\" $styleheader2>DATA OF INCIDENT</td></tr>".
+                        "<tr><td $styleheader3>Date and Hour:</td><td>$DateofLoss at $HourofLoss</td></tr>".
+                        "<tr><td $styleheader3>State and City:</td><td>$ClaimCity, $ClaimState</td></tr>". 
+                        "<tr><td $styleheader3>What happend?:</td><td>$ClaimAppend</td></tr>". 
+                    "</table><br>".
+                    "</td></tr>";
+      $htmlTabla .= "<tr><td></td></tr>";
+      
+      //HTML - Driver:
+      $htmlDriver = "";
+      if($dClaim['sDriver'] != '' && ($dClaim['eCategoria'] = 'BOTH' || $dClaim['eCategoria'] = 'DRIVER')){  
+          
+          $DriverName     = $dClaim['sDriver'];
+          $DriverLicense  = $dClaim['iNumLicencia'];
+          $DriverLicenseT = $dClaim['eTipoLicencia'];
+          
+          $htmlDriver .= "<table style=\"width:100%;font-family: Arial, Helvetica, sans-serif!important;\">".
+                         "<tr class=\"grid-head2\" $styleheader><td colspan=\"2\" class=\"etiqueta_grid\" $styleheader2>DATA OF DRIVER</td></tr>".
+                         "<tr><td $styleheader3>Name:</td><td>$DriverName</td></tr>";
+                        
+          if($DriverLicense != ""){
+             $htmlDriver .= "<tr><td $styleheader3>License Number:</td><td>$DriverLicense</td></tr>";
+          }
+          
+          if($DriverLicenseT != ""){
+             $htmlDriver .= "<tr><td $styleheader3>License Type?:</td><td>$DriverLicenseT</td></tr>"; 
+          }
+  
+          $htmlDriver .= "</table>";
+      }
+      else if($dClaim['sNombreOperador'] != "" && ($dClaim['eCategoria'] = 'BOTH' || $dClaim['eCategoria'] = 'DRIVER')){
+          $DriverName = $dClaim['sNombreOperador'];
+
+          $htmlDriver .= "<table style=\"width:100%;font-family: Arial, Helvetica, sans-serif!important;\">".
+                         "<tr class=\"grid-head2\" $styleheader><td colspan=\"2\" class=\"etiqueta_grid\" $styleheader2>DATA OF DRIVER</td></tr>".
+                         "<tr><td $styleheader3>Name:</td><td>$DriverName</td></tr>".
+                         "</table>";
+      }
+      
+      //HTML - Unidad/Trailer:
+      $htmlUnit = "";
+      if($dClaim['sUnitTrailer'] != '' && ($dClaim['eCategoria'] = 'BOTH' || $dClaim['eCategoria'] = 'UNIT/TRAILER')){
+          
+          $dClaim['UnitType'] == 'UNIT' ? $type = 'UNIT' : $type = 'TRAILER';
+          $UnitVIN    = $dClaim['sUnitTrailer'];
+          $UnitYear   = $dClaim['UnitYear'];
+          $UnitMake   = $dClaim['UnitMake'];
+          
+          $htmlUnit .= "<table style=\"width:100%;font-family: Arial, Helvetica, sans-serif!important;\">".
+                        "<tr class=\"grid-head2\" $styleheader><td colspan=\"2\" class=\"etiqueta_grid\" $styleheader2>DATA OF $type</td></tr>".
+                        "<tr><td $styleheader3>VIN#:</td><td>$UnitVIN</td></tr>";
+          
+          if($UnitYear != ""){$htmlUnit .= "<tr><td $styleheader3>Year:</td><td>$UnitYear</td></tr>";}
+          if($UnitMake)      {$htmlUnit .= "<tr><td $styleheader3>Make:</td><td>$UnitMake</td></tr>";}
+             
+          $htmlUnit .= "</table>";
+      }
+      else if($dClaim['sVINUnidad'] != "" && ($dClaim['eCategoria'] = 'BOTH' || $dClaim['eCategoria'] = 'UNIT/TRAILER')){
+          
+          $UnitVIN    = $dClaim['sVINUnidad'];
+
+          $htmlUnit .= "<table style=\"width:100%;font-family: Arial, Helvetica, sans-serif!important;\">".
+                        "<tr class=\"grid-head2\" $styleheader><td colspan=\"2\" class=\"etiqueta_grid\" $styleheader2>DATA OF UNIT/TRAILER</td></tr>".
+                        "<tr><td $styleheader3>VIN#:</td><td>$UnitVIN</td></tr>".
+                        "</table>";
+          
+      }
+      
+      $htmlTabla .= "<tr>";
+      if($htmlDriver != ""){$htmlTabla .= "<td style=\"vertical-align: top;\">$htmlDriver</td>";}
+      if($htmlUnit != "")  {$htmlTabla .= "<td style=\"vertical-align: top;\">$htmlUnit</td>";}
+      $htmlTabla .= "</tr>";
+      $htmlTabla .= "<tr><td colspan=\"100%\"></td></tr>"; // pasar linea. 
+ 
+      //Consultar Polizas del Claim:
+      $query   =  "SELECT A.iConsecutivoPoliza, B.sNumeroPoliza, B.iTipoPoliza, A.eStatus, A.sNombreAjustador, A.sNumeroClaimAseguranza, A.sEmailAjustador, ".
+                  "CONCAT(A.sTelefonoAjustador,' Ext. ',A.sTelefonoExtAjustador) AS sTelefonoAjustador, A.sComentarios, C.sDescripcion, sName AS InsuranceName, A.sComentarios ".
+                  "FROM cb_claim_poliza       AS A ".
+                  "INNER JOIN ct_polizas      AS B ON A.iConsecutivoPoliza = B.iConsecutivo ".
+                  "LEFT JOIN  ct_tipo_poliza  AS C ON B.iTipoPoliza = C.iConsecutivo ".
+                  "LEFT JOIN  ct_aseguranzas  AS D ON B.iConsecutivoAseguranza = D.iConsecutivo ".
+                  "WHERE A.iConsecutivoClaim = '$iConsecutivoClaim'";
+      $result   = $conexion->query($query); 
+
+      $htmlTabla .= "<tr><td colspan=\"100%\">".
+                    "<table style=\"width:100%;border-collapse: collapse;\">";
+      while ($items = $result->fetch_assoc()) {
+          
+         $sNumPoliza = $items['sNumeroPoliza'];
+         $sDescPoliza= $items['sDescripcion']; 
+         $insurance  = $items['InsuranceName'];
+         $noClaim    = $items['sNumeroClaimAseguranza'];
+         $Status     = $items['eStatus']; 
+         $Comments   = $items['sComentarios'];
+         $Name       = $items['sNombreAjustador'];
+         $email      = $items['sEmailAjustador'];
+         $phone      = $items['sTelefonoAjustador'];
+      
+         $htmlTabla .= "<tr class=\"grid-head2\">".
+                       "<td colspan=\"100%\" style=\"font-size:11px!important;\">".
+                       "<table style=\"width:100%;border-collapse: collapse;\">".
+                       "<tr>".
+                       "<td class=\"etiqueta_grid\" style=\"width:25%;border:0px!important;padding:5px!important;font-size:12px!important;\">"."<span style=\"$style\">Policy No: </span>$sNumPoliza"."</td>".
+                       "<td class=\"etiqueta_grid\" style=\"width:40%;border:0px!important;padding:5px!important;font-size:12px!important;\">"."<span style=\"$style\">Policy Type:</span> $sDescPoliza"."</td>".  
+                       "<td class=\"etiqueta_grid\" style=\"width:33%;border:0px!important;padding:5px!important;font-size:12px!important;\">"."<span style=\"$style\">Insurance:</span> $insurance". "</td>".  
+                       "</tr>".
+                       "</table>".
+                       "</td>".
+                       "</tr>";
+         
+         //encabezado2:
+         $encabezado2= "style=\"width:50%;color: #fff;text-align: center;height:auto!important;padding:5px!important;\"";              
+         $htmlTabla .= "<tr class=\"grid-head1\" style=\"height: 30px!important;\">".
+                       "<td $encabezado2>CLAIM DATA</td>".
+                       "<td $encabezado2>ADJUSTER DATA</td>". 
+                       "</tr>";
+                                  
+         //Claim Data:
+         $htmlTabla .= "<tr>";
+         $htmlTabla .= "<td style=\"vertical-align:top;\">".
+                       "<table style=\"width:100%\">".
+                            "<tr><td $styleheader3>No. Claim:</td><td>$noClaim</td><tr>".
+                            "<tr><td $styleheader3>Status: </td><td>$Status</td><tr>". 
+                            "<tr><td $styleheader3>Comments:</td><td>$Comments</td><tr>". 
+                       "</table>".
+                       "</td>";
+       //Adjuster Data:
+       $htmlTabla  .= "<td style=\"vertical-align:top;\">".
+                      "<table style=\"width:100%\">".
+                            "<tr><td $styleheader3>Name:</td><td>$Name</td><tr>".
+                            "<tr><td $styleheader3>Phone: </td><td>$phone</td><tr>". 
+                            "<tr><td $styleheader3>E-mail:</td><td>$email</td><tr>". 
+                      "</table>". 
+                      "</td>";
+       
+       $htmlTabla .= "</tr>";
+       //Salto de linea:              
+       $htmlTabla .= "<tr><td colspan=\"100%\"></td></tr>"; 
+          
+          
+      }
+      
+      $htmlTabla .= "</table></td></tr>";
+      $htmlTabla .= "</table>";
+      
+      $conexion->close(); 
+      $response = array("error"=>"$error","mensaje"=>"$mensaje","html"=>"$htmlTabla");
+      echo json_encode($response); 
+       
   }
   
   #Funcion para solo-trucking users:
