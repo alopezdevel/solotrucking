@@ -90,7 +90,6 @@
                                             <td>".$items['clave']."</td>".
                                            "<td>".$redlist_icon.$items['sNombreCompania']."</td>".
                                            "<td>".$items['sNumeroPoliza']."</td>".
-                                           "<td>".$items['sName']."</td>". 
                                            "<td>".$items['sDescripcion']."</td>".  
                                            "<td>".$items['dFechaInicio']."</td>".
                                            "<td>".$items['dFechaCaducidad']."</td>".                                                                                                                                                                                                                     
@@ -207,7 +206,9 @@
       $conexion->autocommit(FALSE);                                                                                                                 
       $sql = "SELECT A.iConsecutivo, sNumeroPoliza, A.iConsecutivoCompania, iConsecutivoBrokers, iTipoPoliza,iConsecutivoAseguranza, ". 
              "DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio, DATE_FORMAT(dFechaCaducidad,'%m/%d/%Y') AS dFechaCaducidad, ".
-             "B.sNombreArchivo AS txtPolicyJacker, iConsecutivoArchivo, iConsecutivoArchivoPFA, C.sNombreArchivo AS txtPolicyPFA ".
+             "B.sNombreArchivo AS txtPolicyJacker, iConsecutivoArchivo, iConsecutivoArchivoPFA, C.sNombreArchivo AS txtPolicyPFA, iConsecutivoInsurancePremiumFinancing, ".
+             "iPremiumAmount, iDeductible, iDeductibleAdditional, iPremiumAmountAdditional,iCGL_EachOccurrence,iCGL_DamageRented,iCGL_MedExp,iCGL_PersonalAdvInjury, ".
+             "iCGL_GeneralAggregate,iCGL_ProductsComp ".
              "FROM ct_polizas A ".
              "LEFT JOIN cb_company_files B ON A.iConsecutivoArchivo = B.iConsecutivo ".
              "LEFT JOIN cb_company_files C ON A.iConsecutivoArchivoPFA = C.iConsecutivo ".
@@ -237,40 +238,63 @@
       include("cn_usuarios.php"); 
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
       $transaccion_exitosa = true;
-      $_POST['sNumeroPoliza'] = strtoupper($_POST['sNumeroPoliza']);
-      $_POST['dFechaInicio'] = format_date($_POST['dFechaInicio']); 
+      $_POST['sNumeroPoliza']   = strtoupper($_POST['sNumeroPoliza']);
+      $_POST['dFechaInicio']    = format_date($_POST['dFechaInicio']); 
       $_POST['dFechaCaducidad'] = format_date($_POST['dFechaCaducidad']); 
+      $_POST["edit_mode"] == 'true' ? $filtroQ = " AND iConsecutivo != '".$_POST['iConsecutivo']."'" : $filtroQ = ""; 
       
+      //VERIFICAR QUE NO EXISTA UN MISMO TIPO Y NUMERO DE POLIZA PARA ESA COMPANIA
       $query = "SELECT COUNT(iConsecutivo) AS total 
                 FROM   ct_polizas 
-                WHERE  sNumeroPoliza ='".$_POST['sNumeroPoliza']."'
+                WHERE  sNumeroPoliza ='".$_POST['sNumeroPoliza']."' AND iTipoPoliza = '".$_POST['iTipoPoliza']."'
                 AND iConsecutivoCompania = '".$_POST['iConsecutivoCompania']."' 
-                AND iDeleted = '0'";
+                AND iDeleted = '0' $filtroQ";
       $result = $conexion->query($query);
       $valida = $result->fetch_assoc();
       
       if($valida['total'] != '0'){
-          if($_POST["edit_mode"] != 'true'){
+         // if($_POST["edit_mode"] != 'true'){
               $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
                       Error: The Policy that you trying to add already exists. Please you verify the data.</p>';
               $error = '1';
-          }else{
+          /*}else{
              foreach($_POST as $campo => $valor){
                 if($campo != "accion" and $campo != "edit_mode" and $campo != "sNumeroPoliza" and $campo != "iConsecutivo" and $campo != 'txtPolicyJacker' and $campo != 'iConsecutivoArchivo' and $campo != 'txtPolicyPFA' and $campo != 'iConsecutivoArchivoPFA' ){ //Estos campos no se insertan a la tabla
-                    if($valor){array_push($valores,"$campo='".trim($valor)."'");}
+                    if(($campo == "iConsecutivoAseguranza" || $campo == "iConsecutivoInsurancePremiumFinancing" || $campo == "iConsecutivoBrokers") && $valor == ""){
+                        $valor = "NULL";
+                    }else{
+                        $valor = "'".trim($valor)."'";
+                    }
+                    array_push($valores,"$campo=$valor");
                 }
-             }   
+             } 
+ 
+          } */
+      }
+      
+      if($error == '0'){
+          if($_POST["edit_mode"] == 'true'){
+              foreach($_POST as $campo => $valor){
+                if($campo != "accion" and $campo != "edit_mode" and $campo != "sNumeroPoliza" and $campo != "iConsecutivo" and $campo != 'txtPolicyJacker' and $campo != 'iConsecutivoArchivo' and $campo != 'txtPolicyPFA' and $campo != 'iConsecutivoArchivoPFA' ){ //Estos campos no se insertan a la tabla
+                    if(($campo == "iConsecutivoAseguranza" || $campo == "iConsecutivoInsurancePremiumFinancing" || $campo == "iConsecutivoBrokers") && $valor == ""){
+                        $valor = "NULL";
+                    }else{
+                        $valor = "'".trim($valor)."'";
+                    }
+                    array_push($valores,"$campo=$valor");
+                }
+             } 
+          }else if($_POST["edit_mode"] != 'true'){
+             foreach($_POST as $campo => $valor){
+                if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo" and $campo != 'txtPolicyJacker' and $campo != 'iConsecutivoArchivo' and $campo != 'txtPolicyPFA' and $campo != 'iConsecutivoArchivoPFA'){ //Estos campos no se insertan a la tabla
+                       if($valor != ""){
+                          array_push($campos ,$campo); 
+                          array_push($valores, trim($valor)); 
+                       }
+                }
+             }  
           }
-      }else if($_POST["edit_mode"] != 'true'){
-         foreach($_POST as $campo => $valor){
-            if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo" and $campo != 'txtPolicyJacker' and $campo != 'iConsecutivoArchivo' and $campo != 'txtPolicyPFA' and $campo != 'iConsecutivoArchivoPFA'){ //Estos campos no se insertan a la tabla
-                if($valor != ''){
-                   array_push($campos ,$campo); 
-                   array_push($valores, trim($valor)); 
-                }
-                
-            }
-         }  
+          
       }
       
       if($error == '0'){
@@ -289,7 +313,8 @@
             array_push($valores ,$_SESSION['usuario_actual']);
             $sql = "INSERT INTO ct_polizas (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
             $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data have been added successfully.</p>';
-          }
+          } 
+
           $conexion->query($sql);
           $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
           if($transaccion_exitosa){

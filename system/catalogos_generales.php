@@ -125,6 +125,30 @@
      $response = array("mensaje"=>"$mensaje","error"=>"$error","select"=>"$htmlTabla");   
      echo json_encode($response);  
   }
+  function get_financing_insurances(){
+     include("cn_usuarios.php");
+     $conexion->autocommit(FALSE);
+      
+     $sql = "SELECT iConsecutivo AS clave, sName AS descripcion 
+             FROM ct_insurance_premium_financing ORDER BY iConsecutivo ASC";
+     $result = $conexion->query($sql);
+     $tipos = $result->num_rows;  
+        if($tipos > 0){
+            $htmlTabla .= "<option value=\"\">Select an option...</option>";      
+            while ($country = $result->fetch_assoc()) {
+               if($country["clave"] != ""){
+                     $htmlTabla .= "<option value=\"".$country['clave']."\">".$country['descripcion']."</option>";
+                 }else{                             
+                     $htmlTabla .="";
+                 }    
+            }                                                                                                                                                                       
+        }else {$htmlTabla .="";}
+     $conexion->rollback();
+     $conexion->close();
+     $htmlTabla = utf8_encode($htmlTabla);  
+     $response = array("mensaje"=>"$mensaje","error"=>"$error","select"=>"$htmlTabla");   
+     echo json_encode($response);  
+  }
   function get_policy_types(){
      include("cn_usuarios.php");
      $conexion->autocommit(FALSE);

@@ -92,6 +92,7 @@ var fn_policies = {
             fn_policies.fillgrid();
             
             $('.num').keydown(fn_solotrucking.inputnumero());  
+            $('.decimal').keydown(fn_solotrucking.inputdecimals());  
             //Cargar companias, tipos y brokers:
             $.ajax({             
                 type:"POST", 
@@ -119,6 +120,19 @@ var fn_policies = {
                     //Reportes Select:
                     $("#dialog_report_policies .flt_broker").empty().append(data.select);
                     $("#dialog_report_policies .flt_broker option:first-child").text('All'); 
+                }
+            });
+            $.ajax({             
+                type:"POST", 
+                url:"catalogos_generales.php", 
+                data:{accion:"get_financing_insurances"},
+                async : true,
+                dataType : "json",
+                success : function(data){
+                    $(fn_policies.form + " #iConsecutivoInsurancePremiumFinancing").empty().append(data.select);
+                    //Reportes Select:
+                    /*$("#dialog_report_policies .flt_broker").empty().append(data.select);
+                    $("#dialog_report_policies .flt_broker option:first-child").text('All');*/ 
                 }
             });
             $.ajax({             
@@ -410,25 +424,37 @@ var fn_policies = {
            $(fn_policies.form+' .mensaje_valido').empty().append('The fields containing an (*) are required.');
            $('.policy_jacker_file').hide();
            $(fn_policies.form + ' #sNumeroPoliza ,' + fn_policies.form + ' #iConsecutivoCompania').removeAttr('readonly').removeClass('readonly');
+           fn_policies.valida_tipo_poliza();
            fn_popups.resaltar_ventana('policies_edit_form');  
         },
         edit : function (){
             $(fn_policies.data_grid + " tbody td .edit").bind("click",function(){
                 var clave = $(this).parent().parent().find("td:eq(0)").html();
-                $.post("funciones_policies.php",{accion:"get_policy", clave: clave, domroot : "policies_edit_form"},
-                function(data){
-                    if(data.error == '0'){
-                       $(fn_policies.form+' input, '+fn_policies.form+' select').val('').removeClass('error'); 
-                       $(fn_policies.form + ' #sNumeroPoliza ,' + fn_policies.form + ' #iConsecutivoCompania').attr('readonly','readonly').addClass('readonly');
-                       eval(data.fields); 
-                       fn_policies.validate_type();
-                       $('.policy_jacker_file').show(); 
-                       fn_popups.resaltar_ventana('policies_edit_form');
-                         
-                    }else{
-                       fn_solotrucking.mensaje(data.msj);  
-                    }       
-                },"json"); 
+                $.ajax({
+                    type:"POST",
+                    url:"funciones_policies.php",
+                    data:{
+                        "accion"  :"get_policy",
+                        "clave"   : clave,
+                        "domroot" : "policies_edit_form"
+                    },
+                    async : true,
+                    dataType : "json",
+                    success : function(data){
+                        if(data.error == '0'){
+                           $(fn_policies.form+' input, '+fn_policies.form+' select').val('').removeClass('error'); 
+                           $(fn_policies.form + ' #sNumeroPoliza ,' + fn_policies.form + ' #iConsecutivoCompania').attr('readonly','readonly').addClass('readonly');
+                           eval(data.fields); 
+                           fn_policies.validate_type();
+                           fn_policies.valida_tipo_poliza();
+                           $('.policy_jacker_file').show(); 
+                           fn_popups.resaltar_ventana('policies_edit_form');
+                             
+                        }else{
+                           fn_solotrucking.mensaje(data.msj);  
+                        }       
+                    }
+                });
           });  
         },
         save : function (){
@@ -446,11 +472,11 @@ var fn_policies = {
                return false;
            }
            valid = valid && fn_solotrucking.checkLength( sNumeroPoliza, "Number", 1, 30);
-           if(iConsecutivoBrokers.val() == ''){
+           /*if(iConsecutivoBrokers.val() == ''){
                fn_solotrucking.mensaje('Please check the broker field has a value.');iConsecutivoBrokers.addClass('error');
                valid=false;
                return false;
-           }
+           } */
            if(iTipoPoliza.val() == ''){
                fn_solotrucking.mensaje('Please check the field for the type has a value.');iTipoPoliza.addClass('error');
                valid=false;
@@ -548,7 +574,7 @@ var fn_policies = {
             if($(fn_policies.data_grid+" .flt_pid").val() != ""){ fn_policies.filtro += "A.iConsecutivo|"+$(fn_policies.data_grid+" .flt_pid").val()+","}
             if($(fn_policies.data_grid+" .flt_pcompany").val() != ""){ fn_policies.filtro += "sNombreCompania|"+$(fn_policies.data_grid+" .flt_pcompany").val()+","} 
             if($(fn_policies.data_grid+" .flt_policynumber").val() != ""){ fn_policies.filtro += "sNumeroPoliza|"+$(fn_policies.data_grid+" .flt_policynumber").val()+","} 
-            if($(fn_policies.data_grid+" .flt_pbroker").val() != ""){ fn_policies.filtro += "sName|"+$(fn_policies.data_grid+" .flt_pbroker").val()+","}  
+            //if($(fn_policies.data_grid+" .flt_pbroker").val() != ""){ fn_policies.filtro += "sName|"+$(fn_policies.data_grid+" .flt_pbroker").val()+","}  
             if($(fn_policies.data_grid+" .flt_policytype").val() != ""){ fn_policies.filtro += "sDescripcion|"+$(fn_policies.data_grid+" .flt_policytype").val()+","} 
             if($(fn_policies.data_grid+" .flt_policystartdate").val() != ""){ fn_policies.filtro += "dFechaInicio|"+$(fn_policies.data_grid+" .flt_policystartdate").val()+","} 
             if($(fn_policies.data_grid+" .flt_policyexpdate").val() != ""){ fn_policies.filtro += "dFechaCaducidad|"+$(fn_policies.data_grid+" .flt_policyexpdate").val()+","}    
@@ -556,6 +582,22 @@ var fn_policies = {
             if(fn_policies.filtro_table == 'active'){fn_policies.fillgrid();}else if(fn_policies.filtro_table == 'expired'){fn_policies.fillgrid_expired();}
             
         }, 
+        valida_tipo_poliza : function(){
+            var iTipoPoliza = $("#policies_edit_form #iTipoPoliza").val();
+            if(iTipoPoliza == "5"){
+                $("#policies_edit_form .premium_amounts_additional").show();
+                $("#policies_edit_form .premium_amounts_GL").hide();
+                $("#policies_edit_form .premium_amounts_GL input").val(''); 
+            }else if(iTipoPoliza == "6"){
+                $("#policies_edit_form .premium_amounts").hide();
+                $("#policies_edit_form .premium_amounts input").val('');
+                $("#policies_edit_form .premium_amounts_GL").show(); 
+            }else{
+                $("#policies_edit_form .premium_amounts_additional, #policies_edit_form .premium_amounts_GL").hide();
+                $("#policies_edit_form .premium_amounts_additional input, #policies_edit_form .premium_amounts_GL input").val('');
+                $("#policies_edit_form .premium_amounts").show(); 
+            }
+        },
         upload_file : function(){
             $(fn_policies.data_grid + " tbody td .btn_upload_policy").bind("click",function(){
                 var clave = $(this).parent().parent().find("td:eq(0)").html();
@@ -925,9 +967,6 @@ var fn_policies = {
                
 }   
 
- 
-
- 
 </script> 
 <div id="layer_content" class="main-section">
     <div id="ct_policies" class="container">
@@ -937,16 +976,15 @@ var fn_policies = {
             <img src="images/data-grid/policy_status.jpg" alt="policy_status.jpg" style="float:right;position: relative;top: -90px;margin-bottom: -100px;"> 
         </div>
         <table id="data_grid_policies" class="data_grid">
-        <thead id="grid-head2">
+        <thead>
             <tr id="grid-head1">
                 <td style="width:50px!important;"><input class="flt_pid" type="text" placeholder="ID:"></td> 
                 <td style="width:350px;"><input class="flt_pcompany" type="text" placeholder="Company:"></td>
                 <td><input class="flt_policynumber" type="text" placeholder="Policy Numer:"></td>
-                <td><input class="flt_pbroker" type="text" placeholder="Broker:"></td> 
                 <td><input class="flt_policytype" type="text" placeholder="Policy Type:"></td> 
                 <td><input class="flt_policystartdate" type="text" placeholder="MM/DD/YY"></td> 
                 <td><input class="flt_policyexpdate" type="text" placeholder="MM/DD/YY"></td>  
-                <td style='width:200px;'>
+                <td style='width:145px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_policies.filtraInformacion();"><i class="fa fa-search"></i></div>
                     <div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_policies.add();"><i class="fa fa-plus"></i></div>
                 </td> 
@@ -965,10 +1003,9 @@ var fn_policies = {
                 <td class="etiqueta_grid down" onclick="fn_policies.ordenamiento('A.iConsecutivo',this.cellIndex);">ID</td> 
                 <td class="etiqueta_grid"      onclick="fn_policies.ordenamiento('sNombreCompania',this.cellIndex);">Company Name</td> 
                 <td class="etiqueta_grid"      onclick="fn_policies.ordenamiento('sNumeroPoliza',this.cellIndex);">Policy Number</td>
-                <td class="etiqueta_grid"      onclick="fn_policies.ordenamiento('sName',this.cellIndex);">Broker</td>
                 <td class="etiqueta_grid"      onclick="fn_policies.ordenamiento('sDescripcion',this.cellIndex);">Type</td>
                 <td class="etiqueta_grid"      onclick="fn_policies.ordenamiento('dFechaInicio',this.cellIndex);">EFFECTIVE DATE </td> 
-                <td class="etiqueta_grid"      onclick="fn_policies.ordenamiento('dFechaCaducidad',this.cellIndex);">Expiration Date</td> 
+                <td class="etiqueta_grid"      onclick="fn_policies.ordenamiento('dFechaCaducidad',this.cellIndex);">EXPIRE Date</td> 
                 <td class="etiqueta_grid"></td>
             </tr>
         </thead>
@@ -1008,33 +1045,145 @@ var fn_policies = {
         <form>
             <fieldset>
                 <p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p>
-                <div class="field_item">
-                    <input id="iConsecutivo"  name="iConsecutivo"  type="hidden">
-                    <label>Company <span style="color:#ff0000;">*</span>:</label>  
-                    <select tabindex="1" id="iConsecutivoCompania"  name="iConsecutivoCompania"><option value="">Select an option...</option></select>
-                </div> 
-                <div class="field_item">
-                    <label>Number <span style="color:#ff0000;">*</span>:</label> 
-                    <input class="txt-uppercase" tabindex="2" id="sNumeroPoliza" name="sNumeroPoliza" type="text" placeholder="" maxlength="30">
-                </div>                
-                <div class="field_item"> 
-                    <label>Effective Date <span style="color:#ff0000;">*</span>: </label><input id="dFechaInicio" type="text" class="txt-uppercase fecha">
-                </div>
-                <div class="field_item"> 
-                    <label>Expiration Date <span style="color:#ff0000;">*</span>: </label><input id="dFechaCaducidad" type="text" class="txt-uppercase fecha">
-                </div>
-                <div class="field_item"> 
-                    <label>Type <span style="color:#ff0000;">*</span>:</label> 
-                    <select tabindex="3" id="iTipoPoliza"  name="iTipoPoliza"><option value="">Select an option...</option></select>
-                </div>
-                <div class="field_item">
-                    <label>Broker <span style="color:#ff0000;">*</span>:</label>  
-                    <select tabindex="3" id="iConsecutivoBrokers"  name="iConsecutivoBrokers"><option value="">Select an option...</option></select> 
-                </div>
-                <div class="field_item">
-                    <label>Insurance Company :</label>  
-                    <select tabindex="3" id="iConsecutivoAseguranza"  name="iConsecutivoAseguranza"><option value="">Select an option...</option></select> 
-                </div>
+                <table style="width: 100%;border-collapse: collapse;">
+                    <tr>
+                        <td colspan="100%">
+                        <div class="field_item">
+                            <input id="iConsecutivo"  name="iConsecutivo"  type="hidden">
+                            <label>Company <span style="color:#ff0000;">*</span>:</label>  
+                            <select tabindex="1" id="iConsecutivoCompania"  name="iConsecutivoCompania"><option value="">Select an option...</option></select>
+                        </div> 
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                        <div class="field_item">
+                            <label>Policy No. <span style="color:#ff0000;">*</span>:</label> 
+                            <input class="txt-uppercase" tabindex="2" id="sNumeroPoliza" name="sNumeroPoliza" type="text" placeholder="" maxlength="30">
+                        </div> 
+                        </td>
+                        <td>
+                        <div class="field_item"> 
+                            <label>Type <span style="color:#ff0000;">*</span>:</label> 
+                            <select tabindex="3" id="iTipoPoliza"  name="iTipoPoliza" onblur="fn_policies.valida_tipo_poliza();"><option value="">Select an option...</option></select>
+                        </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="field_item"> 
+                                <label>Effective Date <span style="color:#ff0000;">*</span>: </label>
+                                <input id="dFechaInicio" type="text" class="txt-uppercase fecha" style="width: 92%;">
+                            </div>
+                        </td>
+                        <td>
+                        <div class="field_item"> 
+                            <label>Expiration Date <span style="color:#ff0000;">*</span>: </label>
+                            <input id="dFechaCaducidad" type="text" class="txt-uppercase fecha" style="width: 92%;">
+                        </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="100%"> 
+                        <table class="premium_amounts" style="width:100%;border-collapse:collapse;">
+                            <tr>
+                                <td>
+                                <div class="field_item"> 
+                                    <label>Limit $: </label>
+                                    <input id="iPremiumAmount" type="text" class="decimal"/>
+                                </div>
+                                </td>
+                                <td>
+                                <div class="field_item"> 
+                                    <label>Deductible $: </label>
+                                    <input id="iDeductible" type="text" class="decimal"/>
+                                </div>
+                                </td>
+                            </tr>
+                            <tr class="premium_amounts_additional" style="display: none;">
+                                <td>
+                                <div class="field_item"> 
+                                    <label>Trailer Interchange Limit $: </label>
+                                    <input id="iPremiumAmountAdditional" type="text" class="decimal"/>
+                                </div>
+                                </td>
+                                <td>
+                                <div class="field_item"> 
+                                    <label>Trailer Interchange Deductible $: </label>
+                                    <input id="iDeductibleAdditional" type="text" class="decimal"/>
+                                </div>
+                                </td>
+                            </tr>
+                        </table>
+                        <table class="premium_amounts_GL" style="width:100%;border-collapse:collapse;">
+                            <tr>
+                                <td>
+                                <div class="field_item"> 
+                                    <label>Each Occurence: </label>
+                                    <input id="iCGL_EachOccurrence" type="text" class="decimal"/>
+                                </div>
+                                </td>
+                                <td>
+                                <div class="field_item"> 
+                                    <label>Damaged to Rented Premises (Ea Occurrence): </label>
+                                    <input id="iCGL_DamageRented" type="text" class="decimal"/>
+                                </div>
+                                </td>
+                                <td>
+                                <div class="field_item"> 
+                                    <label>MED EXP (Any one person): </label>
+                                    <input id="iCGL_MedExp" type="text" class="decimal"/>
+                                </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                <div class="field_item"> 
+                                    <label>Personal & Advance Injury: </label>
+                                    <input id="iCGL_PersonalAdvInjury" type="text" class="decimal"/>
+                                </div>
+                                </td>
+                                <td>
+                                <div class="field_item"> 
+                                    <label>General Aggregate: </label>
+                                    <input id="iCGL_GeneralAggregate" type="text" class="decimal"/>
+                                </div>
+                                </td>
+                                <td>
+                                <div class="field_item"> 
+                                    <label>Products - COMP/OP AGG: </label>
+                                    <input id="iCGL_ProductsComp" type="text" class="decimal"/>
+                                </div>
+                                </td>
+                            </tr>
+                        </table>
+                        </td>
+                    </tr>
+                    <!--<tr>
+                        <td colspan="100%">
+                        <div class="field_item">
+                            <label>Insurance Premium Financing:</label>  
+                            <select tabindex="3" id="iConsecutivoInsurancePremiumFinancing"  name="iConsecutivoInsurancePremiumFinancing"><option value="">Select an option...</option></select> 
+                        </div>
+                        </td>
+                    </tr>-->
+                    <tr>
+                        <td colspan="100%">
+                        <div class="field_item">
+                            <label title="This Broker apply for the endorsements of this policy">Broker:</label>  
+                            <select tabindex="3" id="iConsecutivoBrokers"  name="iConsecutivoBrokers"><option value="">Select an option...</option></select> 
+                        </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="100%">
+                        <div class="field_item">
+                            <label title="This Insurance apply for the claims of this policy">Insurance Company:</label>  
+                            <select tabindex="3" id="iConsecutivoAseguranza"  name="iConsecutivoAseguranza"><option value="">Select an option...</option></select> 
+                        </div>
+                        </td>
+                    </tr>
+                </table>
                 <div class="policy_jacker_file" style="display:none;">
                     <legend>POLICY FILES</legend>
                     <div class="file_certificate files"> 
