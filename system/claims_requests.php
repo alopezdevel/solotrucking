@@ -830,7 +830,7 @@ var fn_claims = {
                     <td colspan="2">
                     <div class="field_item">
                         <label>Company <span style="color:#ff0000;">*</span>:</label>  
-                        <select id="iConsecutivoCompania"  name="iConsecutivoCompania" class="readonly" disabled="disabled">
+                        <select id="iConsecutivoCompania"  name="iConsecutivoCompania" class="readonly" disabled="disabled" style="height: 27px!important;">
                             <option value="">Select an option...</option>
                         </select>
                     </div> 
@@ -856,7 +856,7 @@ var fn_claims = {
                     <td colspan="100%">
                     <div class="field_item policy_apply"> 
                         <label>There was damage to third parties? (Persons and/or properties) <span style="color:#ff0000;">*</span>:</label> 
-                        <select id="eDanoTerceros" onblur="fn_claims.valida_tipo_dano($(this));">
+                        <select id="eDanoTerceros" onblur="fn_claims.valida_tipo_dano($(this));" style="height: 27px!important;">
                             <option value="NOAPPLY">NO APPLY</option>
                             <option value="YES">YES</option> 
                             <option value="NO">NO</option> 
@@ -868,7 +868,7 @@ var fn_claims = {
                     <td colspan="100%">
                     <div class="field_item policy_apply"> 
                         <label>There was damage to your Unit/Trailer?<span style="color:#ff0000;">*</span>:</label> 
-                        <select id="eDanoFisico" onblur="fn_claims.valida_tipo_dano($(this));">
+                        <select id="eDanoFisico" onblur="fn_claims.valida_tipo_dano($(this));" style="height: 27px!important;">
                             <option value="NOAPPLY">NO APPLY</option>
                             <option value="YES">YES</option> 
                             <option value="NO">NO</option> 
@@ -880,7 +880,7 @@ var fn_claims = {
                     <td colspan="100%">
                     <div class="field_item policy_apply"> 
                         <label>There was damage on your Cargo?<span style="color:#ff0000;">*</span>:</label> 
-                        <select id="eDanoMercancia" onblur="fn_claims.valida_tipo_dano($(this));">
+                        <select id="eDanoMercancia" onblur="fn_claims.valida_tipo_dano($(this));" style="height: 27px!important;">
                             <option value="NOAPPLY">NO APPLY</option>
                             <option value="YES">YES</option> 
                             <option value="NO">NO</option> 
@@ -900,7 +900,7 @@ var fn_claims = {
                     <td>
                     <div class="field_item"> 
                         <label>Where State?<span style="color:#ff0000;">*</span>:</label> 
-                        <select tabindex="1" id="sEstado"><option value="">Select an opction...</option></select>
+                        <select tabindex="1" id="sEstado" style="height: 27px!important;"><option value="">Select an opction...</option></select>
                     </div>
                     </td>
                     <td>

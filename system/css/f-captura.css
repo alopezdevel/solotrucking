@@ -134,7 +134,7 @@
 	border:1px solid #a9a9a9;
 	/*padding:10px; */
 }
-.fedicion textarea{height:60px!important;}
+.fedicion textarea{height:60px!important;resize:none;}
 .fedicion input[readonly="readonly"]{
     background: #dadada!important;
     color:#585858!important;

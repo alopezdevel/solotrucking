@@ -8,7 +8,7 @@
 </head>
  
 <body>
-<div class="overlay-background"></div>
+<div class="overlay-background"></div> 
 <nav class="main-nav-outer" id="layer_menu"><!--main-nav-start-->
 	<div class="container">
 		<a href="#home" class="img-logo"><img  src="images/nav/img-logo.png" alt="logo"></a>
@@ -27,41 +27,47 @@
         <ul class="main-nav">  
       		<?php if($_SESSION['acceso'] == "1"){ ?>
       		<!-- Admin MASTER navigation -->
-      			<li><a href="inicio">Home</a></li>
+      			<li><a href="inicio"><i class="fa fa-home"></i></a></li>
       			<li class="submenu"><a href="#">ADMINISTRATOR</a>
                     <ul>
-                        <li><a href="users"> <i class="fa fa-users"></i> Users</a></li>  
-                        <li><a href="brokers"><i class="fa fa-usd"></i> Brokers to endorsements</a></li>
-                        <li><a href="insurances"><i class="fa fa-building"></i> Insurances to claims</a></li> 
+                        <li><a href="ourcompany">Our Company</a></li> 
+                        <li><a href="users">Users</a></li>  
                     </ul>
                 </li>
                 <li class="submenu"><a href="#">COMPANIES</a>
                     <ul>
-                        <li><a href="companies"><i class="fa fa-briefcase"></i>Companies</a></li>
-                        <li><a href="certificate_request_pdf_upload"> <i class="fa fa-cloud-upload"></i> Company Certificates (upload)</a></li>   
+                        <li><a href="companies">Companies</a></li>
+                        <li><a href="certificate_request_pdf_upload">Company Certificates (upload)</a></li>   
                     </ul>
                 </li>
                 <li><a href="policies">POLICIES</a></li>
                 <li class="submenu"><a href="#">Endorsements</a>
                    <ul>
-                        <li><a href="endorsements"><i class="fa fa-plus-circle"></i>New Endorsement</a></li>
-                        <li><a href="endorsement_request"><i class="fa fa-users"></i>Applications to Drivers</a></li>
-                        <li><a href="endorsement_request_units"> <i class="fa fa-truck"></i> Applications to Units</a></li> 
-                        <li><a href="endorsement_files"> <i class="fa fa-file-text"></i> UPLOAD FILES</a></li>  
+                        <li><a href="endorsements">New Endorsement</a></li> 
+                        <li><a href="endorsement_request">Applications for Drivers</a></li>
+                        <li><a href="endorsement_request_units">Applications for Units</a></li> 
+                        <li><a href="endorsement_files">Upload Files</a></li>  
+                        <li><a href="brokers">Brokers to send email</a></li>
                     </ul>
                 </li>
                 <li class="submenu"><a href="#">CLAIMS</a>
                     <ul>
-                        <li><a href="claims"><i class="fa fa-plus-circle"></i>New Claim</a></li>
-                        <li><a href="claims_requests"><i class="fa fa-envelope"></i>Applications for Claims</a></li>
+                        <li><a href="claims">New Claim</a></li>
+                        <li><a href="claims_requests">Applications for Claims</a></li>
+                        <li><a href="insurances">Insurances to send email</a></li> 
                     </ul>
                 </li> 
                 <li class="submenu"><a href="#">QUOTES</a>
                    <ul>
-                        <li><a href="quote_formats"><i class="fa fa-file-text"></i> QUOTE FORMATS</a></li>  
+                        <li><a href="quote_formats">Formats</a></li>  
                     </ul>
                 </li>
-                <li class="submenu" style="display: none;"><a href="invoices">INVOICES</a></li> 
+                <li class="submenu"><a href="invoices">ACCOUNTING</a>
+                    <ul>
+                        <li><a href="services_products">Products & Services</a></li> 
+                        <li><a href="#">Invoices</a></li> 
+                    </ul>
+                </li> 
 
             <!-- End Admin navigation -->
             <?php } if($_SESSION['acceso'] == "4"){?>

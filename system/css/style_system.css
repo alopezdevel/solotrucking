@@ -1,5 +1,5 @@
 @charset "utf-8";
-@import '../../css/form.css';
+@import 'form.css';
 @import 'data_grid.css';
 /* CSS Document */
 
@@ -250,7 +250,7 @@ img {max-width:100%;}
   /*margin: 35px 0px 0px 315px;-*/
   padding: 0;
   list-style: none;
-  float: left;
+  float: right;
   margin: 50px auto 0px;
 }
 .main-nav li{
@@ -280,7 +280,7 @@ img {max-width:100%;}
 .main-nav li:hover a, .main-nav li.active a{color:#aa1525;}
 .main-nav li:hover{background:transparent url('../../images/nav/hover_menu.png') center top no-repeat;}
 .img-logo{float: left;}
-.img-logo img{ padding:12px 32px 0px;}
+.img-logo img{ /*padding:12px 32px 0px;*/padding: 20px 0px 0px;width: 180px;}
 .res-nav_click {
 	line-height:38px;
 	font-family: 'FontAwesome';
@@ -302,7 +302,7 @@ img {max-width:100%;}
 .res-nav_click:hover, .res-nav_click:active, .res-nav_click:focus {color: #588cb0 !important;}
 /* SUBMENU */
 	.submenu ul{
-   		width:240px;
+   		width:220px;
 		margin: 7px 0px 0px 0px;       
 		z-index: 1000;
         float:left;
@@ -471,7 +471,7 @@ img {max-width:100%;}
 	
 }
 /*-------- inicio -----*/
-.col_3:nth-child(3){border-right: 1px solid #eeeeee;border-left: 1px solid #eeeeee;} 
+/*.col_3:nth-child(3){border-right: 1px solid #eeeeee;border-left: 1px solid #eeeeee;} */
 .bann{
 	text-align:center;
 	width:85%;

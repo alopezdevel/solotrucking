@@ -1051,7 +1051,7 @@ var fn_policies = {
                         <div class="field_item">
                             <input id="iConsecutivo"  name="iConsecutivo"  type="hidden">
                             <label>Company <span style="color:#ff0000;">*</span>:</label>  
-                            <select tabindex="1" id="iConsecutivoCompania"  name="iConsecutivoCompania"><option value="">Select an option...</option></select>
+                            <select tabindex="1" id="iConsecutivoCompania"  name="iConsecutivoCompania" style="height: 27px!important;"><option value="">Select an option...</option></select>
                         </div> 
                         </td>
                     </tr>
@@ -1059,13 +1059,13 @@ var fn_policies = {
                         <td>
                         <div class="field_item">
                             <label>Policy No. <span style="color:#ff0000;">*</span>:</label> 
-                            <input class="txt-uppercase" tabindex="2" id="sNumeroPoliza" name="sNumeroPoliza" type="text" placeholder="" maxlength="30">
+                            <input class="txt-uppercase" tabindex="2" id="sNumeroPoliza" name="sNumeroPoliza" type="text" placeholder="" maxlength="30" style="width:97%!important;">
                         </div> 
                         </td>
                         <td>
                         <div class="field_item"> 
                             <label>Type <span style="color:#ff0000;">*</span>:</label> 
-                            <select tabindex="3" id="iTipoPoliza"  name="iTipoPoliza" onblur="fn_policies.valida_tipo_poliza();"><option value="">Select an option...</option></select>
+                            <select tabindex="3" id="iTipoPoliza"  name="iTipoPoliza" onblur="fn_policies.valida_tipo_poliza();" style="height: 27px!important;"><option value="">Select an option...</option></select>
                         </div>
                         </td>
                     </tr>
@@ -1090,7 +1090,7 @@ var fn_policies = {
                                 <td>
                                 <div class="field_item"> 
                                     <label>Limit $: </label>
-                                    <input id="iPremiumAmount" type="text" class="decimal"/>
+                                    <input id="iPremiumAmount" type="text" class="decimal" style="width:97%!important;"/>
                                 </div>
                                 </td>
                                 <td>
@@ -1104,7 +1104,7 @@ var fn_policies = {
                                 <td>
                                 <div class="field_item"> 
                                     <label>Trailer Interchange Limit $: </label>
-                                    <input id="iPremiumAmountAdditional" type="text" class="decimal"/>
+                                    <input id="iPremiumAmountAdditional" type="text" class="decimal" style="width:97%!important;"/>
                                 </div>
                                 </td>
                                 <td>
@@ -1120,13 +1120,13 @@ var fn_policies = {
                                 <td>
                                 <div class="field_item"> 
                                     <label>Each Occurence: </label>
-                                    <input id="iCGL_EachOccurrence" type="text" class="decimal"/>
+                                    <input id="iCGL_EachOccurrence" type="text" class="decimal" style="width:97%!important;"/>
                                 </div>
                                 </td>
                                 <td>
                                 <div class="field_item"> 
                                     <label>Damaged to Rented Premises (Ea Occurrence): </label>
-                                    <input id="iCGL_DamageRented" type="text" class="decimal"/>
+                                    <input id="iCGL_DamageRented" type="text" class="decimal" style="width:97%!important;"/>
                                 </div>
                                 </td>
                                 <td>
@@ -1171,7 +1171,7 @@ var fn_policies = {
                         <td colspan="100%">
                         <div class="field_item">
                             <label title="This Broker apply for the endorsements of this policy">Broker:</label>  
-                            <select tabindex="3" id="iConsecutivoBrokers"  name="iConsecutivoBrokers"><option value="">Select an option...</option></select> 
+                            <select tabindex="3" id="iConsecutivoBrokers"  name="iConsecutivoBrokers" style="height: 27px!important;"><option value="">Select an option...</option></select> 
                         </div>
                         </td>
                     </tr>
@@ -1179,7 +1179,7 @@ var fn_policies = {
                         <td colspan="100%">
                         <div class="field_item">
                             <label title="This Insurance apply for the claims of this policy">Insurance Company:</label>  
-                            <select tabindex="3" id="iConsecutivoAseguranza"  name="iConsecutivoAseguranza"><option value="">Select an option...</option></select> 
+                            <select tabindex="3" id="iConsecutivoAseguranza"  name="iConsecutivoAseguranza" style="height: 27px!important;"><option value="">Select an option...</option></select> 
                         </div>
                         </td>
                     </tr>

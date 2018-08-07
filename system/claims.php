@@ -810,7 +810,7 @@ var fn_claims = {
                     <td colspan="100%">
                     <div class="field_item policy_apply"> 
                         <label>There was damage to third parties? (Persons and/or properties) <span style="color:#ff0000;">*</span>:</label> 
-                        <select id="eDanoTerceros" onblur="fn_claims.valida_tipo_dano($(this));" title="Auto-Liability Policy">
+                        <select id="eDanoTerceros" onblur="fn_claims.valida_tipo_dano($(this));" title="Auto-Liability Policy" style="height: 27px!important;">
                             <option value="NOAPPLY">NO APPLY</option>
                             <option value="YES">YES</option> 
                             <option value="NO">NO</option> 
@@ -822,7 +822,7 @@ var fn_claims = {
                     <td colspan="100%">
                     <div class="field_item policy_apply"> 
                         <label>There was damage to your Unit/Trailer?<span style="color:#ff0000;">*</span>:</label> 
-                        <select id="eDanoFisico" onblur="fn_claims.valida_tipo_dano($(this));" title="Physical Damage Policy">
+                        <select id="eDanoFisico" onblur="fn_claims.valida_tipo_dano($(this));" title="Physical Damage Policy" style="height: 27px!important;">
                             <option value="NOAPPLY">NO APPLY</option>
                             <option value="YES">YES</option> 
                             <option value="NO">NO</option> 
@@ -834,7 +834,7 @@ var fn_claims = {
                     <td colspan="100%">
                     <div class="field_item policy_apply"> 
                         <label>There was damage on your Cargo?<span style="color:#ff0000;">*</span>:</label> 
-                        <select id="eDanoMercancia" onblur="fn_claims.valida_tipo_dano($(this));" title="Motor Truck Cargo Policy">
+                        <select id="eDanoMercancia" onblur="fn_claims.valida_tipo_dano($(this));" title="Motor Truck Cargo Policy" style="height: 27px!important;">
                             <option value="NOAPPLY">NO APPLY</option>
                             <option value="YES">YES</option> 
                             <option value="NO">NO</option> 
@@ -854,7 +854,7 @@ var fn_claims = {
                     <td>
                     <div class="field_item"> 
                         <label>Where State?<span style="color:#ff0000;">*</span>:</label> 
-                        <select tabindex="1" id="sEstado"><option value="">Select an opction...</option></select>
+                        <select tabindex="1" id="sEstado" style="height: 27px!important;"><option value="">Select an opction...</option></select>
                     </div>
                     </td>
                     <td>
@@ -937,7 +937,7 @@ var fn_claims = {
     <p>Are you sure you want to delete this record?</p>
     <form><div><input type="hidden" name="iConsecutivoClaim" /></div></form>   
 </div> 
-<!---- FOOTER ----->
+<!-- FOOTER -->
 <?php include("footer.php"); ?> 
 
 </body>

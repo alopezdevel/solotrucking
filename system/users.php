@@ -3,7 +3,7 @@ if ( !($_SESSION["acceso"] != '2'  && $_SESSION["usuario_actual"] != "" && $_SES
     header("Location: login.php");
     exit;
 }else{ ?>
-<!---- HEADER ----->
+<!-- HEADER -->
 <?php include("header.php"); ?>  
 <script type="text/javascript"> 
 function inicio(){  
@@ -358,7 +358,7 @@ $(document).ready(inicio);
         </table>    
     </div>
 </div>
-<!---- FORMULARIOS ------>
+<!-- FORMULARIOS -->
 <div id="users_edit_form" class="popup-form">
     <div class="p-header">
         <h2>EDIT OR ADD USER</h2>
@@ -367,51 +367,77 @@ $(document).ready(inicio);
     <div class="p-container">
     <div id="user_information" class="form">
             <fieldset>
-                <p class="mensaje_valido">&nbsp;The fields containing an (*) are required.</p> 
-                <div class="field_item">
-                <input id="iConsecutivo" name="iConsecutivo" type="hidden">
-                <label>Name <span style="color:#ff0000;">*</span>:</label> 
-                <input class="" tabindex="1" id="sUsuario" name="sUsuario" type="text" placeholder="" maxlength="50">
-            </div>
-            <div class="field_item"> 
-                <label>E-mail <span style="color:#ff0000;">*</span>:</label> 
-                <input tabindex="2" id="sCorreo" class="numb" name="sCorreo" type="text" placeholder="" maxlength="50">
-            </div>
-            <div class="field_item">
-                <label>User Type <span style="color:#ff0000;">*</span>:</label>  
-                <select id="iConsecutivoTipoUsuario" onblur="fn_users.validate_type();"><option>Select an option...</option></select>
-            </div>
-            <div class="field_item companies_option" style="display:none;">
-                <label>Company <span style="color:#ff0000;">*</span>:</label>  
-                <select id="iConsecutivoCompania"><option value="">Select an option...</option></select>
-            </div>
-            <div class="field_item">
-                <label>Password <span style="color:#ff0000;">*</span>: (6 to 8 characters)</label>  
-                <input tabindex="3" id="hClave" name="hClave" type="password" maxlength="9" style="width:90%;float:left;margin-right:1%">
-                <div id="view_password" class="btn-icon-2 btn-left" title="View Password" style="position: relative;top: 6px;">
-                <i class="fa fa-eye"></i>
-                </div> 
-                <div class="btn-icon-2 btn-left" title="Generate a Random Password" style="position: relative;top: 6px;" onclick="fn_users.randomPass('hClave');">
-                <i class="fa fa-refresh"></i>
-                </div> 
-            </div>
-            <div class="field_item" style="clear:both;">
-                <label>Repeat Password <span style="color:#ff0000;">*</span>:</label>  
-                <input tabindex="3" id="hClave2" name="hClave2" type="password" maxlength="9">
-            </div>
-            <button type="button" class="btn-1" onclick="fn_users.save();">Guardar</button> 
+                <table style="width:100%;">
+                    <tr><td colspan="100%"><p class="mensaje_valido">&nbsp;The fields containing an (*) are required.</p></td></tr>
+                    <tr>
+                        <td>
+                        <div class="field_item">
+                            <input id="iConsecutivo" name="iConsecutivo" type="hidden">
+                            <label>Name <span style="color:#ff0000;">*</span>:</label><br> 
+                            <input class="" tabindex="1" id="sUsuario" name="sUsuario" type="text" placeholder="" maxlength="50" style="width: 100%;">
+                        </div> 
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                        <div class="field_item"> 
+                            <label>E-mail <span style="color:#ff0000;">*</span>:</label><br> 
+                            <input tabindex="2" id="sCorreo" class="numb" name="sCorreo" type="text" placeholder="" maxlength="50" style="width: 100%;">
+                        </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                        <div class="field_item">
+                            <label>User Type <span style="color:#ff0000;">*</span>:</label>  
+                            <select id="iConsecutivoTipoUsuario" onblur="fn_users.validate_type();" style="height:27px!important;"><option>Select an option...</option></select>
+                        </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                        <div class="field_item companies_option" style="display:none;">
+                            <label>Company <span style="color:#ff0000;">*</span>:</label>  
+                            <select id="iConsecutivoCompania" style="height:27px!important;"><option value="">Select an option...</option></select>
+                        </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                        <div class="field_item">
+                            <label>Password <span style="color:#ff0000;">*</span>: (6 to 8 characters)</label>  
+                            <input tabindex="3" id="hClave" name="hClave" type="password" maxlength="9" style="width:90%;float:left;margin-right:1%">
+                            <div id="view_password" class="btn-icon-2 btn-left" title="View Password" style="position: relative;top: 1px;">
+                            <i class="fa fa-eye" style="padding: 8px;"></i>
+                            </div> 
+                            <div class="btn-icon-2 btn-left" title="Generate a Random Password" style="position: relative;top: 1px;" onclick="fn_users.randomPass('hClave');">
+                            <i class="fa fa-refresh" style="padding: 8px;"></i>
+                            </div> 
+                        </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                        <div class="field_item" style="clear:both;">
+                            <label>Repeat Password <span style="color:#ff0000;">*</span>:</label>  
+                            <input tabindex="3" id="hClave2" name="hClave2" type="password" maxlength="9">
+                        </div>
+                        </td>
+                    </tr>
+                </table>
+                <button type="button" class="btn-1" onclick="fn_users.save();">Guardar</button> 
             </fieldset>
     </div>
     </div>
 </div>
-<!--- DIALOGUES --->
+<!-- DIALOGUES -->
 <div id="dialog_delete_user" title="SYSTEM ALERT" style="display:none;">
     <p>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
     <form id="elimina" method="post">
            <input type="hidden" name="id_user" id="id_user">
     </form>  
 </div>
-<!---- FOOTER ----->
+<!-- FOOTER -->
 <?php include("footer.php"); ?> 
 
 </body>

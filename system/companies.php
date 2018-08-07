@@ -3,7 +3,7 @@ if ( !($_SESSION["acceso"] != '2'  && $_SESSION["usuario_actual"] != "" && $_SES
     header("Location: login.php");
     exit;
 }else{ ?>
-<!---- HEADER ----->
+<!-- HEADER -->
 <?php include("header.php"); ?>   
 <script type="text/javascript"> 
 $(document).ready(inicio);
@@ -14,6 +14,22 @@ function inicio(){
         $("#aUpdateAccount").click(function() { actualizarCliente(usuario_actual); });
         fn_companies.init();
         $.unblockUI();
+        /*---- Dialogos ---*/
+        $('#dialog_delete').dialog({
+            modal: true,
+            autoOpen: false,
+            width : 550,
+            height : 200,
+            resizable : false,
+            dialogClass: "without-close-button",
+            buttons : {
+                'CONFIRM' : function() {
+                    var clave = $('#dialog_delete input[name=iConsecutivo]').val();
+                    //fn_companies.borrar(clave);
+                },
+                'CANCEL' : function(){$(this).dialog('close');}
+            }
+        });
     
 }  
 function validapantalla(usuario){if(usuario == ""  || usuario == null){location.href= "login.php";}}                   
@@ -34,7 +50,7 @@ var fn_companies = {
             function(data){ 
                 $("#companies_edit_form #sEstado").empty().append(data.tabla).removeAttr('disabled').removeClass('readonly');
             },"json");
-            $('.num').keydown(fn_solotrucking.inputnumero()); 
+            $('.num').keydown(fn_solotrucking.inputnumero); 
             //Filtrado con la tecla enter
             $(fn_companies.data_grid + ' #grid-head1 input').keyup(function(event){
                 if (event.keyCode == '13') {
@@ -193,7 +209,7 @@ var fn_companies = {
 }     
 </script> 
 <div id="layer_content" class="main-section">
-    <div id="ct_companies" class="container">
+    <div id="ct_companies" class="container-fluid">
         <div class="page-title">
             <h1>Catalogs</h1>
             <h2>Insured Companies</h2>
@@ -252,7 +268,7 @@ var fn_companies = {
         
     </div>
 </div>
-<!---- FORMULARIOS ------>
+<!-- FORMULARIOS -->
 <div id="companies_edit_form" class="popup-form">
     <div class="p-header">
         <h2>EDIT OR ADD COMPANY</h2>
@@ -263,92 +279,160 @@ var fn_companies = {
         <form>
             <fieldset>
                 <legend>General Information</legend>
-                <p class="mensaje_valido">&nbsp;The fields containing an (*) are required.</p> 
-                <div class="field_item">
-                <input id="iConsecutivo" name="iConsecutivo" type="hidden">
-                <label>Company Name <span style="color:#ff0000;">*</span>:</label> 
-                <input class="txt-uppercase" tabindex="1" id="sNombreCompania" name="sNombreCompania" type="text" placeholder="" maxlength="255">
-            </div>
-            <div class="field_item"> 
-                <label>USDOT# <span style="color:#ff0000;">*</span>:</label> 
-                <input tabindex="2" id="sUsdot" class="numb" name="sUsdot" type="text" placeholder="" maxlength="10">
-            </div>
-            <div class="field_item"> 
-                <label>Texas DMV#:</label> 
-                <input tabindex="3" id="sTexasDMV" class="txt-uppercase" name="sTexasDMV" type="text" placeholder="" maxlength="15">
-            </div>
-            <div class="field_item"> 
-                <label>FEIN#:</label> 
-                <input tabindex="4" id="sFEIN" class="txt-uppercase" name="sFEIN" type="text" placeholder="" maxlength="15">
-            </div>
-            <div class="field_item"> 
-                <label>MC#:</label> 
-                <input tabindex="5" id="sMC" class="txt-uppercase" name="sMC" type="text" placeholder="" maxlength="15">
-            </div>
-            <div class="field_item"> 
-                <label>Starting in Business since year:</label> 
-                <input tabindex="6" id="iStartingYear" class="numb" name="iStartingYear" type="text" placeholder="" maxlength="4">
-            </div>
-            <div class="field_item"> 
-                <label>Started operations with equipment since year:</label> 
-                <input tabindex="7" id="iStartingOperationYear" class="numb" name="iStartingOperationYear" type="text" placeholder="" maxlength="4">
-            </div>
-            <div class="field_item">
-                <label>Address:</label>  
-                <input tabindex="8" id="sDireccion" name="sDireccion" type="text" placeholder="" maxlength="300">
-            </div>
-            <div class="field_item">
-                <div class="col_3 left ">
-                    <label>City:</label>  
-                    <input tabindex="9" id="sCiudad" name="sCiudad" type="text"  placeholder="" maxlength="200" style="width: 96%;"> 
-                </div> 
-                <div class="col_3 left ">  
-                    <label>Zip Code:</label>   
-                    <input tabindex="10" id="sCodigoPostal" class="numb" name="sCodigoPostal" type="text" maxlength="5" placeholder="" style="width:98%">                
-                </div>
-                <div class="col_3 left "> 
-                    <label>State:</label>  
-                    <select tabindex="11" id="sEstado" name="sEstado" style="height: 41px!important;margin-left: 6px;"></select>
-                </div>
-            </div>
-            <div class="field_item">
-                <div class="col_2 left "> 
-                <label>Contact Name:</label>  
-                <input tabindex="12" id="sNombreContacto" name="sNombreContacto" type="text" placeholder="" maxlength="255">
-                </div>
-                <div class="col_2 left "> 
-                <label>E-mail:</label>  
-                <input tabindex="13" id="sEmailContacto" name="sEmailContacto" type="text" placeholder="" maxlength="100" style="margin-left: 7px;">
-                </div>
-            </div>
-            <div class="field_item">
-                <div class="col_2 left "> 
-                <label>PH:</label>  
-                <input tabindex="14" id="sTelefonoPrincipal" class="numb" name="sTelefonoPrincipal" type="text" placeholder="" maxlength="25" style="margin-left: 7px;">
-                </div>
-                <div class="col_2 left "> 
-                <label>FAX:</label>  
-                <input tabindex="15" id="sTelefono2" class="numb" name="sTelefono2" type="text" placeholder="" maxlength="25" style="margin-left: 7px;">
-                </div>
-            </div>
-            <div class="field_item" style="clear: both;">
-                <label>Red List:</label>  
-                <select tabindex="16" id="iOnRedList" name="iOnRedList">
-                    <option value="0">No</option>
-                    <option value="1">Yes</option> 
-                </select>
-            </div>
-            <button type="button" class="btn-1" onclick="fn_companies.save();">Guardar</button> 
+                <table style="width:100%;">
+                    <tr><td colspan="100%"><p class="mensaje_valido">&nbsp;The fields containing an (*) are required.</p></td></tr>
+                    <tr>
+                        <td style="width:70%;">
+                            <div class="field_item">
+                                <input id="iConsecutivo" name="iConsecutivo" type="hidden">
+                                <label>Company Name <span style="color:#ff0000;">*</span>:</label> 
+                                <input class="txt-uppercase" tabindex="1" id="sNombreCompania" name="sNombreCompania" type="text" placeholder="" maxlength="255">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="field_item"> 
+                                <label>USDOT# <span style="color:#ff0000;">*</span>:</label> 
+                                <input tabindex="2" id="sUsdot" class="numb" name="sUsdot" type="text" placeholder="" maxlength="10">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="100%">
+                            <table style="width: 100%;" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td>
+                                    <div class="field_item">
+                                        <label>Texas DMV#:</label> 
+                                        <input tabindex="3" id="sTexasDMV" class="txt-uppercase" name="sTexasDMV" type="text" placeholder="" maxlength="15" style="width: 97%;"> 
+                                    </div>
+                                    </td>
+                                    <td>
+                                    <div class="field_item">
+                                        <label>FEIN#:</label> 
+                                        <input tabindex="4" id="sFEIN" class="txt-uppercase" name="sFEIN" type="text" placeholder="" maxlength="15" style="width: 96%;">
+                                    </div>
+                                    </td>
+                                    <td>
+                                    <div class="field_item">
+                                        <label>MC#:</label> 
+                                        <input tabindex="5" id="sMC" class="txt-uppercase" name="sMC" type="text" placeholder="" maxlength="15">
+                                    </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>    
+                    </tr>
+                    <tr>
+                        <td colspan="100%">
+                            <table style="width: 100%;" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td>
+                                    <div class="field_item">
+                                        <label>Starting in Business since year:</label> 
+                                        <input tabindex="6" id="iStartingYear" class="numb" name="iStartingYear" type="text" placeholder="" maxlength="4" style="width: 97%;">
+                                    </div>
+                                    </td>
+                                    <td>
+                                    <div class="field_item">
+                                        <label>Started operations with equipment since year:</label> 
+                                        <input tabindex="7" id="iStartingOperationYear" class="numb" name="iStartingOperationYear" type="text" placeholder="" maxlength="4">
+                                    </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>    
+                    </tr>
+                    <tr><td colspan="100%">
+                        <div class="field_item">
+                            <label>Address:</label>  
+                            <input tabindex="8" id="sDireccion" name="sDireccion" type="text" placeholder="" maxlength="300">
+                        </div>
+                    </td></tr>
+                    <tr>
+                        <td colspan="100%">
+                            <table style="width: 100%;" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td>
+                                    <div class="field_item">
+                                        <label>City:</label>  
+                                        <input tabindex="9" id="sCiudad" name="sCiudad" type="text"  placeholder="" maxlength="200" style="width: 97%;"> 
+                                    </div>
+                                    </td>
+                                    <td>
+                                    <div class="field_item">
+                                        <label>Zip Code:</label>   
+                                        <input tabindex="10" id="sCodigoPostal" class="numb" name="sCodigoPostal" type="text" maxlength="5" placeholder="" style="width:96%"> 
+                                    </div>
+                                    </td>
+                                    <td>
+                                    <div class="field_item">
+                                        <label>State:</label>  
+                                        <select tabindex="11" id="sEstado" name="sEstado" style="height: 26px!important;"></select>
+                                    </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>    
+                    </tr>
+                    <tr>
+                        <td colspan="100%">
+                            <table style="width: 100%;" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td>
+                                    <div class="field_item">
+                                        <label>Contact Name:</label>  
+                                        <input tabindex="12" id="sNombreContacto" name="sNombreContacto" type="text" placeholder="" maxlength="255" style="width: 97%;">
+                                    </div>
+                                    </td>
+                                    <td>
+                                    <div class="field_item">
+                                        <label>E-mail:</label>  
+                                        <input tabindex="13" id="sEmailContacto" name="sEmailContacto" type="text" placeholder="" maxlength="100">
+                                    </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>    
+                    </tr>
+                    <tr>
+                        <td colspan="100%">
+                            <table style="width: 100%;" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td>
+                                    <div class="field_item">
+                                        <label>Phone Number:</label>  
+                                        <input tabindex="14" id="sTelefonoPrincipal" class="numb" name="sTelefonoPrincipal" type="text" placeholder="" maxlength="25" style="width: 97%;">
+                                    </div>
+                                    </td>
+                                    <td>
+                                    <div class="field_item">
+                                        <label>Fax:</label>  
+                                        <input tabindex="15" id="sTelefono2" class="numb" name="sTelefono2" type="text" placeholder="" maxlength="25">
+                                    </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>    
+                    </tr>
+                    <tr><td colspan="100%">
+                        <div class="field_item">
+                            <label>Is in the Red List?</label>  
+                            <select tabindex="16" id="iOnRedList" name="iOnRedList" style="height: 26px!important;"><option value="0">No</option><option value="1">Yes</option> </select>
+                        </div>
+                    </td></tr>
+                </table>
+                <button type="button" class="btn-1" onclick="fn_companies.save();">Save</button> 
             </fieldset>
         </form>
     </div>
     </div>
 </div>
-<!--- DIALOGUES --->
-<div id="dialog-confirm" title="Delete">
+<!-- DIALOGUES -->
+<div id="dialog_delete" title="Delete" style="display:none;">
   <p><span class="ui-icon ui-icon-alert" ></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
+  <form><div><input type="hidden" name="iConsecutivo" /></div></form>  
 </div>
-<!---- FOOTER ----->
+<!-- FOOTER -->
 <?php include("footer.php"); ?> 
 
 </body>
