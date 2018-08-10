@@ -5,7 +5,7 @@
   $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accion"],array()) : ""; 
   define('USER',$_SESSION['usuario_actual']); // Constante UserId 
     
-  //Catalogo de compañias:
+  //INVOICES:
   function get_invoices(){
      
     include("cn_usuarios.php");
@@ -93,7 +93,7 @@
         } 
         else { $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";    } 
     }
-     $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
+     $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
      echo json_encode($response); 
   }
   function get_data(){
@@ -216,6 +216,47 @@
       }
       $response = array("error"=>"$error","msj"=>"$msj");
       echo json_encode($response);
+  }
+  
+  //PRODUCTOS Y SERVICIOS:
+  function ps_get_dataset(){
+      
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      $iConsecutivoInvoice = trim($_POST['iConsecutivoInvoice']);
+    
+      $sql    = "SELECT iConsecutivoDetalle, CONCAT(sClave,' - ',sDescripcion) AS sDescripcion, iCantidad, iPrecioUnitario, iPctImpuesto, iImpuesto, iPrecioExtendido ".
+                "FROM cb_invoice_detalle WHERE iConsecutivoInvoice = '$iConsecutivoInvoice'";
+      $result = $conexion->query($sql);
+      $rows   = $result->num_rows;    
+      
+      if ($rows > 0) {    
+            while ($items = $result->fetch_assoc()) { 
+
+                $iFolio = 1;
+                $htmlTabla .= "<tr>".
+                              "<td id=\"srv_".$items['iConsecutivoDetalle']."\">".$iFolio."</td>". 
+                              "<td>".$items['sDescripcion']."</td>".
+                              "<td class=\"text-center\">".$items['iCantidad']."</td>". 
+                              "<td class=\"text-right\">\$ ".number_format($items['iPrecioUnitario'],2,'.',',')."</td>".
+                              "<td class=\"text-right\">\$ ".number_format($items['iImpuesto'],2,'.',',')." ".$items['sCveMoneda']."</td>". 
+                              "<td class=\"text-right\">\$ ".number_format($items['iPrecioExtendido'],2,'.',',')." ".$items['sCveMoneda']."</td>". 
+                              "<td>".
+                                "<div class=\"btn-icon edit btn-left\" title=\"Edit\"><i class=\"fa fa-pencil-square-o\"></i></div>".
+                                "<div class=\"btn-icon trash btn-left\" title=\"Delete\"><i class=\"fa fa-trash\"></i></div>";
+                              "</td>".
+                              "</tr>";
+                $iFolio++;
+            }
+      } 
+      else { $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";} 
+      
+      $conexion->rollback();
+      $conexion->close(); 
+              
+      $response = array("tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error");   
+      echo json_encode($response); 
   }   
   
 ?>

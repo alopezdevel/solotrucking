@@ -78,16 +78,7 @@
                         if(data.error == '0'){$("#iConsecutivoCompania").empty().append(data.select); }
                     }
                 });
-                $.ajax({             
-                    type:"POST", 
-                    url:"catalogos_generales.php", 
-                    data:{accion:"get_services"},
-                    async : true,
-                    dataType : "json",
-                    success : function(data){                               
-                        if(data.error == '0'){$("#iTipoInvoice").empty().append(data.select); }
-                    }
-                });  
+                
             },
             fillgrid: function(){
                    $.ajax({             
@@ -129,7 +120,7 @@
                         clave = clave.split("_");
                         clave = clave[1];
                     
-                    $('#edit_form_invoice .p-header h2').empty().append('INVOICES - EDIT INVOICE #' + clave); 
+                    $('#edit_form_invoice .p-header h2').empty().append('INVOICES - EDIT INVOICE #' + $(this).parent().parent().find("td:eq(1)").html()); 
                     $.post("funciones_invoices.php",
                     {accion:"get_data", clave: clave, domroot : fn_invoices.form},
                     function(data){
@@ -137,9 +128,14 @@
                            $('#edit_form_invoice :text, #edit_form_invoice select').val('').removeClass('error'); 
                            $(fn_invoices.form+' #sNoReferencia').prop('readonly','readonly').addClass("readonly");
                            eval(data.fields);
+                           
+                           //Inicializar datagrid de productos y servicios:
+                           fn_invoices.summary.invoice_id =  $(fn_invoices.form+' #iConsecutivo').val();
+                           fn_invoices.summary.fillgrid();
+                           
                            fn_popups.resaltar_ventana('edit_form_invoice');
                         }
-                        else{fn_solotrucking.mensaje(data.msj);  }       
+                        else{fn_solotrucking.mensaje(data.msj);}       
                     },"json"); 
               });  
             },
@@ -253,6 +249,52 @@
                     });
                     $('.financing_fields').show();  
                 }
+            },
+            summary : {
+               invoice_id : "", 
+               data_grid  : "#invoice_detalle .popup-datagrid", 
+               fillgrid: function(){
+                   if(fn_invoices.summary.invoice_id != ""){
+                        $.ajax({             
+                            type:"POST", 
+                            url:"funciones_invoices.php", 
+                            data:{accion:"ps_get_dataset","iConsecutivoInvoice":fn_invoices.summary.invoice_id},
+                            async : true,
+                            dataType : "json",
+                            success : function(data){                               
+                                $(fn_invoices.summary.data_grid+" tbody").empty().append(data.tabla);
+                                //fn_invoices.summary.edit();
+                                //fn_invoices.summary.borrar();
+                            }
+                        });     
+                   }
+               },
+               add : function(){
+                  fn_invoices.summary.get_services(); 
+                  $("#edit_form_summary input, #edit_form_summary select, #edit_form_summary textarea").val('').removeClass('error'); 
+                  //fn_popups.centrar_ventana('edit_form_summary');
+                  $("#edit_form_summary").show(); 
+               },
+               cerrar_ventana : function(){
+                   $("#edit_form_summary").hide(); 
+               },
+               get_services : function(){
+                   $.ajax({             
+                        type:"POST", 
+                        url:"catalogos_generales.php", 
+                        data:{accion:"get_services"},
+                        async : true,
+                        dataType : "json",
+                        success : function(data){                               
+                            if(data.error == '0'){$("#edit_form_summary #iConsecutivoServicio").empty().append(data.select);}
+                        }
+                   });  
+               },
+               get_service_data : function(){
+                   
+               },
+               
+            
             }  
     }     
     </script> 
@@ -260,7 +302,7 @@
         <div id="ct_invoices" class="container">
             <div class="page-title">
                 <h1>Accounting</h1>
-                <h2>Invoice</h2>
+                <h2>Invoices</h2>
             </div>
             <table id="data_grid_invoices" class="data_grid">
             <thead>
@@ -329,13 +371,13 @@
                     <tr>
                         <td style="width: 60%;">
                         <div class="field_item"> 
-                            <label for="sNoReferencia">No. Reference: <span style="color:#ff0000;">*</span>:</label> 
+                            <label for="sNoReferencia">No. Reference <span style="color:#ff0000;">*</span>:</label> 
                             <input tabindex="1" id="sNoReferencia" type="text" class="txt-uppercase required-field" style="width: 97%;">
                         </div>
                         </td>
                         <td>
                         <div class="field_item"> 
-                            <label>Invoice Date: <span style="color:#ff0000;">*</span>:</label> 
+                            <label>Invoice Date <span style="color:#ff0000;">*</span>:</label> 
                             <input tabindex="2" id="dFechaInvoice" type="text" class="fecha required-field" style="width: 85%;position: relative;margin-left:15px;">
                         </div>
                         </td>
@@ -343,13 +385,13 @@
                     <tr>
                         <td>
                         <div class="field_item">
-                            <label>Company: <span style="color:#ff0000;">*</span>:</label> 
+                            <label>Company <span style="color:#ff0000;">*</span>:</label> 
                             <select tabindex="3" id="iConsecutivoCompania" class="required-field"><option value="">Select an option...</option></select>
                         </div>
                         </td>
                         <td>
                         <div class="field_item"> 
-                            <label>Payment Currency: <span style="color:#ff0000;">*</span>:</label> 
+                            <label>Payment Currency <span style="color:#ff0000;">*</span>:</label> 
                             <select tabindex="4" id="sCveMoneda" class="required-field">
                                 <option value="USD" selected>USD</option>
                             </select> 
@@ -430,14 +472,14 @@
                     <h5 class="data-grid-header">Products & Services Summary</h5>
                     <table class="popup-datagrid" style="width: 100%;">
                         <thead>
-                            <tr id="grid-head2"> 
+                            <tr class="grid-head2"> 
                                 <td class="etiqueta_grid">No.</td>
                                 <td class="etiqueta_grid">Description</td> 
                                 <td class="etiqueta_grid">Qty.</td>
                                 <td class="etiqueta_grid">Unit price</td>
                                 <td class="etiqueta_grid">TAX %</td>
                                 <td class="etiqueta_grid" style="width: 150px;">Total price</td>
-                                <td><div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_invoices.summary.add();"><i class="fa fa-plus"></i></div>  </td>
+                                <td><div class="btn-icon add" title="Add +"  onclick="fn_invoices.summary.add();"><i class="fa fa-plus"></i></div>  </td>
                             </tr>
                         </thead>
                         <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
@@ -471,9 +513,87 @@
                     </table>   
                 </div>
             </form>
-            <button type="button" class="btn-1" onclick="fn_invoices.save();">SAVE</button>  
-            <button type="button" class="btn-1" onclick="" style="margin-right:10px;background:#5ec2d4;">Preview</button>         
-            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('edit_form_invoice');" style="margin-right:10px;background:#e8051b;">Cancel</button> 
+            <div style="position: absolute;bottom:0;right: 0;">
+                <button type="button" class="btn-1" onclick="fn_invoices.save();" style="">SAVE</button>  
+                <button type="button" class="btn-1" onclick="" style="margin-right:10px;background:#5ec2d4;">Preview</button>         
+                <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('edit_form_invoice');" style="margin-right:10px;background:#e8051b;">Cancel</button> 
+            </div>
+        </div>
+        </div>
+    </div>
+    <!-- EDIT PS -->
+    <div id="edit_form_summary" class="popup-form" style="height: 97%;">
+        <div class="p-header">
+            <h2>INVOICE SUMMARY - (EDIT OR ADD)</h2>
+            <div class="btn-close" title="Close Window" onclick="fn_invoices.summary.cerrar_ventana();"><i class="fa fa-times"></i></div>
+        </div>
+        <div class="p-container" style="height: 94%;overflow-y: auto;">
+        <div>
+            <form>
+                <fieldset style="padding-bottom: 5px;">
+                <legend>Product / Service - General Data</legend>
+                <p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p>
+                <input id="iConsecutivoDetalle" name="iConsecutivoDetalle" type="hidden" value=""> 
+                <table style="width: 100%;">
+                    <tr>
+                        <td colspan="100%">
+                        <div class="field_item"> 
+                            <label for="iConsecutivoServicio">Service/Product <span style="color:#ff0000;">*</span>:</label> 
+                            <select tabindex="1" id="iConsecutivoServicio" class="required-field"><option value="">Select an option...</option></select>
+                        </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                        <div class="field_item">
+                            <label>Qty <span style="color:#ff0000;">*</span>:</label> 
+                            <input tabindex="2" id="iCantidad" class="required-field num" type="text" value="" style="width: 97%;">
+                        </div>
+                        </td>
+                        <td>
+                        <div class="field_item"> 
+                            <label>Unit Price <span style="color:#ff0000;">*</span>:</label> 
+                            <input tabindex="3" id="iPrecioUnitario" class="required-field inputdecimals" type="text" value="" style="width: 97%;"> 
+                        </div>
+                        </td> 
+                        <td>
+                        <div class="field_item"> 
+                            <label>%TAX <span style="color:#ff0000;">*</span>:</label> 
+                            <input tabindex="4" id="iPctImpuesto" class="required-field inputdecimals" type="text" value="" style="width: 97%;"> 
+                        </div>
+                        </td> 
+                    </tr>
+                    <tr>
+                        <td>
+                        <div class="field_item">
+                            <label>TAX Amount:</label> 
+                            <input tabindex="5" id="iCantidad" class="required-field inputdecimals readonly" type="text" value="" readonly="readonly" style="width: 97%;">
+                        </div>
+                        </td>
+                        <td>
+                        <div class="field_item"> 
+                            <label>Total Price:</label> 
+                            <input tabindex="6" id="iPrecioUnitario" class="required-field inputdecimals readonly" type="text" value="" readonly="readonly" style="width: 97%;"> 
+                        </div>
+                        </td> 
+                        <td></td> 
+                    </tr>
+                    <tr>
+                        <td colspan="100%">
+                        <div class="field_item">
+                            <label>Comments:</label> 
+                            <textarea tabindex="7" id="sComentarios" style="height:50px!important;"></textarea>
+                        </div>
+                        </td> 
+                    </tr>
+                    
+                </table>
+                </fieldset>
+            </form>
+            <div style="position: absolute;bottom:0;right: 0;">
+                <button type="button" class="btn-1" onclick="fn_invoices.summary.save();" style="">SAVE</button>          
+                <button type="button" class="btn-1" onclick="fn_invoices.summary.cerrar_ventana();" style="margin-right:10px;background:#e8051b;">Cancel</button> 
+            </div>
         </div>
         </div>
     </div>

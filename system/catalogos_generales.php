@@ -33,15 +33,15 @@
      include("cn_usuarios.php");
      $conexion->autocommit(FALSE);
      $error = "0"; 
-     $sql = "SELECT iConsecutivo AS clave, sDescripcion AS descripcion 
-             FROM ct_services ORDER BY iConsecutivo ASC";
+     $sql = "SELECT iConsecutivo AS clave, sClave ,sDescripcion AS descripcion 
+             FROM ct_productos_servicios ORDER BY iConsecutivo ASC";
      $result = $conexion->query($sql);
      $tipos = $result->num_rows;  
         if($tipos > 0){
             $htmlTabla .= "<option value=\"\">Select an option...</option>";      
-            while ($country = $result->fetch_assoc()) {
-               if($country["clave"] != ""){
-                     $htmlTabla .= "<option value=\"".$country['clave']."\">".$country['descripcion']."</option>";
+            while ($item = $result->fetch_assoc()) {
+               if($item["clave"] != ""){
+                     $htmlTabla .= "<option value=\"".$item['clave']."\"> ".$item['sClave']." | ".$item['descripcion']."</option>";
                  }else{                             
                      $htmlTabla .="";
                  }    
