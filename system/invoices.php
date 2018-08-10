@@ -119,12 +119,13 @@
                $('#edit_form_invoice .mensaje_valido').empty().append('The fields containing an (<span style="color:#ff0000;">*</span>) are required.');
                $('#edit_form_invoice .p-header h2').empty().append('INVOICES - NEW INVOICE');
                $(fn_invoices.form+' #sNoReferencia').removeProp('readonly').removeClass("readonly");
+               $(fn_invoices.form+"#sCveMoneda").val('USD');
                fn_solotrucking.get_date("#dFechaInvoice");
                fn_popups.resaltar_ventana('edit_form_invoice');  
             },
             edit : function (){
                 $(fn_invoices.data_grid + " tbody td .edit").bind("click",function(){
-                    var clave = $(this).parent().parent().find("td:eq(0)").prop('id');
+                    var clave = $(this).parent().parent().find("td:eq(1)").prop('id');
                         clave = clave.split("_");
                         clave = clave[1];
                     
@@ -222,14 +223,10 @@
             filtraInformacion : function(){
                 fn_invoices.pagina_actual = 0;
                 fn_invoices.filtro = "";
-                if($(fn_invoices.data_grid+" .flt_id").val() != ""){ fn_invoices.filtro += "iConsecutivo|"+$(fn_invoices.data_grid+" .flt_id").val()+","}
-                if($(fn_invoices.data_grid+" .flt_name").val() != ""){ fn_invoices.filtro += "sNombreCompania|"+$(fn_invoices.data_grid+" .flt_name").val()+","} 
-                if($(fn_invoices.data_grid+" .flt_contacto").val() != ""){ fn_invoices.filtro += "sNombreContacto|"+$(fn_invoices.data_grid+" .flt_contacto").val()+","} 
-                if($(fn_invoices.data_grid+" .flt_address").val() != ""){ fn_invoices.filtro += "sDireccion|"+$(fn_invoices.data_grid+" .flt_address").val()+","} 
-                if($(fn_invoices.data_grid+" .flt_country").val() != ""){ fn_invoices.filtro += "estado|"+$(fn_invoices.data_grid+" .flt_country").val()+","} 
-                if($(fn_invoices.data_grid+" .flt_zip").val() != ""){ fn_invoices.filtro += "sCodigoPostal|"+$(fn_invoices.data_grid+" .flt_zip").val()+","} 
-                if($(fn_invoices.data_grid+" .flt_phone").val() != ""){ fn_invoices.filtro += "sTelefonoPrincipal|"+$(fn_invoices.data_grid+" .flt_phone").val()+","}  
-                if($(fn_invoices.data_grid+" .flt_usdot").val() != ""){ fn_invoices.filtro += "sUsdot|"+$(fn_invoices.data_grid+" .flt_usdot").val()+","}    
+                if($(fn_invoices.data_grid+" .flt_ref").val() != "")   { fn_invoices.filtro += "sNoReferencia|"+$(fn_invoices.data_grid+" .flt_ref").val()+","}
+                if($(fn_invoices.data_grid+" .flt_name").val() != "")  { fn_invoices.filtro += "sNombreCompania|"+$(fn_invoices.data_grid+" .flt_name").val()+","}  
+                if($(fn_invoices.data_grid+" .flt_date").val() != "")  { fn_invoices.filtro += "dFechaInvoice|"+$(fn_invoices.data_grid+" .flt_date").val()+","}  
+                if($(fn_invoices.data_grid+" .flt_amount").val() != ""){ fn_invoices.filtro += "dTotal|"+$(fn_invoices.data_grid+" .flt_amount").val()+","}    
                 fn_invoices.fillgrid();
             },
             valid_type : function(service){
@@ -262,22 +259,18 @@
     <div id="layer_content" class="main-section">
         <div id="ct_invoices" class="container">
             <div class="page-title">
-                <h1>Invoices</h1>
-                <h2>Invoice Requests</h2>
+                <h1>Accounting</h1>
+                <h2>Invoice</h2>
             </div>
             <table id="data_grid_invoices" class="data_grid">
             <thead>
                 <tr id="grid-head1">
-                    <td style='width:120px;'><input class="flt_id" class="numeros" type="text" placeholder="No. Reference:"></td>
+                    <td class="etiqueta_grid" style="width: 100px;"></td>
+                    <td style='width:120px;'>
+                        <input class="flt_ref" class="numeros" type="text" placeholder="No. Reference:">
+                    </td>
                     <td><input class="flt_name" type="text" placeholder="Company:"></td> 
                     <td><input class="flt_date" type="text" placeholder="MM/DD/YY:"></td>
-                    <td style='width: 160px;'>
-                        <select class="flt_financing">
-                            <option value="">Select an option...</option>
-                            <option value="0">No</option> 
-                            <option value="1">Yes</option> 
-                        </select>
-                    </td>
                     <td><input class="flt_amount" type="text" placeholder="Payment Amount:"></td> 
                     <td style='width:80px;'>
                         <div class="btn-icon-2 btn-left" title="Search" onclick="fn_invoices.filtraInformacion();"><i class="fa fa-search"></i></div>
@@ -285,10 +278,10 @@
                     </td> 
                 </tr>
                 <tr id="grid-head2">
+                    <td class="etiqueta_grid"></td>
                     <td class="etiqueta_grid down" onclick="fn_invoices.ordenamiento('sNoReferencia',this.cellIndex);">Reference</td>
                     <td class="etiqueta_grid"      onclick="fn_invoices.ordenamiento('sNombreCompania',this.cellIndex);">Company</td>
                     <td class="etiqueta_grid"      onclick="fn_invoices.ordenamiento('A.dFechaInvoice',this.cellIndex);">Date</td> 
-                    <td class="etiqueta_grid"      onclick="fn_invoices.ordenamiento('iFinanciamiento',this.cellIndex);">Is Financing</td>
                     <td class="etiqueta_grid"      onclick="fn_invoices.ordenamiento('dTotal',this.cellIndex);">Payment Amount</td>
                     <td class="etiqueta_grid"></td> 
                 </tr>
@@ -348,10 +341,18 @@
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="100%">
+                        <td>
                         <div class="field_item">
                             <label>Company: <span style="color:#ff0000;">*</span>:</label> 
                             <select tabindex="3" id="iConsecutivoCompania" class="required-field"><option value="">Select an option...</option></select>
+                        </div>
+                        </td>
+                        <td>
+                        <div class="field_item"> 
+                            <label>Payment Currency: <span style="color:#ff0000;">*</span>:</label> 
+                            <select tabindex="4" id="sCveMoneda" class="required-field">
+                                <option value="USD" selected>USD</option>
+                            </select> 
                         </div>
                         </td> 
                     </tr>
@@ -359,7 +360,7 @@
                         <td colspan="100%">
                         <div class="field_item">
                             <label>Comments:</label> 
-                            <textarea tabindex="4" id="sComentarios" style="height:50px!important;"></textarea>
+                            <textarea tabindex="6" id="sComentarios" style="height:50px!important;"></textarea>
                         </div>
                         </td> 
                     </tr>
@@ -436,7 +437,7 @@
                                 <td class="etiqueta_grid">Unit price</td>
                                 <td class="etiqueta_grid">TAX %</td>
                                 <td class="etiqueta_grid" style="width: 150px;">Total price</td>
-                                <td></td>
+                                <td><div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_invoices.summary.add();"><i class="fa fa-plus"></i></div>  </td>
                             </tr>
                         </thead>
                         <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>

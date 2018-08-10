@@ -17,7 +17,7 @@
     $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
         
     //Filtros de informacion //
-    $filtroQuery = " WHERE A.iConsecutivo IS NOT NULL AND bEliminado = '0'";
+    $filtroQuery = " WHERE A.iConsecutivo IS NOT NULL AND bEliminado = '0' AND eStatus != 'CANCELED'";
     $array_filtros = explode(",",$_POST["filtroInformacion"]);
     foreach($array_filtros as $key => $valor){
         if($array_filtros[$key] != ""){
@@ -45,7 +45,7 @@
         $pagina_actual == "0" ? $pagina_actual = 1 : false;
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-        $sql = "SELECT A.iConsecutivo,sNoReferencia, sNombreCompania, sNombreContacto, dTotal, iFinanciamiento, sDiasFinanciamiento, eStatus, iOnRedList, DATE_FORMAT(dFechaInvoice, '%m/%d/%Y') AS  dFechaInvoice ".   
+        $sql = "SELECT A.iConsecutivo,sNoReferencia, sNombreCompania, sNombreContacto, dTotal, iFinanciamiento, sDiasFinanciamiento, eStatus, iOnRedList, DATE_FORMAT(dFechaInvoice, '%m/%d/%Y') AS  dFechaInvoice, sCveMoneda ".   
                "FROM cb_invoices A ".
                "LEFT JOIN ct_companias B ON A.iConsecutivoCompania = B.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
         $result = $conexion->query($sql);
@@ -61,19 +61,30 @@
                         $redlist_icon = ""; 
                         $redlist_class = "";
                      }
+                     $botones = "";
+                     switch($items['eStatus']){
+                         case 'EDITABLE': 
+                            $btns_left  = "<div class=\"btn_apply btn-text send btn-center\" title=\"Apply Invoice\" style=\"width: 60px;\"><i class=\"fa fa-check-circle\"></i><span>Apply</span></div> "; 
+                            $btns_right = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit\"><i class=\"fa fa-pencil-square-o\"></i></div>".
+                                          "<div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete\"><i class=\"fa fa-trash\"></i></div>";
+                         break;
+                         case 'APPLIED': 
+                            $btns_left = "<div class=\"btn_send_invoice btn-icon send-email btn-left\" title=\"Send to:\"><i class=\"fa fa-envelope\"></i></div>"; 
+                            $btns_left.= "<div class=\"btn_pdf btn-icon pdf btn-left\" title=\"Open Invoice PDF\"><i class=\"fa fa-file-pdf-o\"></i></div>"; 
+                            $btns_right= "<div class=\"btn_cancel btn-icon trash btn-left\" title=\"Cancel Invoice\"><i class=\"fa fa-times-circle\"></i></div>";
+                         break; 
+                     }
                      
-                     $htmlTabla .= "<tr ".$redlist_class.">
-                                        <td id=\"inv_".$items['iConsecutivo']."\">".$items['sNoReferencia']."</td>".
-                                       "<td>".$items['sNombreCompania']."</td>". 
-                                       //"<td>".$items['eTipoInvoice']."</td>".
-                                       "<td>".$items['dFechaInvoice']."</td>".
-                                       "<td>".$items['iFinanciamiento']."</td>".
-                                        "<td>".$items['dTotal']."</td>".  
-                                       //"<td>".$items['eStatus']."</td>".                                                                                                                                                                                                                    
-                                       "<td>
-                                            <div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Invoice\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>
-                                            <div style=\"display:none;\" class=\"btn_delete btn-icon trash btn-left\" title=\"Cancel Invoice\"><i class=\"fa fa-trash\"></i> <span></span></div>
-                                       </td></tr>";
+                     $htmlTabla .= "<tr ".$redlist_class.">".
+                                   "<td>".$btns_left."</td>". 
+                                   "<td id=\"inv_".$items['iConsecutivo']."\">".$items['sNoReferencia']."</td>".
+                                   "<td>".$items['sNombreCompania']."</td>". 
+                                   //"<td>".$items['eTipoInvoice']."</td>".
+                                   "<td class=\"text-center\">".$items['dFechaInvoice']."</td>".
+                                   //"<td>".$items['iFinanciamiento']."</td>".
+                                   "<td class=\"text-right\">\$ ".number_format($items['dTotal'],2,'.',',')." ".$items['sCveMoneda']."</td>".  
+                                   //"<td>".$items['eStatus']."</td>".                                                                                                                                                                                                                    
+                                   "<td>".$btns_right."</td></tr>";
             }
         
             
@@ -97,9 +108,9 @@
   
     $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
     $transaccion_exitosa = true;
-    $sql    = "SELECT iConsecutivo,iConsecutivoCompania sNoReferencia, dTotal, iFinanciamiento, sDiasFinanciamiento, eStatus, iOnRedList, ".
+    $sql    = "SELECT iConsecutivo,iConsecutivoCompania, sNoReferencia, dTotal, iFinanciamiento, sDiasFinanciamiento, eStatus, ".
               "DATE_FORMAT(dFechaInvoice, '%m/%d/%Y') AS  dFechaInvoice, dSubtotal,dPctTax,dTax,dAnticipo,dBalance,dTipoCambio,sComentarios,sCveMoneda ".
-              "FROM cb_invoices WHERE iConsecutivo = ".$clave;
+              "FROM cb_invoices WHERE iConsecutivo = '$clave'";
     $result = $conexion->query($sql);
     $items  = $result->num_rows;   
     if ($items > 0) {     
@@ -156,6 +167,23 @@
       }
       
       if($error == '0'){
+          
+          //GET CLIENTE DATOS:
+          $query  = "SELECT sNombreCompania AS sReceptorNombre, CONCAT(sDireccion,', ',sCiudad,' ',sEstado,' ',sCodigoPostal) AS sReceptorDireccion ".
+                    "FROM ct_companias WHERE iConsecutivo = '".trim($_POST['iConsecutivoCompania'])."'";
+          $result = $conexion->query($query);
+          
+          if($result->num_rows > 0){
+             $items = $result->fetch_assoc(); 
+             if($_POST["edit_mode"] == 'true'){
+                array_push($valores,"sReceptorNombre='".trim($items['sReceptorNombre'])."'"); 
+                array_push($valores,"sReceptorDireccion='".trim($items['sReceptorDireccion'])."'");
+             }else{
+                array_push($campos ,'sReceptorNombre');    array_push($valores, trim($items['sReceptorNombre'])); 
+                array_push($campos ,'sReceptorDireccion'); array_push($valores, trim($items['sReceptorDireccion']));
+             }
+          }
+          
           if($_POST["edit_mode"] == 'true'){
             array_push($valores ,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
             array_push($valores ,"sIP='".$_SERVER['REMOTE_ADDR']."'");
@@ -176,19 +204,18 @@
          
           $conexion->query($sql);
           $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
-          if($transaccion_exitosa){
-                    $conexion->commit();
-                    $conexion->close();
-          }else{
-                    $conexion->rollback();
-                    $conexion->close();
-                    $msj = "A general system error ocurred : internal error";
-                    $error = "1";
+          
+          if($transaccion_exitosa){$conexion->commit();$conexion->close();}
+          else{
+            $conexion->rollback();
+            $conexion->close();
+            $msj = "A general system error ocurred : internal error";
+            $error = "1";
           }
           if($transaccion_exitosa)$msj = "The data has been saved successfully."; 
       }
       $response = array("error"=>"$error","msj"=>"$msj");
       echo json_encode($response);
-  }
+  }   
   
 ?>

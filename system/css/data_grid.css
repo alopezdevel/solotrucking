@@ -304,7 +304,7 @@ a.btn-text{display:block;}
     padding: 5px 10px;
     margin: 2px;
     text-align: center;
-    color:#43a3ea;
+    color:#aadbff;
 }
 .btn-text:hover{
     
@@ -317,6 +317,7 @@ a.btn-text{display:block;}
    
 }
 .btn-text i{margin-right: 5px; color:#249cf5;}
+.btn-text:hover i{color:#ffffff;}  
 /*---contexto---*/
 .btnicon{width:auto!important;min-width:90px;color:#999999;font-family: Arial, Helvetica, sans-serif;font-weight:bold;}
 .btnicon i{font-family: 'FontAwesome';font-size: 1.4em;font-weight:normal;vertical-align: middle;}
@@ -376,6 +377,7 @@ div.btn-icon span{font-weight: bold;font-size: 13px;}
 /*-----ALINEACION DE LOS BOTONES ----------- IZQUIERDA - DERECHA ------*/
 .btn-left{float:left;margin-right:2px;}
 .btn-right{float:right;margin-right:5px!important;}
+.btn-center{margin: 0 auto;}
 
 /*--------------------------------------
     ##FORMULARIOS FLOTANTES## 
