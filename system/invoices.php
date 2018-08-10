@@ -590,7 +590,7 @@
                 </table>
                 </fieldset>
             </form>
-            <div style="position: absolute;bottom:0;right: 0;">
+            <div>
                 <button type="button" class="btn-1" onclick="fn_invoices.summary.save();" style="">SAVE</button>          
                 <button type="button" class="btn-1" onclick="fn_invoices.summary.cerrar_ventana();" style="margin-right:10px;background:#e8051b;">Cancel</button> 
             </div>
