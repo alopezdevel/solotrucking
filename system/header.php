@@ -65,7 +65,7 @@
                 <li class="submenu"><a href="invoices">ACCOUNTING</a>
                     <ul>
                         <li><a href="services_products">Products & Services</a></li> 
-                        <li><a href="#">Invoices</a></li> 
+                        <li><a href="invoices">Invoices</a></li> 
                     </ul>
                 </li> 
 

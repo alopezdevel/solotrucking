@@ -81,7 +81,6 @@
         $fields  = "";
         $clave   = trim($_POST['clave']);
         $domroot = trim($_POST['domroot']);
-        $P[0]['sColorPdf'] = "rgb(".$P[0]['sColorPdf'].")"; // le agregamos la cadena para que lo interprete el plugin. 
         
         include("cn_usuarios.php");
         $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
@@ -93,7 +92,12 @@
             $items = $result->fetch_assoc();
             $llaves  = array_keys($items);
             $datos   = $items;
-            foreach($datos as $i => $b){$fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');"; }  
+            foreach($datos as $i => $b){
+                if($i == "sColorPdf"){
+                     $fields .= "\$('#$domroot :input[id=".$i."]').minicolors('value', 'rgb(".$datos[$i].")');";     
+                }
+                else{$fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');"; }
+            }  
         }
         $conexion->rollback();
         $conexion->close(); 

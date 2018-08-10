@@ -1,4 +1,4 @@
-﻿<?php 
+<?php 
     session_start();    
     if ($_SESSION["acceso"] != '3' && $_SESSION["acceso"] != '1'  && $_SESSION["usuario_actual"] == "" && $_SESSION["usuario_actual"] == NULL){ 
         //No ha iniciado session, redirecciona a la pagina de login
@@ -64,7 +64,7 @@
                     function(data){
                         if(data.error == '0'){
                            $('#company_information :text, #company_information select').val('').removeClass('error'); 
-                           eval(data.fields);
+                           eval(data.fields); 
                         }else{fn_solotrucking.mensaje(data.msj);}       
                     },"json"); 
             },
