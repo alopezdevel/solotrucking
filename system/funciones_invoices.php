@@ -258,5 +258,32 @@
       $response = array("tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error");   
       echo json_encode($response); 
   }   
+  function get_service_data(){
+      
+      $iConsecutivo = trim($_POST['iConsecutivo']);
+      $domroot      = trim($_POST['domroot']);
+      $error        = "0"; 
+      
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);
+      
+      //Conultar Servicio
+      $query  = "SELECT iPrecioUnitario,iPctImpuesto,sComentarios FROM ct_productos_servicios WHERE iConsecutivo='$iConsecutivo' AND bEliminado = '0'";
+      $result = $conexion->query($query);
+      
+      if($result->num_rows > 0){
+        $items  = $result->fetch_assoc();
+        $llaves = array_keys($items);
+        $datos  = $items;
+        
+        foreach($datos as $i => $b){$fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');";}     
+      }
+      
+      $conexion->rollback();
+      $conexion->close(); 
+              
+      $response = array("fields"=>"$fields","mensaje"=>"$mensaje","error"=>"$error");   
+      echo json_encode($response); 
+  }
   
 ?>

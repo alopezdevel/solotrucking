@@ -1,9 +1,11 @@
-﻿<?php session_start();    
-if ( !($_SESSION["acceso"] != '2'  && $_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  )  ){ //No ha iniciado session, redirecciona a la pagina de login
-    header("Location: login.php");
-    exit;
-}else{ ?>
-<!---- HEADER ----->
+<?php 
+    session_start();    
+    if ( !($_SESSION["acceso"] != '2'  && $_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  )  ){ //No ha iniciado session, redirecciona a la pagina de login
+        header("Location: login.php");
+        exit;
+    }else{ 
+?>
+<!-- HEADER -->
 <?php include("header.php"); ?>  
 <script type="text/javascript"> 
 $(document).ready(inicio);
@@ -363,7 +365,7 @@ var fn_endorsement = {
         </table>    
     </div>
 </div>
-<!---- FORMULARIOS ------>
+<!-- FORMULARIOS -->
 <div id="endorsements_edit_form" class="popup-form">
     <div class="p-header">
         <h2>ENDORSEMENTS</h2>
@@ -383,41 +385,58 @@ var fn_endorsement = {
         <form>
             <fieldset id="frm_endorsement_information">
                 <legend>Endorsement Information</legend>
-                <p class="mensaje_valido">&nbsp;Please check that all data in this endorsement are correct to be sent to Brokers</p>
-                <input id="iConsecutivo" name="iConsecutivo" type="hidden">
-                <input id="iConsecutivoPoliza" name="iConsecutivoPoliza" type="hidden">  
-                <div class="field_item">
-                    <label>Type:</label> 
-                    <input id="sDescripcion" name ="sDescripcion"  type = "text" readonly="readonly" class="readonly">
-                </div>
-                <div class="field_item">
-                    <label>Action:</label> 
-                    <input id="eAccion" name ="eAccion"  type = "text" readonly="readonly" class="readonly">
-                </div>
-                <div id="pd_information" class="field_item" style="display:none;"></div>
+                <table style="width:100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                    <td colspan="100%">
+                        <p class="mensaje_valido">&nbsp;Please check that all data in this endorsement are correct to be sent to Brokers</p>
+                        <input id="iConsecutivo" name="iConsecutivo" type="hidden">
+                        <input id="iConsecutivoPoliza" name="iConsecutivoPoliza" type="hidden"> 
+                    </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="field_item"><label>Type:</label> <input id="sDescripcion" name ="sDescripcion"  type = "text" readonly="readonly" class="readonly" style="width: 97%;"></div>
+                        </td>
+                        <td>
+                            <div class="field_item"><label>Action:</label> <input id="eAccion" name ="eAccion"  type = "text" readonly="readonly" class="readonly" style="width: 97%;"></div> 
+                        </td>
+                    </tr>
+                    <tr><td colspan="100%"><div id="pd_information" class="field_item" style="display:none;"></div></td></tr>
+                </table>
             </fieldset>
             <fieldset id="frm_unit_information" style="display:none;">
-                <legend>Unit Information</legend> 
-                <div class="field_item">
-                    <label>Type:</label> 
-                    <input id="sTipo" name ="sTipo"  type = "text" readonly="readonly" class="readonly">
-                </div>
-                <div class="field_item">
-                    <label>Year:</label> 
-                    <input id="iYear" name ="iYear"  type = "text" readonly="readonly" class="readonly">
-                </div>
-                <div class="field_item">
-                    <label>Make:</label> 
-                    <input id="Modelo" name ="Modelo"  type = "text" readonly="readonly" class="readonly">
-                </div>
-                <div class="field_item">
-                    <label>VIN:</label> 
-                    <input id="sVIN" name ="sVIN"  type = "text" readonly="readonly" class="readonly">
-                </div>
-                <div class="field_item">
-                    <label>Radius:</label> 
-                    <input id="Radius" name ="Radius"  type = "text" readonly="readonly" class="readonly">
-                </div>
+                <legend>Unit Information</legend>
+                <table style="width:100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td>
+                        <div class="field_item">
+                            <label>Type:</label> <input id="sTipo" name ="sTipo"  type = "text" readonly="readonly" class="readonly" style="width: 95%;">
+                        </div>
+                        </td>
+                        <td>
+                        <div class="field_item">
+                            <label>Year:</label> <input id="iYear" name ="iYear"  type = "text" readonly="readonly" class="readonly" style="width: 95%;">
+                        </div>
+                        </td>
+                        <td>
+                        <div class="field_item">
+                            <label>Make:</label> <input id="Modelo" name ="Modelo"  type = "text" readonly="readonly" class="readonly" style="width: 95%;">
+                        </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <div class="field_item">
+                                <label>VIN:</label> <input id="sVIN" name ="sVIN"  type = "text" readonly="readonly" class="readonly" style="width: 97%;">
+                            </div>
+                        </td>
+                        <td>
+                        <div class="field_item">
+                            <label>Radius:</label> <input id="Radius" name ="Radius"  type = "text" readonly="readonly" class="readonly" style="width: 95%;">
+                        </div>
+                        </td>
+                    </tr>
+                </table> 
             </fieldset>
             <table class="data_files" style="font-size: 12px!important;width: 50%;margin: -15px auto 20px;"></table>
             <fieldset id="frm_endorsement_status" style="display:none;">
@@ -442,11 +461,11 @@ var fn_endorsement = {
     </div>
     </div>
 </div>
-<!--- DIALOGUES --->
+<!-- DIALOGUES -->
 <div id="dialog_endorsement_save" title="SYSTEM ALERT" style="display:none;">
     <p>We will be sending a notice to the company about the status of endorsements. Are you sure want to continue?</p> 
 </div> 
-<!---- FOOTER ----->
+<!-- FOOTER -->
 <?php include("footer.php"); ?> 
 
 </body>

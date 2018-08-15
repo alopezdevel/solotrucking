@@ -110,7 +110,12 @@
                $('#edit_form_invoice .mensaje_valido').empty().append('The fields containing an (<span style="color:#ff0000;">*</span>) are required.');
                $('#edit_form_invoice .p-header h2').empty().append('INVOICES - NEW INVOICE');
                $(fn_invoices.form+' #sNoReferencia').removeProp('readonly').removeClass("readonly");
-               $(fn_invoices.form+"#sCveMoneda").val('USD');
+               $(fn_invoices.form+" #sCveMoneda").val('USD');
+               
+               //ocultar datagrid detalle:
+               $("#invoice_detalle").hide();
+               $(fn_invoices.summary.data_grid+" tbody").empty();
+               
                fn_solotrucking.get_date("#dFechaInvoice");
                fn_popups.resaltar_ventana('edit_form_invoice');  
             },
@@ -132,7 +137,7 @@
                            //Inicializar datagrid de productos y servicios:
                            fn_invoices.summary.invoice_id =  $(fn_invoices.form+' #iConsecutivo').val();
                            fn_invoices.summary.fillgrid();
-                           
+                           $("#invoice_detalle").show();
                            fn_popups.resaltar_ventana('edit_form_invoice');
                         }
                         else{fn_solotrucking.mensaje(data.msj);}       
@@ -162,6 +167,7 @@
                         switch(data.error){
                          case '0':
                             fn_solotrucking.mensaje(data.msj);
+                            fn_invoices.filtraInformacion();
                             fn_invoices.edit();
                          break;
                          case '1': fn_solotrucking.mensaje(data.msj); break;
@@ -272,7 +278,9 @@
                add : function(){
                   fn_invoices.summary.get_services(); 
                   $("#edit_form_summary input, #edit_form_summary select, #edit_form_summary textarea").val('').removeClass('error'); 
-                  //fn_popups.centrar_ventana('edit_form_summary');
+                  //Valores Default:
+                  $("#edit_form_summary #iCantidad").val(1);
+                  
                   $("#edit_form_summary").show(); 
                },
                cerrar_ventana : function(){
@@ -291,9 +299,34 @@
                    });  
                },
                get_service_data : function(){
-                   
+                  var service = $("#edit_form_summary #iConsecutivoServicio").val();
+                  if(service != ""){
+                      $.ajax({             
+                        type:"POST", 
+                        url:"funciones_invoices.php", 
+                        data:{accion:"get_service_data","iConsecutivo":service,"domroot":"edit_form_summary"},
+                        async : true,
+                        dataType : "json",
+                        success : function(data){                               
+                            if(data.error == '0'){eval(data.fields);}
+                        }
+                      });  
+                  } 
                },
-               
+               get_total : function(){
+                   var cantidad        = $("#edit_form_summary #iCantidad").val();
+                   var iPrecioUnitario = $("#edit_form_summary #iPrecioUnitario").val();
+                   var iPctImpuesto    = $("#edit_form_summary #iPctImpuesto").val();
+                   
+                   if(cantidad > 0 && iPrecioUnitario > 0){
+                       cantidad        = fn_solotrucking.calcular_decimales(cantidad,2);
+                       iPrecioUnitario = fn_solotrucking.calcular_decimales(iPrecioUnitario,2);
+                       iPctImpuesto    = parseFloat(iPctImpuesto);
+                       
+                       var impXcan = fn_solotrucking.calcular_decimales((cantidad*iPrecioUnitario),2); //Importe Unit por Cantidad.
+                       var tax     = fn_solotrucking.calcular_decimales((impXcan*(iPctImpuesto/100)),2); //Calcular Tax.
+                   }
+               }
             
             }  
     }     
@@ -513,7 +546,7 @@
                     </table>   
                 </div>
             </form>
-            <div style="position: absolute;bottom:0;right: 0;">
+            <div>
                 <button type="button" class="btn-1" onclick="fn_invoices.save();" style="">SAVE</button>  
                 <button type="button" class="btn-1" onclick="" style="margin-right:10px;background:#5ec2d4;">Preview</button>         
                 <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('edit_form_invoice');" style="margin-right:10px;background:#e8051b;">Cancel</button> 
@@ -539,7 +572,7 @@
                         <td colspan="100%">
                         <div class="field_item"> 
                             <label for="iConsecutivoServicio">Service/Product <span style="color:#ff0000;">*</span>:</label> 
-                            <select tabindex="1" id="iConsecutivoServicio" class="required-field"><option value="">Select an option...</option></select>
+                            <select tabindex="1" id="iConsecutivoServicio" class="required-field" onblur="fn_invoices.summary.get_service_data();"><option value="">Select an option...</option></select>
                         </div>
                         </td>
                     </tr>
@@ -573,7 +606,7 @@
                         <td>
                         <div class="field_item"> 
                             <label>Total Price:</label> 
-                            <input tabindex="6" id="iPrecioUnitario" class="required-field inputdecimals readonly" type="text" value="" readonly="readonly" style="width: 97%;"> 
+                            <input tabindex="6" id="iPrecioExtendido" class="required-field inputdecimals readonly" type="text" value="" readonly="readonly" style="width: 97%;"> 
                         </div>
                         </td> 
                         <td></td> 

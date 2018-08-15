@@ -34,7 +34,7 @@
      $conexion->autocommit(FALSE);
      $error = "0"; 
      $sql = "SELECT iConsecutivo AS clave, sClave ,sDescripcion AS descripcion 
-             FROM ct_productos_servicios ORDER BY iConsecutivo ASC";
+             FROM ct_productos_servicios WHERE bEliminado = '0' ORDER BY iConsecutivo ASC";
      $result = $conexion->query($sql);
      $tipos = $result->num_rows;  
         if($tipos > 0){

@@ -1,4 +1,4 @@
-﻿<?php session_start();    
+<?php session_start();    
 if ( !($_SESSION["acceso"] != '2'  && $_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  )  ){ //No ha iniciado session, redirecciona a la pagina de login
     header("Location: login.php");
     exit;
@@ -209,7 +209,7 @@ var fn_companies = {
 }     
 </script> 
 <div id="layer_content" class="main-section">
-    <div id="ct_companies" class="container-fluid">
+    <div id="ct_companies" class="container">
         <div class="page-title">
             <h1>Catalogs</h1>
             <h2>Insured Companies</h2>

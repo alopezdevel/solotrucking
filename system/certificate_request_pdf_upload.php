@@ -1,10 +1,11 @@
-﻿<?php session_start();    
-if ( !($_SESSION["acceso"] != '2'  && $_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  )  ){ 
-    //No ha iniciado session, redirecciona a la pagina de login
-    header("Location: login.php");
-    exit;
-}else{ ?>
-<!---- HEADER ----->
+<?php   session_start();    
+        if ( !($_SESSION["acceso"] != '2'  && $_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  )  ){ 
+            //No ha iniciado session, redirecciona a la pagina de login
+            header("Location: login.php");
+            exit;
+        }else{ 
+?>
+<!-- HEADER -->
 <?php include("header.php"); ?> 
 <script type="text/javascript"> 
 $(document).ready(inicio);
@@ -284,7 +285,7 @@ var fn_UsersClients = {
         </table>  
     </div>
 </div>
-<!---- FORMULARIOS ------>
+<!-- FORMULARIOS -->
 <div id="certificate_edit_form" class="popup-form">
     <div class="p-header">
         <h2>EDIT THE COMPANY CERTIFICATE</h2>
@@ -321,13 +322,13 @@ var fn_UsersClients = {
     </div>
     </div>
 </div>
-<!--- DIALOGUES --->
-<div id="dialog-confirm" title="Delete">
+<!-- DIALOGUES -->
+<div id="dialog-confirm" title="Delete" style="display: none;">
   <p><span class="ui-icon ui-icon-alert" ></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
 </div>
-<!---- FOOTER ----->
+<!-- FOOTER -->
 <?php include("footer.php"); ?> 
- <div id="dialog-certificate" title="Send Certificate" >
+ <div id="dialog-certificate" title="Send Certificate">
         <fieldset id="sendEmail">
             <form name="emailForm" id="emailForm" method="POST" action="funciones.php"  enctype="multipart/form-data">
                 <p class="mensaje_valido">&nbsp;All form fields are required.</p>
