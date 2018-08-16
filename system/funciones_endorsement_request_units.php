@@ -403,10 +403,13 @@
                      $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
                      $mail->MsgHTML($htmlEmail);
                      $mail->IsHTML(true); 
-                     $email_destinatario = trim($endorsement['Broker']); 
+                     
+                     //Receptores:
+                     $direcciones         = explode(",",trim($endorsement['Broker']));
                      $nombre_destinatario = trim($endorsement['NameBroker']);
-                     $mail->AddAddress($email_destinatario,$nombre_destinatario);
-                     //$mail->AddAddress('celina@websolutionsac.com','Celina,Magaly');
+                     foreach($direcciones as $direccion){
+                        $mail->AddAddress(trim($direccion),$nombre_destinatario);
+                     }
                      
                      //Revisar si se necesitan enviar archivos adjuntos:
                      include("./lib/fpdf153/fpdf.php"); // libreria fpdf 
