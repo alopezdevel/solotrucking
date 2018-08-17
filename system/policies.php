@@ -1140,13 +1140,13 @@ var fn_policies = {
                                 <td>
                                 <div class="field_item"> 
                                     <label>Personal & Advance Injury: </label>
-                                    <input id="iCGL_PersonalAdvInjury" type="text" class="decimal"/>
+                                    <input id="iCGL_PersonalAdvInjury" type="text" class="decimal" style="width:97%!important;"/>
                                 </div>
                                 </td>
                                 <td>
                                 <div class="field_item"> 
                                     <label>General Aggregate: </label>
-                                    <input id="iCGL_GeneralAggregate" type="text" class="decimal"/>
+                                    <input id="iCGL_GeneralAggregate" type="text" class="decimal" style="width:97%!important;"/>
                                 </div>
                                 </td>
                                 <td>
