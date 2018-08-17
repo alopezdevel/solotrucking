@@ -361,7 +361,7 @@ var fn_companies = {
                                     <td>
                                     <div class="field_item">
                                         <label>Zip Code:</label>   
-                                        <input tabindex="10" id="sCodigoPostal" class="numb" name="sCodigoPostal" type="text" maxlength="5" placeholder="" style="width:96%"> 
+                                        <input tabindex="10" id="sCodigoPostal" class="numb" name="sCodigoPostal" type="text" placeholder="" style="width:96%"> 
                                     </div>
                                     </td>
                                     <td>

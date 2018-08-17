@@ -181,7 +181,7 @@
                                             <td>".$items['clave']."</td>".
                                            "<td>".$redlist_icon.$items['sNombreCompania']."</td>".
                                            "<td>".$items['sNumeroPoliza']."</td>".
-                                           "<td>".$items['sName']."</td>". 
+                                           //"<td>".$items['sName']."</td>". 
                                            "<td>".$items['sDescripcion']."</td>".  
                                            "<td>".$items['dFechaInicio']."</td>".
                                            "<td>".$items['dFechaCaducidad']."</td>".                                                                                                                                                                                                                     
@@ -243,12 +243,12 @@
       $_POST['dFechaCaducidad'] = format_date($_POST['dFechaCaducidad']); 
       $_POST["edit_mode"] == 'true' ? $filtroQ = " AND iConsecutivo != '".$_POST['iConsecutivo']."'" : $filtroQ = ""; 
       
-      //VERIFICAR QUE NO EXISTA UN MISMO TIPO Y NUMERO DE POLIZA PARA ESA COMPANIA
+      //VERIFICAR QUE NO EXISTA UN MISMO TIPO Y NUMERO DE POLIZA PARA ESA COMPANIA QUE NO ESTE VENCIDA O BORRADA.
       $query = "SELECT COUNT(iConsecutivo) AS total 
                 FROM   ct_polizas 
                 WHERE  sNumeroPoliza ='".$_POST['sNumeroPoliza']."' AND iTipoPoliza = '".$_POST['iTipoPoliza']."'
                 AND iConsecutivoCompania = '".$_POST['iConsecutivoCompania']."' 
-                AND iDeleted = '0' $filtroQ";
+                AND iDeleted = '0' AND dFechaCaducidad >= CURDATE() $filtroQ";
       $result = $conexion->query($query);
       $valida = $result->fetch_assoc();
       

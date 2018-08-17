@@ -1073,13 +1073,13 @@ var fn_policies = {
                         <td>
                             <div class="field_item"> 
                                 <label>Effective Date <span style="color:#ff0000;">*</span>: </label>
-                                <input id="dFechaInicio" type="text" class="txt-uppercase fecha" style="width: 92%;">
+                                <input tabindex="4" id="dFechaInicio" type="text" class="txt-uppercase fecha" style="width: 92%;">
                             </div>
                         </td>
                         <td>
                         <div class="field_item"> 
                             <label>Expiration Date <span style="color:#ff0000;">*</span>: </label>
-                            <input id="dFechaCaducidad" type="text" class="txt-uppercase fecha" style="width: 92%;">
+                            <input tabindex="5" id="dFechaCaducidad" type="text" class="txt-uppercase fecha" style="width: 92%;">
                         </div>
                         </td>
                     </tr>
