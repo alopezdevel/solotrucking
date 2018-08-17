@@ -59,7 +59,7 @@
                 </li> 
                 <li class="submenu"><a href="#">QUOTES</a>
                    <ul>
-                        <li><a href="quote_formats">Formats</a></li>  
+                        <li><a href="quote_formats">Download Formats</a></li>  
                     </ul>
                 </li>
                 <li class="submenu"><a href="invoices">ACCOUNTING</a>
@@ -73,12 +73,6 @@
             <?php } if($_SESSION['acceso'] == "4"){?>
             <!-- SOLO-TRUCKING USER -->
                   <li><a href="inicio">Home</a></li>
-                  <li class="submenu"><a href="#">ADMINISTRATOR</a>
-                    <ul>
-                        <li><a href="brokers"><i class="fa fa-usd"></i> Brokers to endorsements</a></li>
-                        <li><a href="insurances"><i class="fa fa-building"></i> Insurances to claims</a></li>  
-                    </ul>
-                  </li>
                   <li class="submenu"><a href="#">COMPANIES</a>
                     <ul> 
                         <li><a href="companies"><i class="fa fa-briefcase"></i>Companies</a></li>  
@@ -89,28 +83,25 @@
                   <li><a href="policies">POLICIES</a></li>
                   <li class="submenu"><a href="#">Endorsements</a>
                    <ul>
-                        <li><a href="endorsements"><i class="fa fa-plus-circle"></i>New Endorsement</a></li>
-                        <li><a href="endorsement_request"><i class="fa fa-users"></i>Applications to Drivers</a></li>
-                        <li><a href="endorsement_request_units"> <i class="fa fa-truck"></i> Applications to Units</a></li> 
-                        <li><a href="endorsement_files"> <i class="fa fa-file-text"></i> UPLOAD FILES</a></li> > 
+                        <li><a href="endorsements">New Endorsement</a></li>
+                        <li><a href="endorsement_request">Applications for Drivers</a></li>
+                        <li><a href="endorsement_request_units">Applications for Units</a></li> 
+                        <li><a href="endorsement_files">Upload files to endorsements</a></li> 
+                        <li><a href="brokers">Configure e-mails for Brokers</a></li> 
                     </ul>
                 </li>
                 <li class="submenu"><a href="#">CLAIMS</a>
                     <ul>
-                        <li><a href="claims"><i class="fa fa-plus-circle"></i>New Claim</a></li>
-                        <li><a href="claims_requests"><i class="fa fa-envelope"></i>Applications for Claims</a></li>
+                        <li><a href="claims">New Claim</a></li>
+                        <li><a href="claims_requests">Applications for Claims</a></li>
+                        <li><a href="insurances">Configure e-mails for Insurances</a></li> 
                     </ul>
                 </li>  
                 <li class="submenu"><a href="#">QUOTES</a>
                    <ul>
-                        <li><a href="quote_formats"><i class="fa fa-file-text"></i> QUOTE FORMATS</a></li>  
+                        <li><a href="quote_formats">Formats</a></li>  
                     </ul>
                 </li>
-                <li class="submenu" style="display: none;"><a href="#">SYSTEM SUPPORT</a>
-                    <ul>
-                        <li><a href="bitacora_actividades"><i class="fa fa-list-alt"></i> SYSTEM DEVELOPMENT ACTIVITIES</a></li>
-                    </ul>
-                </li> 
             <?php } if($_SESSION['acceso'] == "3"){ //SOLO TRUCKING ADMIN?>
               <!-- Admin MASTER navigation -->
                   <li><a href="inicio">Home</a></li>
