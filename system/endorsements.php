@@ -162,7 +162,8 @@
                        $(this).val(''); 
                        fn_endorsement_co.filtraInformacion();
                     }
-                });    
+                }); 
+                $("#sDriver").autocomplete(); 
                 //Verificar Polizas PD:
                 $.ajax({             
                     type:"POST", 
@@ -1024,21 +1025,17 @@
             }, 
             drivers : {
                 cargar_drivers : function(){
-                   $.ajax({
+                    $.ajax({
                         type    : "POST",
                         url     : "funciones_endorsements.php",
                         data    : {'accion' : 'get_drivers'},
-                        async   : false,
-                        dataType: "json",
+                        async   : true,
+                        dataType: "text",
                         success : function(data) {
-                           switch(data.error){
-                               case "0": $("#frm_driver_delete #iConsecutivo").empty().append(data.select);break;
-                               case "1": break;
-                           }
-                                 
-                           
+                            var datos = eval(data);
+                            $("#sDriver").autocomplete({source:datos});
                         }
-                   }); 
+                    });   
                 },
                 valid_country : function(){
                    if($('#frm_endorsements_driver #eAccion').val() != 'D'){
@@ -1563,9 +1560,13 @@
             <!-- DELETE --> 
             <fieldset id="frm_driver_delete" class="frm_information" style="display:none;">
                 <legend>Driver Information</legend>
-                <div class="field_item required_field"> 
+                <!--<div class="field_item required_field"> 
                     <label>NAME / LICENSE <span style="color:#ff0000;">*</span>: </label>
-                    <Select id="iConsecutivo" onchange="fn_endorsement_co.filtrar_polizas(this.value,'DRIVER');"><option value="">Select an option...</option> </select>
+                    <Select id="iConsecutivo"><option value="">Select an option...</option> </select> 
+                </div>-->
+                <div class="field_item"> 
+                    <label>Driver <span style="color:#ff0000;">*</span>: <br><span style="color:#ff0000;font-size:0.9em;">(Please check before that the driver is in the selected policy.)</span></label> 
+                    <input  id="sDriver" type="text" placeholder="Write the name or system id of your driver" style="width: 100%;" title="Please check before that the driver is in the selected policy." value="">
                 </div>
             </fieldset>
             <!-- ADD -->

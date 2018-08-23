@@ -2135,24 +2135,22 @@
       $company = $_SESSION['company'];
       $error = "0";
       $mensaje = "";
-      $sql = "SELECT iConsecutivo AS clave, sNombre AS descripcion, iNumLicencia AS descripcion2, siConsecutivosPolizas ". 
-             "FROM ct_operadores WHERE iConsecutivoCompania = '$company' AND inPoliza = '1'".
-             "ORDER BY sNombre ASC";
+      $sql    = "SELECT iConsecutivo, sNombre, iNumLicencia AS descripcion2, siConsecutivosPolizas ". 
+                "FROM ct_operadores WHERE iConsecutivoCompania = '$company' ". //" AND inPoliza = '1'".
+                "ORDER BY sNombre ASC";
       $result = $conexion->query($sql);
-      $rows = $result->num_rows;  
+      $rows   = $result->num_rows;  
       if($rows > 0){
-        $select .= "<option value=\"\">Select an option...</option>";      
-        while ($items = $result->fetch_assoc()) {
-           if($items["clave"] != ""){
-                 $select .= "<option value=\"".$items['clave']."\">".$items['descripcion']." / ".$items['descripcion2']."</option>";
-           }else{$select .="";}    
+        //$respuesta .= "<option value=\"\">Select an option...</option>";      
+        while ($items = $result->fetch_assoc()){
+           //$respuesta .= "<option value=\"".$items['clave']."\">".$items['descripcion']." / ".$items['descripcion2']."</option>";
+           $respuesta == '' ? $respuesta .= '"'.$items["iConsecutivo"].'|'.utf8_encode($items["sNombre"]).'"' : $respuesta .= ',"'.$items["iConsecutivo"].'|'.utf8_encode($items["sNombre"]).'"';
         }                                                                                                                                                                        
-      }else {$select .="";}
+      }else {$respuesta .="";}
       $conexion->rollback();
       $conexion->close();
-      $select = utf8_encode($select);  
-      $response = array("mensaje"=>"$mensaje","error"=>"$error","select"=>"$select");   
-      echo json_encode($response);
+      $respuesta = "[".$respuesta."]";    
+      echo ($respuesta);
   }
   function filtrar_polizas(){
       include("cn_usuarios.php");
