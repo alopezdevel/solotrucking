@@ -163,7 +163,7 @@
                        fn_endorsement_co.filtraInformacion();
                     }
                 }); 
-                $("#sDriver").autocomplete(); 
+                $("#sDriver, #sUnitTrailer").autocomplete(); 
                 //Verificar Polizas PD:
                 $.ajax({             
                     type:"POST", 
@@ -740,15 +740,11 @@
                         type    : "POST",
                         url     : "funciones_endorsements.php",
                         data    : {'accion' : 'get_units'},
-                        async   : false,
-                        dataType: "json",
+                        async   : true,
+                        dataType: "text",
                         success : function(data) {
-                           switch(data.error){
-                               case "0": $("#frm_unit_delete #iConsecutivo").empty().append(data.select); break;
-                               case "1": break;
-                           }
-                                 
-                           
+                           var datos = eval(data); 
+                           $("#sUnitTrailer").autocomplete({source:datos});
                         }
                    }); 
                 },
@@ -1445,9 +1441,13 @@
             <!-- UNITS DELETE -->
             <fieldset id="frm_unit_delete" class="frm_information" style="display:none;">
                 <legend>Unit Information</legend>
-                <div class="field_item required_field"> 
+               <!--<div class="field_item required_field"> 
                     <label>VIN# <span style="color:#ff0000;">*</span>: </label>
                     <Select id="iConsecutivo" onchange="fn_endorsement_co.filtrar_polizas(this.value,'UNIT');"><option value="">Select an option...</option> </select>
+                </div>-->
+                <div class="field_item"> 
+                    <label>Unit/Trailer <span style="color:#ff0000;">*</span>: <br><span style="color:#ff0000;font-size:0.9em;">(Please check before that the unit/trailer is in the selected policy.)</span></label> 
+                    <input id="sUnitTrailer" type="text" placeholder="Write the VIN or system id of your Unit or Trailer" style="width: 100%;" title="Please check before that the unit/trailer is in the selected policy.">
                 </div>
                 <div class="field_item delete_field">
                     <label>Attachment File <span style="color:#ff0000;">*</span>: </label>

@@ -2108,26 +2108,24 @@
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);
       $company = $_SESSION['company'];
-      $error = "0";
+      $error   = "0";
       $mensaje = "";
-      $sql = "SELECT iConsecutivo AS clave, sVIN AS descripcion, sTipo AS tipo, siConsecutivosPolizas ". 
-             "FROM ct_unidades WHERE iConsecutivoCompania = '$company' AND inPoliza = '1'".
-             "ORDER BY iConsecutivo ASC";
-      $result = $conexion->query($sql);
-      $rows = $result->num_rows;  
+      $sql     = "SELECT iConsecutivo, sVIN, sTipo, siConsecutivosPolizas, iYear ". 
+                 "FROM ct_unidades WHERE iConsecutivoCompania = '$company' ". // AND inPoliza = '1'".
+                 "ORDER BY iConsecutivo ASC";
+      $result  = $conexion->query($sql);
+      $rows    = $result->num_rows;  
       if($rows > 0){
-        $select .= "<option value=\"\">Select an option...</option>";      
+             
         while ($items = $result->fetch_assoc()) {
-           if($items["clave"] != ""){
-                $select .= "<option value=\"".$items['clave']."\">".$items['descripcion']."</option>";  
-           }else{$select .="";}    
+           $respuesta == '' ? $respuesta .= '"'.$items["iConsecutivo"].' | '.$items["sVIN"].'/'.utf8_encode($response["iYear"]).'"' : $respuesta .= ',"'.$items["iConsecutivo"].' | '.$items["sVIN"].'/'.utf8_encode($items["iYear"]).'"';    
         }                                                                                                                                                                        
-      }else {$select .="";}
+      }else {$respuesta .="";}
       $conexion->rollback();
       $conexion->close();
-      $select = utf8_encode($select);  
-      $response = array("mensaje"=>"$mensaje","error"=>"$error","select"=>"$select","polizas"=>"$fields");   
-      echo json_encode($response);
+       
+      $respuesta = "[".$respuesta."]";
+      echo $respuesta;
   }
   function get_drivers(){
       include("cn_usuarios.php");
@@ -2144,7 +2142,7 @@
         //$respuesta .= "<option value=\"\">Select an option...</option>";      
         while ($items = $result->fetch_assoc()){
            //$respuesta .= "<option value=\"".$items['clave']."\">".$items['descripcion']." / ".$items['descripcion2']."</option>";
-           $respuesta == '' ? $respuesta .= '"'.$items["iConsecutivo"].'|'.utf8_encode($items["sNombre"]).'"' : $respuesta .= ',"'.$items["iConsecutivo"].'|'.utf8_encode($items["sNombre"]).'"';
+           $respuesta == '' ? $respuesta .= '"'.$items["iConsecutivo"].' | '.utf8_encode($items["sNombre"]).'"' : $respuesta .= ',"'.$items["iConsecutivo"].' | '.utf8_encode($items["sNombre"]).'"';
         }                                                                                                                                                                        
       }else {$respuesta .="";}
       $conexion->rollback();
