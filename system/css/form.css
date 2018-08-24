@@ -17,6 +17,7 @@ legend {
   border-bottom: 1px solid #e5e5e5;
   padding-top: 10px;
 }
+.files button{padding: 4px 10px;position: relative;top: -1px;}
 button{cursor:pointer;}
 table input, table textarea, table select{margin:5px auto!important;width: 99%;}
 form input, form select, form textarea, .form input, .form select, .form textarea{

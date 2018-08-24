@@ -315,7 +315,7 @@
                             fn_solotrucking.mensaje(mensaje);
                             return false;
                         }else{
-                            this.setData({'accion': 'guarda_pdf_unit','eArchivo' : $('#DeleteCause').val(),'iConsecutivo':$('#iConsecutivoDAPDF').val()});
+                            this.setData({'accion': 'guarda_pdf_endoso','eArchivo' : $('#DeleteCause').val(),'iConsecutivo':$('#iConsecutivoDAPDF').val()});
                             $('#txtsDAPDF').val('loading...');
                             this.disable(); 
                         }
@@ -893,7 +893,7 @@
                       //3 - Revisar Accion del Endoso: 
                       if(Eaccion.val() == 'D'){ 
                           //DELETE
-                          var unidad_id = $("#frm_unit_delete #iConsecutivo");  
+                          var unidad_id = $("#frm_unit_delete #sUnitTrailer");  
                           // - Revisamos que hayan seleccionado una unidad para eliminar de la lista...
                           if(unidad_id.val() == "" ){
                              unidad_id.addClass('error');
@@ -909,10 +909,22 @@
                           }
                           if(valid){
                               var iConsecutivoFiles  = $("#frm_unit_delete #iConsecutivoDAPDF").val();
-                              //ACTUALIZAMOS LOS ARCHIVOS:  
-                              fn_endorsement_co.units.update_files(iConsecutivoFiles,unidad_id.val()); 
-                              //GUARDAMOS ENDOSO
-                              fn_endorsement_co.units.save(Eid.val(),unidad_id.val(),Etipo.val(),Eaccion.val(),edit_mode,sNumPolizas);
+                              //ACTUALIZAMOS LOS ARCHIVOS DEL ENDOSO:
+                              $.ajax({             
+                                    type:"POST", 
+                                    url:"funciones_endorsements.php", 
+                                    data:{'accion' : 'endoso_actualiza_archivos','iConsecutivoEndoso' : Eid.val(),'iConsecutivo' : iConsecutivoFiles},
+                                    async : true,
+                                    dataType : "text",
+                                    success : function(data){ 
+                                        
+                                        if(data != "OK"){fn_solotrucking.mensaje(data);}
+                                        else{
+                                           //GUARDAMOS ENDOSO
+                                           fn_endorsement_co.units.save(Eid.val(),unidad_id.val(),Etipo.val(),Eaccion.val(),edit_mode,sNumPolizas); 
+                                        }
+                                    }
+                              });     
                           } 
                           
                           
@@ -1136,11 +1148,11 @@
                     
                     //Revisamos accion del endoso:
                     if(Eaccion.val() == 'D'){
-                        var driver_id = $("#frm_driver_delete #iConsecutivo");  
+                        var driver_id = $("#frm_driver_delete #sDriver");  
                         // - Revisamos que hayan seleccionado un driver para eliminar de la lista...
                         if(driver_id.val() == "" ){
                              driver_id.addClass('error');
-                             fn_solotrucking.mensaje('Please select first a driver from your list.');
+                             fn_solotrucking.mensaje('Please select first a driver from your list or write the name.');
                              valid = false; return false;  
                         }
                         
@@ -1446,12 +1458,12 @@
                     <Select id="iConsecutivo" onchange="fn_endorsement_co.filtrar_polizas(this.value,'UNIT');"><option value="">Select an option...</option> </select>
                 </div>-->
                 <div class="field_item"> 
-                    <label>Unit/Trailer <span style="color:#ff0000;">*</span>: <br><span style="color:#ff0000;font-size:0.9em;">(Please check before that the unit/trailer is in the selected policy.)</span></label> 
-                    <input id="sUnitTrailer" type="text" placeholder="Write the VIN or system id of your Unit or Trailer" style="width: 100%;" title="Please check before that the unit/trailer is in the selected policy.">
+                    <label>Unit/Trailer <span style="color:#ff0000;">*</span>: <span style="color:#ff0000;font-size:0.9em;">(Please check before that the unit/trailer is in the selected policy.)</span></label> 
+                    <input id="sUnitTrailer" class="txt-uppercase" type="text" placeholder="Write the VIN or system id of your Unit or Trailer" style="width: 100%;" title="Please check before that the unit/trailer is in the selected policy.">
                 </div>
                 <div class="field_item delete_field">
                     <label>Attachment File <span style="color:#ff0000;">*</span>: </label>
-                    <Select id="DeleteCause" onblur="fn_endorsement_co.units.valid_delete_atachments();">
+                    <Select id="DeleteCause" onblur="fn_endorsement_co.units.valid_delete_atachments();" style="height: 27px!important;">
                         <option value="">Select an option...</option>
                         <option value="DA">Delease Agreement</option>   
                         <option value="BS">Bill of Sale</option>   
@@ -1565,8 +1577,8 @@
                     <Select id="iConsecutivo"><option value="">Select an option...</option> </select> 
                 </div>-->
                 <div class="field_item"> 
-                    <label>Driver <span style="color:#ff0000;">*</span>: <br><span style="color:#ff0000;font-size:0.9em;">(Please check before that the driver is in the selected policy.)</span></label> 
-                    <input  id="sDriver" type="text" placeholder="Write the name or system id of your driver" style="width: 100%;" title="Please check before that the driver is in the selected policy." value="">
+                    <label>Driver <span style="color:#ff0000;">*</span>: <span style="color:#ff0000;font-size:0.9em;">(Please check before that the driver is in the selected policy.)</span></label> 
+                    <input  id="sDriver" class="txt-uppercase" type="text" placeholder="Write the name or system id of your driver" style="width: 100%;" title="Please check before that the driver is in the selected policy." value="">
                 </div>
             </fieldset>
             <!-- ADD -->

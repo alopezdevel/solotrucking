@@ -60,26 +60,35 @@
           $pagina_actual == "0" ? $pagina_actual = 1 : false;
           $limite_superior = $registros_por_pagina;
           $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;  
-          $sql = "SELECT A.iConsecutivo,iConsecutivoTipoEndoso AS Tipo, DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y %H:%i') AS dFechaIngreso, B.sDescripcion AS categoria, A.eStatus, eAccion, sNombre, sVIN ". 
+          $sql = "SELECT A.iConsecutivo,iConsecutivoTipoEndoso AS Tipo,iConsecutivoOperador,iConsecutivoUnidad, DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y %H:%i') AS dFechaIngreso, B.sDescripcion AS categoria, A.eStatus, eAccion, sNombre, sVIN, sNombreOperador, sVINUnidad ". 
                  "FROM cb_endoso A ".
                  "LEFT JOIN ct_tipo_endoso B ON A.iConsecutivoTipoEndoso = B.iConsecutivo ".
-                 "LEFT JOIN ct_operadores C ON A.iConsecutivoOperador = C.iConsecutivo ".
-                 "LEFT JOIN ct_unidades D ON A.iConsecutivoUnidad = D.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
+                 "LEFT JOIN ct_operadores  C ON A.iConsecutivoOperador = C.iConsecutivo ".
+                 "LEFT JOIN ct_unidades    D ON A.iConsecutivoUnidad = D.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
           $result = $conexion->query($sql);
           $rows = $result->num_rows; 
              
             if ($rows > 0) {    
-                while ($usuario = $result->fetch_assoc()) { 
-                   if($usuario["iConsecutivo"] != ""){
+                while ($items = $result->fetch_assoc()) { 
+                   if($items["iConsecutivo"] != ""){
                          $btn_confirm = "";
                          $class = "";
                          $descripcion = ""; 
                          $estado = ''; 
                          
-                         if($usuario['categoria'] == 'Driver'){$descripcion = strtoupper($usuario['categoria']).' / '.$usuario['sNombre'];$class_unit = "DRIVER";}
-                         else if($usuario['categoria'] == 'Unit or Trailer'){$descripcion = strtoupper($usuario['categoria']).' / VIN# '.$usuario['sVIN'];$class_unit = 'UNIT';}
+                         if($items['categoria'] == 'Driver'){
+                             
+                             $items['iConsecutivoOperador'] != "" ? $sNombreOperador = utf8_decode(trim($items['sNombre'])) : $sNombreOperador = utf8_decode(trim($items['sNombreOperador']));  
+                             $descripcion = strtoupper($items['categoria']).' / '.$sNombreOperador;
+                             $class_unit  = "DRIVER";
+                         }
+                         else if($items['categoria'] == 'Unit or Trailer'){
+                             $items['iConsecutivoUnidad'] != "" ? $sVINUnidad = trim($items['sVIN']) : $sVINUnidad = trim($items['sVINUnidad']); 
+                             $descripcion = strtoupper($items['categoria']).' / VIN# '.$sVINUnidad;
+                             $class_unit = 'UNIT';
+                         }
                          
-                         switch($usuario["eStatus"]){
+                         switch($items["eStatus"]){
                              case 'E': 
                                 $estado = 'UNSENT';
                                 $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Endorsement\"><i class=\"fa fa-pencil-square-o\"></i> <span></span>".
@@ -116,7 +125,7 @@
                          }
                          $color_action = "";
                          $action = "";
-                         switch($usuario["eAccion"]){
+                         switch($items["eAccion"]){
                              case 'A': 
                                 $action = 'ADD';
                                 $color_action = "color:#00970d"; 
@@ -128,10 +137,10 @@
                          }
 
                          $htmlTabla .= "<tr $class>
-                                            <td>".$usuario['iConsecutivo']."</td>".
+                                            <td>".$items['iConsecutivo']."</td>".
                                            "<td>".$descripcion."</td>".
                                            "<td class=\"$class_unit\" style=\"$color_action\">".$action."</td>".
-                                           "<td>".$usuario['dFechaIngreso']."</td>". 
+                                           "<td>".$items['dFechaIngreso']."</td>". 
                                            "<td>".$estado."</td>".                                                                                                                                                                                                                       
                                            "<td> 
                                                 $btn_confirm
@@ -1847,16 +1856,39 @@
       $mensaje = "";
       $valores = array();
       $campos  = array();
+      $eAccion = trim($_POST['eAccion']);
       
-      #1- Revisamos si se Esta editando o es nuevo:
       //UPDATE
       if($_POST['edit_mode'] == 'true'){
-          foreach($_POST as $campo => $valor){if($campo != "accion" && $campo != "iConsecutivo" && $campo != "edit_mode"){array_push($valores,"$campo='".trim($valor)."'");}}  
+          foreach($_POST as $campo => $valor){
+              if($campo != "accion" && $campo != "iConsecutivo" && $campo != "edit_mode"){
+                
+                if($campo == "iConsecutivoOperador" && $eAccion == 'D'){
+                    if(!(strpos($valor,"|"))){
+                        array_push($valores,"$campo=NULL"); //Borrar consecutivo si existe un anterior...
+                        $campo = "sNombreOperador"; $valor = strtoupper(utf8_decode(trim($valor))); 
+                    }
+                    else{$valor = explode("|",$valor);$valor = $valor[0];}
+                }
+                else if($campo == "iConsecutivoUnidad" && $eAccion == 'D'){
+                    if(!(strpos($valor,"|"))){
+                        array_push($valores,"$campo=NULL"); //Borrar consecutivo si existe un anterior...
+                        $campo = "sVINUnidad"; $valor = strtoupper(utf8_decode(trim($valor))); 
+                    }
+                    else{$valor = explode("|",$valor);$valor = $valor[0];}
+                }
+                    
+                array_push($valores,"$campo='".trim($valor)."'");
+              
+              }
+          }  
+          
           array_push($valores,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
           array_push($valores,"sIP='".$_SERVER['REMOTE_ADDR']."'");
           array_push($valores,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'");
           
           $sql = "UPDATE cb_endoso SET ".implode(",",$valores)." WHERE iConsecutivo = '".$_POST['iConsecutivo']."'"; 
+       
           if($conexion->query($sql)){$mensaje = "The data was updated successfully.";}
           else{
             $transaccion_exitosa = false;
@@ -1867,7 +1899,19 @@
       //INSERT
       else{
           
-          foreach($_POST as $campo => $valor){if($campo != "accion" && $campo != "iConsecutivo" && $campo != "edit_mode"){array_push($campos,$campo); array_push($valores,strtoupper(trim($valor)));}}   
+          foreach($_POST as $campo => $valor){
+              if($campo != "accion" && $campo != "iConsecutivo" && $campo != "edit_mode"){
+                  if($campo == "iConsecutivoOperador" && $eAccion == 'D'){
+                    if(!(strpos($valor,"|"))){$campo = "sNombreOperador"; $valor = strtoupper(utf8_decode(trim($valor)));}
+                    else{$valor = explode("|",$valor);$valor = $valor[0];} 
+                  }
+                  else if($campo == "iConsecutivoUnidad" && $eAccion == 'D'){
+                    if(!(strpos($valor,"|"))){$campo = "sVINUnidad"; $valor = strtoupper(utf8_decode(trim($valor)));}
+                    else{$valor = explode("|",$valor);$valor = $valor[0];} 
+                  }
+                  array_push($campos,$campo); array_push($valores,strtoupper(trim($valor)));
+              }
+          }   
           array_push($campos ,"iConsecutivoCompania");
           array_push($valores,$company);
           array_push($campos ,"eStatus");
@@ -1906,7 +1950,7 @@
       $domroot = $_POST['domroot'];
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                 
-      $sql = "SELECT iConsecutivo, iConsecutivoTipoEndoso, eStatus, iReeferYear,iTrailerExchange, iPDAmount, iPDApply, iConsecutivoOperador, iConsecutivoUnidad, eAccion, sComentarios, sNumPolizas ".  
+      $sql = "SELECT iConsecutivo, iConsecutivoTipoEndoso, eStatus, iReeferYear,iTrailerExchange, iPDAmount, iPDApply, iConsecutivoOperador, iConsecutivoUnidad, eAccion, sComentarios, sNumPolizas,sNombreOperador, sVINUnidad ".  
              "FROM cb_endoso ". 
              "WHERE iConsecutivo = '".$clave."'";
       $result = $conexion->query($sql);
@@ -1920,7 +1964,7 @@
           //1- recorremos el array con los datos generales del endoso:
           foreach($datos as $i => $b){
              //1.2- Revisamos que no sea alguno de los siguientes campos:
-             if($i != 'eStatus' && $i != 'sComentarios' && $i != 'sNumPolizas' && $i != 'eAccion'){ 
+             if($i != 'eStatus' && $i != 'sComentarios' && $i != 'sNumPolizas' && $i != 'eAccion' && $i != 'iConsecutivoOperador' && $i != 'sNombreOperador' && $i != 'sVINUnidad' && $i != 'iConsecutivoUnidad'){ 
                    $fields .= "\$('#$domroot #frm_general_information :input[id=".$i."]').val('".$datos[$i]."');";
              }
              //1.3 - Revisamos si es la accion, esta ira por aparte.
@@ -1960,9 +2004,9 @@
           }
           
           //2 - ENDOSO / DRIVER
-          if($data['iConsecutivoOperador']!= '' && $data['iConsecutivoTipoEndoso']== '2'){
+          if($data['iConsecutivoTipoEndoso']== '2'){   
                 // 3 -  Revisamos si el endoso es ADD o DELETE: 
-                if($data['eAccion'] == 'A'){
+                if($data['eAccion'] == 'A' && $data['iConsecutivoOperador']!= ''){
                     //4 consultamos los datos del operador.  
                     $sql = "SELECT iConsecutivo, sNombre,DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, ".
                            "DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia,iExperienciaYear,iNumLicencia,dFechaContratacion, ".
@@ -2002,17 +2046,24 @@
                                  }
                          }    
                     }
+                }else
+                if($data['eAccion'] == 'D' && $data['iConsecutivoOperador']!= ''){
+                   
+                   $query  = "SELECT sNombre,iNumLicencia FROM ct_operadores WHERE iConsecutivo = '".$data['iConsecutivoOperador']."'"; 
+                   $result = $conexion->query($sql);
+                   $driver = $result->fetch_assoc();
+                   $fields .= "\$('#$domroot #frm_driver_delete :input[id=sDriver]').val('".$data['iConsecutivoOperador']." | ".utf8_decode($driver['sNombre'])."');";
+                }else
+                if($data['eAccion'] == 'D' && $data['sNombreOperador'] != ""){
+                  $fields .= "\$('#$domroot #frm_driver_delete :input[id=sDriver]').val('".utf8_decode($data['sNombreOperador'])."');";  
                 }
-                else  if($data['eAccion'] == 'D'){
-                    //4 - asignamos solamente el id al campo del pick list:
-                   $fields .= "\$('#$domroot #frm_driver_delete :input[id=iConsecutivo]').val('".$data['iConsecutivoOperador']."');";
-                }
+                
           }
           
           //2 - ENDOSO / UNIT 
-          else if($data['iConsecutivoUnidad']!= '' && $data['iConsecutivoTipoEndoso']== '1'){
+          else if($data['iConsecutivoTipoEndoso']== '1'){
                // 3 -  Revisamos si el endoso es ADD o DELETE:
-               if($data['eAccion'] == 'A'){
+               if($data['eAccion'] == 'A' && $data['iConsecutivoUnidad']!= ''){
                    //4 consultamos los datos de la unidad.
                    $sql = "SELECT iConsecutivo, iConsecutivoRadio, iYear, iModelo, sVIN, sModelo, sTipo, iPDAmount, iValue FROM ct_unidades ".
                           "WHERE iConsecutivo = '".$data['iConsecutivoUnidad']."'";
@@ -2037,12 +2088,18 @@
                      }
                    } 
                    
-               }else if($data['eAccion'] == 'D'){
+               }else 
+               if($data['eAccion'] == 'D' && $data['iConsecutivoUnidad']!= ''){
+                   
+                   $query  = "SELECT sVIN, iYear FROM ct_unidades WHERE iConsecutivo='".$data['iConsecutivoUnidad']."'";
+                   $result = $conexion->query($query);
+                   $unit   = $result->fetch_assoc();
+                   
                    //4 - asignamos solamente el id al campo del pick list:
-                   $fields .= "\$('#$domroot #frm_unit_delete :input[id=iConsecutivo]').val('".$data['iConsecutivoUnidad']."');";
-                   //5 - consultamos id del archivo con el ue se hizo el delete:
-                   $sql_files = "SELECT iConsecutivo, sNombreArchivo, eArchivo FROM cb_unidad_files ". 
-                                "WHERE  iConsecutivoUnidad = '".$data['iConsecutivoUnidad']."'";
+                   $fields .= "\$('#$domroot #frm_unit_delete :input[id=sUnitTrailer]').val('".$data['iConsecutivoUnidad']." | ".$unit['sVIN']." / ".$unit['iYear']."');";
+                   
+                   #CONSULTAR ARCHIVO...
+                   $sql_files    = "SELECT iConsecutivo, sNombreArchivo, eArchivo FROM cb_endoso_files WHERE  iConsecutivoEndoso = '".$data['iConsecutivo']."'";
                    $result_files = $conexion->query($sql_files);
                    while ($items_files = $result_files->fetch_assoc()){
                      if($items_files["eArchivo"] != 'TITLE'){
@@ -2050,9 +2107,10 @@
                         $fields .= "\$('#$domroot #frm_unit_delete :input[id=txtsDAPDF]').val('".$items_files['sNombreArchivo']."');";
                         $fields .= "\$('#$domroot #frm_unit_delete :input[id=iConsecutivoDAPDF]').val('".$items_files['iConsecutivo']."');"; 
                      }
-                   } 
+                   }  
                      
-               }
+               }else
+               if($data['eAccion'] == 'D' && $data['sVINUnidad'] != ""){$fields .= "\$('#$domroot #frm_unit_delete :input[id=sUnitTrailer]').val('".$data['sVINUnidad']."');";}
               
           }
           
@@ -2076,7 +2134,72 @@
                   );   
       echo json_encode($response);  
       
-  }                      
+  }   
+  function guarda_pdf_endoso(){
+      
+      
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);
+      //Variables:
+      $error               = "0";
+      $company             = $_SESSION['company'];                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      $oFichero            = fopen($_FILES['userfile']["tmp_name"], 'r'); 
+      $sContenido          = fread($oFichero, filesize($_FILES['userfile']["tmp_name"]));  
+      $sContenido          =  $conexion->real_escape_string($sContenido);
+      $eArchivo            = $_POST['eArchivo'];
+      
+      //Revisamos el tamaño del archivo:
+      if($_FILES['userfile']["size"] <= 1000000){
+          
+          $FileExt   = explode('.',$_FILES['userfile']["name"]);  
+          $name_file = strtolower($_POST['eArchivo']).'.'.$FileExt[1];
+          
+          if($_POST['iConsecutivo'] != ''){
+             $sql = "UPDATE cb_endoso_files SET sNombreArchivo ='".$name_file."', sTipoArchivo ='".$_FILES['userfile']["type"]."', iTamanioArchivo ='".$_FILES['userfile']["size"]."', hContenidoDocumentoDigitalizado='$sContenido', eArchivo='$eArchivo', ".
+                    "dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."'".
+                    "WHERE iConsecutivo ='".$_POST['iConsecutivo']."'"; 
+          }else{
+             $sql = "INSERT INTO cb_endoso_files (sNombreArchivo, sTipoArchivo, iTamanioArchivo, hContenidoDocumentoDigitalizado, eArchivo, dFechaIngreso, sIP, sUsuarioIngreso) ".
+                    "VALUES('".$name_file."','".$_FILES['userfile']["type"]."','".$_FILES['userfile']["size"]."','$sContenido','$eArchivo','".date("Y-m-d H:i:s")."', '".$_SERVER['REMOTE_ADDR']."', '".$_SESSION['usuario_actual']."')"; 
+          }
+         
+          if($conexion->query($sql)){
+                $id_file = $conexion->insert_id; 
+                $conexion->commit();
+                $conexion->close();
+                $mensaje = "The file was uploaded successfully.";  
+          }else{
+                $conexion->rollback();
+                $conexion->close();
+                $mensaje = "A general system error ocurred : internal error";
+                $error = "1";
+          }     
+      }else{
+          $mensaje = "Error: The file you are trying to upload exceeds the maximum size (1MB) allowed by the system, please check it and try again.";
+          $error = "1"; 
+      }
+     
+      $response = array("mensaje"=>"$mensaje","error"=>"$error", "id_file"=>"$id_file","name_file"=>"$name_file"); 
+      echo json_encode($response);             
+      
+  }     
+  function endoso_actualiza_archivos(){
+       //Conexion:
+      include("cn_usuarios.php"); 
+      $conexion->autocommit(FALSE);
+       $company = $_SESSION['company']; 
+      $error    = "OK";
+      $sql      = "UPDATE cb_endoso_files SET iConsecutivoEndoso ='".$_POST['iConsecutivoEndoso']."', dFechaActualizacion = '".date("Y-m-d H:i:s")."',sUsuarioActualizacion='".$_SESSION['usuario_actual']."',sIP = '".$_SERVER['REMOTE_ADDR']."' ".
+                  "WHERE iConsecutivo = '".$_POST['iConsecutivo']."'";
+      $conexion->query($sql);
+      
+      if($conexion->query($sql)){$conexion->commit();$conexion->close();}
+      else{$error = "The endorsement data was not updated properly, please try again.";$conexion->rollback();$conexion->close();}
+
+      echo $error;
+      
+  }              
 
   #CATALOGOS PARA ENDOSOS:
   function get_unit_models(){

@@ -32,10 +32,8 @@ $(function() {
    });
 
 }); 
-    
-    
-    
-    var fn_popups = {
+
+var fn_popups = {
 
     centrar_ventana : function(ventana){
         
@@ -213,7 +211,63 @@ var fn_solotrucking = {
      calcular_decimales : function(value,decimals){
          var num = parseFloat(value).toFixed(decimals);
          return value;
-     }  
+     },
+     //Archivos:
+     files : {
+        form : "",
+        fileinput : "", 
+        add : function(){
+            
+            //Revisar navegador:
+            var isFirefox = typeof InstallTrigger !== 'undefined'; 
+            
+            if(isFirefox){
+                $(fn_solotrucking.files.form+' .file-container input[type="file"]').css("visibility","visible");
+            }
+            
+            var fileselect   = document.getElementById(fn_solotrucking.files.fileinput);
+            // file select
+            fileselect.addEventListener("change", fn_solotrucking.files.select_handler, false);  
+            
+            // file drag&drop effects
+            fileselect.addEventListener("dragover", fn_solotrucking.files.drag_hover, false);
+            fileselect.addEventListener("dragleave", fn_solotrucking.files.drag_hover, false);
+            
+        },
+        drag_hover : function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            e.target.className = (e.type == "dragover" ? "drag-hover" : "");
+        },
+        select_handler : function(e) {
+
+            //Cancela el evento para el efecto.
+            fn_solotrucking.files.drag_hover(e);
+
+            //Objeto FileList
+            var files = e.target.files || e.dataTransfer.files; 
+            
+            //Procesar Datos del Archivo:
+            for (var i = 0, f; f = files[i]; i++) {
+                fn_solotrucking.files.parse(f);
+            }
+
+        },
+        parse : function(file){ 
+
+            var type = file.type;
+            
+            fn_solotrucking.files.msg(
+                "<b>Informaci&oacute;n del Archivo: </b>"+file.name+" "+
+                "<b>Tipo: </b>"+type.substring(0,40)+" "+
+                "<b>Tama&ntilde;o: </b>"+file.size+" bytes" 
+            );
+        },
+        msg : function(msg){
+            $(fn_solotrucking.files.form+" .file-message").html(msg);
+            $(fn_solotrucking.files.form+" #"+fn_solotrucking.files.fileinput).addClass("fileupload");
+        }
+     },  
 }
 var struct_data_post = {
     action         : "",
