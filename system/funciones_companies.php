@@ -17,7 +17,7 @@
     $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
         
     //Filtros de informacion //
-    $filtroQuery = " WHERE iConsecutivo IS NOT NULL";
+    $filtroQuery = " WHERE iConsecutivo IS NOT NULL AND iDeleted='0'";
     $array_filtros = explode(",",$_POST["filtroInformacion"]);
     foreach($array_filtros as $key => $valor){
         if($array_filtros[$key] != ""){
@@ -65,6 +65,9 @@
                         $redlist_class = "";
                      }
                      
+                     $btns = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Company\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>".
+                             "<div class=\"btn_delete btn-icon trash btn-left\" title=\"Deshabilitar empresa\"><i class=\"fa fa-trash\"></i> <span></span></div>";
+                     
                      $htmlTabla .= "<tr ".$redlist_class.">
                                         <td>".$usuario['id']."</td>".
                                        "<td>".$redlist_icon.$usuario['sNombreCompania']."</td>".
@@ -74,10 +77,7 @@
                                        "<td>".$usuario['zipcode']."</td>".
                                        "<td>".$usuario['sNombreContacto']."</td>".
                                        "<td>".$telefonos."</td>".                                                                                                                                                                                                                        
-                                       "<td>
-                                            <div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Company\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>
-                                            <div style=\"display:none;\" class=\"btn_delete btn-icon trash btn-left\" title=\"Delete Company\"><i class=\"fa fa-trash\"></i> <span></span></div>
-                                       </td></tr>";
+                                       "<td>$btns</td></tr>";
                  }else{                                                                                                                                                                                                        
                     
                      $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;
@@ -194,5 +194,36 @@
       $response = array("error"=>"$error","msj"=>"$msj");
       echo json_encode($response);
   }  
+  function delete_company(){
+      
+      $error = '0';  
+      $msj   = "";  
+      //Conexion:
+      include("cn_usuarios.php"); 
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      
+      //DESACTIVAR COMPANY:
+      $query = "UPDATE ct_companias SET iDeleted = '1' WHERE iConsecutivo = '".$_POST["clave"]."'";
+      $conexion->query($query);
+      $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
+      if($transaccion_exitosa){
+        
+        //DESACTIVAR SUS USUARIOS:
+        $query   = "UPDATE cu_control_acceso SET iDeleted = '1', hActivado = '0' WHERE iConsecutivoCompania = '".$_POST["clave"]."' AND iConsecutivoTipoUsuario ='2' ";
+        $success = $conexion->query($query);
+        
+        if(!($success)){$msj = "A general system error ocurred : internal error, please try again.";$error = "1";}
+        else{$msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The company has been disabled succesfully!</p>';}
+        
+      }
+      else{$msj = "A general system error ocurred : internal error";$error = "1";}
+      
+      if($error == "0"){$conexion->commit();$conexion->close();}
+      else{$conexion->rollback();$conexion->close();}
+        
+      $response = array("msj"=>"$msj","error"=>"$error");   
+      echo json_encode($response);
+  }
   
 ?>

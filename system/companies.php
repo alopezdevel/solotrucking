@@ -13,7 +13,7 @@ function inicio(){
         validapantalla(usuario_actual);  
         $("#aUpdateAccount").click(function() { actualizarCliente(usuario_actual); });
         fn_companies.init();
-        $.unblockUI();
+        //$.unblockUI();
         /*---- Dialogos ---*/
         $('#dialog_delete').dialog({
             modal: true,
@@ -25,12 +25,12 @@ function inicio(){
             buttons : {
                 'CONFIRM' : function() {
                     var clave = $('#dialog_delete input[name=iConsecutivo]').val();
-                    //fn_companies.borrar(clave);
+                    fn_companies.borrar(clave);
+                    $(this).dialog('close');
                 },
                 'CANCEL' : function(){$(this).dialog('close');}
             }
         });
-    
 }  
 function validapantalla(usuario){if(usuario == ""  || usuario == null){location.href= "login.php";}}                   
 var fn_companies = {
@@ -86,6 +86,7 @@ var fn_companies = {
                     $(fn_companies.data_grid + " tfoot #pagina_actual").val(data.pagina);
                     fn_companies.pagina_actual = data.pagina; 
                     fn_companies.edit();
+                    fn_companies.delete_confirm();
                 }
             }); 
         },
@@ -206,6 +207,23 @@ var fn_companies = {
             if($(fn_companies.data_grid+" .flt_usdot").val() != ""){ fn_companies.filtro += "sUsdot|"+$(fn_companies.data_grid+" .flt_usdot").val()+","}    
             fn_companies.fillgrid();
         },  
+        delete_confirm : function(){
+          $(fn_companies.data_grid + " tbody .btn_delete").bind("click",function(){
+               var clave = $(this).parent().parent().find("td:eq(0)").html();
+               var name  = $(this).parent().parent().find("td:eq(1)").text();
+               $('#dialog_delete input[name=iConsecutivo]').val(clave);
+               $('#dialog_delete .name').empty().html(name);
+               $('#dialog_delete').dialog( 'open' );
+               return false;
+           });  
+        },
+        borrar : function(clave){
+          $.post("funciones_companies.php",{accion:"delete_company", 'clave': clave},
+           function(data){
+                fn_solotrucking.mensaje(data.msj);
+                fn_companies.filtraInformacion();
+           },"json");  
+        },
 }     
 </script> 
 <div id="layer_content" class="main-section">
@@ -230,13 +248,21 @@ var fn_companies = {
                     <div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_companies.add();"><i class="fa fa-plus"></i></div>
                 </td> 
             </tr>
+            <tr id="grid-head-tools">
+                <td colspan="100%">
+                    <ul>
+                        <!--<li><div class="btn-icon report btn-left" title="Generate a Report"><i class="fa fa-folder-open"></i></div></li>-->  
+                        <li><div class="btn-icon trash btn-left" title="View Disabled Companies" style="width:auto!important;"><a href="companies_disabled"><i class="fa fa-external-link"></i><span> Disabled Companies</span></a></div></li> 
+                    </ul>
+                </td>
+            </tr>
             <tr id="grid-head2">
                 <td class="etiqueta_grid down" onclick="fn_companies.ordenamiento('iConsecutivo',this.cellIndex);">ID</td>
                 <td class="etiqueta_grid"      onclick="fn_companies.ordenamiento('sNombreCompania',this.cellIndex);">Company</td>
                 <td class="etiqueta_grid"      onclick="fn_companies.ordenamiento('sUsdot',this.cellIndex);">USDOT</td>
                 <td class="etiqueta_grid"      onclick="fn_companies.ordenamiento('sDireccion',this.cellIndex);">Address</td>
                 <td class="etiqueta_grid"      onclick="fn_companies.ordenamiento('estado',this.cellIndex);">Country</td>
-                <td class="etiqueta_grid"      onclick="fn_companies.ordenamiento('sCodigoPostal',this.cellIndex);">Zip Code</td>
+                <td class="etiqueta_grid"      onclick="fn_companies.ordenamiento('sCodigoPostal',this.cellIndex);">ZIP</td>
                 <td class="etiqueta_grid"      onclick="fn_companies.ordenamiento('sNombreContacto',this.cellIndex);">Contact Name</td> 
                 <td class="etiqueta_grid"      onclick="fn_companies.ordenamiento('sTelefonoPrincipal',this.cellIndex);">Phone(s)</td>
                 <td class="etiqueta_grid"></td> 
@@ -429,7 +455,7 @@ var fn_companies = {
 </div>
 <!-- DIALOGUES -->
 <div id="dialog_delete" title="Delete" style="display:none;">
-  <p><span class="ui-icon ui-icon-alert" ></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
+  <p><span class="ui-icon ui-icon-alert" ></span> Are you sure you want to disable the company? <br><span class="name" style="color:#0a87c1;font-weight:600;padding-left:20px;"></span></p>
   <form><div><input type="hidden" name="iConsecutivo" /></div></form>  
 </div>
 <!-- FOOTER -->

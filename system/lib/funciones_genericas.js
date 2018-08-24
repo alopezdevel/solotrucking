@@ -15,7 +15,7 @@ $(function() {
             }
         }
     });
-    $(document).tooltip();
+    //$(document).tooltip();
     $('#Wait').dialog({
         modal: true,
         autoOpen: false,

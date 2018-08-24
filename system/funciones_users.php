@@ -15,7 +15,7 @@
     $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
         
     //Filtros de informacion //
-    $filtroQuery = " WHERE iConsecutivoTipoUsuario != '1' AND iDeleted = '0' ";
+    $filtroQuery = " WHERE iConsecutivoTipoUsuario != '1' AND A.iDeleted = '0' ";
     if($_SESSION["acceso"] != 1){
          $filtroQuery .= " AND sCveTipo = 'CO' "; 
     }
