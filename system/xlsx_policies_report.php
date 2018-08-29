@@ -131,7 +131,7 @@
         $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado2, "A2:F2");
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A2', 'Results of the On-line Report: '.date('m/d/Y',strtotime($vFecha1))." - ".date('m/d/Y',strtotime($vFecha2))." ");
         $objPHPExcel->setActiveSheetIndex(0)->mergeCells("A2:F2");
-        $objPHPExcel->getActiveSheet()->getRowDimension('2')->setRowHeight(30);
+        $objPHPExcel->getActiveSheet()->getRowDimension('2')->setRowHeight(25);
         
         //Columnas:
         $row = 3;
@@ -149,7 +149,7 @@
              
              $row++;
              $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloContenido, "A".$row.":F".$row); 
-             $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(30);
+             $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(20);
              //Reporte contenido:
              $objPHPExcel->setActiveSheetIndex(0)
                          ->setCellValue('A'.$row, $items['sNombreCompania'])
