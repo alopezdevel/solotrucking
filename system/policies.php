@@ -1,4 +1,4 @@
-﻿<?php session_start();    
+<?php session_start();    
 if ( !($_SESSION["acceso"] != '2'  && $_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  )  ){ //No ha iniciado session, redirecciona a la pagina de login
     header("Location: login.php");
     exit;
@@ -50,7 +50,7 @@ function inicio(){
                    var dExp_endi = $("#dialog_report_policies #flt_dateTo").val();   
                    
                    if(dExp_init != "" && dExp_endi != ""){
-                        window.open('xls_policies_report.php?company='+company+'&broker='+broker+'&insurance='+insurance+'&policytype='+politype+'&dExp_init='+dExp_init+'&dExp_endi='+dExp_endi);
+                        window.open('xlsx_policies_report.php?company='+company+'&broker='+broker+'&insurance='+insurance+'&policytype='+politype+'&dExp_init='+dExp_init+'&dExp_endi='+dExp_endi);
                    }else{fn_solotrucking.mensaje("Please select before a valid dates."); }             
                 },
                  'CANCEL' : function(){
