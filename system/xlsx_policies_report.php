@@ -90,19 +90,53 @@
         $EstiloEncabezado = new PHPExcel_Style();
         $EstiloEncabezado->applyFromArray
         (array(
-            'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID,'color' => array('argb' => 'FFCCFFCC')),
-            'borders' => array('bottom' => array('style' => PHPExcel_Style_Border::BORDER_THIN),'right' => array('style' => PHPExcel_Style_Border::BORDER_MEDIUM))
+            'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID,'color' => array('argb' => 'FF538DD5')),
+            'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN),'color' => array('argb' => 'FF215698')),
+            'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
+            'font' => array('bold' => true)
+        ));
+        $EstiloEncabezado2 = new PHPExcel_Style();
+        $EstiloEncabezado2->applyFromArray
+        (array(
+            'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID,'color' => array('argb' => 'FFF2F2F2')),
+            'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('argb' => 'FFB8B8B8'))),
+            'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT,'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
+            'font' => array('color' => array('argb' => 'FF515151'),'size'=> 10,)
         ));
         
+        $EstiloEncabezado3 = new PHPExcel_Style();
+        $EstiloEncabezado3->applyFromArray
+        (array(
+            'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID,'color' => array('argb' => 'FF8FB1DB')),
+            'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('argb' => 'FF6489b5'))),
+            'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
+            'font' => array('bold' => true)
+        ));
+        
+        $EstiloContenido = new PHPExcel_Style();
+        $EstiloContenido->applyFromArray
+        (array(
+            'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('argb' => 'FFababab'))),
+            'alignment' => array('vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
+        ));
         
         
         //Encabezado del reporte.
         $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado, "A1:F1");
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C1', 'SOLO-TRUCKING INSURANCE COMPANY');
-        //$objPHPExcel->setActiveSheetIndex(0)->setCellValue('C1', 'SOLO-TRUCKING INSURANCE COMPANY');
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', 'SOLO-TRUCKING INSURANCE COMPANY');
+        $objPHPExcel->setActiveSheetIndex(0)->mergeCells("A1:F1");
+        $objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(40);
+        
+        //Subtitulo del Reporte:
+        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado2, "A2:F2");
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A2', 'Results of the On-line Report: '.date('m/d/Y',strtotime($vFecha1))." - ".date('m/d/Y',strtotime($vFecha2))." ");
+        $objPHPExcel->setActiveSheetIndex(0)->mergeCells("A2:F2");
+        $objPHPExcel->getActiveSheet()->getRowDimension('2')->setRowHeight(30);
         
         //Columnas:
-        $row = 4;
+        $row = 3;
+        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado3, "A".$row.":F".$row);
+        $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(35);
         $objPHPExcel->setActiveSheetIndex(0)
                 ->setCellValue('A'.$row, 'COMPANY NAME')
                 ->setCellValue('B'.$row, 'POLICY NUMBER')
@@ -113,7 +147,9 @@
               
         while ($items = $result->fetch_assoc()){ 
              
-             $row++; 
+             $row++;
+             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloContenido, "A".$row.":F".$row); 
+             $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(30);
              //Reporte contenido:
              $objPHPExcel->setActiveSheetIndex(0)
                          ->setCellValue('A'.$row, $items['sNombreCompania'])
@@ -124,6 +160,11 @@
                          ->setCellValue('F'.$row, $items['sInsuranceCo']); 
               
         }
+        
+        //Ajustar la dimension de las columnas:
+        foreach(range('A','F') as $columnID) {
+            $objPHPExcel->getActiveSheet()->getColumnDimension($columnID)->setAutoSize(true);
+        }
                   
         // Rename worksheet
         $objPHPExcel->getActiveSheet()->setTitle('Policies');
@@ -131,13 +172,13 @@
         $objPHPExcel->setActiveSheetIndex(0);
         
         #CREATE A FILE NAME:
-        /*$info_fecha = getdate();
-        $nombre_archivo = 'Report_of_Policies'.$info_fecha['year']."_".$info_fecha['month']."_".$info_fecha['mday'].$info_fecha['hours'].$info_fecha['minutes'].$info_fecha['seconds'];
-        $nombre_archivo = $nombre_archivo.".xlsx"; */
+        $info_fecha = getdate();
+        $nombre_archivo = 'Report_of_Policies'.$info_fecha['year']."_".$info_fecha['month']."_".$info_fecha['mday'];
+        $nombre_archivo = $nombre_archivo.".xlsx";
         
         // Redirect output to a client’s web browser (Excel2007)
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="01simple.xlsx"');
+        header('Content-Disposition: attachment;filename="'.$nombre_archivo.'"');
         header('Cache-Control: max-age=0');
         // If you're serving to IE 9, then the following may be needed
         header('Cache-Control: max-age=1');
