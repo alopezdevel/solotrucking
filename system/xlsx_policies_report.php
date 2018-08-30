@@ -61,7 +61,8 @@
     $filtro_query .= "AND P.dFechaCaducidad BETWEEN '$vFecha1' AND '$vFecha2' "; 
     
     #CONSULTA:
-    $query  = "SELECT sNombreCompania, sNumeroPoliza, C.sName AS sBrokerName,B.sDescripcion AS sTipoPoliza, INS.sName AS sInsuranceCo, DATE_FORMAT(P.dFechaCaducidad,'%m/%d/%Y') AS dFechaCaducidad ".
+    $query  = "SELECT sNombreCompania, sNumeroPoliza, C.sName AS sBrokerName,B.sDescripcion AS sTipoPoliza, INS.sName AS sInsuranceCo, ".
+              "DATE_FORMAT(P.dFechaCaducidad,'%m/%d/%Y') AS dFechaCaducidad, DATE_FORMAT(P.dFechaInicio,'%m/%d/%Y') AS dFechaEfectiva  ".
               "FROM ct_polizas AS P ".
               "LEFT JOIN ct_companias   AS A   ON P.iConsecutivoCompania = A.iConsecutivo ".
               "LEFT JOIN ct_tipo_poliza AS B   ON P.iTipoPoliza = B.iConsecutivo ".
@@ -122,47 +123,49 @@
         
         
         //Encabezado del reporte.
-        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado, "A1:F1");
+        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado, "A1:G1");
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', 'SOLO-TRUCKING INSURANCE COMPANY');
-        $objPHPExcel->setActiveSheetIndex(0)->mergeCells("A1:F1");
+        $objPHPExcel->setActiveSheetIndex(0)->mergeCells("A1:G1");
         $objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(40);
         
         //Subtitulo del Reporte:
-        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado2, "A2:F2");
+        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado2, "A2:G2");
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A2', 'Results of the On-line Report: '.date('m/d/Y',strtotime($vFecha1))." - ".date('m/d/Y',strtotime($vFecha2))." ");
-        $objPHPExcel->setActiveSheetIndex(0)->mergeCells("A2:F2");
+        $objPHPExcel->setActiveSheetIndex(0)->mergeCells("A2:G2");
         $objPHPExcel->getActiveSheet()->getRowDimension('2')->setRowHeight(25);
         
         //Columnas:
         $row = 3;
-        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado3, "A".$row.":F".$row);
+        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado3, "A".$row.":G".$row);
         $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(35);
         $objPHPExcel->setActiveSheetIndex(0)
                 ->setCellValue('A'.$row, 'COMPANY NAME')
                 ->setCellValue('B'.$row, 'POLICY NUMBER')
                 ->setCellValue('C'.$row, 'POLICY TYPE')
-                ->setCellValue('D'.$row, 'EXPIRATION DATE')
-                ->setCellValue('E'.$row, 'BROKER')
-                ->setCellValue('F'.$row, 'INSURANCE');   
+                ->setCellValue('D'.$row, 'EFFECTIVE DATE')
+                ->setCellValue('E'.$row, 'EXPIRATION DATE')
+                ->setCellValue('F'.$row, 'BROKER')
+                ->setCellValue('G'.$row, 'INSURANCE');   
               
         while ($items = $result->fetch_assoc()){ 
              
              $row++;
-             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloContenido, "A".$row.":F".$row); 
+             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloContenido, "A".$row.":G".$row); 
              $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(20);
              //Reporte contenido:
              $objPHPExcel->setActiveSheetIndex(0)
                          ->setCellValue('A'.$row, $items['sNombreCompania'])
                          ->setCellValue('B'.$row, $items['sNumeroPoliza'])
                          ->setCellValue('C'.$row, $items['sTipoPoliza'])
-                         ->setCellValue('D'.$row, $items['dFechaCaducidad'])
-                         ->setCellValue('E'.$row, $items['sBrokerName'])
-                         ->setCellValue('F'.$row, $items['sInsuranceCo']); 
+                         ->setCellValue('D'.$row, $items['dFechaEfectiva'])
+                         ->setCellValue('E'.$row, $items['dFechaCaducidad'])
+                         ->setCellValue('F'.$row, $items['sBrokerName'])
+                         ->setCellValue('G'.$row, $items['sInsuranceCo']); 
               
         }
         
         //Ajustar la dimension de las columnas:
-        foreach(range('A','F') as $columnID) {
+        foreach(range('A','G') as $columnID) {
             $objPHPExcel->getActiveSheet()->getColumnDimension($columnID)->setAutoSize(true);
         }
                   

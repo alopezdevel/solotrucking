@@ -150,24 +150,24 @@
   function get_endorsement(){
       #Err flags:
       $error = '0';
-      $msj = "";
+      $msj   = "";
       #Variables
-      $fields = "";
-      $clave = trim($_POST['clave']);
+      $fields   = "";
+      $clave    = trim($_POST['clave']);
       $idPoliza = trim($_POST['idPoliza']);
-      $domroot = $_POST['domroot'];
+      $domroot  = $_POST['domroot'];
       
       #Function Begin
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                 
-      $sql = "SELECT A.iConsecutivo, iConsecutivoCompania, iConsecutivoTipoEndoso, sDescripcion, C.eStatus, iReeferYear,iTrailerExchange, iPDAmount, ". 
-             "sComentarios, iPDApply, iConsecutivoOperador, iConsecutivoUnidad, eAccion, iConsecutivoPoliza   ".  
-             "FROM cb_endoso A ".
-             "LEFT JOIN ct_tipo_endoso B ON A.iConsecutivoTipoEndoso = B.iConsecutivo ". 
-             "LEFT JOIN cb_endoso_estatus C ON A.iConsecutivo = C.iConsecutivoEndoso AND iConsecutivoPoliza = '$idPoliza'  ".
-             "WHERE A.iConsecutivo = '$clave'";
+      $sql    = "SELECT A.iConsecutivo, iConsecutivoCompania, iConsecutivoTipoEndoso, sDescripcion, C.eStatus, iReeferYear,iTrailerExchange, iPDAmount, ". 
+                "A.sComentarios, iPDApply, iConsecutivoOperador, iConsecutivoUnidad, eAccion, iConsecutivoPoliza   ".  
+                "FROM cb_endoso A ".
+                "LEFT JOIN ct_tipo_endoso B ON A.iConsecutivoTipoEndoso = B.iConsecutivo ". 
+                "LEFT JOIN cb_endoso_estatus C ON A.iConsecutivo = C.iConsecutivoEndoso AND iConsecutivoPoliza = '$idPoliza'  ".
+                "WHERE A.iConsecutivo = '$clave'";
       $result = $conexion->query($sql);
-      $items = $result->num_rows; 
+      $items  = $result->num_rows; 
       if ($items > 0) {     
             
             $data = $result->fetch_assoc(); //<---Endorsement Data Array.
@@ -184,37 +184,32 @@
                 } 
                 
                 if($i == 'iConsecutivoPoliza'){
-                       //$PolizasEndoso = explode('|',$datos[$i]); 
-                       //$htmlTabla = "";
-                       //for ($i = 0; $i < count($PolizasEndoso); $i++) {
-                            //$poliza = explode('/',$PolizasEndoso[$i]);
-                            //$filtro = "AND sNumeroPoliza = '".$poliza[0]."' AND iTipoPoliza = '".$poliza[1]."' "; 
                                
-                               $policy_query = "SELECT sNumeroPoliza, D.sDescripcion, D.iConsecutivo AS TipoPoliza, sName ".
-                                               "FROM ct_polizas A LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
-                                               "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
-                                               "WHERE iConsecutivoCompania = '".$data['iConsecutivoCompania']."' ".
-                                               "AND A.iConsecutivo = '".$data['iConsecutivoPoliza']."' AND A.iDeleted ='0'"; 
+                       $policy_query = "SELECT sNumeroPoliza, D.sDescripcion, D.iConsecutivo AS TipoPoliza, sName ".
+                                       "FROM ct_polizas A LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
+                                       "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
+                                       "WHERE iConsecutivoCompania = '".$data['iConsecutivoCompania']."' ".
+                                       "AND A.iConsecutivo = '".$data['iConsecutivoPoliza']."' AND A.iDeleted ='0'"; 
 
-                               $result_policy = $conexion->query($policy_query);
-                               $rows_policy = $result_policy->num_rows; 
-                               if($rows_policy > 0){
-                                   while($policies = $result_policy->fetch_assoc()){
-                                      $htmlTabla .= "<tr>".
-                                                        "<td>".$policies['sNumeroPoliza']."</td>".
-                                                        "<td>".$policies['sName']."</td>".
-                                                        "<td>".$policies['sDescripcion']."</td>".
-                                                    "</tr>";
-                                       if($policies['TipoPoliza'] == '1' && $data['iPDApply'] == '1' && $data['eAccion'] == 'ADD' && $data['iConsecutivoTipoEndoso'] == '1'){
-                                             $pd_information = "<label>Apply:</label>".
-                                                               "<input id=\"iPDApply\" name=\"iPDApply\" value=\"YES\" style=\"width: 10%!important;\" readonly=\"readonly\" class=\"readonly\">".
-                                                               "<label>Amount:</label>".
-                                                               "<input id=\"iPDAmount\" name=\"iPDAmount\" value=\"".$data['iPDAmount']."\" type=\"text\" readonly=\"readonly\" class=\"readonly\" style=\"width: 75%!important;margin-left: 4px;\">";
-                                       }          
-                                   }
-                                   
-                               }    
-                       //}
+                       $result_policy = $conexion->query($policy_query);
+                       $rows_policy = $result_policy->num_rows; 
+                       if($rows_policy > 0){
+                           while($policies = $result_policy->fetch_assoc()){
+                              $htmlTabla .= "<tr>".
+                                                "<td>".$policies['sNumeroPoliza']."</td>".
+                                                "<td>".$policies['sName']."</td>".
+                                                "<td>".$policies['sDescripcion']."</td>".
+                                            "</tr>";
+                               if($policies['TipoPoliza'] == '1' && $data['iPDApply'] == '1' && $data['eAccion'] == 'ADD' && $data['iConsecutivoTipoEndoso'] == '1'){
+                                     $pd_information = "<label>Apply:</label>".
+                                                       "<input id=\"iPDApply\" name=\"iPDApply\" value=\"YES\" style=\"width: 10%!important;\" readonly=\"readonly\" class=\"readonly\">".
+                                                       "<label>Amount:</label>".
+                                                       "<input id=\"iPDAmount\" name=\"iPDAmount\" value=\"".$data['iPDAmount']."\" type=\"text\" readonly=\"readonly\" class=\"readonly\" style=\"width: 75%!important;margin-left: 4px;\">";
+                               }          
+                           }
+                           
+                       }    
+                       
                     
                 }  
             }
@@ -278,7 +273,7 @@
                 }
             }
             $tipoEndoso = $data['iConsecutivoTipoEndoso'];
-            $eStatus = $data['eStatus'];  
+            $eStatus    = $data['eStatus'];  
       }
       $conexion->rollback();
       $conexion->close(); 
@@ -290,14 +285,103 @@
                     "policies"=>"$htmlTabla",
                     "kind"=>"$tipoEndoso",
                     "status"=>"$eStatus",
-                    "files" => "$htmlFiles",
                     "sComentarios" => "$comentarios"
                   );   
       echo json_encode($response);  
       
   }
   
+  #FUNCIONES FILES:
+  function get_files(){
+        
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa  = true;
+      $iConsecutivo         = trim($_POST['iConsecutivo']);
+      $registros_por_pagina = $_POST["registros_por_pagina"];
+      $pagina_actual        = (isset($_POST["pagina_actual"]) && $_POST["pagina_actual"] != '' ? $_POST["pagina_actual"] : 1);
+      $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
+      $query_union          = "";
+      
+      #CONSULTAR DATOS DEL ENDOSO                                                                                                               
+      $sql    = "SELECT A.iConsecutivo, A.iConsecutivoCompania, A.iConsecutivoTipoEndoso, sDescripcion, iReeferYear,iTrailerExchange, iPDAmount, ". 
+                "A.sComentarios, iPDApply, iConsecutivoUnidad,sVINUnidad, eAccion ".  
+                "FROM cb_endoso A ".
+                "LEFT JOIN ct_tipo_endoso B ON A.iConsecutivoTipoEndoso = B.iConsecutivo ".
+                "WHERE A.iConsecutivo = '$iConsecutivo' ";
+      $result = $conexion->query($sql);
+      $rows   = $result->num_rows;
+      
+      if($rows > 0){ 
+        
+        $endoso = $result->fetch_assoc();
+        //Filtros de informacion //
+        $filtroQuery = " WHERE iConsecutivoEndoso = '".$iConsecutivo."' ";
+        
+        // ordenamiento//
+        $ordenQuery = " ORDER BY ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"];
+        
+        #VERIFICAMOS, SI ES UN ADD, VERIFICAMOS TABLA DE ARCHIVOS X UNIDAD:
+        if($endoso['eAccion'] == 'A' && $endoso['iConsecutivoUnidad'] != ""){
+          $query_union = " UNION ".
+                         "(SELECT iConsecutivo, sTipoArchivo, sNombreArchivo, iTamanioArchivo FROM cb_unidad_files WHERE iConsecutivoUnidad = '".$endoso['iConsecutivoUnidad']."' $ordenQuery)";    
+        }
 
+        //contando registros // 
+        /*$query_rows = "(SELECT COUNT(iConsecutivo) AS total FROM cb_endoso_files ".$filtroQuery.")";
+                      
+        $Result    = $conexion->query($query_rows);
+        $items     = $Result->fetch_assoc();
+        $registros = $items["total"];
+        if($registros == "0"){$pagina_actual = 0;}
+        $paginas_total = ceil($registros / $registros_por_pagina);
+        
+        if($registros == "0"){
+            $limite_superior = 0;
+            $limite_inferior = 0;
+            $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";
+        }else{*/
+            
+          $pagina_actual   == "0" ? $pagina_actual = 1 : false;
+          $limite_superior = $registros_por_pagina;
+          $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
+          
+          $sql    = "(SELECT iConsecutivo, sTipoArchivo,sNombreArchivo,iTamanioArchivo FROM cb_endoso_files ".$filtroQuery.$ordenQuery.")".$query_union;
+          $result = $conexion->query($sql);
+          $rows   = $result->num_rows; 
+             
+            if ($rows > 0) {    
+                while ($items = $result->fetch_assoc()) { 
+                   if($items["iConsecutivo"] != ""){
+
+                         $htmlTabla .= "<tr>".
+                                       "<td id=\"".$items['iConsecutivo']."\">".$items['sNombreArchivo']."</td>".
+                                       "<td>".$items['sTipoArchivo']."</td>".
+                                       "<td>".$items['iTamanioArchivo']."</td>". 
+                                       "<td>".
+                                            "<div class=\"btn-icon edit btn-left\" title=\"Open file in a new window\" onclick=\"window.open('open_pdf.php?idfile=".$items['iConsecutivo']."&type=endoso');\"><i class=\"fa fa-external-link\"></i><span></span></div>". 
+                                            "<div class=\"btn_delete_file btn-icon trash btn-left\" title=\"Delete file\"><i class=\"fa fa-trash\"></i><span></span></div>".
+                                       "</td></tr>";  
+                                           
+                     }else{                                                                                                                                                                                                        
+                        
+                         $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;
+                     }    
+                }
+                $conexion->rollback();
+                $conexion->close();                                                                                                                                                                       
+            }
+            else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}
+          //}
+          
+      }
+      else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">Error to query endorsement data.</td></tr>"; }
+            
+        
+      $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
+      echo json_encode($response); 
+  }
+  
   #FUNCIONES BROKERS:
   function send_email_brokers(){
       include("cn_usuarios.php");

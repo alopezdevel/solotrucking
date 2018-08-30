@@ -29,8 +29,6 @@
 .titulo-grid .administrador{background-position:0 0px;}
 table.data_grid{width:100%;/*height:200px*/ padding:0px;border-collapse: collapse;border-spacing: 0;font-family:Arial, Helvetica, sans-serif;}
 /*.data_grid td{border:1px solid #dbdbdb;} */
-/*------------------------- THEAD - 1------------------------------------------*/
-/*------------------------- THEAD - 1------------------------------------------*/
 #grid-head1 > td, .grid-head1 > td{
 	height:45px;	
 	background:#3c6ab6;
@@ -72,7 +70,6 @@ table.data_grid{width:100%;/*height:200px*/ padding:0px;border-collapse: collaps
 #grid-head1 input:hover,#grid-head1 td input:focus, #grid-head1 select:focus, #grid-head1 select:hover{opacity:1;}
 #grid-head1 td, #grid-head2,.grid-head1 td, .grid-head2{text-align:center;}
 /*------------------------- THEAD - 2------------------------------------------*/
-/*------------------------- THEAD - 2------------------------------------------*/
 #grid-head2, .grid-head2{
 	height:40px;	
 	background:#b2d6f1;
@@ -96,9 +93,6 @@ table.data_grid{width:100%;/*height:200px*/ padding:0px;border-collapse: collaps
 #grid-head2 .down, .grid-head2 .down{background-position: 100% 0px;}
 #grid-head2 .up, .grid-head2 .up{background-position: 100% -30px;}
 /*----------------------------------------- TBODY-----------------------------------------------------------------------------*/
-/*---------------------------------------- TBODY-----------------------------------------------------------------------------*/
-/*--------------------------------------- TBODY-----------------------------------------------------------------------------*/
-/*---------------------------------------- TBODY----------------------------------------------------------------------------*/
 tbody td{
 	
 	font-size:13px!important;
@@ -158,8 +152,6 @@ tbody .orange{background: rgb(255, 217, 134);}
 .grid-scroll-2 table{
 	margin-top:-15px;
 }
-/*----------------------------------------- TFOOT-----------------------------------------------------------------------------*/
-/*----------------------------------------- TFOOT-----------------------------------------------------------------------------*/
 /*----------------------------------------- TFOOT-----------------------------------------------------------------------------*/
 tfoot{border-top:2px solid #b9dcf6;}
 #datagrid-pages, .datagrid-pages{
@@ -228,12 +220,6 @@ tfoot{border-top:2px solid #b9dcf6;}
 #pgn-final span, .pgn-final span{background-position: 50% -150px!important;}
 #pgn-final:hover span, .pgn-final:hover span{background-position: 50% -175px!important;}
 
-
-
-
-/*------------------------------ DATA GRID TOOLS - MENU DE HERRAMIENTAS ----------------------------------------------*/
-/*------------------------------ DATA GRID TOOLS - MENU DE HERRAMIENTAS ----------------------------------------------*/
-/*------------------------------ DATA GRID TOOLS - MENU DE HERRAMIENTAS ----------------------------------------------*/
 /*------------------------------ DATA GRID TOOLS - MENU DE HERRAMIENTAS ----------------------------------------------*/
 #grid-head-tools{
 	
@@ -285,9 +271,6 @@ tfoot{border-top:2px solid #b9dcf6;}
 	color:#ffffff;
 }
 /*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
-/*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
-/*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/
-/*------------------------------ BUTTONS --- BOTONES ----------------------------------------------*/ 
 .btn-icon, .btn-icon-2, .btnicon, .btn-text{cursor:pointer;} 
 a.btn-text{display:block;}
 .btn-text{
@@ -521,6 +504,8 @@ table.popup-datagrid > tbody > tr:last-child > td{border-bottom:1px solid #c6c6c
     height: 22px;
     font-family: Arial, Helvetica, sans-serif!important;
 }
+.popup-datagrid .btn-icon{width:15px!important;}
+.popup-datagrid .btn-icon i{font-size: 15px!important;}
 input.fecha{width: 96%;margin-right: 5px!important;}
 input.fecha.error{width: 95%!important;}
 .popup-datagrid tfoot input{

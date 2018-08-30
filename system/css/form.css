@@ -221,3 +221,87 @@ button:hover, .btn-1:hover{background-color:#61b1df;}
     top: -5px;
     margin: 5px 15px 5px 5px;
 }
+/*-- FILE DRAG --*/
+.file-container .drag-hover::before {
+
+    color: #488bb1!important; 
+    border: 2px solid #488bb1!important;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+}
+.file-container input[type="file"]{
+    width:100%!important;
+    position: relative;
+    height:100px!important;
+    visibility: hidden;
+}
+.file-container input[type="file"]::before {
+    
+  content: 'Arrastra los archivos aquí';
+  display: inline-block;
+  visibility: visible;
+  outline: none;
+  white-space: nowrap;
+  -webkit-user-select: none;
+  cursor: pointer;
+  text-shadow: 1px 1px #fff;
+  font-weight: 700;
+  font-size: 10pt;
+  position: absolute;
+  font-weight: bold;
+  text-align: center;
+  padding: 35px 0;
+  color: #a9a9a9;
+  border: 2px dashed #a9a9a9;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  clear: both;
+}  
+.file-container input[type="file"].error:before{
+  border-color: #e17c7c!important;
+}
+.file-container input[type="file"].fileupload:before{
+  border-color: #f97934!important;  
+}
+.file-container .file-message {
+    position: relative;
+    top: -35px;
+    left: 10px;
+    font-size: 0.9em;
+    text-align: center;
+    color: #044c8b;
+    width:100%;
+    height:25px;
+    margin-bottom: -20px;
+}
+.file-container label {
+
+  display: block;
+  outline: none;
+  white-space: nowrap;
+  -webkit-user-select: none;
+  cursor: pointer;
+  text-shadow: 1px 1px #fff;
+  font-weight: 700;
+  font-size: 10pt;
+  font-weight: bold;
+  text-align: center;
+  padding: 35px 0;
+  color: #a9a9a9;
+  border: 2px dashed #a9a9a9;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  clear: both;
+}  
+.file-container label span {
+    display: block;
+    font-size: 0.9em;
+    font-weight: normal;
+}
+.file-desc-icon{
+    color: #0982b7;
+    float: left;
+    /*padding: 5px 0px;*/
+    margin-right: 5px;
+}

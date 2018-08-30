@@ -992,7 +992,7 @@ var fn_policies = {
             <tr id="grid-head-tools">
                 <td colspan="100%">
                     <ul>
-                        <li><div class="btn-icon report btn-left" title="Generate a Report"  onclick="fn_policies.dialog_report_open();"><i class="fa fa-folder-open"></i></div></li>  
+                        <li><div class="btn-icon report btn-left" title="Report of Policies"  onclick="fn_policies.dialog_report_open();"><i class="fa fa-folder-open"></i></div></li>  
                         <li><div class="btn-icon add btn-left active active_policies" title="View Actived Policies "  onclick="fn_policies.pagina_actual='';fn_policies.fillgrid();"><i class="fa fa-file-text"></i></div></li> 
                         <li><div class="btn-icon edit btn-left expired_policies" title="View Canceled & Expired Policies "  onclick="fn_policies.pagina_actual='';fn_policies.fillgrid_expired();"><i class="fa fa-file-text"></i></div></li>
                         <li><div class="btn-icon add btn-left" title="Upload drivers or units of a company"  onclick="fn_policies.upload_file_form();"><i class="fa fa-upload"></i></div></li>
@@ -1467,9 +1467,10 @@ var fn_policies = {
     </div>
 </div>
 <!-- DIALOGUES -->
-<div id="dialog_report_policies" title="REPORT OF POLICIES" style="display:none;">
+<div id="dialog_report_policies" title="REPORT OF POLICIES" style="display:none;" >
     <p>Please select the parameters to generate a report of the policies:</p>
     <form id="frm_report_policies" method="post">
+        <fieldset>
         <div class="field_item"> 
             <label>Company: </label>
             <select class="flt_company"><option>All</option></select>
@@ -1493,6 +1494,7 @@ var fn_policies = {
                 <label class="check-label" style="position: relative;top: 0px;">To</label><input   id="flt_dateTo"   type="text"  placeholder="MM/DD/YY" style="width: 140px;">
             </div>
         </div> 
+        </fieldset>
     </form>  
 </div>
 <div id="dialog_delete_policy" title="SYSTEM ALERT" style="display:none;">

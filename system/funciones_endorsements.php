@@ -2137,6 +2137,9 @@
   }   
   function guarda_pdf_endoso(){
       
+      print_r($_POST);
+      EXIT;
+      
       
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);
