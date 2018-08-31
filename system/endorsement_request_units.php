@@ -84,6 +84,7 @@
                     buttonImageOnly: true
                 });
                 $(".fecha,.flt_fecha").mask("99/99/9999");
+                //Cargar Lista de companias:
                 $.ajax({             
                     type:"POST", 
                     url:"catalogos_generales.php", 
@@ -94,6 +95,42 @@
                         $("#frm_endorsement_information select[name=iConsecutivoCompania").empty().append(data.select);
                     }
                 }); 
+                //Cargar Modelos para unidades:
+                $.ajax({             
+                    type:"POST", 
+                    url:"funciones_endorsements.php", 
+                    data:{accion:"get_unit_models"},
+                    async : false,
+                    dataType : "json",
+                    success : function(data){                               
+                        $("#frm_unit_information #iModelo").empty().append(data.select);
+                         
+                    }
+                });
+                //Cargar Radio para unidades:
+                $.ajax({             
+                    type:"POST", 
+                    url:"catalogos_generales.php", 
+                    data:{accion:"get_unit_radio"},
+                    async : false,
+                    dataType : "json",
+                    success : function(data){                               
+                        $("#frm_unit_information #iConsecutivoRadio").empty().append(data.select);
+                         
+                    }
+                });
+                //Cargar Años:
+                $.ajax({             
+                    type:"POST", 
+                    url:"catalogos_generales.php", 
+                    data:{accion:"get_years"},
+                    async : false,
+                    dataType : "json",
+                    success : function(data){                               
+                        $("#frm_unit_information #iYear").empty().append(data.select);
+                         
+                    }
+                });
             },
             fillgrid: function(){
                    $.ajax({             
@@ -123,9 +160,9 @@
             },
             edit : function (){
                 $(fn_endorsement.data_grid + " tbody td .edit").bind("click",function(){
-                    var clave = $(this).parent().parent().find("td:eq(0)").html();
+                    var clave    = $(this).parent().parent().find("td:eq(0)").html();
                     var idPoliza = $(this).parent().parent().find("td:eq(5)").attr('id')
-                    var company = $(this).parent().parent().find("td:eq(1)").text(); 
+                    var company  = $(this).parent().parent().find("td:eq(1)").text(); 
                     $('#endorsements_edit_form .p-header h2').empty().text('Endorsement request from ' + company + ': E#' + clave);
                     $.post("funciones_endorsement_request_units.php",
                     {
@@ -357,7 +394,9 @@
                delete_file : function(){
                   $("#files_datagrid tbody td .trash").bind("click",function(){
                         var clave = $(this).parent().parent().find("td:eq(0)").attr('id');
-                        $.post("funciones_endorsement_request_units.php",{accion:"delete_file", clave: clave},
+                            clave = clave.split("idFile_");
+                            clave = clave[1];
+                        $.post("funciones_endorsements.php",{accion:"elimina_archivo_endoso", "iConsecutivo": clave},
                         function(data){
                             fn_solotrucking.mensaje(data.msj);
                             if(data.error == '0'){fn_endorsement.files.fillgrid();}      
@@ -408,7 +447,7 @@
                 }, 
                add : function(){
                    $("#dialog_upload_files input[name=iConsecutivoEndoso]").val(fn_endorsement.files.iConsecutivoEndoso);
-                   $("#dialog_upload_files input[name=MAX_FILE_SIZE]").val(5000000);
+                   $("#dialog_upload_files input[name=MAX_FILE_SIZE]").val(3000000);
                    $("#dialog_upload_files .file-message").html("");
                    $("#dialog_upload_files #fileselect").removeClass("fileupload");
                    $('#dialog_upload_files').dialog("open"); 
@@ -428,7 +467,7 @@
                       var form       = "#dialog_upload_files form";
                       var dataForm   = new FormData();
                       var other_data = $(form).serializeArray();
-                      dataForm.append('action','guarda_pdf_endoso');
+                      dataForm.append('accion','guarda_pdf_endoso');
                       $.each($(form+' input[type=file]')[0].files,function(i, file){dataForm.append('file-'+i, file);});
                       $.each(other_data,function(key,input){dataForm.append(input.name,input.value);});
                           
@@ -454,6 +493,25 @@
                   } 
                }
             },
+            get_unidades : function(){
+                var company = $("#frm_endorsement_information input[name=iConsecutivoCompania]").val();
+                if(company != ""){
+                    //Autocomplete de unidades:
+                    $.ajax({
+                        type    : "POST",
+                        url     : "funciones_endorsements_request_units.php",
+                        data    : {'accion' : 'get_units_autocomplete','iConsecutivoCompania':company},
+                        async   : true,
+                        dataType: "text",
+                        success : function(data) {
+                           var datos = eval(data); 
+                           $("#sUnitTrailer").autocomplete();
+                           $("#sUnitTrailer").autocomplete({source:datos});
+                        }
+                    }); 
+                }
+                
+            }
                 
     }    
 </script> 
@@ -582,29 +640,40 @@
                     <tr>
                         <td>
                         <div class="field_item">
-                            <label>Type:</label> <input id="sTipo" name ="sTipo"  type = "text" readonly="readonly" class="readonly" style="width: 95%;">
+                            <input id="iConsecutivoUnidad" type="hidden" value="">
+                            <label>Type <span style="color:#ff0000;">*</span>: </label>
+                            <Select id="sTipo" style="width:99%!important;height: 25px!important;" disabled="disabled">
+                                <option value="">Select an option...</option>
+                                <option value="UNIT">Unit</option>
+                                <option value="TRAILER">Trailer</option>
+                                <option value="TRACTOR">Tractor</option>
+                            </select>
                         </div>
                         </td>
                         <td>
                         <div class="field_item">
-                            <label>Year:</label> <input id="iYear" name ="iYear"  type = "text" readonly="readonly" class="readonly" style="width: 95%;">
+                            <label>Year <span style="color:#ff0000;">*</span>: </label>
+                            <Select id="iYear" style="width:99%!important;height: 25px!important;"><option value="">Select an option...</option></select> 
                         </div>
                         </td>
                         <td>
                         <div class="field_item">
-                            <label>Make:</label> <input id="Modelo" name ="Modelo"  type = "text" readonly="readonly" class="readonly" style="width: 99%;">
+                            <label>Make: </label>
+                            <Select id="iModelo" style="width:99%!important;height: 25px!important;"><option value="">Select an option...</option></select>
                         </div>
                         </td>
                     </tr>
                     <tr>
                         <td colspan="2">
                             <div class="field_item">
-                                <label>VIN:</label> <input id="sVIN" name ="sVIN"  type = "text" readonly="readonly" class="readonly" style="width: 97%;">
+                                <label>VIN <span style="color:#ff0000;">*</span>:</label> 
+                                <input id="sUnitTrailer" class="txt-uppercase" type="text" placeholder="Write the VIN or system id of the Unit or Trailer" style="width: 97%;">
                             </div>
                         </td>
                         <td>
                         <div class="field_item">
-                            <label>Radius:</label> <input id="Radius" name ="Radius"  type = "text" readonly="readonly" class="readonly" style="width: 99%;">
+                            <label>Radius <span style="color:#ff0000;">*</span>: </label>
+                            <Select id="iConsecutivoRadio" style="width:99%!important;height: 25px!important;"><option value="">Select an option...</option></select>
                         </div>
                         </td>
                     </tr>
@@ -673,9 +742,19 @@
     </div>
 </div>
 <div id="dialog_upload_files" title="Upload files to endorsement" style="display:none;padding: .5em 1em .5em 0em!important;">
-    <form class="frm_upload_files" method="post">
+    <form class="frm_upload_files" action="" method="POST" enctype="multipart/form-data">
         <fieldset>
         <input name="iConsecutivoEndoso" type="hidden" value="">
+        <div>
+            <label>File Category <span style="color:#ff0000;">*</span>: </label>
+            <Select name="eArchivo" style="height: 27px!important;">
+                <option value="OTHERS">Other</option>
+                <option value="DA">Delease Agreement</option>   
+                <option value="BS">Bill of Sale</option>   
+                <option value="NOR">Non-Op Registration</option>   
+                <option value="PTL">Proof of Total Loss</option>   
+            </select> 
+        </div>
         <div class="field_item"> 
             <label class="required-field">Archivo para subir:</label>
             <div class="file-container">

@@ -1467,7 +1467,7 @@
                         <option value="">Select an option...</option>
                         <option value="DA">Delease Agreement</option>   
                         <option value="BS">Bill of Sale</option>   
-                        <option value="NOP">Non-Op Registration</option>   
+                        <option value="NOR">Non-Op Registration</option>   
                         <option value="PTL">Proof of Total Loss</option>   
                     </select> 
                 </div> 
@@ -1501,6 +1501,7 @@
                                 <option value="">Select an option...</option>
                                 <option value="UNIT">Unit</option>
                                 <option value="TRAILER">Trailer</option>
+                                <option value="TRACTOR">Tractor</option>
                               </select>
                         </div>
                         </td>

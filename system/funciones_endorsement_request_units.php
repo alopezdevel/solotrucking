@@ -160,8 +160,8 @@
       #Function Begin
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                 
-      $sql    = "SELECT A.iConsecutivo, iConsecutivoCompania, iConsecutivoTipoEndoso, sDescripcion, C.eStatus, iReeferYear,iTrailerExchange, iPDAmount, ". 
-                "A.sComentarios, iPDApply, iConsecutivoOperador, iConsecutivoUnidad, eAccion, iConsecutivoPoliza   ".  
+      $sql    = "SELECT A.iConsecutivo, iConsecutivoCompania, iConsecutivoTipoEndoso, A.eStatus, iReeferYear,iTrailerExchange, iPDAmount, ". 
+                "A.sComentarios, iPDApply, iConsecutivoUnidad, eAccion, iConsecutivoPoliza   ".  
                 "FROM cb_endoso A ".
                 "LEFT JOIN ct_tipo_endoso B ON A.iConsecutivoTipoEndoso = B.iConsecutivo ". 
                 "LEFT JOIN cb_endoso_estatus C ON A.iConsecutivo = C.iConsecutivoEndoso AND iConsecutivoPoliza = '$idPoliza'  ".
@@ -177,9 +177,9 @@
             $llaves  = array_keys($data);
             $datos   = $data; 
             foreach($datos as $i => $b){ 
-                if($i == 'sDescripcion' || $i == 'eAccion'|| $i == 'iConsecutivo' || $i == 'eStatus' || $i == 'iConsecutivoPoliza'){
+                if($i != 'eStatus' && $i != 'sComentarios' && $i != 'iConsecutivoPoliza' && $i != 'iConsecutivoTipoEndoso'){
                   $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');";  
-                }else if($i == 'sComentarios' && $data['eStatus'] == 'D'){
+                }else if($i == 'sComentarios'){
                   $comentarios = utf8_decode($datos[$i]);  
                 } 
                 
@@ -214,62 +214,22 @@
                 }  
             }
             
-            if($data['iConsecutivoUnidad']!= '' && $data['iConsecutivoTipoEndoso']== '1'){
-                $sql2 = "SELECT B.sAlias, B.sDescripcion, iConsecutivoRadio, C.sDescripcion AS Radius, iYear, iModelo, sVIN, sModelo, sTipo ".    
+            //SI LA UNIDAD EXISTE EN EL CATALOGO:
+            if($data['iConsecutivoUnidad'] != '' && $data['iConsecutivoTipoEndoso']== '1'){
+                $sql2 = "SELECT iConsecutivo AS iConsecutivoUnidad, iConsecutivoRadio, iYear, iModelo, sVIN AS sUnitTrailer, sModelo, sTipo ".    
                         "FROM ct_unidades A ".
-                        "LEFT JOIN ct_unidad_modelo B ON A.iModelo = B.iConsecutivo ".
-                        "LEFT JOIN ct_unidad_radio C ON A.iConsecutivoRadio = C.iConsecutivo ". 
                         "WHERE A.iConsecutivo = '".$data['iConsecutivoUnidad']."'";
                 $result = $conexion->query($sql2);
                 $items2 = $result->num_rows;
                 if ($items2 > 0) {
-                     $data2 = $result->fetch_assoc();
-                     
-                     if($data2['iModelo'] != ""){
-                        if($data2['sAlias'] != ""){$fields .= "\$('#$domroot :input[id=Modelo]').val('".$data2['sAlias']."');";}
-                        else{$fields .= "\$('#$domroot :input[id=Modelo]').val('".$data2['sDescripcion']."');"; } 
-                     }else{
-                        $fields .= "\$('#$domroot :input[id=Modelo]').val('".$data2['sModelo']."');"; 
-                     }
-                     
-                     #RADIUS:
-                     $radius = explode('(',$data2['Radius']);
-                     $data2['Radius'] = $radius[0]; 
-
+                    
+                     $data2    = $result->fetch_assoc();
                      $llaves2  = array_keys($data2);
                      $datos2   = $data2;
-                     foreach($datos2 as $i => $b){     
-                        if($i != 'iModelo' || $i != 'sModelo' || $i != 'sDescripcion' || $i != 'sAlias'){
-                            $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos2[$i]."');";
-                        }  
-                     }
                      
-                     //Get files from UNIT:    
-                     $sql_files = "SELECT iConsecutivo, sNombreArchivo, eArchivo, sTipoArchivo FROM cb_unidad_files WHERE  iConsecutivoUnidad = '".$data['iConsecutivoUnidad']."'";
-                     $result_files = $conexion->query($sql_files);
-                     $file_rows  = $result_files->num_rows;
-                         
-                     if($file_rows > 0){ 
-                         $htmlFiles = "<thead><tr>"."<td><label>File Name</label></td>"."<td><label>Preview</label></td>"."</tr><thead>"; 
-                         while ($items_files = $result_files->fetch_assoc()){
-                             //Define icono del boton:
-                            $btnIcon = "";
-                            if($items_files['sTipoArchivo'] == 'application/pdf'){$btnIcon = "fa-file-pdf-o";}else if($items_files['sTipoArchivo'] == 'image/jpeg'){$btnIcon = "fa-file-image-o";}
-                            
-                             if($data['eAccion'] == 'ADD' && $items_files["eArchivo"] == 'TITLE'){ 
-                                $htmlFiles .= "<tr>".
-                                              "<td>".$items_files['sNombreArchivo']."</td>".
-                                              "<td><div onclick=\"window.open('open_pdf.php?idfile=".$items_files['iConsecutivo']."&type=unit');\" class=\"btn-icon pdf btn-left\" title=\"View PDF File\"><i class=\"fa $btnIcon\"></i><span></span></td>".
-                                              "</tr>"; 
-                                              
-                             }else if($data['eAccion'] == 'DELETE' && $items_files["eArchivo"] != 'TITLE'){
-                                $htmlFiles .= "<tr>".
-                                              "<td>".$items_files['sNombreArchivo']."</td>".
-                                              "<td><div onclick=\"window.open('open_pdf.php?idfile=".$items_files['iConsecutivo']."&type=unit');\" class=\"btn-icon pdf btn-left\" title=\"View PDF File\"><i class=\"fa $btnIcon\"></i><span></span></td>".
-                                              "</tr>"; 
-                             }
-                         } 
-                     }else{$htmlFiles = "";} 
+                     foreach($datos2 as $i => $b){     
+                        $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos2[$i]."');";
+                     }
                 }
             }
             $tipoEndoso = $data['iConsecutivoTipoEndoso'];
@@ -288,6 +248,32 @@
                     "sComentarios" => "$comentarios"
                   );   
       echo json_encode($response);  
+      
+  }
+  #FUNCIONES UNITS:
+  function get_units_autocomplete(){
+      
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);
+      $company = trim($_POST['iConsecutivoCompania']);
+      $error   = "0";
+      $mensaje = "";
+      $sql     = "SELECT iConsecutivo, sVIN, sTipo, siConsecutivosPolizas, iYear, iConsecutivoRadio, iModelo  ". 
+                 "FROM ct_unidades WHERE iConsecutivoCompania = '$company' ".
+                 "ORDER BY iConsecutivo ASC";
+      $result  = $conexion->query($sql);
+      $rows    = $result->num_rows;  
+      if($rows > 0){
+             
+        while ($items = $result->fetch_assoc()) {
+           $respuesta == '' ? $respuesta .= '"'.$items["sVIN"].' | '.$items["sVIN"].' | '.utf8_encode($response["iYear"]).'"' : $respuesta .= ',"'.$items["iConsecutivo"].' | '.$items["sVIN"].'/'.utf8_encode($items["iYear"]).'"';    
+        }                                                                                                                                                                        
+      }else {$respuesta .="";}
+      $conexion->rollback();
+      $conexion->close();
+       
+      $respuesta = "[".$respuesta."]";
+      echo $respuesta;
       
   }
   
@@ -355,7 +341,7 @@
                    if($items["iConsecutivo"] != ""){
 
                          $htmlTabla .= "<tr>".
-                                       "<td id=\"".$items['iConsecutivo']."\">".$items['sNombreArchivo']."</td>".
+                                       "<td id=\"idFile_".$items['iConsecutivo']."\">".$items['sNombreArchivo']."</td>".
                                        "<td>".$items['sTipoArchivo']."</td>".
                                        "<td>".$items['iTamanioArchivo']."</td>". 
                                        "<td>".

@@ -2137,56 +2137,119 @@
   }   
   function guarda_pdf_endoso(){
       
-      print_r($_POST);
-      EXIT;
-      
-      
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);
       //Variables:
-      $error               = "0";
-      $company             = $_SESSION['company'];                                                                                                                                                                                                                                      
-      $transaccion_exitosa = true;
-      $oFichero            = fopen($_FILES['userfile']["tmp_name"], 'r'); 
-      $sContenido          = fread($oFichero, filesize($_FILES['userfile']["tmp_name"]));  
-      $sContenido          =  $conexion->real_escape_string($sContenido);
-      $eArchivo            = $_POST['eArchivo'];
+      $error                  = "0";                                                                                                                                                                                                                                    
+      $transaccion_exitosa    = true; 
+      $_POST['iConsecutivo'] != "" ? $edit_mode = true : $edit_mode = false;
       
-      //Revisamos el tamaño del archivo:
-      if($_FILES['userfile']["size"] <= 1000000){
-          
-          $FileExt   = explode('.',$_FILES['userfile']["name"]);  
-          $name_file = strtolower($_POST['eArchivo']).'.'.$FileExt[1];
-          
-          if($_POST['iConsecutivo'] != ''){
-             $sql = "UPDATE cb_endoso_files SET sNombreArchivo ='".$name_file."', sTipoArchivo ='".$_FILES['userfile']["type"]."', iTamanioArchivo ='".$_FILES['userfile']["size"]."', hContenidoDocumentoDigitalizado='$sContenido', eArchivo='$eArchivo', ".
-                    "dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."'".
-                    "WHERE iConsecutivo ='".$_POST['iConsecutivo']."'"; 
-          }else{
-             $sql = "INSERT INTO cb_endoso_files (sNombreArchivo, sTipoArchivo, iTamanioArchivo, hContenidoDocumentoDigitalizado, eArchivo, dFechaIngreso, sIP, sUsuarioIngreso) ".
-                    "VALUES('".$name_file."','".$_FILES['userfile']["type"]."','".$_FILES['userfile']["size"]."','$sContenido','$eArchivo','".date("Y-m-d H:i:s")."', '".$_SERVER['REMOTE_ADDR']."', '".$_SESSION['usuario_actual']."')"; 
-          }
-         
-          if($conexion->query($sql)){
-                $id_file = $conexion->insert_id; 
-                $conexion->commit();
-                $conexion->close();
-                $mensaje = "The file was uploaded successfully.";  
-          }else{
-                $conexion->rollback();
-                $conexion->close();
-                $mensaje = "A general system error ocurred : internal error";
-                $error = "1";
-          }     
+      //Revisamos Archivo de que modulo viene:
+      if(isset($_FILES['userfile'])){
+          $file        = fopen($_FILES['userfile']["tmp_name"], 'r'); 
+          $fileContent = fread($file, filesize($_FILES['userfile']["tmp_name"]));
+          $fileName    = $_FILES['userfile']['name'];
+          $fileType    = $_FILES['userfile']['type']; 
+          $fileTmpName = $_FILES['userfile']['tmp_name']; 
+          $fileSize    = $_FILES['userfile']['size']; 
+          $fileError   = $_FILES['userfile']['error'];
+          $fileExten   = explode(".",$fileName); 
+           
+      }else if(isset($_FILES['file-0'])){
+          $file        = fopen($_FILES['file-0']["tmp_name"], 'r'); 
+          $fileContent = fread($file, filesize($_FILES['file-0']["tmp_name"]));
+          $fileName    = $_FILES['file-0']['name'];
+          $fileType    = $_FILES['file-0']['type']; 
+          $fileTmpName = $_FILES['file-0']['tmp_name']; 
+          $fileSize    = $_FILES['file-0']['size']; 
+          $fileError   = $_FILES['file-0']['error'];
+          $fileExten   = explode(".",$fileName);
       }else{
-          $mensaje = "Error: The file you are trying to upload exceeds the maximum size (1MB) allowed by the system, please check it and try again.";
-          $error = "1"; 
+          $error = "1";
+          $mensaje = "Error to read the file data, please try again.";
       }
-     
+      
+      #REVISAMOS ERRORES:
+      if($error == "0"){
+          //Validando nombre del archivo sin puntos...
+          if(count($fileExten) != 2){$error="1";$mensaje = "Error: Please check that the name of the file should not contain points.";}
+          else{
+              //Extension Valida:
+              $fileExten = strtolower($fileExten[1]);
+              if($fileExten != "pdf" && $fileExten != "jpg" && $fileExten != "png" && $fileExten != "doc" && $fileExten != "docx" && $fileExten != "xlsx" && $fileExten != "xls" && $fileExten != "mp3" && $fileExten != "mp4" && $fileExten != "key" && $fileExten != "cer" && $fileExten != "zip" && $fileExten != "ppt" && $fileExten != "pptx"){
+                  $error = "1"; $mensaje="Error: The file extension is not valid, please check it.";
+              }else {
+                  //Verificar Tamaño:
+                  if(($fileSize > 0 && $fileSize <= 3000000) || ($fileSize == 0 && $fileError == 1)){
+                      
+                      $sContenido           = $conexion->real_escape_string($fileContent);
+                      $eArchivo             = trim($_POST['eArchivo']); 
+                      $iConsecutivoEndoso   = trim($_POST['iConsecutivoEndoso']);
+                      if($eArchivo != "OTHERS"){$fileName = strtolower($eArchivo).'.'.$fileExten;} //Si la categoria existe renombramos el archivo.
+                      
+                      #UPDATE
+                      if($edit_mode){
+                         $sql = "UPDATE cb_endoso_files SET sNombreArchivo ='$fileName', sTipoArchivo ='$fileType', iTamanioArchivo ='$fileSize', ".
+                                "hContenidoDocumentoDigitalizado='$sContenido', eArchivo='$eArchivo', ".
+                                "dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."'".
+                                "WHERE iConsecutivo ='".trim($_POST['iConsecutivo'])."'";  
+                      }
+                      #INSERT
+                      else{
+                         $sql = "INSERT INTO cb_endoso_files (sNombreArchivo, sTipoArchivo, iTamanioArchivo, hContenidoDocumentoDigitalizado, eArchivo,iConsecutivoEndoso, dFechaIngreso, sIP, sUsuarioIngreso) ".
+                                "VALUES('$fileName','$fileType','$fileSize','$sContenido','$eArchivo','$iConsecutivoEndoso','".date("Y-m-d H:i:s")."', '".$_SERVER['REMOTE_ADDR']."', '".$_SESSION['usuario_actual']."')"; 
+                      }
+               
+                      if($conexion->query($sql)){
+                            $id_file = $conexion->insert_id; 
+                            $conexion->commit();
+                            $conexion->close();
+                            $mensaje = "The file was uploaded successfully.";  
+                      }else{
+                            $conexion->rollback();
+                            $conexion->close();
+                            $mensaje = "A general system error ocurred : internal error";
+                            $error = "1";
+                      }     
+                  }
+                  else{$error = "1";$mensaje = "Error: The file you are trying to upload exceeds the maximum size (3MB) allowed by the system, please check it and try again.";}
+              }
+              
+          }   
+      }
+        
       $response = array("mensaje"=>"$mensaje","error"=>"$error", "id_file"=>"$id_file","name_file"=>"$name_file"); 
       echo json_encode($response);             
       
-  }     
+  } 
+  function elimina_archivo_endoso(){
+      
+      $iConsecutivo = trim($_POST['iConsecutivo']);
+      $error        = '0';   
+      //Conexion:
+      include("cn_usuarios.php"); 
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      
+      #borrar archivos de unidades si un id de unidad asignado
+      $query = "DELETE FROM cb_endoso_files WHERE iConsecutivo = '$iConsecutivo'"; 
+      if($conexion->query($query)){$transaccion_exitosa = true;}else{$transaccion_exitosa = false;}
+
+      if($transaccion_exitosa){
+        $conexion->commit();
+        $conexion->close();
+        $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The files has been deleted succesfully!</p>';
+      }else{
+        $conexion->rollback();
+        $conexion->close();
+        $msj   = "A general system error ocurred : internal error";
+        $error = "1";
+      }
+        
+      $response = array("msj"=>"$msj","error"=>"$error");   
+      echo json_encode($response);
+      
+  }    
   function endoso_actualiza_archivos(){
        //Conexion:
       include("cn_usuarios.php"); 

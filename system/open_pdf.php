@@ -32,13 +32,24 @@
         header("Pragma: public");
         header("Expires: 0");
         header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-        header("Cache-Control: public");
-        header("Content-type: $type");
-        header("Content-length: $size");
-        header("Content-Disposition: inline; filename=$name");
-        header("Content-Transfer-Encoding: binary");
-        header("Content-Description: PHP Generated Data");
-        echo $data;
+        header("Cache-Control: public");  
+        
+        if($type == "application/pdf"){
+            header("Content-type: $type");
+            header("Content-length: $size");
+            header("Content-Disposition: inline; filename=$name");
+            header("Content-Transfer-Encoding: binary");
+            header("Content-Description: PHP Generated Data");
+            echo $data;    
+        }else{
+        
+            header("Content-Description: File Transfer"); 
+            header("Content-Type: application/force-download");
+            header("Content-Disposition: inline; filename=$name");
+            echo $data; 
+        }
+        
+        
     } else {
         header("Location: inicio.php");
         exit;
