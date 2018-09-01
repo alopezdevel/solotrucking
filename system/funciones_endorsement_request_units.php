@@ -232,7 +232,6 @@
                      }
                 }
             }
-            $tipoEndoso = $data['iConsecutivoTipoEndoso'];
             $eStatus    = $data['eStatus'];  
       }
       $conexion->rollback();
@@ -243,12 +242,47 @@
                     "fields"=>"$fields",
                     "pd_information" => "$pd_information",
                     "policies"=>"$htmlTabla",
-                    "kind"=>"$tipoEndoso",
                     "status"=>"$eStatus",
                     "sComentarios" => "$comentarios"
                   );   
       echo json_encode($response);  
       
+  }
+  function get_policies(){
+      
+      include("cn_usuarios.php");
+      $company = trim($_POST['iConsecutivoCompania']);
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      $error = '0';
+      
+      $sql = "SELECT sNumeroPoliza, C.sName AS BrokerName, E.sName AS InsuranceName, sDescripcion, D.iConsecutivo AS TipoPoliza ".
+             "FROM ct_polizas A ".
+             "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
+             "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
+             "LEFT JOIN ct_aseguranzas E ON A.iConsecutivoAseguranza = E.iConsecutivo ".
+             "WHERE iConsecutivoCompania = '".$company."' ".
+             "AND  A.iDeleted = '0' AND dFechaCaducidad >= CURDATE() AND (D.iConsecutivo = '1' OR D.iConsecutivo = '3' OR D.iConsecutivo = '5' OR D.iConsecutivo = '2') ".
+             "ORDER BY sNumeroPoliza ASC";  
+      $result = $conexion->query($sql);
+      $rows = $result->num_rows;
+      
+      if($rows > 0) {   
+            while ($items = $result->fetch_assoc()) { 
+               if($items["sNumeroPoliza"] != ""){
+                     $htmlTabla .= "<tr><td style=\"border: 1px solid #dedede;\">".$items['sNumeroPoliza']."</td>".
+                                   "<td style=\"border: 1px solid #dedede;\">".$items['BrokerName']."</td>". 
+                                   "<td style=\"border: 1px solid #dedede;\">".$items['InsuranceName']."</td>". 
+                                   "<td style=\"border: 1px solid #dedede;\">".$items['sDescripcion']."</td></tr>";
+                 }else{                                                                                                                                                                                                        
+                     $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;
+                 }    
+            }                                                                                                                                                                       
+        }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}
+        $conexion->rollback();
+        $conexion->close();
+        $response = array("mensaje"=>"$mensaje","error"=>"$error","policies_information"=>"$htmlTabla");   
+        echo json_encode($response);
   }
   #FUNCIONES UNITS:
   function get_units_autocomplete(){
@@ -266,7 +300,8 @@
       if($rows > 0){
              
         while ($items = $result->fetch_assoc()) {
-           $respuesta == '' ? $respuesta .= '"'.$items["sVIN"].' | '.$items["sVIN"].' | '.utf8_encode($response["iYear"]).'"' : $respuesta .= ',"'.$items["iConsecutivo"].' | '.$items["sVIN"].'/'.utf8_encode($items["iYear"]).'"';    
+           $cadena     = '"'.$items["sVIN"].' | '.$items["sTipo"].'|'.utf8_encode($response["iYear"]).'|'.$response["iConsecutivoRadio"].'|'.$response["iModelo"].'|'.$response["iConsecutivo"].'"';
+           $respuesta == '' ? $respuesta .= $cadena : $respuesta .= ','.$cadena;    
         }                                                                                                                                                                        
       }else {$respuesta .="";}
       $conexion->rollback();

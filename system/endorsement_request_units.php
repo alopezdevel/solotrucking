@@ -131,6 +131,7 @@
                          
                     }
                 });
+                $("#sUnitTrailer").autocomplete();
             },
             fillgrid: function(){
                    $.ajax({             
@@ -177,46 +178,25 @@
                            $("#endorsements_edit_form #info_policies table tbody").empty().append(data.policies);
                            $('#endorsements_edit_form #pd_information, #frm_driver_information, #frm_unit_information').hide();
                            eval(data.fields); 
+                           $('#endorsements_edit_form #sComentarios').val(data.sComentarios);
                            if(data.pd_information != ''){$('#endorsements_edit_form #pd_information').empty().append(data.pd_information);}
                            if(data.files != ''){$('#endorsements_edit_form .data_files').empty().append(data.files);}  
-                           if(data.kind == '2'){ // Drivers
-                               $('#frm_driver_information').show();
-                           }
-                           else if(data.kind == '1'){ // Units
-                                $('#frm_unit_information').show();
-                                if($('#eAccion').val() == 'DELETE'){
-                                    $('#endorsements_edit_form .delete_field').show();
-                                    $('#endorsements_edit_form .add_field').hide();
-                                }else{  
-                                    $('#endorsements_edit_form .add_field').show();
-                                    $('#endorsements_edit_form .delete_field').hide();
-                                    //mostrar pd:
-                                    if($('#pd_information #iPDApply')){
-                                        $('#endorsements_edit_form #pd_information').show(); 
-                                    }
-                                }  
-                                
-                           }
                            
-                           if(data.status != 'A'){
-                               //Activar campos para editar estatus:
-                               if(data.status == 'S' || data.status == 'SB'){$('#eStatus').val('');}
-                               
-                               if(data.status == 'D'){
-                                  $("#eStatus option[value=A], #eStatus option[value=P]").hide(); 
-                               }else{
-                                   $("#eStatus option[value=A], #eStatus option[value=P]").show();
-                               }
-                               
-                               $('#frm_endorsement_status').show(); 
-                               fn_endorsement.valida_status();
-                               if(data.sComentarios != ""){$('#endorsements_edit_form #sComentarios').val(data.sComentarios);}
-                           }
-                           else{
-                               $('#frm_endorsement_status').hide();
-                               $('#eStatus').val('');
-                           }
+                           $('#frm_unit_information').show();
+                           if($('#eAccion').val() == 'DELETE'){
+                                $('#endorsements_edit_form .delete_field').show();
+                                $('#endorsements_edit_form .add_field').hide();
+                           }else{  
+                                $('#endorsements_edit_form .add_field').show();
+                                $('#endorsements_edit_form .delete_field').hide();
+                                //mostrar pd:
+                                if($('#pd_information #iPDApply')){
+                                    $('#endorsements_edit_form #pd_information').show(); 
+                                }
+                           }  
                            
+                           fn_endorsement.get_unidades();
+                           fn_endorsement.get_policies();
                            fn_endorsement.files.iConsecutivoEndoso = $('#endorsements_edit_form input[name=iConsecutivo]').val();
                            fn_endorsement.files.fillgrid();
                 
@@ -494,25 +474,57 @@
                }
             },
             get_unidades : function(){
-                var company = $("#frm_endorsement_information input[name=iConsecutivoCompania]").val();
-                if(company != ""){
+                
+                if($("#frm_endorsement_information #iConsecutivoCompania").val() != ""){
                     //Autocomplete de unidades:
                     $.ajax({
                         type    : "POST",
-                        url     : "funciones_endorsements_request_units.php",
-                        data    : {'accion' : 'get_units_autocomplete','iConsecutivoCompania':company},
+                        url     : "funciones_endorsement_request_units.php",
+                        data    : {'accion' : 'get_units_autocomplete','iConsecutivoCompania':$("#frm_endorsement_information #iConsecutivoCompania").val()},
                         async   : true,
                         dataType: "text",
                         success : function(data) {
                            var datos = eval(data); 
-                           $("#sUnitTrailer").autocomplete();
                            $("#sUnitTrailer").autocomplete({source:datos});
                         }
                     }); 
                 }
                 
-            }
-                
+            },
+            set_unidades : function(){
+                var data = $("#sUnitTrailer").val();
+                var pipe = data.indexOf("|");
+                if(pipe > 0){
+                    var data = data.split("|");
+                    $("#frm_unit_information #sUnitTrailer").val(data[0].trim());//VIN
+                    $("#frm_unit_information #sTipo").val(data[1].trim());//Tipo
+                    $("#frm_unit_information #iYear").val(data[2].trim());//Year
+                    $("#frm_unit_information #iConsecutivoRadio").val(data[3].trim());//Radio
+                    $("#frm_unit_information #iModelo").val(data[4].trim());//iModelo
+                    $("#frm_unit_information #iConsecutivoUnidad").val(data[5].trim());//idUnidad
+                }
+            },
+            get_policies : function(){
+              if($("#frm_endorsement_information #iConsecutivoCompania").val() != ""){  
+                  $.ajax({             
+                        type:"POST", 
+                        url:"funciones_endorsement_request_units.php", 
+                        data:{accion:"get_policies",'iConsecutivoCompania':$("#frm_endorsement_information #iConsecutivoCompania").val()},
+                        async : true,
+                        dataType : "json",
+                        success : function(data){                               
+                            if(data.error == '0'){
+                                if(data.valida_pd == '1'){
+                                   $("#frm_endorsement_information #pd_information").empty().append(data.pd_information); 
+                                   $('#frm_endorsement_information #iPDApply').val('0');
+                                }
+                                //$("#info_policies table tbody").empty().append(data.policies_information);
+                                $("#policies_endorsement").empty().append(data.checkpolicies);
+                            }
+                        }
+                  });
+              }   
+            },    
     }    
 </script> 
 <div id="layer_content" class="main-section">
@@ -610,14 +622,15 @@
                     </tr>
                     <tr>
                         <td colspan="100%">
-                        <div id="info_policies">
-                        <table class="popup-datagrid" style="margin-bottom: 10px;width: 100%;" cellpadding="0" cellspacing="0">
-                            <thead>
-                                <tr id="grid-head2"><td class="etiqueta_grid">Policy Number</td><td class="etiqueta_grid">Broker</td><td class="etiqueta_grid">Type</td></tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                        </div>
+                        <div id="policies_endorsement" class="field_item"></div>
+                            <!--<div id="info_policies">
+                            <table class="popup-datagrid" style="margin-bottom: 10px;width: 100%;" cellpadding="0" cellspacing="0">
+                                <thead>
+                                    <tr id="grid-head2"><td class="etiqueta_grid">Policy Number</td><td class="etiqueta_grid">Broker</td><td class="etiqueta_grid">Type</td></tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                            </div>-->
                         </td>
                     </tr>
                     <tr>
@@ -667,7 +680,7 @@
                         <td colspan="2">
                             <div class="field_item">
                                 <label>VIN <span style="color:#ff0000;">*</span>:</label> 
-                                <input id="sUnitTrailer" class="txt-uppercase" type="text" placeholder="Write the VIN or system id of the Unit or Trailer" style="width: 97%;">
+                                <input id="sUnitTrailer" class="txt-uppercase" type="text" placeholder="Write the VIN or system id of the Unit or Trailer" style="width: 97%;" onblur="fn_endorsement.set_unidades();">
                             </div>
                         </td>
                         <td>
@@ -675,6 +688,16 @@
                             <label>Radius <span style="color:#ff0000;">*</span>: </label>
                             <Select id="iConsecutivoRadio" style="width:99%!important;height: 25px!important;"><option value="">Select an option...</option></select>
                         </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <!-- only if the company has a PD Policy -->
+                            <div id="pd_information" class="field_item" style="display:none;">
+                                <label>PD Amount $ <span style="color:#ff0000;">*</span>:</label>
+                                <input id="iPDAmount" name="iPDAmount" type="text" class="decimals"> 
+                            </div>
+                            <!-- /only if the company has a PD Policy -->
                         </td>
                     </tr>
                 </table>
