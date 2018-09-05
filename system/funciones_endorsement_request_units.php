@@ -161,10 +161,9 @@
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                 
       $sql    = "SELECT A.iConsecutivo, iConsecutivoCompania, iConsecutivoTipoEndoso, A.eStatus, iReeferYear,iTrailerExchange, iPDAmount, ". 
-                "A.sComentarios, iPDApply, iConsecutivoUnidad, eAccion, iConsecutivoPoliza   ".  
+                "A.sComentarios, iPDApply, iConsecutivoUnidad, eAccion   ".  
                 "FROM cb_endoso A ".
                 "LEFT JOIN ct_tipo_endoso B ON A.iConsecutivoTipoEndoso = B.iConsecutivo ". 
-                "LEFT JOIN cb_endoso_estatus C ON A.iConsecutivo = C.iConsecutivoEndoso AND iConsecutivoPoliza = '$idPoliza'  ".
                 "WHERE A.iConsecutivo = '$clave'";
       $result = $conexion->query($sql);
       $items  = $result->num_rows; 
@@ -181,39 +180,26 @@
                   $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');";  
                 }else if($i == 'sComentarios'){
                   $comentarios = utf8_decode($datos[$i]);  
-                } 
-                
-                if($i == 'iConsecutivoPoliza'){
-                               
-                       $policy_query = "SELECT sNumeroPoliza, D.sDescripcion, D.iConsecutivo AS TipoPoliza, sName ".
-                                       "FROM ct_polizas A LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
-                                       "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
-                                       "WHERE iConsecutivoCompania = '".$data['iConsecutivoCompania']."' ".
-                                       "AND A.iConsecutivo = '".$data['iConsecutivoPoliza']."' AND A.iDeleted ='0'"; 
-
-                       $result_policy = $conexion->query($policy_query);
-                       $rows_policy = $result_policy->num_rows; 
-                       if($rows_policy > 0){
-                           while($policies = $result_policy->fetch_assoc()){
-                              $htmlTabla .= "<tr>".
-                                                "<td>".$policies['sNumeroPoliza']."</td>".
-                                                "<td>".$policies['sName']."</td>".
-                                                "<td>".$policies['sDescripcion']."</td>".
-                                            "</tr>";
-                               if($policies['TipoPoliza'] == '1' && $data['iPDApply'] == '1' && $data['eAccion'] == 'ADD' && $data['iConsecutivoTipoEndoso'] == '1'){
-                                     $pd_information = "<label>Apply:</label>".
-                                                       "<input id=\"iPDApply\" name=\"iPDApply\" value=\"YES\" style=\"width: 10%!important;\" readonly=\"readonly\" class=\"readonly\">".
-                                                       "<label>Amount:</label>".
-                                                       "<input id=\"iPDAmount\" name=\"iPDAmount\" value=\"".$data['iPDAmount']."\" type=\"text\" readonly=\"readonly\" class=\"readonly\" style=\"width: 75%!important;margin-left: 4px;\">";
-                               }          
-                           }
-                           
-                       }    
-                       
-                    
-                }  
+                }    
             }
             
+            //CONSULTAMOS LA TABLA DE POLIZAS LIGADA AL ENDOSO               
+            $query  = "SELECT iConsecutivoPoliza, B.iTipoPoliza ".
+                      "FROM cb_endoso_estatus AS A INNER JOIN ct_polizas AS B ON A.iConsecutivoPoliza = B.iConsecutivo AND B.iDeleted = '0' ".
+                      "WHERE iConsecutivoEndoso = '$clave'"; 
+            $result = $conexion->query($query);
+            $rows   = $result->num_rows; 
+            if($rows > 0){
+                while($policies = $result->fetch_assoc()){
+                   $policies_checkbox .= "\$('#$domroot :checkbox[value=".$policies['iConsecutivoPoliza']."]').prop('checked',true);";
+                   //SI LA POLIZA ES DE PD
+                   if($policies['iTipoPoliza'] == '1'){
+                       $policies_checkbox.= "\$('#$domroot :input[name=iPDAmount]').removeProp('readonly');"; 
+                   }            
+                }
+                       
+            }  
+                
             //SI LA UNIDAD EXISTE EN EL CATALOGO:
             if($data['iConsecutivoUnidad'] != '' && $data['iConsecutivoTipoEndoso']== '1'){
                 $sql2 = "SELECT iConsecutivo AS iConsecutivoUnidad, iConsecutivoRadio, iYear, iModelo, sVIN AS sUnitTrailer, sModelo, sTipo ".    
@@ -240,9 +226,7 @@
                     "msj"=>"$msj",
                     "error"=>"$error",
                     "fields"=>"$fields",
-                    "pd_information" => "$pd_information",
-                    "policies"=>"$htmlTabla",
-                    "status"=>"$eStatus",
+                    "policies"=>"$policies_checkbox",
                     "sComentarios" => "$comentarios"
                   );   
       echo json_encode($response);  
@@ -252,15 +236,14 @@
       
       include("cn_usuarios.php");
       $company = trim($_POST['iConsecutivoCompania']);
-      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
-      $transaccion_exitosa = true;
-      $error = '0';
+      $conexion->autocommit(FALSE);
+      $error          = '0';
+      $pd_information = "false";
       
-      $sql = "SELECT sNumeroPoliza, C.sName AS BrokerName, E.sName AS InsuranceName, sDescripcion, D.iConsecutivo AS TipoPoliza ".
+      $sql = "SELECT A.iConsecutivo, sNumeroPoliza, C.sName AS BrokerName, sDescripcion, D.iConsecutivo AS TipoPoliza ".
              "FROM ct_polizas A ".
              "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
              "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
-             "LEFT JOIN ct_aseguranzas E ON A.iConsecutivoAseguranza = E.iConsecutivo ".
              "WHERE iConsecutivoCompania = '".$company."' ".
              "AND  A.iDeleted = '0' AND dFechaCaducidad >= CURDATE() AND (D.iConsecutivo = '1' OR D.iConsecutivo = '3' OR D.iConsecutivo = '5' OR D.iConsecutivo = '2') ".
              "ORDER BY sNumeroPoliza ASC";  
@@ -269,19 +252,35 @@
       
       if($rows > 0) {   
             while ($items = $result->fetch_assoc()) { 
-               if($items["sNumeroPoliza"] != ""){
-                     $htmlTabla .= "<tr><td style=\"border: 1px solid #dedede;\">".$items['sNumeroPoliza']."</td>".
-                                   "<td style=\"border: 1px solid #dedede;\">".$items['BrokerName']."</td>". 
-                                   "<td style=\"border: 1px solid #dedede;\">".$items['InsuranceName']."</td>". 
-                                   "<td style=\"border: 1px solid #dedede;\">".$items['sDescripcion']."</td></tr>";
-                 }else{                                                                                                                                                                                                        
-                     $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;
-                 }    
+                $pdvalid = "";
+                switch($items['TipoPoliza']){
+                     case '1' : 
+                        $pd_information = 'true'; 
+                        $pdvalid = "onchange=\"if(\$(this).prop('checked')){\$('#frm_endorsement_information input[name=iPDAmount]').removeProp('readonly').removeClass('readonly');}".
+                                   "else{\$('#frm_endorsement_information input[name=iPDAmount]').prop('readonly','readonly').addClass('readonly');}\"";
+                     break;
+                }
+               
+               $htmlTabla .= "<tr>".
+                             "<td style=\"border: 1px solid #dedede;\">".
+                             "<input name=\"chk_policies_endoso\" type=\"checkbox\" value=\"".$items['iConsecutivo']."\" $pdvalid/>".
+                             "<label class=\"check-label\">".$items['sNumeroPoliza']."</label>".
+                             "</td>".
+                             "<td style=\"border: 1px solid #dedede;\">".$items['BrokerName']."</td>". 
+                             "<td style=\"border: 1px solid #dedede;\">".$items['sDescripcion']."</td>".
+                             "</tr>";
+      
+                    
             }                                                                                                                                                                       
         }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}
         $conexion->rollback();
         $conexion->close();
-        $response = array("mensaje"=>"$mensaje","error"=>"$error","policies_information"=>"$htmlTabla");   
+        $response = array(
+                "mensaje"=>"$mensaje",
+                "error"=>"$error",
+                "policies_information"=>"$htmlTabla",
+                "pd_data"=>"$pd_information",
+                );   
         echo json_encode($response);
   }
   #FUNCIONES UNITS:

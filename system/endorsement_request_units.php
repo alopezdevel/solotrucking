@@ -176,30 +176,24 @@
                         if(data.error == '0'){
                            $('#endorsements_edit_form input, #endorsements_edit_form select, #endorsements_edit_form textarea').val('');
                            $("#endorsements_edit_form #info_policies table tbody").empty().append(data.policies);
-                           $('#endorsements_edit_form #pd_information, #frm_driver_information, #frm_unit_information').hide();
                            eval(data.fields); 
+                           fn_endorsement.get_unidades();
+                           fn_endorsement.get_policies();
+                           eval(data.policies);
                            $('#endorsements_edit_form #sComentarios').val(data.sComentarios);
-                           if(data.pd_information != ''){$('#endorsements_edit_form #pd_information').empty().append(data.pd_information);}
                            if(data.files != ''){$('#endorsements_edit_form .data_files').empty().append(data.files);}  
-                           
                            $('#frm_unit_information').show();
                            if($('#eAccion').val() == 'DELETE'){
                                 $('#endorsements_edit_form .delete_field').show();
                                 $('#endorsements_edit_form .add_field').hide();
+                                $('#endorsements_edit_form .pd_information').hide(); //Forzar a que si es un delete ocultamos la info del PD
                            }else{  
                                 $('#endorsements_edit_form .add_field').show();
                                 $('#endorsements_edit_form .delete_field').hide();
-                                //mostrar pd:
-                                if($('#pd_information #iPDApply')){
-                                    $('#endorsements_edit_form #pd_information').show(); 
-                                }
                            }  
-                           
-                           fn_endorsement.get_unidades();
-                           fn_endorsement.get_policies();
+            
                            fn_endorsement.files.iConsecutivoEndoso = $('#endorsements_edit_form input[name=iConsecutivo]').val();
                            fn_endorsement.files.fillgrid();
-                
                            fn_popups.resaltar_ventana('endorsements_edit_form');
                             
                         }else{
@@ -279,13 +273,13 @@
                     if($(fn_endorsement.data_grid+" .flt_status").val() != ""){ fn_endorsement.filtro += "A.eStatus|"+$(fn_endorsement.data_grid+" .flt_status").val()+","}
                     fn_endorsement.fillgrid();
            },
-            valida_status : function(){
+            /*valida_status : function(){
                if($('#eStatus').val() == 'D'){
                   $('.comentarios_endoso').show(); 
                }else{
                   $('.comentarios_endoso').hide();
                }
-            },
+            }, */
             save_confirm : function(){
                if( $('#frm_endorsement_status #eStatus').val() != 'SB'){
                     $('#dialog_endorsement_save').dialog( 'open' );   
@@ -510,16 +504,12 @@
                         type:"POST", 
                         url:"funciones_endorsement_request_units.php", 
                         data:{accion:"get_policies",'iConsecutivoCompania':$("#frm_endorsement_information #iConsecutivoCompania").val()},
-                        async : true,
+                        async : false,
                         dataType : "json",
                         success : function(data){                               
                             if(data.error == '0'){
-                                if(data.valida_pd == '1'){
-                                   $("#frm_endorsement_information #pd_information").empty().append(data.pd_information); 
-                                   $('#frm_endorsement_information #iPDApply').val('0');
-                                }
-                                //$("#info_policies table tbody").empty().append(data.policies_information);
-                                $("#policies_endorsement").empty().append(data.checkpolicies);
+                                if(data.pd_data == 'true'){$("#endorsements_edit_form .pd_information").show();}else{$("#endorsements_edit_form .pd_information").hide();}
+                                $("#info_policies table tbody").empty().append(data.policies_information);
                             }
                         }
                   });
@@ -622,15 +612,14 @@
                     </tr>
                     <tr>
                         <td colspan="100%">
-                        <div id="policies_endorsement" class="field_item"></div>
-                            <!--<div id="info_policies">
+                        <div id="info_policies">
                             <table class="popup-datagrid" style="margin-bottom: 10px;width: 100%;" cellpadding="0" cellspacing="0">
                                 <thead>
                                     <tr id="grid-head2"><td class="etiqueta_grid">Policy Number</td><td class="etiqueta_grid">Broker</td><td class="etiqueta_grid">Type</td></tr>
                                 </thead>
                                 <tbody></tbody>
                             </table>
-                            </div>-->
+                        </div>
                         </td>
                     </tr>
                     <tr>
@@ -644,12 +633,9 @@
                             <div class="field_item"><label>Action <span style="color:#ff0000;">*</span>:</label> <input id="eAccion" name ="eAccion"  type = "text" readonly="readonly" class="readonly" style="width: 97%;"></div> 
                         </td>
                     </tr>
-                    <tr><td colspan="100%"><div id="pd_information" class="field_item" style="display:none;"></div></td></tr>
                 </table>
-            </fieldset>
-            <fieldset id="frm_unit_information" style="display:none;">
                 <legend>Unit Information</legend>
-                <table style="width:100%" cellpadding="0" cellspacing="0">
+                <table id="frm_unit_information" style="width:100%" cellpadding="0" cellspacing="0">
                     <tr>
                         <td>
                         <div class="field_item">
@@ -677,7 +663,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="2">
+                        <td>
                             <div class="field_item">
                                 <label>VIN <span style="color:#ff0000;">*</span>:</label> 
                                 <input id="sUnitTrailer" class="txt-uppercase" type="text" placeholder="Write the VIN or system id of the Unit or Trailer" style="width: 97%;" onblur="fn_endorsement.set_unidades();">
@@ -689,22 +675,19 @@
                             <Select id="iConsecutivoRadio" style="width:99%!important;height: 25px!important;"><option value="">Select an option...</option></select>
                         </div>
                         </td>
-                    </tr>
-                    <tr>
+                        <!-- only if the company has a PD Policy -->
                         <td>
-                            <!-- only if the company has a PD Policy -->
-                            <div id="pd_information" class="field_item" style="display:none;">
-                                <label>PD Amount $ <span style="color:#ff0000;">*</span>:</label>
-                                <input id="iPDAmount" name="iPDAmount" type="text" class="decimals"> 
-                            </div>
-                            <!-- /only if the company has a PD Policy -->
+                        <div class="field_item pd_information">
+                            <label>PD Amount $ <span style="color:#ff0000;">*</span>:</label>
+                            <input id="iPDAmount" name="iPDAmount" type="text" class="decimals readonly" readonly="readonly"> 
+                        </div>
                         </td>
                     </tr>
                 </table>
                 <table style="width: 100%;" cellpadding="0" cellspacing="0">
                 <tr>
                     <td colspan="2">
-                    <table id="files_datagrid" class="popup-datagrid" style="width: 100%;margin-top: 10px;" cellpadding="0" cellspacing="0">
+                    <table id="files_datagrid" class="popup-datagrid" style="width: 100%;margin-top: 10px;margin-bottom: 10px;" cellpadding="0" cellspacing="0">
                         <thead>
                             <tr id="grid-head2">
                                 <td class="etiqueta_grid">File Name</td>
@@ -740,24 +723,16 @@
                     </table>
                     </td>
                 </tr>
+                <tr>
+                    <td colspan="100%">
+                    <div class="field_item">
+                        <label>General Comments:</label> 
+                        <textarea id="sComentarios" name ="sComentarios" style="resize:none;height:50px;"></textarea>
+                    </div>
+                    </td>
+                </tr>
                 </table> 
             </fieldset>
-            <!--<fieldset id="frm_endorsement_status" style="display:none;">
-                <legend>Endorsement Status Information</legend>
-                <div class="field_item">
-                    <label>Change Endorsement Status:</label> 
-                    <select id="eStatus" name ="eStatus" onblur="fn_endorsement.valida_status();">
-                        <option value="">Select an option...</option>
-                        <option value="P">IN PROCESS</option> 
-                        <option value="A">APPROVED</option> 
-                        <option value="D">DENIED</option> 
-                    </select>
-                </div>
-                <div class="field_item comentarios_endoso" style="display:none;">
-                    <label>Please write the reason of denied:</label> 
-                    <textarea id="sComentarios" name ="sComentarios"></textarea>
-                </div>
-            </fieldset>-->
             <button type="button" class="btn-1" onclick="fn_endorsement.save_confirm();">SAVE</button>
             <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('endorsements_edit_form');" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
         </form> 
