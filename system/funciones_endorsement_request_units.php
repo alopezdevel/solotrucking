@@ -14,7 +14,7 @@
       $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
         
      //Filtros de informacion //
-     $filtroQuery = " WHERE B.eStatus != 'E' AND iConsecutivoTipoEndoso = '1' ";
+     $filtroQuery = " WHERE A.eStatus != 'E' AND A.iConsecutivoTipoEndoso = '1' ";
      $array_filtros = explode(",",$_POST["filtroInformacion"]);
      foreach($array_filtros as $key => $valor){
         if($array_filtros[$key] != ""){
@@ -34,15 +34,11 @@
      $ordenQuery = " ORDER BY ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"];
 
     //contando registros // 
-    $query_rows = "SELECT COUNT(B.iConsecutivo) AS total ".
-                  "FROM cb_endoso_estatus A ".
-                  "LEFT JOIN cb_endoso B ON A.iConsecutivoEndoso = B.iConsecutivo ".
-                  "LEFT JOIN ct_tipo_endoso C ON B.iConsecutivoTipoEndoso = C.iConsecutivo  ".
-                  "LEFT JOIN ct_companias D ON B.iConsecutivoCompania = D.iConsecutivo  ".
-                  "LEFT JOIN ct_operadores E ON B.iConsecutivoOperador = E.iConsecutivo  ".
-                  "LEFT JOIN ct_unidades F ON B.iConsecutivoUnidad = F.iConsecutivo ".
-                  "LEFT JOIN ct_polizas P ON A.iConsecutivoPoliza = P.iConsecutivo ". 
-                  "LEFT JOIN ct_brokers BR ON P.iConsecutivoBrokers = BR.iConsecutivo ".$filtroQuery;
+    $query_rows = "SELECT COUNT(A.iConsecutivo) AS total ".
+                  "FROM cb_endoso AS A ".
+                  "LEFT JOIN ct_tipo_endoso AS C ON A.iConsecutivoTipoEndoso = C.iConsecutivo ".
+                  "LEFT JOIN ct_companias   AS D ON A.iConsecutivoCompania = D.iConsecutivo ".
+                  "LEFT JOIN ct_unidades    AS F ON A.iConsecutivoUnidad = F.iConsecutivo ".$filtroQuery;
     $Result = $conexion->query($query_rows);
     $items = $Result->fetch_assoc();
     $registros = $items["total"];
@@ -57,14 +53,12 @@
       $pagina_actual == "0" ? $pagina_actual = 1 : false;
       $limite_superior = $registros_por_pagina;
       $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-      $sql = "SELECT B.iConsecutivo, D.sNombreCompania,  DATE_FORMAT(B.dFechaAplicacion,  '%m/%d/%Y %H:%i') AS dFechaIngreso, C.sDescripcion, A.eStatus, eAccion, D.iOnRedList, sVIN, sNumeroPoliza, sName AS broker, A.iConsecutivoPoliza ".
-             "FROM cb_endoso_estatus A ".
-             "LEFT JOIN cb_endoso B ON A.iConsecutivoEndoso = B.iConsecutivo ".
-             "LEFT JOIN ct_tipo_endoso C ON B.iConsecutivoTipoEndoso = C.iConsecutivo  ".
-             "LEFT JOIN ct_companias D ON B.iConsecutivoCompania = D.iConsecutivo  ".
-             "LEFT JOIN ct_unidades F ON B.iConsecutivoUnidad = F.iConsecutivo ".
-             "LEFT JOIN ct_polizas P ON A.iConsecutivoPoliza = P.iConsecutivo ".
-             "LEFT JOIN ct_brokers BR ON P.iConsecutivoBrokers = BR.iConsecutivo".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
+      $sql = "SELECT A.iConsecutivo,D.sNombreCompania,DATE_FORMAT( A.dFechaAplicacion, '%m/%d/%Y %H:%i' ) AS dFechaIngreso,C.sDescripcion,A.eStatus,eAccion,D.iOnRedList,sVIN ".
+             "FROM cb_endoso AS A ".
+             "LEFT JOIN ct_tipo_endoso AS C ON A.iConsecutivoTipoEndoso = C.iConsecutivo ".
+             "LEFT JOIN ct_companias   AS D ON A.iConsecutivoCompania = D.iConsecutivo ".
+             "LEFT JOIN ct_unidades    AS F ON A.iConsecutivoUnidad = F.iConsecutivo ".
+             $filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
       $result = $conexion->query($sql);
       $rows = $result->num_rows; 
          
@@ -127,8 +121,6 @@
                                        "<td>".strtoupper($usuario['sVIN'])."</td>". 
                                        "<td style=\"$color_action\">".$action."</td>".
                                        "<td class=\"text-center\">".$usuario['dFechaIngreso']."</td>". 
-                                       "<td id=\"".$usuario['iConsecutivoPoliza']."\">".$usuario['sNumeroPoliza']."</td>".
-                                       "<td>".$usuario['broker']."</td>".
                                        "<td class=\"text-center\">".$estado."</td>".                                                                                                                                                                                                                       
                                        "<td> $btn_confirm</td></tr>";
                  }else{                                                                                                                                                                                                        
@@ -169,12 +161,10 @@
       $items  = $result->num_rows; 
       if ($items > 0) {     
             
-            $data = $result->fetch_assoc(); //<---Endorsement Data Array.
-            #Cambiando texto de Action:
-            if($data['eAccion'] == 'A'){$data['eAccion']= 'ADD'; }else if($data['eAccion'] == 'D'){$data['eAccion']  = 'DELETE';}
-            
+            $data    = $result->fetch_assoc(); //<---Endorsement Data Array.
             $llaves  = array_keys($data);
             $datos   = $data; 
+            
             foreach($datos as $i => $b){ 
                 if($i != 'eStatus' && $i != 'sComentarios' && $i != 'iConsecutivoPoliza' && $i != 'iConsecutivoTipoEndoso'){
                   $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');";  
@@ -263,7 +253,7 @@
                
                $htmlTabla .= "<tr>".
                              "<td style=\"border: 1px solid #dedede;\">".
-                             "<input name=\"chk_policies_endoso\" type=\"checkbox\" value=\"".$items['iConsecutivo']."\" $pdvalid/>".
+                             "<input id=\"chk_policies_".$items['iConsecutivo']."\"name=\"chk_policies_endoso\" type=\"checkbox\" value=\"".$items['iConsecutivo']."\" $pdvalid/>".
                              "<label class=\"check-label\">".$items['sNumeroPoliza']."</label>".
                              "</td>".
                              "<td style=\"border: 1px solid #dedede;\">".$items['BrokerName']."</td>". 
@@ -283,6 +273,104 @@
                 );   
         echo json_encode($response);
   }
+  function save_endorsement(){
+      
+      //Conexion:
+      include("cn_usuarios.php");  
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $success   = true;
+      $error     = "0";  
+      $mensaje   = "";
+      $valoresE  = array();
+      $camposE   = array();
+      $valoresU  = array();
+      $camposU   = array();
+      $edit_mode = trim($_POST['edit_mode']); 
+      
+      //VARIABLES POST:
+      $iConsecutivo         = trim($_POST['iConsecutivo']); 
+      $eAccion              = trim($_POST['eAccion']);
+      $iPDAmount            = $_POST['iPDAmount'] > 0 ? trim($_POST['iPDAmount']) : '0';
+      $sComentarios         = $_POST['sComentarios'] != "" ? "'".utf8_decode(trim($_POST['sComentarios']))."'" : "''";
+      $iConsecutivoUnidad   = trim($_POST['iConsecutivoUnidad']);
+      $iConsecutivoCompania = trim($_POST['iConsecutivoCompania']);
+      $sTipo                = trim($_POST['sTipo']);
+      $iYear                = trim($_POST['iYear']);
+      $iModelo              = $_POST['iModelo'] != "" ? "'".trim($_POST['iModelo'])."'" : 'NULL';
+      $sVIN                 = trim($_POST['sUnitTrailer']);
+      $iConsecutivoRadio    = $_POST['iConsecutivoRadio'] != "" ? "'".trim($_POST['iConsecutivoRadio'])."'" : 'NULL';
+      $iConsecutivoCompania = trim($_POST['iConsecutivoCompania']);
+      $sIP                  = $_SERVER['REMOTE_ADDR'];
+      $sUsuario             = $_SESSION['usuario_actual'];
+      $dFecha               = date("Y-m-d H:i:s");
+      
+      //REVISAMOS DATOS DE LA UNIDAD:
+      if($iConsecutivoUnidad == ""){
+         //Verificamos si la unidad ya existe: 
+         $query  = "SELECT iConsecutivo FROM ct_unidades WHERE sVIN='$sVIN' AND iConsecutivoCompania = '$iConsecutivoCompania'";
+         $result = $conexion->query($query);
+         $items  = $result->fetch_assoc();
+         if($items['iConsecutivo']!= ""){$iConsecutivoUnidad = trim($items['iConsecutivo']);}
+      }
+      
+      if($iConsecutivoUnidad!= ""){
+          
+         $query   = "UPDATE ct_unidades SET sTipo='$sTipo',iYear='$iYear',iModelo=$iModelo,sVIN='$sVIN',iConsecutivoRadio=$iConsecutivoRadio, ".
+                    "sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha' ".
+                    "WHERE iConsecutivo ='$iConsecutivoUnidad' AND iConsecutivoCompania = '$iConsecutivoCompania'"; 
+         $success = $conexion->query($query);
+                  
+      }else{
+         $query   = "INSERT INFO ct_unidades (iConsecutivoCompania,sTipo,iYear,iModelo,sVIN,iConsecutivoRadio,sIP,sUsuarioIngreso,dFechaIngreso) ".
+                    "VALUES('$iConsecutivoCompania','$sTipo','$iYear',$iModelo,'$sVIN',$iConsecutivoRadio,'$sIP','$sUsuario','$dFecha')";
+         $success = $conexion->query($query);
+         if($success){$iConsecutivoUnidad = $conexion->insert_id;}
+      }
+
+      if(!($success)){$error = '1';$mensaje = "Error to save the unit data, please try again later.";}
+      else{
+          //GUARDAMOS EL ENDOSO
+          if($edit_mode == 'true'){
+              //UPDATE
+              $query   = "UPDATE cb_endoso SET iConsecutivoUnidad='$iConsecutivoUnidad',sComentarios=$sComentarios,iPDAmount='$iPDAmount', ".
+                         "sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha' ".
+                         "WHERE iConsecutivo='$iConsecutivo' AND iConsecutivoCompania='$iConsecutivoCompania'";
+              $mensaje = "The data was updated successfully.";
+          
+          }else if($edit_mode == 'false'){
+              //INSERT
+              $query   = "INSERT cb_endoso (iConsecutivoCompania,iConsecutivoTipoEndoso,eStatus,iPDAmount,iConsecutivoUnidad,eAccion,dFechaAplicacion,sComentarios,sIP,sUsuarioIngreso,dFechaIngreso) ".
+                         "VALUES('$iConsecutivoCompania','1','S','$iPDAmount','$iConsecutivoUnidad','$eAccion','$dFecha',$sComentarios,'$sIP','$sUsuario','$dFecha') ";
+              $mensaje = "The data was saved successfully.";
+          }
+          
+          $success = $conexion->query($query);
+          if(!($success)){$error = '1';$mensaje = "Error to save the endorsement data, please try again later.";}
+          else{
+              if($edit_mode == 'false'){$iConsecutivo = $conexion->insert_id;} 
+              //ELIMINAMOS POLIZAS GUARDADAS ANTERIORMENTE:
+              $query   = "DELETE FROM cb_endoso_estatus WHERE iConsecutivoEndoso='$iConsecutivo'";
+              $success = $conexion->query($query); 
+              if(!($success)){$error = '1';$mensaje = "Error to update the endorsement status data, please try again later.";}
+              else{
+                  foreach($_POST as $campo => $valor){
+                      if(!(strpos($campo,"chk_policies_") === false) && $valor == 1){
+                          $poliza  = str_replace("chk_policies_","",$campo);
+                          $query   = "INSERT INTO cb_endoso_estatus (iConsecutivoEndoso,iConsecutivoPoliza,eStatus,sIP,sUsuarioIngreso,dFechaIngreso) ".
+                                     "VALUES('$iConsecutivo','$poliza','S','$sIP','$sUsuario','$dFecha')";
+                          $success = $conexion->query($query);
+                          if(!($success)){$error = '1';$mensaje = "Error to save the endorsement status data, please try again later.";} 
+                      }
+                  }   
+              }
+          } 
+      }
+      
+      $success && $error == '0' ? $conexion->commit() : $conexion->rollback();
+      $conexion->close();
+      $response = array("error"=>"$error","msj"=>"$mensaje");
+      echo json_encode($response);
+  }
   #FUNCIONES UNITS:
   function get_units_autocomplete(){
       
@@ -299,7 +387,7 @@
       if($rows > 0){
              
         while ($items = $result->fetch_assoc()) {
-           $cadena     = '"'.$items["sVIN"].' | '.$items["sTipo"].'|'.utf8_encode($response["iYear"]).'|'.$response["iConsecutivoRadio"].'|'.$response["iModelo"].'|'.$response["iConsecutivo"].'"';
+           $cadena     = '"'.$items["sVIN"].' | '.$items["sTipo"].'|'.utf8_encode($items["iYear"]).'|'.$items["iConsecutivoRadio"].'|'.$items["iModelo"].'|'.$items["iConsecutivo"].'"';
            $respuesta == '' ? $respuesta .= $cadena : $respuesta .= ','.$cadena;    
         }                                                                                                                                                                        
       }else {$respuesta .="";}
