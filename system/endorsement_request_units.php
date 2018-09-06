@@ -155,7 +155,7 @@
                         $(fn_endorsement.data_grid + " tfoot #pagina_actual").val(data.pagina);
                         fn_endorsement.pagina_actual = data.pagina;
                         fn_endorsement.edit();
-                        fn_endorsement.endorsement_email_send();
+                        fn_endorsement.edit_estatus();
                     }
                 }); 
             },
@@ -207,20 +207,6 @@
                         }       
                     },"json"); 
               });  
-            },
-            endorsement_email_send : function(){
-                $(fn_endorsement.data_grid + " tbody .btn_send_email").bind("click",function(){
-                   var clave = $(this).parent().parent().find("td:eq(0)").html();
-                   var idPoliza = $(this).parent().parent().find("td:eq(5)").attr('id');
-                   msg = "<p style=\"text-align:center;\">Sending Company Endorsement data to Brokers, please wait....<br><img src=\"images/ajax-loader.gif\" alt=\"ajax-loader.gif\" style=\"margin-top:10px;\"><br></p>";
-                   $('#Wait').empty().append(msg).dialog('open');              
-                   $.post("funciones_endorsement_request_units.php",{accion:"send_email_brokers", clave: clave, idPoliza : idPoliza},
-                    function(data){
-                        $('#Wait').empty().dialog('close'); 
-                        fn_solotrucking.mensaje(data.msj);
-                        if(data.error == '0'){fn_endorsement.fillgrid();}     
-                    },"json");
-               });  
             },
             firstPage : function(){
                 if($(fn_endorsement.data_grid+" #pagina_actual").val() != "1"){
@@ -279,11 +265,6 @@
                     if($(fn_endorsement.data_grid+" .flt_status").val() != ""){ fn_endorsement.filtro += "A.eStatus|"+$(fn_endorsement.data_grid+" .flt_status").val()+","}
                     fn_endorsement.fillgrid();
            },
-            send_confirm : function(){
-               if( $('#frm_endorsement_status #eStatus').val() != 'SB'){
-                    $('#dialog_endorsement_save').dialog( 'open' );   
-               }
-            }, 
             save : function(){
                
                var valid = true;
@@ -536,7 +517,37 @@
                 }else if(action == 'A'){
                     $('#endorsements_edit_form .add_field, #endorsements_edit_form .pd_information').show();
                 }
-            },   
+            }, 
+            //PREVIEW AND SEND EMAILS:
+            send_confirm : function(){
+               if( $('#frm_endorsement_status #eStatus').val() != 'SB'){
+                    $('#dialog_endorsement_save').dialog( 'open' );   
+               }
+            }, 
+            edit_estatus : function(){
+                $(fn_endorsement.data_grid + " tbody .btn_edit_estatus").bind("click",function(){
+                   var clave    = $(this).parent().parent().find("td:eq(0)").html();
+                   $.ajax({             
+                        type:"POST", 
+                        url:"funciones_endorsement_request_units.php", 
+                        data:{accion:"get_endorsement_estatus",'iConsecutivo':clave,"domroot" : "form_estatus"},
+                        async : true,
+                        dataType : "json",
+                        success : function(data){                               
+                            if(data.error == '0'){
+                                var mensaje_default = "Please create new endorsement for the following insured.";
+                                $('#form_estatus input, #form_send_claim textarea').val(mensaje_default).removeClass('error');
+                                $('#form_estatus .company_policies tbody').empty().append(data.policies_information); 
+                                
+                                if(data.fields != ""){eval(data.fields);}else{$('#form_estatus #iConsecutivoEndoso').val(clave);}
+                                fn_popups.resaltar_ventana('form_estatus');   
+                            }
+                            else{fn_solotrucking.mensaje(data.msj);  }  
+                        }
+                  });
+                   
+               });  
+            },  
     }    
 </script> 
 <div id="layer_content" class="main-section">
@@ -790,14 +801,59 @@
         </fieldset>
     </form>   
 </div> 
+<!-- EMAILS FORMS -->
+<div id="form_estatus" class="popup-form" style="width: 80%;">
+    <div class="p-header">
+        <h2>CLAIMS</h2>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('form_estatus');"><i class="fa fa-times"></i></div>
+    </div>
+    <div class="p-container"> 
+    <div>
+        <form>
+            <div class="field_item"> 
+                <label style="margin-left:5px;">Policies in which the endorsement was applied:</label> 
+                <div class="company_policies" style="padding:5px 0px;">
+                    <table class="popup-datagrid">
+                    <thead>
+                        <tr id="grid-head2"> 
+                            <td class="etiqueta_grid">Policy Number</td>
+                            <td class="etiqueta_grid">Policy Type</td> 
+                            <td class="etiqueta_grid">Broker</td>
+                            <td class="etiqueta_grid" style="width:500px;">Email to send</td>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <fieldset>
+                <legend>INFORMATION TO SEND BY E-MAIL</legend>
+                <input id="iConsecutivoEndoso" type="hidden" value=""> 
+                <table style="width: 100%;">
+                <tr>
+                    <td colspan="100%">
+                    <div class="field_item"> 
+                        <label>Message to send: (This message will be displayed before the endorsement information.)</label> 
+                        <textarea tabindex="1" id="sMensajeEmail" maxlenght="1000" style="resize: none;" title="Max. 1000 characters."></textarea>
+                    </div>
+                    </td>                              
+                </tr>
+                </table>
+            </fieldset>  
+            <button type="button" class="btn-1" onclick="fn_endorsement.save_email();">SAVE</button>  
+            <button type="button" class="btn-1" onclick="fn_endorsement.send_email();" style="margin-right:10px;background: #87c540;">SEND E-MAIL</button>
+            <button type="button" class="btn-1" onclick="fn_endorsement.preview_email();" style="margin-right:10px;background:#5ec2d4;">PREVIEW E-MAIL</button> 
+            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_estatus');" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
+        </form> 
+    </div>
+    </div>
+</div>
 <!-- DIALOGUES -->
 <div id="dialog_endorsement_save" title="SYSTEM ALERT" style="display:none;">
     <p>We will be sending a notice to the company about the status of endorsements. Are you sure want to continue?</p> 
 </div> 
 <!-- FOOTER -->
 <?php include("footer.php"); ?> 
-
 </body>
-
 </html>
 <?php } ?>

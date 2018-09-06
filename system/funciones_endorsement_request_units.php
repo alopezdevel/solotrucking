@@ -74,7 +74,7 @@
                             $estado = 'NEW APPLICATION';
                             $class = "class = \"blue\"";
                             $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"View and Edit Endorsement Status\"><i class=\"fa fa-pencil-square-o\"></i> <span></span>".
-                                           "</div><div class=\"btn_send_email btn-icon send-email btn-left\" title=\"Send e-mail to the brokers\"><i class=\"fa fa-envelope\"></i><span></span></div>"; 
+                                           "</div><div class=\"btn_edit_estatus btn-icon send-email btn-left\" title=\"Send e-mail to the brokers\"><i class=\"fa fa-envelope\"></i><span></span></div>"; 
                          break;
                          case 'A': 
                             $estado = 'APPROVED';
@@ -369,6 +369,81 @@
       $success && $error == '0' ? $conexion->commit() : $conexion->rollback();
       $conexion->close();
       $response = array("error"=>"$error","msj"=>"$mensaje");
+      echo json_encode($response);
+  }
+  
+  #FUNCIONES EMAILS Y STATUS:
+  function get_endorsement_estatus(){
+      
+      include("cn_usuarios.php");     
+      $error       = "0";
+      $mensaje     = "";
+      $check_items = "";
+      $clave       = trim($_POST['iConsecutivo']);
+      $domroot     = trim($_POST['domroot']);
+      
+      #CONSULTAR DATOS DEL CLAIM Y COMPANIA
+      "SELECT iConsecutivoEndoso,iConsecutivoPoliza,sMensajeEmail,sEmail
+FROM cb_endoso_estatus AS A
+LEFT JOIN ct_polizas   AS B ON A.iConsecutivoPoliza =  
+WHERE iConsecutivoEndoso = '1'";
+      $sql    = "SELECT A.iConsecutivo AS iConsecutivoEndoso, A.iConsecutivoCompania,B.iConsecutivoPoliza, B.sMensajeEmail, B.sEmail ".
+                "FROM cb_endoso AS A LEFT JOIN cb_endoso_estatus AS B ON A.iConsecutivo = B.iConsecutivoEndoso ".
+                "WHERE A.iConsecutivo = '$clave'";
+      $result = $conexion->query($sql); 
+      $rows   = $result->num_rows; 
+      
+      if($rows > 0){ 
+          while ($data = $result->fetch_assoc()){
+                  
+              $llaves  = array_keys($data);
+              $datos   = $data;
+                  
+              foreach($datos as $i => $b){ 
+                    if($i == 'sMensajeEmail'){
+                        $fields .= "\$('#$domroot :input[id=".$i."]').val('".utf8_decode(utf8_encode($datos[$i]))."');\n";
+                    }
+                    else if($i == 'sEmail'){
+                       $fields .= "\$('#$domroot :input[class=idpolicy_".$data['iConsecutivoPoliza']."]').val('".$datos[$i]."');\n"; 
+                    }
+                    else if($i != "iConsecutivoPoliza" && $i != "iConsecutivoEmail" && $i != "iConsecutivoCompania"){
+                       $fields .= "\$('#$domroot :input[id=".$i."]').val('".htmlentities($datos[$i])."');\n"; 
+                    }
+              }
+              $iConsecutivoCompania = $data['iConsecutivoCompania'];
+          }
+
+          $query  = "SELECT iConsecutivoPoliza, sNumeroPoliza, iTipoPoliza, sDescripcion, sName AS InsuranceName, sEmailClaims ".
+                    "FROM       cb_claim_poliza AS A ".
+                    "INNER JOIN ct_polizas      AS B ON A.iConsecutivoPoliza = B.iConsecutivo ".
+                    "LEFT JOIN  ct_tipo_poliza  AS C ON B.iTipoPoliza = C.iConsecutivo ".
+                    "LEFT JOIN  ct_aseguranzas  AS D ON B.iConsecutivoAseguranza = D.iConsecutivo ".
+                    "WHERE A.iConsecutivoClaim = '$clave' AND B.iConsecutivoCompania = '$iConsecutivoCompania' AND B.iDeleted = '0' AND B.dFechaCaducidad >= CURDATE()";
+          $result = $conexion->query($query);
+          $rows   = $result->num_rows;   
+          
+          if($rows > 0){    
+            while ($items = $result->fetch_assoc()){
+                 
+               #table
+               if($items["sNumeroPoliza"] != ""){
+                    
+                   $tipoPoliza = get_policy_type($items['iTipoPoliza']); 
+                   $htmlTabla .= "<tr>".
+                                   "<td style=\"border: 1px solid #dedede;\">".$items['sNumeroPoliza']."</td>".
+                                   "<td style=\"border: 1px solid #dedede;\">".$items['sDescripcion']."</td>".
+                                   "<td style=\"border: 1px solid #dedede;\">".$items['InsuranceName']."</td>". 
+                                   "<td style=\"border: 1px solid #dedede;\"><input class=\"idpolicy_".$items['iConsecutivoPoliza']."\" id=\"epolicy_".$tipoPoliza."_".$items['sNumeroPoliza']."\" type=\"text\" value=\"".$items['sEmailClaims']."\" text=\"".$items['sEmailClaims']."\" style=\"width: 94%;\" title=\"If you need to write more than one email, please separate them by comma symbol (,).\"/></td>".
+                                   "</tr>";
+                                       
+               }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}    
+            }
+          }else{
+              $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";
+          }
+      } 
+
+      $response = array("checkboxes"=>"$check_items","fields"=>"$fields","error"=>"$error","policies_information"=>"$htmlTabla");   
       echo json_encode($response);
   }
   #FUNCIONES UNITS:
