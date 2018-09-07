@@ -547,6 +547,48 @@
                   });
                    
                });  
+            },
+            email : {
+                save: function(){
+                    var valid   = true;
+                    var mensaje = "";
+                    $('#form_estatus input, #form_estatus textarea').removeClass('error');
+
+                    var insurances_policy  = "";
+                    $("#form_estatus .company_policies input[type=text]").each(function(){
+                        if(!($(this).hasClass('no_apply_endoso'))){
+                           if($(this).val() != ""){
+                           var id      = $(this).prop("class").split("_");
+                           var email   = $(this).val();
+                               email   = email.toLowerCase();
+                               $(this).val(email); 
+                           insurances_policy += id[1]+"|"+$(this).val()+";";
+                           }
+                           else{$(this).addClass("error"); valid = false; mensaje = "Please write the email accounts that you will want  to send the message.";}    
+                        }
+                    });
+                    
+                    if(valid){
+                       $.ajax({             
+                            type:"POST", 
+                            url:"funciones_endorsement_request_units.php", 
+                            data:{
+                                'accion'             : "save_email",
+                                'iConsecutivoEndoso'  : $('#form_estatus #iConsecutivoEndoso').val(),
+                                'insurances_policy'  : insurances_policy,
+                                'sMensaje'           : $('#form_estatus #sMensajeEmail').val(),
+                                'domroot'            : "#form_estatus",
+                            },
+                            async : true,
+                            dataType : "json",
+                            success : function(data){                               
+                                if(data.error == '0'){$('#form_estatus #iConsecutivoEndoso').val(data.iConsecutivo);}
+                                fn_solotrucking.mensaje(data.msj); 
+                            }
+                       });             
+                    }else{fn_solotrucking.mensaje(mensaje);}
+                    
+                },
             },  
     }    
 </script> 
@@ -839,11 +881,11 @@
                     </td>                              
                 </tr>
                 </table>
-            </fieldset>  
-            <button type="button" class="btn-1" onclick="fn_endorsement.save_email();">SAVE</button>  
-            <button type="button" class="btn-1" onclick="fn_endorsement.send_email();" style="margin-right:10px;background: #87c540;">SEND E-MAIL</button>
-            <button type="button" class="btn-1" onclick="fn_endorsement.preview_email();" style="margin-right:10px;background:#5ec2d4;">PREVIEW E-MAIL</button> 
-            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_estatus');" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
+            </fieldset> 
+            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_estatus');" style="margin-right:10px;background:#e8051b;">CLOSE</button>  
+            <button type="button" class="btn-1" onclick="fn_endorsement.email.save();" style="margin-right:10px;">SAVE</button>  
+            <button type="button" class="btn-1" onclick="fn_endorsement.send_email();" style="margin-right:10px;background: #87c540;width: 140px;">SEND E-MAIL</button>
+            <button type="button" class="btn-1" onclick="fn_endorsement.preview_email();" style="margin-right:10px;background:#5ec2d4;width: 140px;">PREVIEW E-MAIL</button> 
         </form> 
     </div>
     </div>

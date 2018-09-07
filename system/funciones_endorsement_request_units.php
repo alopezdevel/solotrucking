@@ -377,24 +377,51 @@
       
       include("cn_usuarios.php");     
       $error       = "0";
-      $mensaje     = "";
-      $check_items = "";
       $clave       = trim($_POST['iConsecutivo']);
       $domroot     = trim($_POST['domroot']);
       
       #CONSULTAR DATOS DEL CLAIM Y COMPANIA
-      "SELECT iConsecutivoEndoso,iConsecutivoPoliza,sMensajeEmail,sEmail
-FROM cb_endoso_estatus AS A
-LEFT JOIN ct_polizas   AS B ON A.iConsecutivoPoliza =  
-WHERE iConsecutivoEndoso = '1'";
-      $sql    = "SELECT A.iConsecutivo AS iConsecutivoEndoso, A.iConsecutivoCompania,B.iConsecutivoPoliza, B.sMensajeEmail, B.sEmail ".
-                "FROM cb_endoso AS A LEFT JOIN cb_endoso_estatus AS B ON A.iConsecutivo = B.iConsecutivoEndoso ".
-                "WHERE A.iConsecutivo = '$clave'";
+      $sql    = "SELECT iConsecutivoEndoso,iConsecutivoPoliza,B.sNumeroPoliza,D.sDescripcion AS sTipoPoliza, sMensajeEmail, ".
+                "IF(A.sEmail != '',A.sEmail,C.sEmail) AS sEmail, C.iConsecutivo AS iConsecutivoBroker, C.sName AS sBrokerName, C.bEndosoMensual  ".
+                "FROM cb_endoso_estatus   AS A ".
+                "LEFT JOIN ct_polizas     AS B ON A.iConsecutivoPoliza  = B.iConsecutivo ".
+                "LEFT JOIN ct_tipo_poliza AS D ON B.iTipoPoliza = D.iConsecutivo ".
+                "LEFT JOIN ct_brokers     AS C ON B.iConsecutivoBrokers = C.iConsecutivo ".
+                "WHERE iConsecutivoEndoso = '$clave' ";
       $result = $conexion->query($sql); 
       $rows   = $result->num_rows; 
       
       if($rows > 0){ 
           while ($data = $result->fetch_assoc()){
+              
+              //llenar tabla:
+              if($data["sNumeroPoliza"] != ""){
+                   
+                   if($data['iConsecutivoBroker'] != ""){$broker_option = $data['sBrokerName'];$readonly="";}
+                   else{
+                       $readonly = "readonly=\"readonly\"";
+                       $broker_option = "<span style=\"color:#ef2828;\">To send the endorsement, please configure first the policy correctly.</span><br>".
+                                        "<a href=\"policies\" target=\"_blank\" style=\"color:#2a95e8;display: inline-block;padding: 1px;text-decoration: underline;\" onclick=\"fn_popups.cerrar_ventana('form_estatus');\">Click here!</a>";
+                   }
+                   
+      
+                   if($data['bEndosoMensual'] == '1'){
+                       $readonly       = "readonly=\"readonly\"";
+                       $opacity        = "style=\"opacity:0.5;\"";
+                       $noapply        = "no_apply_endoso";
+                       $broker_option .= "<br><span style=\"color:#ef2828;\">This broker only accepts an endorsement by month.</span><br>";
+                   }
+                   else{$opacity = "";$noapply="";}
+                    
+                   $tipoPoliza = get_policy_type($data['iTipoPoliza']); 
+                   $htmlTabla .= "<tr $opacity>".
+                                   "<td style=\"border: 1px solid #dedede;\">".$data['sNumeroPoliza']."</td>".
+                                   "<td style=\"border: 1px solid #dedede;\">".$data['sTipoPoliza']."</td>".
+                                   "<td style=\"border: 1px solid #dedede;\">".$broker_option."</td>". 
+                                   "<td style=\"border: 1px solid #dedede;\"><input class=\"idpolicy_".$data['iConsecutivoPoliza']." $noapply\" id=\"epolicy_".$tipoPoliza."_".$data['sNumeroPoliza']."\" type=\"text\" value=\"".$data['sEmail']."\" text=\"".$data['sEmail']."\" style=\"width: 94%;\" title=\"If you need to write more than one email, please separate them by comma symbol (,).\" $readonly/></td>".
+                                   "</tr>";
+                                       
+              }
                   
               $llaves  = array_keys($data);
               $datos   = $data;
@@ -410,42 +437,19 @@ WHERE iConsecutivoEndoso = '1'";
                        $fields .= "\$('#$domroot :input[id=".$i."]').val('".htmlentities($datos[$i])."');\n"; 
                     }
               }
-              $iConsecutivoCompania = $data['iConsecutivoCompania'];
           }
 
-          $query  = "SELECT iConsecutivoPoliza, sNumeroPoliza, iTipoPoliza, sDescripcion, sName AS InsuranceName, sEmailClaims ".
-                    "FROM       cb_claim_poliza AS A ".
-                    "INNER JOIN ct_polizas      AS B ON A.iConsecutivoPoliza = B.iConsecutivo ".
-                    "LEFT JOIN  ct_tipo_poliza  AS C ON B.iTipoPoliza = C.iConsecutivo ".
-                    "LEFT JOIN  ct_aseguranzas  AS D ON B.iConsecutivoAseguranza = D.iConsecutivo ".
-                    "WHERE A.iConsecutivoClaim = '$clave' AND B.iConsecutivoCompania = '$iConsecutivoCompania' AND B.iDeleted = '0' AND B.dFechaCaducidad >= CURDATE()";
-          $result = $conexion->query($query);
-          $rows   = $result->num_rows;   
-          
-          if($rows > 0){    
-            while ($items = $result->fetch_assoc()){
-                 
-               #table
-               if($items["sNumeroPoliza"] != ""){
-                    
-                   $tipoPoliza = get_policy_type($items['iTipoPoliza']); 
-                   $htmlTabla .= "<tr>".
-                                   "<td style=\"border: 1px solid #dedede;\">".$items['sNumeroPoliza']."</td>".
-                                   "<td style=\"border: 1px solid #dedede;\">".$items['sDescripcion']."</td>".
-                                   "<td style=\"border: 1px solid #dedede;\">".$items['InsuranceName']."</td>". 
-                                   "<td style=\"border: 1px solid #dedede;\"><input class=\"idpolicy_".$items['iConsecutivoPoliza']."\" id=\"epolicy_".$tipoPoliza."_".$items['sNumeroPoliza']."\" type=\"text\" value=\"".$items['sEmailClaims']."\" text=\"".$items['sEmailClaims']."\" style=\"width: 94%;\" title=\"If you need to write more than one email, please separate them by comma symbol (,).\"/></td>".
-                                   "</tr>";
-                                       
-               }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}    
-            }
-          }else{
-              $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";
-          }
-      } 
+      }
+      else{$error = '1';} 
 
-      $response = array("checkboxes"=>"$check_items","fields"=>"$fields","error"=>"$error","policies_information"=>"$htmlTabla");   
+      $response = array("fields"=>"$fields","error"=>"$error","policies_information"=>"$htmlTabla");   
       echo json_encode($response);
   }
+  function save_email(){
+      print_r($_POST);
+      exit;
+  }
+  
   #FUNCIONES UNITS:
   function get_units_autocomplete(){
       
