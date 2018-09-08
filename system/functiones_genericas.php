@@ -1,8 +1,8 @@
 <?php
     function mysql_fetch_all($query, $kind = 'assoc') {
         $result = array();
-        $kind = $kind === 'assoc' ? $kind : 'row';
-        eval('while ($r->fetch_'.$kind.'()){array_push($result, $r);} ');
+        $kind   = $kind === 'assoc' ? $kind : 'row';
+        eval('while ($r = $query->fetch_'.$kind.'()){array_push($result, $r);}');
         return $result;
     }
     function createCodeSerie(){

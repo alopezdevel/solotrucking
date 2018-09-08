@@ -35,7 +35,6 @@
                     }
                 }
             }); 
-            
             $('#dialog_upload_files').dialog({
                 modal: true,
                 autoOpen: false,
@@ -51,6 +50,22 @@
                     }
                 }
             });
+            $('#dialog_send_email').dialog({
+                modal: true,
+                autoOpen: false,
+                width : 420,
+                height : 200,
+                resizable : false,
+                buttons : {
+                    'YES' : function() {
+                        $(this).dialog('close');
+                        fn_endorsement.email.send();             
+                    },
+                    'NO' : function(){
+                        $(this).dialog('close');
+                    }
+                }
+            }); 
                
     }  
     function validapantalla(usuario){if(usuario == ""  || usuario == null){location.href= "login.php";}  }                   
@@ -519,11 +534,6 @@
                 }
             }, 
             //PREVIEW AND SEND EMAILS:
-            send_confirm : function(){
-               if( $('#frm_endorsement_status #eStatus').val() != 'SB'){
-                    $('#dialog_endorsement_save').dialog( 'open' );   
-               }
-            }, 
             edit_estatus : function(){
                 $(fn_endorsement.data_grid + " tbody .btn_edit_estatus").bind("click",function(){
                    var clave    = $(this).parent().parent().find("td:eq(0)").html();
@@ -535,11 +545,17 @@
                         dataType : "json",
                         success : function(data){                               
                             if(data.error == '0'){
-                                var mensaje_default = "Please create new endorsement for the following insured.";
-                                $('#form_estatus input, #form_send_claim textarea').val(mensaje_default).removeClass('error');
-                                $('#form_estatus .company_policies tbody').empty().append(data.policies_information); 
                                 
-                                if(data.fields != ""){eval(data.fields);}else{$('#form_estatus #iConsecutivoEndoso').val(clave);}
+                                $('#form_estatus input, #form_estatus textarea').val('').removeClass('error');
+                                if(data.fields != ""){
+                                    eval(data.fields);
+                                }
+                                else{$('#form_estatus #iConsecutivoEndoso').val(clave);}
+                                $('#form_estatus .company_policies tbody').empty().append(data.policies_information);
+                                if($('#form_estatus textarea').val() == ""){
+                                    var mensaje_default = "Please create new endorsement for the following insured.";
+                                    $('#form_estatus textarea').val(mensaje_default);
+                                }
                                 fn_popups.resaltar_ventana('form_estatus');   
                             }
                             else{fn_solotrucking.mensaje(data.msj);  }  
@@ -548,8 +564,11 @@
                    
                });  
             },
-            email : {
-                save: function(){
+            email : { 
+                save: function(ghost){
+                    
+                    if(!(ghost)){ghost = false;}
+                    
                     var valid   = true;
                     var mensaje = "";
                     $('#form_estatus input, #form_estatus textarea').removeClass('error');
@@ -562,7 +581,9 @@
                            var email   = $(this).val();
                                email   = email.toLowerCase();
                                $(this).val(email); 
-                           insurances_policy += id[1]+"|"+$(this).val()+";";
+                               if(insurances_policy == ""){insurances_policy = id[1]+"|"+$(this).val();}
+                               else{insurances_policy += ";"+id[1]+"|"+$(this).val();}
+                           
                            }
                            else{$(this).addClass("error"); valid = false; mensaje = "Please write the email accounts that you will want  to send the message.";}    
                         }
@@ -582,13 +603,57 @@
                             async : true,
                             dataType : "json",
                             success : function(data){                               
-                                if(data.error == '0'){$('#form_estatus #iConsecutivoEndoso').val(data.iConsecutivo);}
-                                fn_solotrucking.mensaje(data.msj); 
+                                if(!(ghost)){fn_solotrucking.mensaje(data.msj);} 
                             }
                        });             
                     }else{fn_solotrucking.mensaje(mensaje);}
                     
                 },
+                preview : function(iConsecutivo){
+                  
+                  if(!(iConsecutivo)){ 
+                      var iConsecutivo  = $('#form_estatus #iConsecutivoEndoso').val();
+                      var mode          = "preview";
+                      fn_endorsement.email.save(true);
+                  }else{var mode = "openemail";}
+                  $.ajax({             
+                    type:"POST", 
+                    url:"funciones_endorsement_request_units.php", 
+                    data:{'accion' : 'preview_email','iConsecutivoEndoso' : iConsecutivo},
+                    async : true,
+                    dataType : "json",
+                    success : function(data){                               
+                        if(data.error == '0'){
+                            $("#form_preview_email .preview_email").empty().append(data.tabla); 
+                            $("#form_preview_email input.mode").val(mode);
+                            if(mode == "preview"){$('#form_preview_email').show();}
+                            else{fn_popups.resaltar_ventana('form_preview_email');}
+                        }
+                    }
+                  });    
+                },
+                send : function(){
+                  var iConsecutivo  = $('#form_estatus #iConsecutivoEndoso').val();
+                  fn_endorsement.email.save(true);
+                  $.ajax({             
+                    type:"POST", 
+                    url:"funciones_endorsement_request_units.php", 
+                    data:{'accion' : 'send_email','iConsecutivoEndoso' : iConsecutivo},
+                    async : true,
+                    dataType : "json",
+                    success : function(data){                               
+                        if(data.error == '0'){
+                              fn_solotrucking.mensaje(data.msj);
+                              fn_endorsement.fillgrid();
+                              fn_popups.cerrar_ventana('form_estatus');
+                        }
+                        
+                    }
+                  });    
+                },
+                send_confirm : function(){
+                   $('#dialog_send_email').dialog('open');   
+                }, 
             },  
     }    
 </script> 
@@ -825,6 +890,7 @@
             <label>File Category <span style="color:#ff0000;">*</span>: </label>
             <Select name="eArchivo" style="height: 27px!important;">
                 <option value="OTHERS">Other</option>
+                <option value="TITLE">Title</option>
                 <option value="DA">Delease Agreement</option>   
                 <option value="BS">Bill of Sale</option>   
                 <option value="NOR">Non-Op Registration</option>   
@@ -883,16 +949,31 @@
                 </table>
             </fieldset> 
             <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_estatus');" style="margin-right:10px;background:#e8051b;">CLOSE</button>  
+            <button type="button" class="btn-1" onclick="fn_endorsement.email.send_confirm();" style="margin-right:10px;background: #87c540;width: 140px;">SEND E-MAIL</button>
+            <button type="button" class="btn-1" onclick="fn_endorsement.email.preview();" style="margin-right:10px;background:#5ec2d4;width: 140px;">PREVIEW E-MAIL</button> 
             <button type="button" class="btn-1" onclick="fn_endorsement.email.save();" style="margin-right:10px;">SAVE</button>  
-            <button type="button" class="btn-1" onclick="fn_endorsement.send_email();" style="margin-right:10px;background: #87c540;width: 140px;">SEND E-MAIL</button>
-            <button type="button" class="btn-1" onclick="fn_endorsement.preview_email();" style="margin-right:10px;background:#5ec2d4;width: 140px;">PREVIEW E-MAIL</button> 
         </form> 
     </div>
     </div>
 </div>
+<!-- preview email -->
+<div id="form_preview_email" class="popup-form" style="width: 80%;">
+    <div class="p-header">
+        <h2>ENDORSEMENTS / Preview E-mail to send</h2>
+        <div class="btn-close" title="Close Window" onclick="if($('#form_preview_email input.mode').val() == 'openemail'){fn_popups.cerrar_ventana('form_preview_email');}else{$('#form_preview_email').hide();}"><i class="fa fa-times"></i></div>
+    </div>
+    <div class="p-container"> 
+        <input class="mode" type="hidden" value="">
+        <div class="preview_email"></div>
+    <div>
+        <button type="button" class="btn-1" onclick="if($('#form_preview_email input.mode').val() == 'openemail'){fn_popups.cerrar_ventana('form_preview_email');}else{$('#form_preview_email').hide();}" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
+    </div>
+    </div>
+</div>
 <!-- DIALOGUES -->
-<div id="dialog_endorsement_save" title="SYSTEM ALERT" style="display:none;">
-    <p>We will be sending a notice to the company about the status of endorsements. Are you sure want to continue?</p> 
+<div id="dialog_endorsement_save" title="SYSTEM ALERT" style="display:none;"><p>We will be sending a notice to the company about the status of endorsements. Are you sure want to continue?</p></div> 
+<div id="dialog_send_email" title="SYSTEM ALERT" style="display:none;">
+    <p>Are you sure that want to send the endorsement to the broker(s)?</p>
 </div> 
 <!-- FOOTER -->
 <?php include("footer.php"); ?> 

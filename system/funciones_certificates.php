@@ -341,7 +341,7 @@
       include("cn_usuarios.php");
       $error = '0';
       //variables:
-      $clave= $_POST['clave'];
+      $clave   = $_POST['clave'];
       $company = $_SESSION['company'];
       $conexion->autocommit(FALSE);
       $transaccion_exitosa = true;
@@ -434,8 +434,9 @@
       echo json_encode($response);
   }
   function generate_pdf_certificate($folio, $ca,$cb,$cc,$cd,$ce){
-    require_once('./lib/fpdf153/fpdf.php'); 
-    require_once('./lib/merge_pdf/fpdi/fpdi.php');
+    require_once('./lib/fpdf153/fpdf.php');
+    require_once('lib/FPDI-1.6.1/fpdi.php'); 
+    //require_once('./lib/merge_pdf/fpdi/fpdi.php');
     include("cn_usuarios.php"); 
 
     $folio = preg_replace("/%u([0-9a-f]{3,4})/i","&#x\\1;",urldecode($folio)); 
@@ -453,11 +454,11 @@
     }
             
     //proceso de obtener PDF    
-    $nombre_pdf = "tmp/$nombre";    
+    $nombre_pdf     = "documentos/$nombre";    
     $pdf_multiple[] = $nombre_pdf;
-    $data = $contenido; 
-    $error = false;
-    $mensaje_error = "";
+    $data           = $contenido; 
+    $error          = false;
+    $mensaje_error  = "";
     if(file_put_contents($nombre_pdf, $data) == FALSE) {
         $mensaje_error = "No se pudo generar correctamente el archivo PDF.";
         $error = true;                   
@@ -466,26 +467,26 @@
     $pdf->AddPage();
     $pdf->setSourceFile($nombre_pdf);
     $tplIdx = $pdf->importPage(1);
-    $pdf->useTemplate($tplIdx,null,null,null,null,true);
+    
+    $pdf->useTemplate($tplIdx,null, null,211,305);
     //modificando el PDF
     $pdf->SetFillColor(255,255,255);
     $pdf->SetFont('Arial','B', 15);
     $pdf->SetTextColor(0,0,0);
     $pdf->SetFont('Arial','b',11); 
     //fecha
-    $time = time();
+    $time  = time();
     $fecha = date("m/d/Y", $time);
-    //$fecha =  '05/15/2017';
-    $pdf->SetXY(180, 12);
-    $pdf->Cell(29,5,$fecha,0,0,'C',1);
+    $pdf->SetXY(175, 14);
+    $pdf->Cell(29,4,$fecha,0,0,'C',1);
     //Holder
-    $holder =  '05/15/2017';
-    $pdf->SetXY(10, 233);
-    $pdf->Cell(90,24,'',0,0,'C',1);   
+    $pdf->SetXY(10, 255);
+    $pdf->Cell(90,21,'',0,0,'C',1);   
     $pdf->SetFont('Arial','B',9);
+    
     //Ca
     $y_holder = 0;
-    $y_holder = 235 + 4;
+    $y_holder = 258 + 4;
     $pdf->SetXY(12, $y_holder);
     $pdf->Cell(90,4,$ca,0,0,'L',1);   
     
