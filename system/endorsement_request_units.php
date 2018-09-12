@@ -171,17 +171,19 @@
                         fn_endorsement.pagina_actual = data.pagina;
                         fn_endorsement.edit();
                         fn_endorsement.edit_estatus();
+                        fn_endorsement.change_estatus();
                     }
                 }); 
             },
             add : function(){
                $('#endorsements_edit_form input, #endorsements_edit_form select, #endorsements_edit_form textarea').val('');
                $("#frm_endorsement_information .required-field").removeClass("error");
-               $("#files_datagrid").hide();//ocultar grid de archivos...
+               $("#files_datagrid, #info_policies").hide();//ocultar grid de archivos...
+               $("#info_policies tbody").empty();
                fn_popups.resaltar_ventana('endorsements_edit_form'); 
             },
             edit : function (){
-                $(fn_endorsement.data_grid + " tbody td .edit").bind("click",function(){
+                $(fn_endorsement.data_grid + " tbody td .btn_edit").bind("click",function(){
                     var clave    = $(this).parent().parent().find("td:eq(0)").html();
                     var idPoliza = $(this).parent().parent().find("td:eq(5)").attr('id')
                     var company  = $(this).parent().parent().find("td:eq(1)").text(); 
@@ -195,7 +197,7 @@
                     },
                     function(data){
                         if(data.error == '0'){
-                           $("#files_datagrid").show();//mostrar grid de archivos... 
+                           $("#files_datagrid, #info_policies").show();//mostrar grid de archivos... 
                            $('#endorsements_edit_form input, #endorsements_edit_form select, #endorsements_edit_form textarea').val('');
                            $("#frm_endorsement_information .required-field").removeClass("error");
                            $("#endorsements_edit_form #info_policies table tbody").empty().append(data.policies);   
@@ -518,6 +520,7 @@
                                     $("#endorsements_edit_form .pd_information").hide();
                                     $("#endorsements_edit_form :input[name=iPDAmount]").prop('readonly','readonly').addClass('readonly');
                                 }
+                                $("#info_policies").show();//mostrar grid de archivos... 
                                 $("#info_policies table tbody").empty().append(data.policies_information);
                             }
                         }
@@ -616,6 +619,7 @@
                       var mode          = "preview";
                       fn_endorsement.email.save(true);
                   }else{var mode = "openemail";}
+                  
                   $.ajax({             
                     type:"POST", 
                     url:"funciones_endorsement_request_units.php", 
@@ -655,6 +659,68 @@
                    $('#dialog_send_email').dialog('open');   
                 }, 
             },  
+            change_estatus : function(){
+                    $(fn_endorsement.data_grid + " tbody td .btn_change_status").bind("click",function(){
+                       var clave = $(this).parent().parent().find("td:eq(0)").html();
+                       var name  = $(this).parent().parent().find("td:eq(1)").html();
+                       $.ajax({             
+                            type:"POST", 
+                            url:"funciones_endorsement_request_units.php", 
+                            data:{
+                                "accion"             : "get_estatus_info",
+                                "iConsecutivoEndoso"  : clave,
+                                "domroot"            : "form_change_estatus",
+                            },
+                            async : true,
+                            dataType : "json",
+                            success : function(data){                               
+                                if(data.error == '0'){
+                                      $('#form_change_estatus input,#form_change_estatus textarea ').val('');
+                                      $("#form_change_estatus fieldset legend").empty().append(name); 
+                                      $("#form_change_estatus .company_policies tbody").empty().append(data.html);
+                                      eval(data.fields);                   
+                                      fn_popups.resaltar_ventana('form_change_estatus'); 
+                                }
+                                
+                            }
+                       });   
+                   });  
+            },
+            save_estatus : function(){
+                  $('#form_change_estatus input,#form_change_estatus textarea ').removeClass('error'); 
+                  var valid   = true;
+                  var msj     = "";
+                  var polizas = "";
+                  
+                  $("#form_change_estatus .company_policies tbody tr.data_policy").each(function(){
+                      var estatus  = $(this).find("select[name=eStatus]").val();
+                      var comments = $(this).find("textarea[name=sComentarios]").val();
+                      var NoEndoso = $(this).find("input[name=sNumeroEndosoBroker]").val();
+                      var idPoliza = $(this).prop("id");
+                          idPoliza = idPoliza.split("dataPolicy_");
+                          if(polizas == ""){polizas = idPoliza[1]+"|"+estatus+"|"+comments+"|"+NoEndoso;}
+                          else{polizas += idPoliza[1]+"|"+estatus+"|"+comments+"|"+NoEndoso+";";}
+                  });
+                  
+                  if(valid){
+                     $.ajax({             
+                        type:"POST", 
+                        url:"funciones_endorsement_request_units.php", 
+                        data:{
+                            'accion'             :"save_estatus_info",
+                            'iConsecutivoEndoso' : $('#form_change_estatus input[name=iConsecutivoEndoso]').val(),
+                            'sMensaje'           : $('#form_change_estatus textarea[name=sComentariosEndoso]').val(),
+                            'polizas'            : polizas,
+                        },
+                        async : true,
+                        dataType : "json",
+                        success : function(data){                               
+                            if(data.error == '0'){fn_solotrucking.mensaje(data.msj);}
+                        }
+                     });   
+                  }else{fn_solotrucking.mensaje('Please first select a status before you press save.');$('#form_change_estatus #eStatus').addClass('error');} 
+            },
+            
     }    
 </script> 
 <div id="layer_content" class="main-section">
@@ -953,6 +1019,41 @@
             <button type="button" class="btn-1" onclick="fn_endorsement.email.preview();" style="margin-right:10px;background:#5ec2d4;width: 140px;">PREVIEW E-MAIL</button> 
             <button type="button" class="btn-1" onclick="fn_endorsement.email.save();" style="margin-right:10px;">SAVE</button>  
         </form> 
+    </div>
+    </div>
+</div>
+<div id="form_change_estatus" class="popup-form" style="width:95%;">
+    <div class="p-header">
+        <h2>ENDORSEMENTS / Change the status of endorsement</h2>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('form_change_estatus');"><i class="fa fa-times"></i></div>
+    </div>
+    <div class="p-container"> 
+    <form>
+    <fieldset>
+    <legend></legend>
+    <input name="iConsecutivoEndoso" type="hidden" value=""> 
+    <table style="width: 100%;">
+    <tr class="claim_estatus">
+        <td colspan="2">
+        <div class="field_item">
+            <label style="margin-left:5px;margin-bottom:3px;">You can manage each claim status for each individual policy and add comment about it into the system:</label>
+            <table class="company_policies popup-datagrid" style="width: 100%;margin-top: 5px;">
+                <tbody></tbody>
+            </table>  
+        </div>
+        <br>
+        <div class="field_item">
+            <label>General Comments for this Endorsement: <span style="color: #5e8bd4;;">(These comments are those that will be shown to the client.)</span></label>
+            <textarea id="sComentariosEndoso" name ="sComentariosEndoso" style="resize:none;height:50px;"></textarea> 
+        </div> 
+        </td>
+    </tr>
+    </table>
+    </fieldset> 
+    </form>   
+    <div>
+        <button type="button" class="btn-1" onclick="fn_endorsement.save_estatus();">SAVE</button> 
+        <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_change_estatus');" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
     </div>
     </div>
 </div>

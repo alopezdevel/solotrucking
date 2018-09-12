@@ -71,32 +71,33 @@
                      $descripcion = ""; 
                      switch($usuario["eStatus"]){
                          case 'S': 
-                            $estado = 'NEW APPLICATION';
-                            $class = "class = \"blue\"";
+                            $estado      = 'SENT TO SOLO-TRUCKING<br><span style="font-size:11px!important;">The data can be edited by you or by the employees of just-trucking.</span>';
+                            $class       = "class = \"blue\"";
                             $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"View and Edit Endorsement Status\"><i class=\"fa fa-pencil-square-o\"></i> <span></span>".
                                            "</div><div class=\"btn_edit_estatus btn-icon send-email btn-left\" title=\"Send e-mail to the brokers\"><i class=\"fa fa-envelope\"></i><span></span></div>"; 
                          break;
                          case 'A': 
-                            $estado = 'APPROVED';
-                            $class = "class = \"green\"";
-                            $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"View and Edit Endorsement Status\"><i class=\"fa fa-pencil-square-o\"></i> <span></span>"; 
+                            $estado      = 'APPROVED<br><span style="font-size:11px!important;">Your endorsement has been approved successfully.</span>';
+                            $class       = "class = \"green\"";
+                            $btn_confirm = "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$usuario['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i><span></span>"; 
                          break;
                          case 'D': 
-                            $estado = 'DENIED';
-                            $class = "class = \"red\"";
+                            $estado      = 'CANCELED<br><span style="font-size:11px!important;">Your endorsement has been approved canceled, please see the reasons on the edit button.</span>';
+                            $class       = "class = \"red\"";
                             $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"View and Edit Endorsement Status\"><i class=\"fa fa-pencil-square-o\"></i> <span></span>";
                                         
                          break;
                          case 'SB': 
-                            $estado = 'SENT TO BROKERS';
-                            $class = "class = \"yellow\"";
-                            $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"View and Edit Endorsement Status\"><i class=\"fa fa-pencil-square-o\"></i> <span></span>"; 
+                            $estado      = 'SENT TO BROKERS<br><span style="font-size:11px!important;">Your endorsement has been sent to the brokers and is in process.</span>';
+                            $class       = "class = \"yellow\"";
+                            $btn_confirm = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of endorsement\"><i class=\"fa fa-pencil-square-o\"></i><span></span></div>"; 
+                            $btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$usuario['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i><span></span>";
                          break;
                          case 'P': 
-                            $estado = 'IN PROCESS';
-                            $class = "class = \"orange\"";
-                            $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"View and Edit Endorsement Status\"><i class=\"fa fa-pencil-square-o\"></i> <span></span>".
-                                           "</div><div class=\"btn_send_email btn-icon send-email btn-left\" title=\"Send e-mail to the brokers\"><i class=\"fa fa-envelope\"></i><span></span></div>"; 
+                            $estado      = 'IN PROCESS<br><span style="font-size:11px!important;">All data in your endorsement has been sent to the brokers and is in process.</span>';
+                            $class       = "class = \"orange\"";
+                            $btn_confirm = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of endorsement\"><i class=\"fa fa-pencil-square-o\"></i> <span></span>";
+                            $btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$usuario['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i><span></span>";
                          break;
                      } 
                      $color_action = "";
@@ -272,7 +273,7 @@
                 "pd_data"=>"$pd_information",
                 );   
         echo json_encode($response);
-  }
+  }  
   function save_endorsement(){
       
       //Conexion:
@@ -380,7 +381,7 @@
       $clave       = trim($_POST['iConsecutivo']);
       $domroot     = trim($_POST['domroot']);
       
-      #CONSULTAR DATOS DEL CLAIM Y COMPANIA
+      #CONSULTAR DATOS DEL ENDOSO Y COMPANIA
       $sql    = "SELECT iConsecutivoEndoso,iConsecutivoPoliza,B.sNumeroPoliza,D.sDescripcion AS sTipoPoliza, sMensajeEmail, ".
                 "IF(A.sEmail != '',A.sEmail,C.sEmail) AS sEmail, C.iConsecutivo AS iConsecutivoBroker, C.sName AS sBrokerName, C.bEndosoMensual  ".
                 "FROM cb_endoso_estatus   AS A ".
@@ -443,6 +444,177 @@
       else{$error = '1';} 
 
       $response = array("fields"=>"$fields","error"=>"$error","policies_information"=>"$htmlTabla");   
+      echo json_encode($response);
+  }
+  function get_estatus_info(){
+      include("cn_usuarios.php");     
+      $error       = "0";
+      $clave       = trim($_POST['iConsecutivoEndoso']);
+      $domroot     = trim($_POST['domroot']);
+      
+      #CONSULTAR DATOS DEL ENDOSO Y COMPANIA
+      $sql    = "SELECT iConsecutivoEndoso,iConsecutivoPoliza,A.eStatus, B.sNumeroPoliza,B.iTipoPoliza,D.sDescripcion AS sTipoPoliza,C.iConsecutivo AS iConsecutivoBroker,C.sName AS sBrokerName,".
+                "C.bEndosoMensual,A.sComentarios,A.sNumeroEndosoBroker,DATE_FORMAT(A.dFechaActualizacion,'%m/%d/%Y %H:%i') AS dFechaActualizacion, ".
+                "DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y %H:%i') AS dFechaAplicacion ".
+                "FROM cb_endoso_estatus AS A ".
+                "LEFT JOIN ct_polizas AS B ON A.iConsecutivoPoliza = B.iConsecutivo ".
+                "LEFT JOIN ct_tipo_poliza AS D ON B.iTipoPoliza = D.iConsecutivo ".
+                "LEFT JOIN ct_brokers AS C ON B.iConsecutivoBrokers = C.iConsecutivo ".
+                "WHERE iConsecutivoEndoso = '$clave' ";
+      $result = $conexion->query($sql); 
+      $rows   = $result->num_rows; 
+      
+      if($rows > 0){ 
+          while ($data = $result->fetch_assoc()){
+              
+              $tipoPoliza = get_policy_type($data['iTipoPoliza']);
+              $sNumPoliza = $data['sNumeroPoliza'];
+              $sDescPoliza= $data['sDescripcion']; 
+              $sBroker    = $data['sBrokerName'];
+                   
+                   
+              #HTML TABLA:
+              $htmlTabla .= "<tr class=\"grid-head2\">".
+                            "<td colspan=\"100%\" class=\"etiqueta_grid\" style=\"font-size:11px!important;padding: 5px;\">".
+                            "<table style=\"width:100%\">".
+                            "<tr>".
+                            "<td style=\"width: 33%;border:0px!important;\">"."<span style=\"$style\">Policy No: </span>$sNumPoliza"."</td>".
+                            "<td style=\"width: 33%;border:0px!important;\">"."<span style=\"$style\">Policy Type:</span> $sDescPoliza"."</td>".  
+                            "<td style=\"width: 33%;border:0px!important;\">"."<span style=\"$style\">Insurance:</span> $sBroker". "</td>".  
+                            "</tr>".
+                            "</table>".
+                            "</td>".
+                            "</tr>"; 
+              //encabezado2:
+              $encabezado2 = "style=\"color: #fff;text-align: center;\"";
+              $htmlTabla .= "<tr class=\"grid-head1\"><td $encabezado2 colspan=\"100%\">ENDORSEMENT DATA</td></tr>";
+              
+              //Revisamos si el endoso aplica para envio mensual... (no debe aparecer aqui.)
+              if($data['bEndosoMensual'] == '1'){
+                  $htmlTabla .= "<tr><td colspan=\"100%;\" style=\"text-align:center;\"><p>This endorsement has not been sent to its broker, because it's submission is by month. ".
+                                "<a href=\"endorsement_month\" target=\"_blank\" style=\"color:#2a95e8;display: inline-block;padding: 1px;text-decoration: underline;\">Click here</a></p></td></tr>";
+                  $fechaActualizacion = "";
+              }
+              else{
+                  $fechaActualizacion = "<span>Last updated: ".$data['dFechaActualizacion']."</span>";
+                  $label  = "style=\"display: block;float: left;width: 18%;margin: 2px 0px;padding:5px 0px;\"";
+                  $input  = "style=\"float: right;width: 80%;clear: none;margin: 2px!important;height: 20px!important;resize: none;\"";
+                  $textar = "style=\"float: right;width: 80%;clear: none;margin: 2px!important;height:43px!important;resize: none;\"";
+                  $select = "style=\"float: right;width: 492px!important;clear: none;margin: 2px!important;height:25px!important;\"";
+                  $div    = "style=\"clear:both;\""; 
+                       
+                  $htmlTabla .= "<tr id=\"dataPolicy_".$data['iConsecutivoPoliza']."\" class=\"data_policy\">"; 
+                  //Claim Data:
+                  $htmlTabla .= "<td style=\"vertical-align:top;width:50%;\">".
+                                "<div $div>".
+                                    "<label $label>Endorsement No:</label>".
+                                    "<input $input type=\"text\" maxlength=\"15\" name=\"sNumeroEndosoBroker\" title=\"This number is the one granted by the broker for the endorsement.\" placeholder=\"Endorsement No:\">".
+                                "</div>".
+                                "<div $div>".
+                                    "<label $label>Status:</label>".
+                                    "<select $select id=\"eStatus_".$data['iConsecutivoPoliza']."\"  name=\"eStatus\">".
+                                    "<option value=\"SB\">SENT TO BROKERS</option>".
+                                    "<option value=\"P\">IN PROCESS</option>".
+                                    "<option value=\"A\">APPROVED</option>".
+                                    "<option value=\"D\">CANCELED/DENIED</option>".
+                                    "</select>".
+                                "</div>".
+                                "</td>";
+                  $htmlTabla .= "<td style=\"vertical-align:top;width:50%;\">".
+                                "<div $div>".
+                                    "<label $label>Comments:</label><textarea $textar id=\"sComentarios_".$data['iConsecutivoPoliza']."\" name=\"sComentarios\" maxlength=\"1000\" title=\"Max. 1000 characters.\"></textarea>".
+                                "</div>".
+                                "</td>";
+                  $htmlTabla .= "</tr>";   
+              }
+                                 
+              //Salto de linea:              
+              $htmlTabla .= "<tr><td colspan=\"100%\" style=\"height: 10px;text-align:center;font-size:11px;\">$fechaActualizacion</td></tr>";                          
+
+              #FIELDS:
+              $llaves  = array_keys($data);
+              $datos   = $data;
+                      
+              foreach($datos as $i => $b){
+                    if($i == "sComentarios" || $i == "eStatus" || $i == "sNumeroEndosoBroker"){
+                      if($i == 'sComentarios'){$value = utf8_decode(utf8_encode($datos[$i]));}else{$value = $datos[$i];}
+                      $fields .= "\$('#$domroot tr#dataPolicy_".$data['iConsecutivoPoliza']." :input[name=".$i."]').val('$value');\n";  
+                    }
+              }
+          }
+          #consultar comentarios del claim:
+          $query  = "SELECT iConsecutivo AS iConsecutivoEndoso, eStatus, sComentarios FROM cb_endoso WHERE iConsecutivo = '$clave'";
+          $result = $conexion->query($query);
+          $rows   = $result->num_rows;
+          if($rows > 0){
+            $data    = $result->fetch_assoc();
+            $fields .= "\$('#$domroot :input[name=sComentariosEndoso]').val('".utf8_decode($data['sComentarios'])."');\n"; 
+            $fields .= "\$('#$domroot :input[name=iConsecutivoEndoso]').val('".$data['iConsecutivoEndoso']."');\n";  
+          }
+      }
+      else{$error = '1';} 
+
+      $response = array("fields"=>"$fields","error"=>"$error","html"=>"$htmlTabla");   
+      echo json_encode($response); 
+  }
+  function save_estatus_info(){
+      $error = '0';  
+      $msj = ""; 
+      $Comentarios    = trim($_POST['sMensaje']);
+      $iConsecutivo   = trim($_POST['iConsecutivoEndoso']);
+      $PolizasEstatus = trim($_POST['polizas']);
+      
+      //Conexion:
+      include("cn_usuarios.php");  
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      
+      //Revisar si hay que actualizar polizas:
+      $array = explode(";",$PolizasEstatus);
+      $count = count($array);
+      
+      if($count > 0){
+          
+          for($x=0;$x < $count; $x++){
+              $actualiza = "";
+              $poliza    = explode("|",$array[$x]);
+              $polizaID  = $poliza[0];
+              
+              $actualiza .= " eStatus ='".trim($poliza[1])."' "; 
+              $actualiza != "" ? $actualiza .= ", sComentarios ='".utf8_encode(trim($poliza[2]))."'"        : $actualiza = "sComentarios ='".utf8_encode(trim($poliza[2]))."'";
+              $actualiza != "" ? $actualiza .= ", sNumeroEndosoBroker ='".trim($poliza[3])."'" : $actualiza = "sNumeroEndosoBroker ='".trim($poliza[3])."'"; 
+              
+              if($actualiza != "" && $polizaID != ""){
+                 $query   = "UPDATE cb_endoso_estatus SET $actualiza WHERE iConsecutivoPoliza ='$polizaID' AND iConsecutivoEndoso = '$iConsecutivo'";
+                 $success = $conexion->query($query);
+                 if(!($success)){$transaccion_exitosa = false;$mensaje = "The data was not updated properly, please try again."; }
+              }
+              
+          }  
+      }
+      
+      if($transaccion_exitosa){
+          $actualiza = "";
+          if($Comentarios != ""){$actualiza = "sComentarios='".utf8_encode($Comentarios)."'";}
+          
+          if($actualiza != ""){
+              $query   = "UPDATE cb_endoso SET $actualiza WHERE iConsecutivo = '$iConsecutivo'"; 
+              $success = $conexion->query($query); 
+              if(!($success)){$transaccion_exitosa = false;$mensaje = "The data was not saved properly, please try again.";}
+          }
+      }
+      
+      if($transaccion_exitosa){
+            $conexion->commit();
+            $conexion->close();
+            $mensaje = "The data has been saved successfully, Thank you!";
+      }else{
+            $conexion->rollback();
+            $conexion->close(); 
+            $error = "1";
+      }
+      
+      $response = array("error"=>"$error","msj"=>"$mensaje");
       echo json_encode($response);
   }
   function save_email(){
@@ -551,7 +723,7 @@
       #ACTUALIZAMOS ENDOSO A SB..
       if($count > 0){
           #UPDATE ENDORSEMENT DETAILS:
-          $query = "UPDATE cb_endoso SET eStatus = 'SB', dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
+          $query = "UPDATE cb_endoso SET eStatus = 'SB',dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
                    "WHERE iConsecutivo = '$iConsecutivo'"; 
           $conexion->query($query);
           if($conexion->affected_rows < 1){$success = false;$mensaje="Error to update the endorsement status, please check with de system admin.";} 
@@ -561,7 +733,7 @@
           if($Emails[$x]['html']!= ""){
                   
             #UPDATE ENDORSEMENT DETAILS:
-            $query = "UPDATE cb_endoso_estatus SET eStatus = 'SB', dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
+            $query = "UPDATE cb_endoso_estatus SET eStatus = 'SB', dFechaAplicacion='".date("Y-m-d H:i:s")."', dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
                      "WHERE iConsecutivoEndoso = '$iConsecutivo' AND iConsecutivoPoliza = '".$Emails[$x]['idPoliza']."'"; 
             $conexion->query($query);
             if($conexion->affected_rows < 1){$success = false;$mensaje="Error to update the endorsement status, please check with de system admin.";}    
