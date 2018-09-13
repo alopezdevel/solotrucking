@@ -710,6 +710,7 @@
                             'accion'             :"save_estatus_info",
                             'iConsecutivoEndoso' : $('#form_change_estatus input[name=iConsecutivoEndoso]').val(),
                             'sMensaje'           : $('#form_change_estatus textarea[name=sComentariosEndoso]').val(),
+                            'eStatusEndoso'      : $('#form_change_estatus select[name=eStatusEndoso]').val(),
                             'polizas'            : polizas,
                         },
                         async : true,
@@ -978,7 +979,7 @@
 <!-- EMAILS FORMS -->
 <div id="form_estatus" class="popup-form" style="width: 80%;">
     <div class="p-header">
-        <h2>CLAIMS</h2>
+        <h2>ENDORSEMENTS</h2>
         <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('form_estatus');"><i class="fa fa-times"></i></div>
     </div>
     <div class="p-container"> 
@@ -1045,6 +1046,15 @@
         <div class="field_item">
             <label>General Comments for this Endorsement: <span style="color: #5e8bd4;;">(These comments are those that will be shown to the client.)</span></label>
             <textarea id="sComentariosEndoso" name ="sComentariosEndoso" style="resize:none;height:50px;"></textarea> 
+        </div> 
+        <div class="field_item">
+            <label>General Status for this Endorsement: <span style="color: #5e8bd4;;">(This Status is that will be shown in the data grid.)</span></label>
+            <select id="eStatusEndoso" name ="eStatusEndoso">
+                <option value="SB">Sent to Brokers - The endorsement has been sent to the brokers.</option>
+                <option value="P">In Process - The endorsement is being in process by the brokers.</option>
+                <option value="D">Canceled - The endorsement has been canceled.</option>
+                <option value="A">Approved - The endorsement has been approved.</option>
+            </select> 
         </div> 
         </td>
     </tr>

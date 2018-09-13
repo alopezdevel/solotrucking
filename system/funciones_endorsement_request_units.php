@@ -73,31 +73,31 @@
                          case 'S': 
                             $estado      = 'SENT TO SOLO-TRUCKING<br><span style="font-size:11px!important;">The data can be edited by you or by the employees of just-trucking.</span>';
                             $class       = "class = \"blue\"";
-                            $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"View and Edit Endorsement Status\"><i class=\"fa fa-pencil-square-o\"></i> <span></span>".
-                                           "</div><div class=\"btn_edit_estatus btn-icon send-email btn-left\" title=\"Send e-mail to the brokers\"><i class=\"fa fa-envelope\"></i><span></span></div>"; 
+                            $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"View and Edit Endorsement Status\"><i class=\"fa fa-pencil-square-o\"></i></div>".
+                                           "</div><div class=\"btn_edit_estatus btn-icon send-email btn-left\" title=\"Send e-mail to the brokers\"><i class=\"fa fa-envelope\"></i></div>"; 
                          break;
                          case 'A': 
                             $estado      = 'APPROVED<br><span style="font-size:11px!important;">Your endorsement has been approved successfully.</span>';
                             $class       = "class = \"green\"";
-                            $btn_confirm = "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$usuario['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i><span></span>"; 
+                            $btn_confirm = "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$usuario['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>"; 
                          break;
                          case 'D': 
-                            $estado      = 'CANCELED<br><span style="font-size:11px!important;">Your endorsement has been approved canceled, please see the reasons on the edit button.</span>';
+                            $estado      = 'CANCELED<br><span style="font-size:11px!important;">Your endorsement has been canceled, please see the reasons on the edit button.</span>';
                             $class       = "class = \"red\"";
                             $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"View and Edit Endorsement Status\"><i class=\"fa fa-pencil-square-o\"></i> <span></span>";
                                         
                          break;
                          case 'SB': 
-                            $estado      = 'SENT TO BROKERS<br><span style="font-size:11px!important;">Your endorsement has been sent to the brokers and is in process.</span>';
+                            $estado      = 'SENT TO BROKERS<br><span style="font-size:11px!important;">Your endorsement has been sent to the brokers.</span>';
                             $class       = "class = \"yellow\"";
                             $btn_confirm = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of endorsement\"><i class=\"fa fa-pencil-square-o\"></i><span></span></div>"; 
-                            $btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$usuario['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i><span></span>";
+                            $btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$usuario['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>";
                          break;
                          case 'P': 
-                            $estado      = 'IN PROCESS<br><span style="font-size:11px!important;">All data in your endorsement has been sent to the brokers and is in process.</span>';
+                            $estado      = 'IN PROCESS<br><span style="font-size:11px!important;">Your endorsement is being in process by the brokers.</span>';
                             $class       = "class = \"orange\"";
-                            $btn_confirm = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of endorsement\"><i class=\"fa fa-pencil-square-o\"></i> <span></span>";
-                            $btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$usuario['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i><span></span>";
+                            $btn_confirm = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of endorsement\"><i class=\"fa fa-pencil-square-o\"></i></div>";
+                            $btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$usuario['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>";
                          break;
                      } 
                      $color_action = "";
@@ -105,11 +105,11 @@
                      switch($usuario["eAccion"]){
                          case 'A': 
                             $action = 'ADD';
-                            $color_action = "color:#00970d"; 
+                            //$color_action = "font-weight: bold;"; 
                          break;
                          case 'D': 
                             $action = 'DELETE'; 
-                            $color_action = "color:#ab0000"; 
+                            //$color_action = "font-weight: bold;"; 
                          break;
                      }
                      
@@ -120,7 +120,7 @@
                                         <td>".$usuario['iConsecutivo']."</td>".
                                        "<td>".$redlist_icon.$usuario['sNombreCompania']."</td>".
                                        "<td>".strtoupper($usuario['sVIN'])."</td>". 
-                                       "<td style=\"$color_action\">".$action."</td>".
+                                       "<td class=\"text-center\" style=\"$color_action\">".$action."</td>".
                                        "<td class=\"text-center\">".$usuario['dFechaIngreso']."</td>". 
                                        "<td class=\"text-center\">".$estado."</td>".                                                                                                                                                                                                                       
                                        "<td> $btn_confirm</td></tr>";
@@ -469,25 +469,32 @@
               
               $tipoPoliza = get_policy_type($data['iTipoPoliza']);
               $sNumPoliza = $data['sNumeroPoliza'];
-              $sDescPoliza= $data['sDescripcion']; 
+              $sDescPoliza= $data['sTipoPoliza']; 
               $sBroker    = $data['sBrokerName'];
-                   
+              
+              //encabezado2:
+              $encabezado2 = "style=\"color: #fff;text-align: center;\"";     
                    
               #HTML TABLA:
-              $htmlTabla .= "<tr class=\"grid-head2\">".
-                            "<td colspan=\"100%\" class=\"etiqueta_grid\" style=\"font-size:11px!important;padding: 5px;\">".
+              $htmlTabla .= "<tr class=\"grid-head1\"><td $encabezado2 colspan=\"100%\">ENDORSEMENT TO $sBroker</td></tr>";
+              
+              $htmlTabla .= "<tr>".
+                            "<td colspan=\"100%\">".
                             "<table style=\"width:100%\">".
                             "<tr>".
-                            "<td style=\"width: 33%;border:0px!important;\">"."<span style=\"$style\">Policy No: </span>$sNumPoliza"."</td>".
-                            "<td style=\"width: 33%;border:0px!important;\">"."<span style=\"$style\">Policy Type:</span> $sDescPoliza"."</td>".  
-                            "<td style=\"width: 33%;border:0px!important;\">"."<span style=\"$style\">Insurance:</span> $sBroker". "</td>".  
+                            "<td style=\"width: 33%;border:0px!important;\">".
+                                "<h5>Policy Data</h5>".
+                                "<label>No:</label><span style=\"$style\">$sNumPoliza</span><br>".
+                                "<label>Type:</label><span style=\"$style\">$sDescPoliza</span><br>".
+                                "<label>Broker:</label><span style=\"$style\">$sBroker</span>".
+                            "</td>".
+                            "<td style=\"width: 33%;border:0px!important;\">"."<span style=\"$style\"></td>".  
                             "</tr>".
                             "</table>".
                             "</td>".
                             "</tr>"; 
-              //encabezado2:
-              $encabezado2 = "style=\"color: #fff;text-align: center;\"";
-              $htmlTabla .= "<tr class=\"grid-head1\"><td $encabezado2 colspan=\"100%\">ENDORSEMENT DATA</td></tr>";
+              
+              
               
               //Revisamos si el endoso aplica para envio mensual... (no debe aparecer aqui.)
               if($data['bEndosoMensual'] == '1'){
@@ -499,7 +506,7 @@
                   $fechaActualizacion = "<span>Last updated: ".$data['dFechaActualizacion']."</span>";
                   $label  = "style=\"display: block;float: left;width: 18%;margin: 2px 0px;padding:5px 0px;\"";
                   $input  = "style=\"float: right;width: 80%;clear: none;margin: 2px!important;height: 20px!important;resize: none;\"";
-                  $textar = "style=\"float: right;width: 80%;clear: none;margin: 2px!important;height:43px!important;resize: none;\"";
+                  $textar = "style=\"float: right;width: 80%;clear: none;margin: 2px!important;height:43px!important;resize: none;padding-top: 0px!important;\"";
                   $select = "style=\"float: right;width: 492px!important;clear: none;margin: 2px!important;height:25px!important;\"";
                   $div    = "style=\"clear:both;\""; 
                        
@@ -529,7 +536,7 @@
               }
                                  
               //Salto de linea:              
-              $htmlTabla .= "<tr><td colspan=\"100%\" style=\"height: 10px;text-align:center;font-size:11px;\">$fechaActualizacion</td></tr>";                          
+              $htmlTabla .= "<tr><td colspan=\"100%\" style=\"height: 10px;text-align:center;font-size:11px;\"></td></tr>";                          
 
               #FIELDS:
               $llaves  = array_keys($data);
@@ -550,6 +557,8 @@
             $data    = $result->fetch_assoc();
             $fields .= "\$('#$domroot :input[name=sComentariosEndoso]').val('".utf8_decode($data['sComentarios'])."');\n"; 
             $fields .= "\$('#$domroot :input[name=iConsecutivoEndoso]').val('".$data['iConsecutivoEndoso']."');\n";  
+            $fields .= "\$('#$domroot :input[name=eStatusEndoso]').val('".utf8_decode($data['eStatus'])."');\n"; 
+        
           }
       }
       else{$error = '1';} 
@@ -563,7 +572,7 @@
       $Comentarios    = trim($_POST['sMensaje']);
       $iConsecutivo   = trim($_POST['iConsecutivoEndoso']);
       $PolizasEstatus = trim($_POST['polizas']);
-      
+      $eStatus        = trim($_POST['eStatusEndoso']);
       //Conexion:
       include("cn_usuarios.php");  
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
@@ -594,8 +603,8 @@
       }
       
       if($transaccion_exitosa){
-          $actualiza = "";
-          if($Comentarios != ""){$actualiza = "sComentarios='".utf8_encode($Comentarios)."'";}
+          $actualiza = "eStatus='$eStatus'";
+          if($Comentarios != ""){$actualiza .= ", sComentarios='".utf8_encode($Comentarios)."'";}
           
           if($actualiza != ""){
               $query   = "UPDATE cb_endoso SET $actualiza WHERE iConsecutivo = '$iConsecutivo'"; 
@@ -1091,199 +1100,5 @@
       $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
       echo json_encode($response); 
   }
-  
-  #FUNCIONES BROKERS:
-  function send_email_brokers(){
-      include("cn_usuarios.php");
-      $error = '0';
-      //variables:
-      $id= $_POST['clave'];
-      $idPoliza= $_POST['idPoliza']; 
-      $htmlEmail = "";
-      $conexion->autocommit(FALSE);
-      $transaccion_exitosa = true;
-      #1- First Step: Consult the general information from the Endorsement with the id.                    
-      $endorsement_query = "SELECT A.iConsecutivo, A.iConsecutivoCompania, sNombreCompania,iConsecutivoTipoEndoso,iConsecutivoUnidad, eAccion, sNumeroPoliza, T.sDescripcion AS Tipo, sEmail AS Broker, iPDAmount, iPDApply, P.iTipoPoliza
-                            FROM cb_endoso A
-                            LEFT JOIN ct_companias B ON A.iConsecutivoCompania = B.iConsecutivo
-                            LEFT JOIN cb_endoso_estatus D ON A.iConseCutivo = D.iConsecutivoEndoso
-                            LEFT JOIN ct_polizas P ON D.iConsecutivoPoliza = P.iConsecutivo
-                            LEFT JOIN ct_tipo_poliza T ON P.iTipoPoliza = T.iConsecutivo
-                            LEFT JOIN ct_brokers BR ON P.iConsecutivoBrokers = BR.iConsecutivo
-                            WHERE A.iConsecutivo = '$id' AND D.iConsecutivoPoliza = '$idPoliza'";                      
-      $result = $conexion->query($endorsement_query);
-      $rows = $result->num_rows; 
-      $rows > 0 ? $endorsement = $result->fetch_assoc() : $endorsement = "";
-      if($endorsement['iConsecutivo'] != "" && $endorsement['iConsecutivoTipoEndoso'] == '1' && $endorsement['iConsecutivoUnidad'] != ''){  
-
-          
-             #Unit: Consult the unit information:
-             $unit_query = "SELECT A.iConsecutivo, iConsecutivoCompania, iYear, iModelo, sVIN, sModelo, B.sAlias, B.sDescripcion AS Make, C.sDescripcion AS Radius, sTipo ".  
-                           "FROM ct_unidades A ".
-                           "LEFT JOIN ct_unidad_modelo B ON A.iModelo = B.iConsecutivo ".
-                           "LEFT JOIN ct_unidad_radio C ON A.iConsecutivoRadio = C.iConsecutivo ".
-                           "WHERE A.iConsecutivo = '".$endorsement['iConsecutivoUnidad']."'";
-             $result_d = $conexion->query($unit_query);
-             $rows_d = $result_d->num_rows; 
-             $rows_d > 0 ? $unit = $result_d->fetch_assoc() : $unit = "";
-             
-             $subject_policy = $endorsement['sNumeroPoliza'].'-'.$endorsement['Tipo'];
-                 
-                      
-             #MAKE
-             if($unit['sAlias'] != ''){$make = $unit['sAlias'];}else if($unit['Make'] != ''){$make = $unit['Make']; }
-                              
-             #action to define the subject an body email: 
-             if($endorsement["eAccion"] == 'A'){
-                    $action = 'Please add to my policy the following '.strtolower($unit['sTipo']).'.';
-                    $subject = "Endorsement application - please add the following ".strtolower($unit['sTipo'])." from policy number: ".$endorsement['sNombreCompania'].", ".$subject_policy;
-                    
-                    #PDAmount
-                    $endorsement['iTipoPoliza'] == '1' && $endorsement["iPDApply"] == '1' && $endorsement["iPDAmount"] != '' ? $PDAmount = number_format($endorsement["iPDAmount"]) : $PDAmount = '';
-                    
-                    #RADIUS:
-                    $radius = explode('(',$unit['Radius']);
-                    
-                    $bodyData = "<p style=\"color:#000;margin:5px auto; text-align:left;\">".$unit['iYear']."&nbsp;".$make."&nbsp;".$unit['sVIN']."&nbsp;".$radius[0]."&nbsp;11-22&nbsp;TONS&nbsp;".$PDAmount."</p><br><br>";
-                  
-             }else if($endorsement["eAccion"] == 'D'){
-                   $action = 'Please delete of my policy the following '.strtolower($unit['sTipo']).'.';                                                                   
-                   $subject = "Endorsement application - please delete the following ".strtolower($unit['sTipo'])." from policy number: ".$endorsement['sNombreCompania'].", ".$subject_policy;
-                   $bodyData = "<p style=\"color:#000;margin:5px auto; text-align:left;\">".$unit['iYear']."&nbsp;".$make."&nbsp;".$unit['sVIN']."</p><br><br>";
-             } 
-                    #Building Email Body:                                   
-                    require_once("./lib/phpmailer_master/class.phpmailer.php");
-                    require_once("./lib/phpmailer_master/class.smtp.php");
-                    
-                    //header
-                    $htmlEmail .= "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"\"http://www.w3.org/TR/html4/strict.dtd\"><html>".
-                                    "<head><meta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\">".
-                                    "<title>Endorsement from Solo-Trucking Insurance</title></head>"; 
-                     
-                     //Body - Armar Body dependiendo el tipo de poliza:
-                    $htmlEmail .= "<body>".
-                                  "<table style=\"font-size:12px;border:1px solid #6191df;border-radius:3px;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">".
-                                  "<tr><td>".
-                                  "<h2 style=\"color:#313131;text-transform: uppercase; text-align:center;\">Endorsement application from Solo-Trucking Insurance</h2>".
-                                  "</td></tr>".
-                                  "<tr><td>".
-                                  "<p style=\"color:#000;margin:5px auto; text-align:left;\">$action</p><br><br>".
-                                  "</td></tr>".
-                                  "<tr><td>".$bodyData."</td></tr>".
-                                  "<tr>".
-                                  "<tr><td><p style=\"color:#010101;margin:5px auto 10px; text-align:left;font-size:11px;\">Please reply this email to the account:<a href=\"mailto:customerservice@solo-trucking.com\"> customerservice@solo-trucking.com</a></p></td></tr>". 
-                                  "<td><p style=\"color:#858585;margin:5px auto; text-align:left;font-size:10px;\">e-mail sent from Solo-trucking Insurance System.</p></td>".
-                                  "</tr>".
-                                  "</table>".
-                                  "</body>";   
-                        
-                     //footer              
-                     $htmlEmail .= "</html>"; 
-                    
-                     #TERMINA CUERPO DEL MENSAJE
-                     $mail = new PHPMailer();   
-                     $mail->IsSMTP(); // telling the class to use SMTP
-                     $mail->Host       = "mail.solo-trucking.com"; // SMTP server
-                     //$mail->SMTPDebug  = 2; // enables SMTP debug information (for testing) 1 = errors and messages 2 = messages only
-                     $mail->SMTPAuth   = true;                  // enable SMTP authentication
-                     $mail->SMTPSecure = "TLS";                 // sets the prefix to the servier
-                     $mail->Host       = "smtp.gmail.com";      // sets GMAIL as the SMTP server
-                     $mail->Port       = 587;                   // set the SMTP port for the GMAIL server
-                     $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
-                     $mail->Password   = "SL09100242"; 
-                     $mail->SetFrom('systemsupport@solo-trucking.com', 'Solo-Trucking Insurance');
-                     $mail->AddReplyTo('customerservice@solo-trucking.com','Customer service Solo-Trucking');
-                     $mail->Subject    = $subject;
-                     $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
-                     $mail->MsgHTML($htmlEmail);
-                     $mail->IsHTML(true); 
-                     
-                     //Receptores:
-                     $direcciones         = explode(",",trim($endorsement['Broker']));
-                     $nombre_destinatario = trim($endorsement['NameBroker']);
-                     foreach($direcciones as $direccion){
-                        $mail->AddAddress(trim($direccion),$nombre_destinatario);
-                     }
-                     
-                     //Revisar si se necesitan enviar archivos adjuntos:
-                     include("./lib/fpdf153/fpdf.php"); // libreria fpdf 
-                     
-                     //Consult the driver files:
-                     $driver_files_query = "SELECT iConsecutivo, sNombreArchivo, eArchivo, hContenidoDocumentoDigitalizado, sTipoArchivo, iTamanioArchivo ". 
-                                           "FROM cb_unidad_files ". 
-                                           "WHERE  iConsecutivoUnidad = '".$endorsement['iConsecutivoUnidad']."'";   
-                     $result_files = $conexion->query($driver_files_query);
-                     $rows_files = $result_files->num_rows; 
-                     if($rows_files > 0){
-                            while ($files = $result_files->fetch_assoc()){
-                               #Here will constructed the temporary files: 
-                               if($files['sNombreArchivo'] != ""){
-                               
-                                 if($endorsement["eAccion"] == 'A' && $files['eArchivo'] == 'TITLE'){ #<--- Si es un ADD verificar que el arhcivo que enviemos sea TITLE
-                                    $file_tmp = fopen('tmp/'.$files["sNombreArchivo"],"w") or die("Error when creating the file. Please check."); 
-                                    fwrite($file_tmp,$files["hContenidoDocumentoDigitalizado"]); 
-                                    fclose($file_tmp);     
-                                    $archivo = "tmp/".$files["sNombreArchivo"];  
-                                    $mail->AddAttachment($archivo);
-                                    $delete_files .= "unlink(\"tmp/\".".$files["sNombreArchivo"].");";  
-                                 }else if($endorsement["eAccion"] == 'D' && ($files['eArchivo'] == 'DA' || $files['eArchivo'] == 'BS' || $files['eArchivo'] == 'NOR' || $files['eArchivo'] == 'PTL')){
-                                    $file_tmp = fopen('tmp/'.$files["sNombreArchivo"],"w") or die("Error when creating the file. Please check."); 
-                                    fwrite($file_tmp,$files["hContenidoDocumentoDigitalizado"]); 
-                                    fclose($file_tmp);     
-                                    $archivo = "tmp/".$files["sNombreArchivo"];  
-                                    $mail->AddAttachment($archivo);
-                                    $delete_files .= "unlink(\"tmp/\".".$files["sNombreArchivo"].");"; 
-                                 }
-                               }
-                               
-                            }
-                     } 
-          
-                    $mail_error = false;
-                    if(!$mail->Send()){$mail_error = true; $mail->ClearAddresses();}
-                    if(!$mail_error){
-                        //$mensaje = "Mail confirmation to the user $usuario was successfully sent.";  
-                    }else{
-                        $mensaje = "Error: The e-mail cannot be sent.";
-                        $error = "1";            
-                    }
-                    $mail->ClearAttachments();
-                    #deleting files attachment:
-                    eval($delete_files);
-                 
-                 #VERIFICAR SI SE ENVIARON LOS CORREOS CORRECTAMENTE:
-                 if($error == '0'){
-                    #UPDATE ENDORSEMENT DETAILS:
-                    $sql_endoso = "UPDATE cb_endoso_estatus SET eStatus = 'SB', dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
-                                  "WHERE iConsecutivoEndoso = '$id' AND iConsecutivoPoliza = '$idPoliza'"; 
-                    $conexion->query($sql_endoso);
-                    if($conexion->query($sql_endoso)){
-                            $msj = "The Endorsement was sent successfully, please check your email (customerservice@solo-trucking.com) waiting for their response."; 
-                    }else{
-                          $transaccion_exitosa = false;
-                            $msj = "The data of endorsement was not updated properly, please try again.";  
-                    }  
-  
-                 }
-     
-            
-      }else{
-          $error = '1';
-          $msj = "The endorsement data was not found, please try again.";
-      }
-      
-      if($transaccion_exitosa){
-            $conexion->commit();
-            $conexion->close();
-      }else{
-            $conexion->rollback();
-            $conexion->close();
-            $error = "1";
-      }
-      $response = array("error"=>"$error","msj"=>"$msj");
-      echo json_encode($response);
-            
-  } 
-
   
 ?>
