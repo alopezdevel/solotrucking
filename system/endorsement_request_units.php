@@ -483,8 +483,10 @@
                         async   : true,
                         dataType: "text",
                         success : function(data) {
+                           $("#frm_unit_information input, #frm_unit_information select").val(''); 
                            var datos = eval(data); 
-                           $("#sUnitTrailer").autocomplete({source:datos});
+                           if($("#frm_unit_information #sUnitTrailer").autocomplete( "option", "source" ) != ""){$("#frm_unit_information #sUnitTrailer").autocomplete( "destroy" );}
+                           $("#frm_unit_information #sUnitTrailer").autocomplete({source:datos});
                         }
                     }); 
                 }
@@ -727,8 +729,8 @@
 <div id="layer_content" class="main-section">
     <div id="ct_endorsement" class="container">
         <div class="page-title">
-            <h1>REQUESTS</h1>
-            <h2>ENDORSEMENTS / UNIT AND TRAILERS </h2>
+            <h1>ENDORSEMENTS / ENDOSOS</h1>
+            <h2>VEHICLES / VEHíCULOS </h2>
         </div>
         <table id="data_grid_endorsement" class="data_grid">
         <thead>
@@ -809,7 +811,9 @@
                 <table style="width:100%" cellpadding="0" cellspacing="0">
                     <tr>
                     <td colspan="100%">
-                        <p class="mensaje_valido"><span style="color:#ff0000;font-size:1em;">&nbsp;<b>*</b>Please check before sending to brokers, that all data in this endorsement are correct.</span></p>
+                        <p class="mensaje_valido">
+                        &nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.<br>
+                        <span style="color:#ff0000;font-size:1em;"> &nbsp;<b>Note: </b>Please check before sending to brokers, that all data in this endorsement are correct.</span></p>
                         <input id="iConsecutivo" name="iConsecutivo" type="hidden" value=""> 
                     </td>
                     </tr>
