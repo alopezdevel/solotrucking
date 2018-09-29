@@ -506,8 +506,8 @@ table.popup-datagrid > tbody > tr:last-child > td{border-bottom:1px solid #c6c6c
 }
 .popup-datagrid .btn-icon{width:15px!important;}
 .popup-datagrid .btn-icon i{font-size: 15px!important;}
-input.fecha{width: 96%;margin-right: 5px!important;}
-input.fecha.error{width: 95%!important;}
+input.fecha{max-width: 96%;margin-right: 5px!important;}
+/*input.fecha.error{width: 95%!important;}*/
 .popup-datagrid tfoot input{
    background: transparent!important;
    border: 0 !important; 

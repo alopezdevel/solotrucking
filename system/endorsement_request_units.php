@@ -185,14 +185,12 @@
             edit : function (){
                 $(fn_endorsement.data_grid + " tbody td .btn_edit").bind("click",function(){
                     var clave    = $(this).parent().parent().find("td:eq(0)").html();
-                    var idPoliza = $(this).parent().parent().find("td:eq(5)").attr('id')
                     var company  = $(this).parent().parent().find("td:eq(1)").text(); 
                     $('#endorsements_edit_form .p-header h2').empty().text('Endorsement request from ' + company + ': E#' + clave);
                     $.post("funciones_endorsement_request_units.php",
                     {
                         accion:"get_endorsement", 
                         clave: clave,
-                        idPoliza : idPoliza,  
                         domroot : "endorsements_edit_form"
                     },
                     function(data){
@@ -206,7 +204,7 @@
                            fn_endorsement.get_policies();
                            eval(data.policies);
                            $('#endorsements_edit_form #sComentarios').val(data.sComentarios);
-                           if(data.files != ''){$('#endorsements_edit_form .data_files').empty().append(data.files);}  
+                           //if(data.files != ''){$('#endorsements_edit_form .data_files').empty().append(data.files);}  
                            $('#frm_unit_information').show();
                            
                            fn_endorsement.valid_action();
@@ -468,6 +466,7 @@
                }
             },
             get_company_data : function(){
+              $("#frm_unit_information input, #frm_unit_information select").val(''); 
               fn_endorsement.get_unidades();
               fn_endorsement.get_policies(); 
               fn_endorsement.valid_action(); 
@@ -483,7 +482,6 @@
                         async   : true,
                         dataType: "text",
                         success : function(data) {
-                           $("#frm_unit_information input, #frm_unit_information select").val(''); 
                            var datos = eval(data); 
                            if($("#frm_unit_information #sUnitTrailer").autocomplete( "option", "source" ) != ""){$("#frm_unit_information #sUnitTrailer").autocomplete( "destroy" );}
                            $("#frm_unit_information #sUnitTrailer").autocomplete({source:datos});
@@ -694,14 +692,15 @@
                   var msj     = "";
                   var polizas = "";
                   
-                  $("#form_change_estatus .company_policies tbody tr.data_policy").each(function(){
+                  $("#form_change_estatus .company_policies tbody .data_policy").each(function(){
                       var estatus  = $(this).find("select[name=eStatus]").val();
                       var comments = $(this).find("textarea[name=sComentarios]").val();
                       var NoEndoso = $(this).find("input[name=sNumeroEndosoBroker]").val();
                       var idPoliza = $(this).prop("id");
+                      
                           idPoliza = idPoliza.split("dataPolicy_");
                           if(polizas == ""){polizas = idPoliza[1]+"|"+estatus+"|"+comments+"|"+NoEndoso;}
-                          else{polizas += idPoliza[1]+"|"+estatus+"|"+comments+"|"+NoEndoso+";";}
+                          else{polizas += ";"+idPoliza[1]+"|"+estatus+"|"+comments+"|"+NoEndoso;}
                   });
                   
                   if(valid){
@@ -800,7 +799,7 @@
 <div id="endorsements_edit_form" class="popup-form">
     <div class="p-header">
         <h2>ENDORSEMENTS</h2>
-        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('endorsements_edit_form');"><i class="fa fa-times"></i></div>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('endorsements_edit_form');fn_endorsement.filtraInformacion();"><i class="fa fa-times"></i></div>
     </div>
     <div class="p-container">
     <div>
@@ -948,7 +947,7 @@
                 </tr>
             </table> 
             <button type="button" class="btn-1" onclick="fn_endorsement.save();">SAVE</button>
-            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('endorsements_edit_form');" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
+            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('endorsements_edit_form');fn_endorsement.filtraInformacion();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
         </form> 
     </div>
     </div>
@@ -969,7 +968,7 @@
             </select> 
         </div>
         <div class="field_item"> 
-            <label class="required-field">Archivo para subir:</label>
+            <label class="required-field">File to upload:</label>
             <div class="file-container">
                 <!-- MAX_FILE_SIZE debe preceder al campo de entrada del fichero -->
                 <input type="hidden"   name="MAX_FILE_SIZE" value="" />
@@ -1030,7 +1029,7 @@
 <div id="form_change_estatus" class="popup-form" style="width:95%;">
     <div class="p-header">
         <h2>ENDORSEMENTS / Change the status of endorsement</h2>
-        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('form_change_estatus');"><i class="fa fa-times"></i></div>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('form_change_estatus');fn_endorsement.filtraInformacion();"><i class="fa fa-times"></i></div>
     </div>
     <div class="p-container"> 
     <form>
@@ -1041,7 +1040,7 @@
     <tr class="claim_estatus">
         <td colspan="2">
         <div class="field_item">
-            <label style="margin-left:5px;margin-bottom:3px;">You can manage each claim status for each individual policy and add comment about it into the system:</label>
+            <label style="margin-left:5px;margin-bottom:3px;">You can manage each endorsement status for each individual policy and add comment about it into the system:</label>
             <table class="company_policies popup-datagrid" style="width: 100%;margin-top: 5px;">
                 <tbody></tbody>
             </table>  
@@ -1067,7 +1066,7 @@
     </form>   
     <div>
         <button type="button" class="btn-1" onclick="fn_endorsement.save_estatus();">SAVE</button> 
-        <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_change_estatus');" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
+        <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_change_estatus');fn_endorsement.filtraInformacion();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
     </div>
     </div>
 </div>

@@ -83,11 +83,11 @@
                   <li><a href="policies">POLICIES</a></li>
                   <li class="submenu"><a href="#">Endorsements</a>
                    <ul>
-                        <li><a href="endorsements">New Endorsement</a></li>
-                        <li><a href="endorsement_request">Applications for Drivers</a></li>
-                        <li><a href="endorsement_request_units">Applications for Units</a></li> 
+                        <li><a href="endorsement_request">New for Drivers</a></li>
+                        <li><a href="endorsement_request_units">New for Units</a></li> 
                         <li><a href="endorsement_files">Upload files to endorsements</a></li> 
-                        <li><a href="brokers">Configure e-mails for Brokers</a></li> 
+                        <li><a href="brokers">Configure e-mails for Brokers</a></li>
+                        <li style="display: none;"><a href="endorsements">New Endorsement like a company</a></li> 
                     </ul>
                 </li>
                 <li class="submenu"><a href="#">CLAIMS</a>
@@ -98,7 +98,7 @@
                     </ul>
                 </li>  
                 <li class="submenu"><a href="#">QUOTES</a>
-                   <ul>
+                   <ul style="width: 100px;">
                         <li><a href="quote_formats">Formats</a></li>  
                     </ul>
                 </li>

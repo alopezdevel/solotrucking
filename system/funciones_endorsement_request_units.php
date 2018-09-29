@@ -65,16 +65,18 @@
         if ($rows > 0) {    
             while ($usuario = $result->fetch_assoc()) { 
                if($usuario["iConsecutivo"] != ""){
+                   
                      $btn_confirm = "";
-                     $estado = "";
-                     $class = "";
+                     $estado      = "";
+                     $class       = "";
                      $descripcion = ""; 
+                     
                      switch($usuario["eStatus"]){
                          case 'S': 
                             $estado      = 'SENT TO SOLO-TRUCKING<br><span style="font-size:11px!important;">The data can be edited by you or by the employees of just-trucking.</span>';
                             $class       = "class = \"blue\"";
                             $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"View and Edit Endorsement Status\"><i class=\"fa fa-pencil-square-o\"></i></div>".
-                                           "</div><div class=\"btn_edit_estatus btn-icon send-email btn-left\" title=\"Send e-mail to the brokers\"><i class=\"fa fa-envelope\"></i></div>"; 
+                                           "<div class=\"btn_edit_estatus btn-icon send-email btn-left\" title=\"Send e-mail to the brokers\"><i class=\"fa fa-envelope\"></i></div>"; 
                          break;
                          case 'A': 
                             $estado      = 'APPROVED<br><span style="font-size:11px!important;">Your endorsement has been approved successfully.</span>';
@@ -84,13 +86,14 @@
                          case 'D': 
                             $estado      = 'CANCELED<br><span style="font-size:11px!important;">Your endorsement has been canceled, please see the reasons on the edit button.</span>';
                             $class       = "class = \"red\"";
-                            $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"View and Edit Endorsement Status\"><i class=\"fa fa-pencil-square-o\"></i> <span></span>";
+                            $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"View and Edit Endorsement Status\"><i class=\"fa fa-pencil-square-o\"></i></div>".
+                                           "<div class=\"btn_edit_estatus btn-icon send-email btn-left\" title=\"Send e-mail to the brokers\"><i class=\"fa fa-envelope\"></i></div>";
                                         
                          break;
                          case 'SB': 
                             $estado      = 'SENT TO BROKERS<br><span style="font-size:11px!important;">Your endorsement has been sent to the brokers.</span>';
                             $class       = "class = \"yellow\"";
-                            $btn_confirm = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of endorsement\"><i class=\"fa fa-pencil-square-o\"></i><span></span></div>"; 
+                            $btn_confirm = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of endorsement\"><i class=\"fa fa-pencil-square-o\"></i></div>"; 
                             $btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$usuario['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>";
                          break;
                          case 'P': 
@@ -101,7 +104,7 @@
                          break;
                      } 
                      $color_action = "";
-                     $action = "";
+                     $action       = "";
                      switch($usuario["eAccion"]){
                          case 'A': 
                             $action = 'ADD';
@@ -473,33 +476,16 @@
               $sBroker    = $data['sBrokerName'];
               
               //encabezado2:
-              $encabezado2 = "style=\"color: #fff;text-align: center;\"";     
+              $encabezado2 = "style=\"color: #fff;text-align: center;font-weight:bold;text-transform:uppercase;\"";     
                    
               #HTML TABLA:
               $htmlTabla .= "<tr class=\"grid-head1\"><td $encabezado2 colspan=\"100%\">ENDORSEMENT TO $sBroker</td></tr>";
               
-              $htmlTabla .= "<tr>".
-                            "<td colspan=\"100%\">".
-                            "<table style=\"width:100%\">".
-                            "<tr>".
-                            "<td style=\"width: 33%;border:0px!important;\">".
-                                "<h5>Policy Data</h5>".
-                                "<label>No:</label><span style=\"$style\">$sNumPoliza</span><br>".
-                                "<label>Type:</label><span style=\"$style\">$sDescPoliza</span><br>".
-                                "<label>Broker:</label><span style=\"$style\">$sBroker</span>".
-                            "</td>".
-                            "<td style=\"width: 33%;border:0px!important;\">"."<span style=\"$style\"></td>".  
-                            "</tr>".
-                            "</table>".
-                            "</td>".
-                            "</tr>"; 
-              
-              
-              
               //Revisamos si el endoso aplica para envio mensual... (no debe aparecer aqui.)
+              $endosoFields = "";
               if($data['bEndosoMensual'] == '1'){
-                  $htmlTabla .= "<tr><td colspan=\"100%;\" style=\"text-align:center;\"><p>This endorsement has not been sent to its broker, because it's submission is by month. ".
-                                "<a href=\"endorsement_month\" target=\"_blank\" style=\"color:#2a95e8;display: inline-block;padding: 1px;text-decoration: underline;\">Click here</a></p></td></tr>";
+                  $endosoFields = "<td style=\"width: 50%;border:0px!important;\"><p>This endorsement has not been sent to its broker, because it's submission is by month. ".
+                                  "<a href=\"endorsement_month\" target=\"_blank\" style=\"color:#2a95e8;display: inline-block;padding: 1px;text-decoration: underline;\">Click here</a></p></td>";
                   $fechaActualizacion = "";
               }
               else{
@@ -507,17 +493,16 @@
                   $label  = "style=\"display: block;float: left;width: 18%;margin: 2px 0px;padding:5px 0px;\"";
                   $input  = "style=\"float: right;width: 80%;clear: none;margin: 2px!important;height: 20px!important;resize: none;\"";
                   $textar = "style=\"float: right;width: 80%;clear: none;margin: 2px!important;height:43px!important;resize: none;padding-top: 0px!important;\"";
-                  $select = "style=\"float: right;width: 492px!important;clear: none;margin: 2px!important;height:25px!important;\"";
+                  $select = "style=\"float: right;width: 81%!important;clear: none;margin: 2px!important;height:25px!important;\"";
                   $div    = "style=\"clear:both;\""; 
                        
-                  $htmlTabla .= "<tr id=\"dataPolicy_".$data['iConsecutivoPoliza']."\" class=\"data_policy\">"; 
+                  $endosoFields .= "<td style=\"width: 50%;border:0px!important;\" id=\"dataPolicy_".$data['iConsecutivoPoliza']."\" class=\"data_policy\">"; 
                   //Claim Data:
-                  $htmlTabla .= "<td style=\"vertical-align:top;width:50%;\">".
-                                "<div $div>".
+                  $endosoFields .= "<div $div>".
                                     "<label $label>Endorsement No:</label>".
                                     "<input $input type=\"text\" maxlength=\"15\" name=\"sNumeroEndosoBroker\" title=\"This number is the one granted by the broker for the endorsement.\" placeholder=\"Endorsement No:\">".
-                                "</div>".
-                                "<div $div>".
+                                   "</div>".
+                                   "<div $div>".
                                     "<label $label>Status:</label>".
                                     "<select $select id=\"eStatus_".$data['iConsecutivoPoliza']."\"  name=\"eStatus\">".
                                     "<option value=\"SB\">SENT TO BROKERS</option>".
@@ -525,15 +510,29 @@
                                     "<option value=\"A\">APPROVED</option>".
                                     "<option value=\"D\">CANCELED/DENIED</option>".
                                     "</select>".
-                                "</div>".
-                                "</td>";
-                  $htmlTabla .= "<td style=\"vertical-align:top;width:50%;\">".
-                                "<div $div>".
+                                   "</div>";
+                  $endosoFields .= "<div $div>".
                                     "<label $label>Comments:</label><textarea $textar id=\"sComentarios_".$data['iConsecutivoPoliza']."\" name=\"sComentarios\" maxlength=\"1000\" title=\"Max. 1000 characters.\"></textarea>".
-                                "</div>".
-                                "</td>";
-                  $htmlTabla .= "</tr>";   
+                                   "</div>";
+                  $endosoFields .= "</td>";
+                    
               }
+              
+              $htmlTabla .= "<tr>".
+                            "<td colspan=\"100%\">".
+                            "<table style=\"width:100%\">".
+                            "<tr>".
+                            "<td style=\"width: 50%;border:0px!important;vertical-align:top;\">".
+                                "<h4 style=\"margin: 12px 0px 5px;font-size: 12px;padding:0;text-transform: uppercase;\">Policy Data</h4>".
+                                "<label style=\"display: inline-block;width: 30%;\">No:</label><span style=\"$style\">$sNumPoliza</span><br>".
+                                "<label style=\"display: inline-block;width: 30%;\">Type:</label><span style=\"$style\">$sDescPoliza</span><br>".
+                                "<label style=\"display: inline-block;width: 30%;\">Broker:</label><span style=\"$style\">$sBroker</span>".
+                            "</td>".
+                            "$endosoFields".  
+                            "</tr>".
+                            "</table>".
+                            "</td>".
+                            "</tr>"; 
                                  
               //Salto de linea:              
               $htmlTabla .= "<tr><td colspan=\"100%\" style=\"height: 10px;text-align:center;font-size:11px;\"></td></tr>";                          
@@ -545,7 +544,7 @@
               foreach($datos as $i => $b){
                     if($i == "sComentarios" || $i == "eStatus" || $i == "sNumeroEndosoBroker"){
                       if($i == 'sComentarios'){$value = utf8_decode(utf8_encode($datos[$i]));}else{$value = $datos[$i];}
-                      $fields .= "\$('#$domroot tr#dataPolicy_".$data['iConsecutivoPoliza']." :input[name=".$i."]').val('$value');\n";  
+                      $fields .= "\$('#$domroot #dataPolicy_".$data['iConsecutivoPoliza']." :input[name=".$i."]').val('$value');\n";  
                     }
               }
           }

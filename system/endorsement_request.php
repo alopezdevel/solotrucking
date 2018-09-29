@@ -34,8 +34,39 @@
                         $(this).dialog('close');
                     }
                 }
+            });
+            
+            $('#dialog_upload_files').dialog({
+                modal: true,
+                autoOpen: false,
+                width : 500,
+                height : 350,
+                resizable : false,
+                buttons : {
+                    'SAVE DATA' : function() {
+                        fn_endorsement.files.save();
+                    },
+                     'CANCEL' : function(){
+                        $(this).dialog('close');
+                    }
+                }
             }); 
-               
+            $('#dialog_send_email').dialog({
+                modal: true,
+                autoOpen: false,
+                width : 420,
+                height : 200,
+                resizable : false,
+                buttons : {
+                    'YES' : function() {
+                        $(this).dialog('close');
+                        fn_endorsement.email.send();             
+                    },
+                    'NO' : function(){
+                        $(this).dialog('close');
+                    }
+                }
+            });    
     }  
     function validapantalla(usuario){if(usuario == ""  || usuario == null){location.href= "login.php";}  }                   
     var fn_endorsement = {
@@ -44,7 +75,7 @@
             filtro : "",
             pagina_actual : "",
             sort : "DESC",
-            orden : "B.dFechaAplicacion",
+            orden : "A.dFechaAplicacion",
             init : function(){
                 $('.num').keydown(fn_solotrucking.inputnumero); 
                 $('.decimals').keydown(fn_solotrucking.inputdecimals);
@@ -103,7 +134,8 @@
                         $(fn_endorsement.data_grid + " tfoot #pagina_actual").val(data.pagina);
                         fn_endorsement.pagina_actual = data.pagina;
                         fn_endorsement.edit();
-                        fn_endorsement.endorsement_email_send();
+                        fn_endorsement.edit_estatus();
+                        fn_endorsement.change_estatus();
                     }
                 }); 
             },
@@ -115,63 +147,29 @@
                fn_popups.resaltar_ventana('endorsements_edit_form'); 
             },
             edit : function (){
-                $(fn_endorsement.data_grid + " tbody td .edit").bind("click",function(){
-                    var clave = $(this).parent().parent().find("td:eq(0)").html();
-                    var idPoliza = $(this).parent().parent().find("td:eq(5)").attr('id');
-                    var company = $(this).parent().parent().find("td:eq(1)").text(); 
+                $(fn_endorsement.data_grid + " tbody td .btn_edit").bind("click",function(){
+                    var clave    = $(this).parent().parent().find("td:eq(0)").html();
+                    var company  = $(this).parent().parent().find("td:eq(1)").text(); 
                     $('#endorsements_edit_form .p-header h2').empty().text('Endorsement request from ' + company + ': E#' + clave);
                     $.post("funciones_endorsement_request.php",
                     {
                         accion:"get_endorsement", 
                         clave: clave,
-                        idPoliza : idPoliza, 
                         domroot : "endorsements_edit_form"
                     },
                     function(data){
                         if(data.error == '0'){
+                           $("#files_datagrid, #info_policies").show();//mostrar grid de archivos...  
                            $('#endorsements_edit_form input, #endorsements_edit_form select, #endorsements_edit_form textarea').val('');
+                           $("#frm_endorsement_information .required-field").removeClass("error");
                            $("#endorsements_edit_form #info_policies table tbody").empty().append(data.policies);
-                           $('#endorsements_edit_form #pd_information, #frm_driver_information, #frm_unit_information').hide();
-                           $('#endorsements_edit_form .data_files').empty(); 
                            eval(data.fields); 
-                           if(data.pd_information != ''){$('#endorsements_edit_form #pd_information').empty().append(data.pd_information);}
-                           if(data.files != ''){$('#endorsements_edit_form .data_files').empty().append(data.files);}  
-                           if(data.kind == '2'){ // Drivers
-                               $('#frm_driver_information').show();
-                           }else if(data.kind == '1'){ // Units
-                                $('#frm_unit_information').show();
-                                if($('#eAccion').val() == 'DELETE'){
-                                    $('#endorsements_edit_form .delete_field').show();
-                                    $('#endorsements_edit_form .add_field').hide();
-                                }else{  
-                                    $('#endorsements_edit_form .add_field').show();
-                                    $('#endorsements_edit_form .delete_field').hide();
-                                    //mostrar pd:
-                                    if($('#pd_information #iPDApply')){
-                                        $('#endorsements_edit_form #pd_information').show(); 
-                                    }
-                                }  
-                                
-                           }
-                           
-                           if(data.status != 'A'){
-                               //Activar campos para editar estatus:
-                               if(data.status == 'S' || data.status == 'SB'){$('#eStatus').val('');}
-                               
-                               if(data.status == 'D'){
-                                  $("#eStatus option[value=A], #eStatus option[value=P]").hide(); 
-                               }else{
-                                   $("#eStatus option[value=A], #eStatus option[value=P]").show();
-                               }
-                               
-                               $('#frm_endorsement_status').show(); 
-                               fn_endorsement.valida_status();
-                               if(data.sComentarios != ""){$('#endorsements_edit_form #sComentarios').val(data.sComentarios);}
-                           }else{
-                               $('#frm_endorsement_status').hide();
-                               $('#eStatus').val('');
-                           }
-                
+                           fn_endorsement.get_drivers();
+                           fn_endorsement.get_policies();
+                           eval(data.policies);
+                           $('#endorsements_edit_form #sComentarios').val(data.sComentarios);
+                           fn_endorsement.files.iConsecutivoEndoso = $('#endorsements_edit_form input[name=iConsecutivo]').val();
+                           fn_endorsement.files.fillgrid();
                            fn_popups.resaltar_ventana('endorsements_edit_form');
                             
                         }else{
@@ -180,7 +178,7 @@
                     },"json"); 
               });  
             },
-            endorsement_email_send : function(){
+            /*endorsement_email_send : function(){
                 $(fn_endorsement.data_grid + " tbody .btn_send_email").bind("click",function(){
                    var clave = $(this).parent().parent().find("td:eq(0)").html();
                    var idPoliza = $(this).parent().parent().find("td:eq(5)").attr('id');
@@ -193,7 +191,7 @@
                         if(data.error == '0'){fn_endorsement.fillgrid();}     
                     },"json");
                });  
-            },
+            },*/
             firstPage : function(){
                 if($(fn_endorsement.data_grid+" #pagina_actual").val() != "1"){
                     fn_endorsement.pagina_actual = "";
@@ -241,22 +239,13 @@
             filtraInformacion : function(){
                     fn_endorsement.pagina_actual = 0;
                     fn_endorsement.filtro = "";
-                    if($(fn_endorsement.data_grid+" .flt_id").val() != ""){ fn_endorsement.filtro += "B.iConsecutivo|"+$(fn_endorsement.data_grid+" .flt_id").val()+","}
+                    if($(fn_endorsement.data_grid+" .flt_id").val() != ""){ fn_endorsement.filtro += "A.iConsecutivo|"+$(fn_endorsement.data_grid+" .flt_id").val()+","}
                     if($(fn_endorsement.data_grid+" .flt_company").val() != ""){ fn_endorsement.filtro += "D.sNombreCompania|"+$(fn_endorsement.data_grid+" .flt_company").val()+","} 
                     if($(fn_endorsement.data_grid+" .flt_description").val() != ""){ fn_endorsement.filtro += "sNombre|"+$(fn_endorsement.data_grid+" .flt_description").val()+","} 
                     if($(fn_endorsement.data_grid+" .flt_action").val() != ""){ fn_endorsement.filtro += "eAccion|"+$(fn_endorsement.data_grid+" .flt_action").val()+","}
-                    if($(fn_endorsement.data_grid+" .flt_date").val() != ""){ fn_endorsement.filtro += "B.dFechaAplicacion|"+$(fn_endorsement.data_grid+" .flt_date").val()+","}
-                    if($(fn_endorsement.data_grid+" .flt_policy").val() != ""){ fn_endorsement.filtro += "sNumeroPoliza|"+$(fn_endorsement.data_grid+" .flt_policy").val()+","}
-                    if($(fn_endorsement.data_grid+" .flt_broker").val() != ""){ fn_endorsement.filtro += "BR.sName|"+$(fn_endorsement.data_grid+" .flt_broker").val()+","} 
+                    if($(fn_endorsement.data_grid+" .flt_date").val() != ""){ fn_endorsement.filtro += "A.dFechaAplicacion|"+$(fn_endorsement.data_grid+" .flt_date").val()+","}
                     if($(fn_endorsement.data_grid+" .flt_status").val() != ""){ fn_endorsement.filtro += "A.eStatus|"+$(fn_endorsement.data_grid+" .flt_status").val()+","}
                     fn_endorsement.fillgrid();
-            },
-            valida_status : function(){
-               if($('#eStatus').val() == 'D'){
-                  $('.comentarios_endoso').show(); 
-               }else{
-                  $('.comentarios_endoso').hide();
-               }
             },
             save_confirm : function(){
                if( $('#frm_endorsement_status #eStatus').val() != 'SB'){
@@ -267,7 +256,7 @@
                 
                 var valid = true;
                 var msj   = "";
-                $("#frm_endorsement_information .required-field").removeClass("error");
+                $("#frm_endorsement_information input, #frm_endorsement_information select").removeClass("error");
                 
                 //Revisamos polizas seleccionadas:
                 var polizas_list = "";
@@ -283,9 +272,19 @@
                    if($(this).val() == ""){valid = false; $(this).addClass('error');msj = "<li>You must capture the required fields.</li>";}
                 });
                 
+                //Revisamos los campos requeridos en caso de ser un ADD:
+                if($("#frm_endorsement_information select[name=eAccion]").val() == "A"){
+                    //Verificamos campos:
+                    var iExperienciaYear = $("#frm_driver_information input[name=iExperienciaYear]").val().trim();
+                    var eTipoLicencia    = $("#frm_driver_information select[name=eTipoLicencia]").val().trim();
+                    var dFechaExp        = $("#frm_driver_information input[name=dFechaExpiracionLicencia]").val().trim();
+                    if(iExperienciaYear == ""){valid = false;$("#frm_driver_information input[name=iExperienciaYear]").addClass("error");}
+                    if(eTipoLicencia == "")   {valid = false;$("#frm_driver_information select[name=eTipoLicencia]").addClass("error");}
+                    if(dFechaExp == "")       {valid = false;$("#frm_driver_information input[name=dFechaExpiracionLicencia]").addClass("error");}
+                    if(!(valid)){msj = "<li>You must capture the required fields for an add endorsement.</li>";}
+                }
+                
                 if(valid){ 
-                  /*msg = "<p style=\"text-align:center;\">Updating endorsement data and send an e-mail to company, please wait...<br><img src=\"images/ajax-loader.gif\" alt=\"ajax-loader.gif\" style=\"margin-top:10px;\"><br></p>";
-                  $('#Wait').empty().append(msg).dialog('open'); */
                   if($('#endorsements_edit_form #iConsecutivo').val() != ""){struct_data_post.edit_mode = "true";}else{struct_data_post.edit_mode = "false";}
                   struct_data_post.action  = "save_endorsement";
                   struct_data_post.domroot = "#frm_endorsement_information";
@@ -318,7 +317,7 @@
                fillgrid: function(){
                     $.ajax({             
                         type:"POST", 
-                        url:"funciones_endorsement_request_units.php", 
+                        url:"funciones_endorsement_request.php", 
                         data:{
                             accion               : "get_files",
                             iConsecutivo         : fn_endorsement.files.iConsecutivoEndoso,
@@ -450,6 +449,7 @@
                }
             },
             get_company_data : function(){
+              $("#frm_driver_information input, #frm_driver_information select").val('');  
               fn_endorsement.get_drivers();
               fn_endorsement.get_policies(); 
               fn_endorsement.valid_action(); 
@@ -496,7 +496,6 @@
                         async   : true,
                         dataType: "text",
                         success : function(data) {
-                            $("#frm_driver_information input, #frm_driver_information select").val('');
                             var datos = eval(data);
                             if($("#frm_driver_information #sNombre").autocomplete( "option", "source" ) != ""){$("#frm_driver_information #sNombre").autocomplete( "destroy" );}
                             $("#frm_driver_information #sNombre").autocomplete({source:datos});
@@ -544,6 +543,192 @@
                 fecha      = new Date(fecha);
                 ed         = parseInt((hoy-fecha)/365/24/60/60/1000);
             },
+            //PREVIEW AND SEND EMAILS:
+            edit_estatus : function(){
+                $(fn_endorsement.data_grid + " tbody .btn_edit_estatus").bind("click",function(){
+                   var clave    = $(this).parent().parent().find("td:eq(0)").html();
+                   $.ajax({             
+                        type:"POST", 
+                        url:"funciones_endorsement_request.php", 
+                        data:{accion:"get_endorsement_estatus",'iConsecutivo':clave,"domroot" : "form_estatus"},
+                        async : true,
+                        dataType : "json",
+                        success : function(data){                               
+                            if(data.error == '0'){
+                                
+                                $('#form_estatus input, #form_estatus textarea').val('').removeClass('error');
+                                if(data.fields != ""){
+                                    eval(data.fields);
+                                }
+                                else{$('#form_estatus #iConsecutivoEndoso').val(clave);}
+                                $('#form_estatus .company_policies tbody').empty().append(data.policies_information);
+                                if($('#form_estatus textarea').val() == ""){
+                                    var mensaje_default = "Please create new endorsement for the following insured.";
+                                    $('#form_estatus textarea').val(mensaje_default);
+                                }
+                                fn_popups.resaltar_ventana('form_estatus');   
+                            }
+                            else{fn_solotrucking.mensaje(data.msj);  }  
+                        }
+                  });
+                   
+               });  
+            },
+            email : { 
+                save: function(ghost){
+                    
+                    if(!(ghost)){ghost = false;}
+                    
+                    var valid   = true;
+                    var mensaje = "";
+                    $('#form_estatus input, #form_estatus textarea').removeClass('error');
+
+                    var insurances_policy  = "";
+                    $("#form_estatus .company_policies input[type=text]").each(function(){
+                        if(!($(this).hasClass('no_apply_endoso'))){
+                           if($(this).val() != ""){
+                           var id      = $(this).prop("class").split("_");
+                           var email   = $(this).val();
+                               email   = email.toLowerCase();
+                               $(this).val(email); 
+                               if(insurances_policy == ""){insurances_policy = id[1]+"|"+$(this).val();}
+                               else{insurances_policy += ";"+id[1]+"|"+$(this).val();}
+                           
+                           }
+                           else{$(this).addClass("error"); valid = false; mensaje = "Please write the email accounts that you will want  to send the message.";}    
+                        }
+                    });
+                    
+                    if(valid){
+                       $.ajax({             
+                            type:"POST", 
+                            url:"funciones_endorsement_request.php", 
+                            data:{
+                                'accion'             : "save_email",
+                                'iConsecutivoEndoso'  : $('#form_estatus #iConsecutivoEndoso').val(),
+                                'insurances_policy'  : insurances_policy,
+                                'sMensaje'           : $('#form_estatus #sMensajeEmail').val(),
+                                'domroot'            : "#form_estatus",
+                            },
+                            async : true,
+                            dataType : "json",
+                            success : function(data){                               
+                                if(!(ghost)){fn_solotrucking.mensaje(data.msj);} 
+                            }
+                       });             
+                    }else{fn_solotrucking.mensaje(mensaje);}
+                    
+                },
+                preview : function(iConsecutivo){
+                  
+                  if(!(iConsecutivo)){ 
+                      var iConsecutivo  = $('#form_estatus #iConsecutivoEndoso').val();
+                      var mode          = "preview";
+                      fn_endorsement.email.save(true);
+                  }else{var mode = "openemail";}
+                  
+                  $.ajax({             
+                    type:"POST", 
+                    url:"funciones_endorsement_request.php", 
+                    data:{'accion' : 'preview_email','iConsecutivoEndoso' : iConsecutivo},
+                    async : true,
+                    dataType : "json",
+                    success : function(data){                               
+                        if(data.error == '0'){
+                            $("#form_preview_email .preview_email").empty().append(data.tabla); 
+                            $("#form_preview_email input.mode").val(mode);
+                            if(mode == "preview"){$('#form_preview_email').show();}
+                            else{fn_popups.resaltar_ventana('form_preview_email');}
+                        }
+                    }
+                  });    
+                },
+                send : function(){
+                  var iConsecutivo  = $('#form_estatus #iConsecutivoEndoso').val();
+                  fn_endorsement.email.save(true);
+                  $.ajax({             
+                    type:"POST", 
+                    url:"funciones_endorsement_request.php", 
+                    data:{'accion' : 'send_email','iConsecutivoEndoso' : iConsecutivo},
+                    async : true,
+                    dataType : "json",
+                    success : function(data){                               
+                        if(data.error == '0'){
+                              fn_solotrucking.mensaje(data.msj);
+                              fn_endorsement.fillgrid();
+                              fn_popups.cerrar_ventana('form_estatus');
+                        }
+                        
+                    }
+                  });    
+                },
+                send_confirm : function(){
+                   $('#dialog_send_email').dialog('open');   
+                }, 
+            },  
+            change_estatus : function(){
+                    $(fn_endorsement.data_grid + " tbody td .btn_change_status").bind("click",function(){
+                       var clave = $(this).parent().parent().find("td:eq(0)").html();
+                       var name  = $(this).parent().parent().find("td:eq(1)").html();
+                       $.ajax({             
+                            type:"POST", 
+                            url:"funciones_endorsement_request.php", 
+                            data:{
+                                "accion"             : "get_estatus_info",
+                                "iConsecutivoEndoso"  : clave,
+                                "domroot"            : "form_change_estatus",
+                            },
+                            async : true,
+                            dataType : "json",
+                            success : function(data){                               
+                                if(data.error == '0'){
+                                      $('#form_change_estatus input,#form_change_estatus textarea ').val('');
+                                      $("#form_change_estatus fieldset legend").empty().append(name); 
+                                      $("#form_change_estatus .company_policies tbody").empty().append(data.html);
+                                      eval(data.fields);                   
+                                      fn_popups.resaltar_ventana('form_change_estatus'); 
+                                }
+                                
+                            }
+                       });   
+                   });  
+            },
+            save_estatus : function(){
+                  $('#form_change_estatus input,#form_change_estatus textarea ').removeClass('error'); 
+                  var valid   = true;
+                  var msj     = "";
+                  var polizas = "";
+                  
+                  $("#form_change_estatus .company_policies tbody .data_policy").each(function(){
+                      var estatus  = $(this).find("select[name=eStatus]").val();
+                      var comments = $(this).find("textarea[name=sComentarios]").val();
+                      var NoEndoso = $(this).find("input[name=sNumeroEndosoBroker]").val();
+                      var idPoliza = $(this).prop("id");
+                      
+                          idPoliza = idPoliza.split("dataPolicy_");
+                          if(polizas == ""){polizas = idPoliza[1]+"|"+estatus+"|"+comments+"|"+NoEndoso;}
+                          else{polizas += ";"+idPoliza[1]+"|"+estatus+"|"+comments+"|"+NoEndoso;}
+                  });
+                  
+                  if(valid){
+                     $.ajax({             
+                        type:"POST", 
+                        url:"funciones_endorsement_request.php", 
+                        data:{
+                            'accion'             :"save_estatus_info",
+                            'iConsecutivoEndoso' : $('#form_change_estatus input[name=iConsecutivoEndoso]').val(),
+                            'sMensaje'           : $('#form_change_estatus textarea[name=sComentariosEndoso]').val(),
+                            'eStatusEndoso'      : $('#form_change_estatus select[name=eStatusEndoso]').val(),
+                            'polizas'            : polizas,
+                        },
+                        async : true,
+                        dataType : "json",
+                        success : function(data){                               
+                            if(data.error == '0'){fn_solotrucking.mensaje(data.msj);}
+                        }
+                     });   
+                  }else{fn_solotrucking.mensaje('Please first select a status before you press save.');$('#form_change_estatus #eStatus').addClass('error');} 
+            },
                 
     }    
 </script> 
@@ -568,8 +753,6 @@
                     </select>
                 </td>  
                 <td><input class="flt_date" type="text" placeholder="Application Date:"></td> 
-                <td><input class="flt_policy" type="text" placeholder="Policy #:"></td>
-                <td><input class="flt_broker" type="text" placeholder="Broker:"></td>
                 <td>
                     <select class="flt_status" onblur="fn_endorsement.filtraInformacion();">
                         <option value="">Select an option...</option>
@@ -585,13 +768,11 @@
                 </td> 
             </tr>
             <tr id="grid-head2">
-                <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('B.iConsecutivo',this.cellIndex);">ID</td> 
+                <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('A.iConsecutivo',this.cellIndex);">ID</td> 
                 <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('D.sNombreCompania',this.cellIndex);">COMPANY</td>
                 <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('sNombre',this.cellIndex);">Description</td>
                 <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('eAccion',this.cellIndex);">ACTION</td>
-                <td class="etiqueta_grid up"   onclick="fn_endorsement.ordenamiento('B.dFechaAplicacion',this.cellIndex);">APPLICATION DATE</td> 
-                <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('sNumeroPoliza',this.cellIndex);">POLICY #</td> 
-                <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('broker',this.cellIndex);">BROKER</td> 
+                <td class="etiqueta_grid up"   onclick="fn_endorsement.ordenamiento('A.dFechaAplicacion',this.cellIndex);">APPLICATION DATE</td> 
                 <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('A.eStatus',this.cellIndex);">Status</td>
                 <td class="etiqueta_grid"></td>
             </tr>
@@ -625,12 +806,12 @@
 <div id="endorsements_edit_form" class="popup-form">
     <div class="p-header">
         <h2>ENDORSEMENTS</h2>
-        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('endorsements_edit_form');"><i class="fa fa-times"></i></div>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('endorsements_edit_form');fn_endorsement.filtraInformacion();"><i class="fa fa-times"></i></div>
     </div>
     <div class="p-container">
     <div>
         <form method="post" autocomplete="off">
-            <fieldset id="frm_endorsement_information">
+            <fieldset id="frm_endorsement_information" style="padding-bottom: 0;">
                 <legend>GENERAL DATA</legend>  
                 <table style="width:100%" cellpadding="0" cellspacing="0">
                     <tr>
@@ -663,7 +844,7 @@
                         <td>
                             <div class="field_item">
                                 <label>Action <span style="color:#ff0000;">*</span>:</label> 
-                                <Select id="eAccion" name"eAccion" class="required-field" onblur="fn_endorsement.valid_action();" style="height: 25px!important;">
+                                <select id="eAccion" name="eAccion" class="required-field" onblur="fn_endorsement.valid_action();" style="height: 25px!important;">
                                     <option value="">Select an option...</option> 
                                     <option value="A">ADD</option>
                                     <option value="D">DELETE</option>
@@ -672,10 +853,8 @@
                         </td>
                     </tr>
                 </table>
-            </fieldset>
-            <fieldset id="frm_driver_information">
                 <legend>Driver Information</legend> 
-                <table style="width:100%" cellpadding="0" cellspacing="0">
+                <table id="frm_driver_information" style="width:100%" cellpadding="0" cellspacing="0">
                     <tr>
                         <td colspan="2">
                         <input id="iConsecutivoOperador" name="iConsecutivoOperador" type="hidden" value="">
@@ -722,6 +901,14 @@
                         </div>
                         </td>
                     </tr>
+                    <tr>
+                    <td colspan="100%">
+                    <div class="field_item">
+                        <label>General Comments:</label> 
+                        <textarea id="sComentarios" name ="sComentarios" style="resize:none;height:50px;"></textarea>
+                    </div>
+                    </td>
+                    </tr>
                 </table>
             </fieldset>
             <table style="width: 100%;" cellpadding="0" cellspacing="0">
@@ -765,8 +952,113 @@
                 </tr>
             </table> 
             <button type="button" class="btn-1" onclick="fn_endorsement.save();">SAVE</button>
-            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('endorsements_edit_form');" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
+            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('endorsements_edit_form');fn_endorsement.filtraInformacion();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
         </form> 
+    </div>
+    </div>
+</div>
+<!-- EMAILS FORMS -->
+<div id="form_estatus" class="popup-form" style="width: 80%;">
+    <div class="p-header">
+        <h2>ENDORSEMENTS</h2>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('form_estatus');"><i class="fa fa-times"></i></div>
+    </div>
+    <div class="p-container"> 
+    <div>
+        <form>
+            <div class="field_item"> 
+                <label style="margin-left:5px;">Policies in which the endorsement was applied:</label> 
+                <div class="company_policies" style="padding:5px 0px;">
+                    <table class="popup-datagrid">
+                    <thead>
+                        <tr id="grid-head2"> 
+                            <td class="etiqueta_grid">Policy Number</td>
+                            <td class="etiqueta_grid">Policy Type</td> 
+                            <td class="etiqueta_grid">Broker</td>
+                            <td class="etiqueta_grid" style="width:500px;">Email to send</td>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <fieldset>
+                <legend>INFORMATION TO SEND BY E-MAIL</legend>
+                <input id="iConsecutivoEndoso" type="hidden" value=""> 
+                <table style="width: 100%;">
+                <tr>
+                    <td colspan="100%">
+                    <div class="field_item"> 
+                        <label>Message to send: (This message will be displayed before the endorsement information.)</label> 
+                        <textarea tabindex="1" id="sMensajeEmail" maxlenght="1000" style="resize: none;" title="Max. 1000 characters."></textarea>
+                    </div>
+                    </td>                              
+                </tr>
+                </table>
+            </fieldset> 
+            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_estatus');" style="margin-right:10px;background:#e8051b;">CLOSE</button>  
+            <button type="button" class="btn-1" onclick="fn_endorsement.email.send_confirm();" style="margin-right:10px;background: #87c540;width: 140px;">SEND E-MAIL</button>
+            <button type="button" class="btn-1" onclick="fn_endorsement.email.preview();" style="margin-right:10px;background:#5ec2d4;width: 140px;">PREVIEW E-MAIL</button> 
+            <button type="button" class="btn-1" onclick="fn_endorsement.email.save();" style="margin-right:10px;">SAVE</button>  
+        </form> 
+    </div>
+    </div>
+</div>
+<div id="form_change_estatus" class="popup-form" style="width:95%;">
+    <div class="p-header">
+        <h2>ENDORSEMENTS / Change the status of endorsement</h2>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('form_change_estatus');fn_endorsement.filtraInformacion();"><i class="fa fa-times"></i></div>
+    </div>
+    <div class="p-container"> 
+    <form>
+    <fieldset>
+    <legend></legend>
+    <input name="iConsecutivoEndoso" type="hidden" value=""> 
+    <table style="width: 100%;">
+    <tr class="claim_estatus">
+        <td colspan="2">
+        <div class="field_item">
+            <label style="margin-left:5px;margin-bottom:3px;">You can manage each endorsement status for each individual policy and add comment about it into the system:</label>
+            <table class="company_policies popup-datagrid" style="width: 100%;margin-top: 5px;">
+                <tbody></tbody>
+            </table>  
+        </div>
+        <br>
+        <div class="field_item">
+            <label>General Comments for this Endorsement: <span style="color: #5e8bd4;;">(These comments are those that will be shown to the client.)</span></label>
+            <textarea id="sComentariosEndoso" name ="sComentariosEndoso" style="resize:none;height:50px;"></textarea> 
+        </div> 
+        <div class="field_item">
+            <label>General Status for this Endorsement: <span style="color: #5e8bd4;;">(This Status is that will be shown in the data grid.)</span></label>
+            <select id="eStatusEndoso" name ="eStatusEndoso">
+                <option value="SB">Sent to Brokers - The endorsement has been sent to the brokers.</option>
+                <option value="P">In Process - The endorsement is being in process by the brokers.</option>
+                <option value="D">Canceled - The endorsement has been canceled.</option>
+                <option value="A">Approved - The endorsement has been approved.</option>
+            </select> 
+        </div> 
+        </td>
+    </tr>
+    </table>
+    </fieldset> 
+    </form>   
+    <div>
+        <button type="button" class="btn-1" onclick="fn_endorsement.save_estatus();">SAVE</button> 
+        <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_change_estatus');fn_endorsement.filtraInformacion();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
+    </div>
+    </div>
+</div>
+<!-- preview email -->
+<div id="form_preview_email" class="popup-form" style="width: 80%;">
+    <div class="p-header">
+        <h2>ENDORSEMENTS / Preview E-mail to send</h2>
+        <div class="btn-close" title="Close Window" onclick="if($('#form_preview_email input.mode').val() == 'openemail'){fn_popups.cerrar_ventana('form_preview_email');}else{$('#form_preview_email').hide();}"><i class="fa fa-times"></i></div>
+    </div>
+    <div class="p-container"> 
+        <input class="mode" type="hidden" value="">
+        <div class="preview_email"></div>
+    <div>
+        <button type="button" class="btn-1" onclick="if($('#form_preview_email input.mode').val() == 'openemail'){fn_popups.cerrar_ventana('form_preview_email');}else{$('#form_preview_email').hide();}" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
     </div>
     </div>
 </div>
@@ -774,6 +1066,35 @@
 <div id="dialog_endorsement_save" title="SYSTEM ALERT" style="display:none;">
     <p>We will be sending a notice to the company about the status of endorsements. Are you sure want to continue?</p> 
 </div> 
+<div id="dialog_upload_files" title="Upload files to endorsement" style="display:none;padding: .5em 1em .5em 0em!important;">
+    <form class="frm_upload_files" action="" method="POST" enctype="multipart/form-data">
+        <fieldset>
+        <input name="iConsecutivoEndoso" type="hidden" value="">
+        <div>
+            <label>File Category <span style="color:#ff0000;">*</span>: </label>
+            <Select name="eArchivo" style="height: 27px!important;">
+                <option value="OTHERS">Other</option>
+                <option value="LICENSE">License</option>
+                <option value="LONGTERM">Longterm</option>   
+                <option value="PSP">PSP</option>   
+                <option value="MVR">MVR</option>   
+            </select> 
+        </div>
+        <div class="field_item"> 
+            <label class="required-field">File to upload:</label>
+            <div class="file-container">
+                <!-- MAX_FILE_SIZE debe preceder al campo de entrada del fichero -->
+                <input type="hidden"   name="MAX_FILE_SIZE" value="" />
+                <input id="fileselect" name="fileselect" type="file"/>
+                <div class="file-message"></div>
+            </div>
+        </div> 
+        </fieldset>
+    </form>   
+</div> 
+<div id="dialog_send_email" title="SYSTEM ALERT" style="display:none;">
+    <p>Are you sure that want to send the endorsement to the broker(s)?</p>
+</div>
 <!-- FOOTER -->
 <?php include("footer.php"); ?> 
 
