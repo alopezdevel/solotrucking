@@ -98,7 +98,7 @@
     include("cn_usuarios.php");
     $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
     $transaccion_exitosa = true;
-    $sql    = "SELECT iConsecutivo,iConsecutivoCompania,iConsecutivoBroker,eStatus,sComentarios,sEmail,sMensajeEmail,iTipoReporte, DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio,DATE_FORMAT(dFechaFin,'%m/%d/%Y') AS dFechaFin ".
+    $sql    = "SELECT iConsecutivo,iConsecutivoCompania,iConsecutivoBroker,eStatus,iRatePercent,sComentarios,sEmail,sMensajeEmail,iTipoReporte, DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio,DATE_FORMAT(dFechaFin,'%m/%d/%Y') AS dFechaFin ".
               "FROM cb_endoso_mensual WHERE iConsecutivo = '$clave'";
     $result = $conexion->query($sql);
     $items  = $result->num_rows;   
@@ -132,11 +132,13 @@
       $iConsecutivo        = trim($_POST['iConsecutivo']);
       $iConsecutivoCompania= trim($_POST['iConsecutivoCompania']);
       $iConsecutivoBroker  = trim($_POST['iConsecutivoBroker']);
-      $sComentarios        = $_POST['sComentarios'] != "" ? "'".utf8_decode(trim($_POST['sComentarios']))."'" : "''";
-      $sEmail              = trim($_POST['sEmail']);
+    //$sComentarios        = $_POST['sComentarios'] != "" ? "'".utf8_decode(trim($_POST['sComentarios']))."'" : "''";
+      $sComentarios        = "''";
+      $iRatePercent        = trim($_POST['iRatePercent']);
+      $sEmail              = trim($_POST['sEmail']);  
       $sMensajeEmail       = $_POST['sMensajeEmail'] != "" ? "'".utf8_decode(trim($_POST['sMensajeEmail']))."'" : "''";
-      $fecha_inicial       = date('Y-m-d',strtotime(trim($_POST['flt_dateFrom'])));
-      $fecha_final         = date('Y-m-d',strtotime(trim($_POST['flt_dateTo'])));
+      $fecha_inicial       = date('Y-m-d',strtotime(trim($_POST['dFechaInicio'])));
+      $fecha_final         = date('Y-m-d',strtotime(trim($_POST['dFechaFin'])));
       $dFechaActual        = date("Y-m-d H:i:s");
       $IP                  = $_SERVER['REMOTE_ADDR'];
       $sUsuario            = $_SESSION['usuario_actual'];
@@ -144,8 +146,8 @@
       
       #INSERT
       if($edit_mode == 'false'){
-            $sql     = "INSERT INTO cb_endoso_mensual (iConsecutivoCompania,iConsecutivoBroker,eStatus,sComentarios,sEmail,sMensajeEmail,dFechaInicio,dFechaFin,dFechaIngreso,sIP,sUsuarioIngreso) ".
-                       "VALUES ('$iConsecutivoCompania','$iConsecutivoBroker','S',$sComentarios,'$sEmail',$sMensajeEmail,'$fecha_inicial','$fecha_final','$dFechaActual','$IP','$sUsuario')";
+            $sql     = "INSERT INTO cb_endoso_mensual (iConsecutivoCompania,iConsecutivoBroker,eStatus,sComentarios,sEmail,sMensajeEmail,dFechaInicio,dFechaFin,dFechaIngreso,sIP,sUsuarioIngreso, iRatePercent, iTipoReporte) ".
+                       "VALUES ('$iConsecutivoCompania','$iConsecutivoBroker','S',$sComentarios,'$sEmail',$sMensajeEmail,'$fecha_inicial','$fecha_final','$dFechaActual','$IP','$sUsuario','$iRatePercent','$iTipoReporte')";
             $success = $conexion->query($sql);
             if(!($success)){$transaccion_exitosa = false; $msj = "Error: The data of report has not been save successfully, please try again.";}
             else{
@@ -156,8 +158,8 @@
  
       }
       #UPDATE
-      else if($edit_mode == false){
-          $sql     = "UPDATE cb_endoso_mensual SET sComentarios=$sComentarios,sEmail='$sEmail',sMensajeEmail='$sMensajeEmail', dFechaActualizacion='$dFechaActual',sIP='$IP',sUsuarioActualizacion='$sUsuario'".
+      else if($edit_mode == "true"){
+          $sql     = "UPDATE cb_endoso_mensual SET sComentarios=$sComentarios,sEmail='$sEmail',sMensajeEmail=$sMensajeEmail, dFechaActualizacion='$dFechaActual',sIP='$IP',sUsuarioActualizacion='$sUsuario',iRatePercent='$iRatePercent' ".
                      "WHERE iConsecutivo='$iConsecutivo' AND iConsecutivoCompania='$iConsecutivoCompania' ";
           $success = $conexion->query($sql);
           if(!($success)){$transaccion_exitosa = false; $msj = "Error: The data of report has not been save successfully, please try again.";}
@@ -236,7 +238,7 @@
                     AND B.eStatus  = 'S'
                     AND C.iDeleted = '0' $flt_query
                     AND A.dFechaAplicacion BETWEEN '$fecha_inicial' 
-                    AND '$fecha_final'"; 
+                    AND '$fecha_final'";
       $result = $conexion->query($query);
       $rows   = $result->num_rows; 
       
@@ -287,6 +289,9 @@
        $flt_join = "LEFT  JOIN ct_unidades                AS U ON C.iConsecutivoUnidad = U.iConsecutivo ";
        $flt_join.= "LEFT  JOIN ct_unidad_modelo           AS M ON U.iModelo            = M.iConsecutivo";
        $flt_field= "C.sVINUnidad, C.iConsecutivoUnidad, U.sVIN, U.iYear, M.sAlias AS sMake, U.sTipo, C.iPDAmount AS iPDAmount "; 
+    }else if($iTipoReporte == "2"){
+       $flt_join  = "LEFT JOIN ct_operadores AS U ON C.iConsecutivoOperador = U.iConsecutivo "; 
+       $flt_field = "C.sNombreOperador, C.iConsecutivoOperador, U.sNombre, DATE_FORMAT(U.dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, U.iExperienciaYear, U.iNumLicencia, DATE_FORMAT(U.dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia "; 
     }
     
     //contando registros // 
@@ -314,7 +319,7 @@
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
         
-        $sql    = "SELECT A.iConsecutivo AS iConsecutivoEndosoMensual, A.iConsecutivoCompania, IF(C.eAccion = 'A','ADD','DELETE') AS eAccion, C.iConsecutivo AS iConsecutivoEndoso, E.sNumeroPoliza, F.sDescripcion,DATE_FORMAT(C.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
+        $sql    = "SELECT A.iConsecutivo AS iConsecutivoEndosoMensual,C.iConsecutivo, A.iConsecutivoCompania, IF(C.eAccion = 'A','ADD','DELETE') AS eAccion, C.iConsecutivo AS iConsecutivoEndoso, E.sNumeroPoliza, F.sDescripcion,DATE_FORMAT(C.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
                   "$flt_field ".
                   "FROM cb_endoso_mensual AS A ".
                   "INNER JOIN cb_endoso_mensual_relacion AS B ON A.iConsecutivo       = B.iConsecutivoEndosoMensual ".
@@ -329,18 +334,19 @@
             while ($items = $result->fetch_assoc()) { 
                 
                 if($iTipoReporte == "1"){
-                    $Descripcion = $items['iYear']." ".$items['sMake']." ".$items['sVIN']." \$".number_format($items['iPDAmount'],2,'.','')." ".$items['sTipo'];
+                    $Descripcion = $items['iYear']." - ".$items['sMake']." - ".$items['sVIN']." - \$".number_format($items['iPDAmount'],2,'.','')." ".$items['sTipo'];
+                }else if($iTipoReporte == "2"){
+                    $Descripcion = $items['sNombre']." - DOB: ".$items['dFechaNacimiento']." - LIC: ".$items['iNumLicencia']." EXP.".$items['dFechaExpiracionLicencia'];
                 }
-                 $btns = "";
-                 /*$btns = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>".
-                         "<div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete\"><i class=\"fa fa-trash\"></i> <span></span></div>";*/
-                 $htmlTabla .= "<tr>".
-                               "<td>".$items['iConsecutivo']."</td>".
-                               "<td>".$items['eAccion']."</td>".
-                               "<td>".$items['sNumeroPoliza']." - ".$items['sDescripcion']."</td>". 
-                               "<td>".$Descripcion."</td>".
-                               "<td>".$items['dFechaAplicacion']."</td>".
-                               "<td>$btns</td></tr>";
+                 
+                $btns       = "<div class=\"btn_delete_detalle btn-icon trash btn-left\" title=\"Delete of this Report\"><i class=\"fa fa-trash\"></i> <span></span></div>";
+                $htmlTabla .= "<tr>".
+                              "<td style=\"width: 25px;\">".$items['iConsecutivo']."</td>".
+                              "<td class=\"txt-c\">".$items['eAccion']."</td>".
+                              "<td>".$items['sNumeroPoliza']." - ".$items['sDescripcion']."</td>". 
+                              "<td>".$Descripcion."</td>".
+                              "<td class=\"txt-c\">".$items['dFechaAplicacion']."</td>".
+                              "<td>$btns</td></tr>";
             }
         
             

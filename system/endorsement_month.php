@@ -43,6 +43,7 @@ var fn_endosos = {
         init : function(){
             fn_endosos.fillgrid();
             $('.num').keydown(fn_solotrucking.inputnumero); 
+            $('.decimal').keydown(fn_solotrucking.inputdecimals);
             //Filtrado con la tecla enter
             $(fn_endosos.data_grid + ' #grid-head1 input').keyup(function(event){
                 if (event.keyCode == '13') {
@@ -109,16 +110,16 @@ var fn_endosos = {
             }); 
         },
         add : function(){
-           $('#frm_edit_new :text, #frm_edit_new select').val('').removeClass('error');
+           $('#frm_edit_new :text, #frm_edit_new select,#frm_edit_new input ').val('').removeClass('error');
            var fechas = fn_solotrucking.obtener_fechas();
            $("#frm_edit_new input[name=dFechaInicio]").val(fechas[1]); 
            $("#frm_edit_new input[name=dFechaFin]").val(fechas[2]);
            //Habilitar campos:
-           $('#dFechaInicio, #dFechaFin').removeProp('readonly');
-           $('#frm_edit_new select[name=iConsecutivoCompania], #frm_edit_new select[name=iConsecutivoBroker],#frm_edit_new select[name=iTipoReporte]').removeProp('disabled'); 
+           $('#dFechaInicio, #dFechaFin').removeProp('readonly').removeClass('readonly');
+           $('#frm_edit_new select[name=iConsecutivoCompania], #frm_edit_new select[name=iConsecutivoBroker],#frm_edit_new select[name=iTipoReporte]').removeProp('disabled').removeClass('readonly'); 
            $("#frm_edit_new input[name=dFechaInicio], #frm_edit_new input[name=dFechaFin]" ).datepicker( "option", "disabled", false );
-           $("#frm_edit_new textarea[name=sMensajeEmail]").val("Please create new endorsement for the following insured.");
-           $('#frm_edit_new #data_grid_detalle').hide();
+           $("#frm_edit_new textarea[name=sMensajeEmail]").val("Please create new endorsement for the following insured."); 
+           $('#frm_edit_new #data_grid_detalle,#frm_edit_new .btns_only_edit').hide();
            fn_popups.resaltar_ventana('frm_edit_new');  
         },
         edit : function (){
@@ -132,13 +133,13 @@ var fn_endosos = {
                 $.post("endorsement_month_server.php",{accion:"get_data", clave: clave, domroot : "frm_edit_new"},
                 function(data){
                     if(data.error == '0'){
-                        $('#frm_edit_new :text, #frm_edit_new select').val('').removeClass('error');
+                        $('#frm_edit_new :text, #frm_edit_new select,#frm_edit_new input ').val('').removeClass('error');
                         //Deshabilitar campos:
-                        $('#dFechaInicio, #dFechaFin').prop('readonly','readonly');
-                        $('#frm_edit_new select[name=iConsecutivoCompania], #frm_edit_new select[name=iConsecutivoBroker],#frm_edit_new select[name=iTipoReporte]').prop('disabled','disabled');
+                        $('#dFechaInicio, #dFechaFin').addClass('readonly').prop('readonly','readonly');
+                        $('#frm_edit_new select[name=iConsecutivoCompania], #frm_edit_new select[name=iConsecutivoBroker],#frm_edit_new select[name=iTipoReporte]').prop('disabled','disabled').addClass('readonly');
                         $("#frm_edit_new input[name=dFechaInicio], #frm_edit_new input[name=dFechaFin]" ).datepicker( "option", "disabled", true );
                         eval(data.fields);
-                        $('#frm_edit_new #data_grid_detalle').show();
+                        $('#frm_edit_new #data_grid_detalle, #frm_edit_new .btns_only_edit').show();
                         fn_endosos.detalle.iConsecutivo = clave;
                         fn_endosos.detalle.fillgrid(); 
                         fn_popups.resaltar_ventana('frm_edit_new');
@@ -324,6 +325,11 @@ var fn_endosos = {
                     fn_endosos.detalle.fillgrid();
                 }
             },  
+        },
+        download_excel : function(iConsecutivoReporte){
+           if(iConsecutivoReporte != ""){
+                window.open('endorsement_month_xlsx.php?idReport='+iConsecutivoReporte);
+           }else{fn_solotrucking.mensaje("Please select before a valid dates."); } 
         }
 }     
 </script> 
@@ -389,7 +395,7 @@ var fn_endosos = {
     </div>
 </div>
 <!-- FORMULARIOS -->
-<div id="frm_edit_new" class="popup-form">
+<div id="frm_edit_new" class="popup-form" style="width: 80%;">
     <div class="p-header">
         <h2>EDIT OR ADD AN Endorsement</h2>
         <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('frm_edit_new');fn_endosos.fillgrid();"><i class="fa fa-times"></i></div>
@@ -397,7 +403,7 @@ var fn_endosos = {
     <div class="p-container">
     <div>
         <form>
-            <fieldset>
+            <fieldset style="padding-bottom: 10px;">
                 <legend style="margin-bottom:0px!important;">General Information</legend>
                 <table id="data_general" style="width:100%;">
                     <tr><td colspan="100%"><p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p></td></tr>
@@ -450,33 +456,33 @@ var fn_endosos = {
                             <div class="field_item"> 
                                 <label style="padding: 9px 0px;"><span style="color:#ff0000;">*</span> Application date from </label><br>
                                 <div>
-                                    <input tabindex="5" id="dFechaInicio" name="dFechaInicio" type="text"  placeholder="MM/DD/YY" style="width: auto!important;" class="required-field">
-                                    <label class="check-label" style="position: relative;top: 0px;color:#000!important;padding: 15px;">To</label>
-                                    <input tabindex="6" id="dFechaFin" name="dFechaFin"   type="text"  placeholder="MM/DD/YY" style="width: auto!important;" class="required-field">
+                                    <input tabindex="5" id="dFechaInicio" name="dFechaInicio" type="text"  placeholder="MM/DD/YY" style="width: 40%;margin: 5px 0px!important;" class="required-field">
+                                    <label class="check-label" style="position: relative;top: 0px;color: #000!important;padding: 0;width: 10%;display: inline-block;margin: 0;text-align: center;">To</label>
+                                    <input tabindex="6" id="dFechaFin" name="dFechaFin"   type="text"  placeholder="MM/DD/YY" style="width: 40%;margin: 5px 0px!important;" class="required-field">
                                 </div>
                             </div> 
                         </td>
                         <td style="width:50%!important;vertical-align: top;">
                         <div class="field_item">
-                            <label>General Comments:<span style="color:#044c8b;font-size:10px;">(This comments are not be send by email to brokers)</span></label> 
-                            <textarea tabindex="4" id="sComentarios" name ="sComentarios" style="resize:none;height: 14px!important;padding: 1px;"></textarea>
+                            <label>Rate %:</label> 
+                            <input tabindex="4" id="iRatePercent" name="iRatePercent" value="" type="text" class="decimal"/>
                         </div>
                         </td>
                     </tr>
                 </table>
-                <table style="width: 100%;" cellpadding="0" cellspacing="0">
+                <table style="width: 100%;" cellpadding="0" cellspacing="0" style="margin-bottom: 5px;">
                 <tr id="data_grid_detalle">
                     <td colspan="2">
                     <h4 class="popup-gridtit">Endorsement Description</h4>
                     <table class="popup-datagrid" style="margin-bottom: 10px;" cellpadding="0" cellspacing="0">
                         <thead>
                             <tr id="grid-head2">
-                                <td class="etiqueta_grid" title="ID of endorsement on internal system.">ID</td>
-                                <td class="etiqueta_grid">Action</td>
-                                <td class="etiqueta_grid">Policy No.</td>
+                                <td class="etiqueta_grid txt-c" title="ID of endorsement on internal system.">ID</td>
+                                <td class="etiqueta_grid txt-c" style="width: 65px;">Action</td>
+                                <td class="etiqueta_grid" style="width: 200px;">Policy No.</td>
                                 <td class="etiqueta_grid">Descripcion</td>
-                                <td class="etiqueta_grid">Application Date</td>
-                                <td class="etiqueta_grid" style="width: 100px;text-align: center;"></td>
+                                <td class="etiqueta_grid txt-c" style="width: 115px;">Application Date</td>
+                                <td class="etiqueta_grid" style="width: 80px;text-align: center;"></td>
                             </tr>
                         </thead>
                         <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
@@ -506,7 +512,10 @@ var fn_endosos = {
                 </tr>
                 </table> 
                 <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('frm_edit_new');fn_endosos.fillgrid();" style="margin-right:10px;background:#e8051b;">CLOSE</button>
-                <button type="button" class="btn-1" onclick="fn_endosos.save();">Save</button> 
+                <button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.email.send_confirm();" style="margin-right:10px;background: #87c540;width: 140px;">SEND E-MAIL</button>
+                <button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.email.preview();" style="margin-right:10px;background:#5ec2d4;width: 140px;">PREVIEW E-MAIL</button> 
+                <button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.download_excel($('#frm_edit_new input[name=iConsecutivo]').val());" style="margin-right:10px;background: #87c540;width: 140px;">DOWNLOAD EXCEL FILE</button> 
+                <button type="button" class="btn-1" onclick="fn_endosos.save();" style="margin-right:10px;">SAVE</button> 
             </fieldset>
         </form>
     </div>
