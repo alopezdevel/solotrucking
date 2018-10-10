@@ -62,13 +62,14 @@
     
     if($rows > 0){
         
+        #DATOS GENERALES DEL REPORTE
         $DatosReporte = $result->fetch_assoc();
-        print_r($DatosReporte);
         
         if($DatosReporte['iTipoReporte'] == "1"){
            $flt_join = "LEFT  JOIN ct_unidades                AS U ON C.iConsecutivoUnidad = U.iConsecutivo ";
            $flt_join.= "LEFT  JOIN ct_unidad_modelo           AS M ON U.iModelo            = M.iConsecutivo ";
            $flt_field= "C.sVINUnidad, C.iConsecutivoUnidad, U.sVIN, U.iYear, M.sAlias AS sMake, U.sTipo, C.iPDAmount AS iPDAmount "; 
+           
         }else if($DatosReporte['iTipoReporte'] == "2"){
            $flt_join  = "LEFT JOIN ct_operadores AS U ON C.iConsecutivoOperador = U.iConsecutivo "; 
            $flt_field = "C.sNombreOperador, C.iConsecutivoOperador, U.sNombre, DATE_FORMAT(U.dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, U.iExperienciaYear, U.iNumLicencia, DATE_FORMAT(U.dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia "; 
@@ -87,57 +88,55 @@
         $rows   = $r->num_rows; 
         
         if($rows > 0){
+            #DATOS DEL DETALLE DEL REPORTE
             $DatosDetalle = mysql_fetch_all($r);
-            print_r($DatosDetalle);
+            
+            #EXCEL BEGINS:
+            $objPHPExcel = new PHPExcel();  // Create new PHPExcel object
+            
+            // Set document properties
+            $objPHPExcel->getProperties()->setCreator("Solo-Trucking Insurance System")->setLastModifiedBy("Solo-Trucking Insurance System")->setTitle("Solo-Trucking Insurance On-line Reports")->setKeywords("office 2007 openxml php")->setCategory("result file"); 
+            
+            #ESTILOS 
+            $EstiloYellow = new PHPExcel_Style();
+            $EstiloYellow->applyFromArray
+            (array(
+                'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID,'color' => array('rgb' => 'FFFF00')),
+                'borders' => array('bottom' => array('style' => PHPExcel_Style_Border::BORDER_THIN),'color' => array('rgb' => '000000')),
+                'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
+                'font' => array('bold' => true,'underline' => PHPExcel_Style_Font::UNDERLINE_DOUBLE)
+            ));
+            
+            $EstiloBorderRight = new PHPExcel_Style();
+            $EstiloBorderRight->applyFromArray(array('borders' => array('right' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('rgb' => '000000'))),));
+            
+            $EstiloBorderTop = new PHPExcel_Style();
+            $EstiloBorderTop->applyFromArray(array('borders' => array('top' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('rgb' => '000000'))),));
+            
+            $EstiloBorderbottom = new PHPExcel_Style();
+            $EstiloBorderbottom->applyFromArray(array('borders' => array('bottom' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('rgb' => '000000'))),));
+            
+            /*****/
+            $EstiloEncabezado3 = new PHPExcel_Style();
+            $EstiloEncabezado3->applyFromArray
+            (array(
+                'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID,'color' => array('argb' => 'FF8FB1DB')),
+                'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('argb' => 'FF6489b5'))),
+                'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
+                'font' => array('bold' => true)
+            ));
+            
+            $EstiloContenido = new PHPExcel_Style();
+            $EstiloContenido->applyFromArray
+            (array(
+                'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('argb' => 'FFababab'))),
+                'alignment' => array('vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
+            ));
+            /****/
         }
         exit;
         
-        #EXCEL BEGINS:
-        $objPHPExcel = new PHPExcel();  // Create new PHPExcel object
         
-        // Set document properties
-        $objPHPExcel->getProperties()
-        ->setCreator("Solo-Trucking Insurance System")
-        ->setLastModifiedBy("Solo-Trucking Insurance System")
-        ->setTitle("Solo-Trucking Insurance On-line Reports")
-        ->setSubject("Policies")
-        ->setDescription("Report of policies registered in the system that are about to expire.")
-        ->setKeywords("office 2007 openxml php")
-        ->setCategory("result file"); 
-        
-        #ESTILOS 
-        $EstiloEncabezado = new PHPExcel_Style();
-        $EstiloEncabezado->applyFromArray
-        (array(
-            'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID,'color' => array('argb' => 'FF538DD5')),
-            'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN),'color' => array('argb' => 'FF215698')),
-            'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
-            'font' => array('bold' => true)
-        ));
-        $EstiloEncabezado2 = new PHPExcel_Style();
-        $EstiloEncabezado2->applyFromArray
-        (array(
-            'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID,'color' => array('argb' => 'FFF2F2F2')),
-            'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('argb' => 'FFB8B8B8'))),
-            'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT,'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
-            'font' => array('color' => array('argb' => 'FF515151'),'size'=> 10,)
-        ));
-        
-        $EstiloEncabezado3 = new PHPExcel_Style();
-        $EstiloEncabezado3->applyFromArray
-        (array(
-            'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID,'color' => array('argb' => 'FF8FB1DB')),
-            'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('argb' => 'FF6489b5'))),
-            'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
-            'font' => array('bold' => true)
-        ));
-        
-        $EstiloContenido = new PHPExcel_Style();
-        $EstiloContenido->applyFromArray
-        (array(
-            'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('argb' => 'FFababab'))),
-            'alignment' => array('vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
-        ));
         
         
         //Encabezado del reporte.
