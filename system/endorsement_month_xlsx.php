@@ -68,7 +68,7 @@
         if($DatosReporte['iTipoReporte'] == "1"){
            $flt_join = "LEFT  JOIN ct_unidades                AS U ON C.iConsecutivoUnidad = U.iConsecutivo ";
            $flt_join.= "LEFT  JOIN ct_unidad_modelo           AS M ON U.iModelo            = M.iConsecutivo ";
-           $flt_field= "C.sVINUnidad, C.iConsecutivoUnidad, U.sVIN, U.iYear, M.sAlias AS sMake, U.sTipo, C.iPDAmount AS iPDAmount "; 
+           $flt_field= "C.sVINUnidad, C.iConsecutivoUnidad, U.sVIN, U.iYear, M.sAlias, M.sDescripcion AS sMake, U.sTipo, C.iPDAmount AS iPDAmount "; 
            
         }else if($DatosReporte['iTipoReporte'] == "2"){
            $flt_join  = "LEFT JOIN ct_operadores AS U ON C.iConsecutivoOperador = U.iConsecutivo "; 
@@ -94,13 +94,12 @@
             #EXCEL BEGINS:
             $objPHPExcel = new PHPExcel();  // Create new PHPExcel object
             
-            // Set document properties
+            //Set document properties
             $objPHPExcel->getProperties()->setCreator("Solo-Trucking Insurance System")->setLastModifiedBy("Solo-Trucking Insurance System")->setTitle("Solo-Trucking Insurance On-line Reports")->setKeywords("office 2007 openxml php")->setCategory("result file"); 
             
             #ESTILOS 
             $EstiloYellow = new PHPExcel_Style();
-            $EstiloYellow->applyFromArray
-            (array(
+            $EstiloYellow->applyFromArray(array(
                 'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID,'color' => array('rgb' => 'FFFF00')),
                 'borders' => array('bottom' => array('style' => PHPExcel_Style_Border::BORDER_THIN),'color' => array('rgb' => '000000')),
                 'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
@@ -115,24 +114,113 @@
             
             $EstiloBorderbottom = new PHPExcel_Style();
             $EstiloBorderbottom->applyFromArray(array('borders' => array('bottom' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('rgb' => '000000'))),));
-            
-            /*****/
-            $EstiloEncabezado3 = new PHPExcel_Style();
-            $EstiloEncabezado3->applyFromArray
-            (array(
-                'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID,'color' => array('argb' => 'FF8FB1DB')),
-                'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('argb' => 'FF6489b5'))),
+        
+            $EstiloEncabezado = new PHPExcel_Style();
+            $EstiloEncabezado->applyFromArray(array(
+                'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID,'color' => array('rgb' => 'FFFFFF')),
                 'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
                 'font' => array('bold' => true)
             ));
             
             $EstiloContenido = new PHPExcel_Style();
-            $EstiloContenido->applyFromArray
-            (array(
-                'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('argb' => 'FFababab'))),
-                'alignment' => array('vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
-            ));
-            /****/
+            $EstiloContenido->applyFromArray(array('borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('argb' => 'FFababab'))),'alignment' => array('vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),));
+            
+            #------------------------------INCEPTION---------------------------#
+            $objPHPExcel->setActiveSheetIndex(1);
+            $objPHPExcel->getActiveSheet()->setTitle("Inception");
+            //Encabezados:
+            $row = 1;
+            $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado, "A".$row.":L".$row);
+            $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(25);
+            //Definir encabezados:
+            if($DatosReporte['iTipoReporte'] == "1"){
+                $objPHPExcel->getActiveSheet()
+                ->setCellValue('A'.$row, 'Year')
+                ->setCellValue('B'.$row, 'Make')
+                ->setCellValue('C'.$row, 'Model')
+                ->setCellValue('D'.$row, 'VIN')
+                ->setCellValue('E'.$row, 'Value')
+                ->setCellValue('F'.$row, 'Type')
+                ->setCellValue('G'.$row, 'Leinholder Name')
+                ->setCellValue('H'.$row, 'Leinholder Address')
+                ->setCellValue('I'.$row, 'GVW')
+                ->setCellValue('J'.$row, 'Additional Vehicle Detail')
+                ->setCellValue('K'.$row, 'Garaging Location')
+                ->setCellValue('L'.$row, 'Garaging State');
+                
+            }
+            else if($DatosReporte['iTipoReporte'] == "2"){
+                $objPHPExcel->getActiveSheet()
+                ->setCellValue('A'.$row, 'Name')
+                ->setCellValue('B'.$row, 'DOB')
+                ->setCellValue('C'.$row, 'License Number')
+                ->setCellValue('D'.$row, 'License Expiration Date')
+                ->setCellValue('E'.$row, 'Experience Years');
+            } 
+            
+            foreach($DatosDetalle as $i => $l){
+                
+                $row++;
+                $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloContenido, "A".$row.":L".$row); 
+                $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(20);
+                if($DatosReporte['iTipoReporte'] == "1"){ 
+                    //Reporte contenido:
+                    $objPHPExcel->getActiveSheet()
+                    ->setCellValue('A'.$row, $DatosDetalle[$i]['iYear'])
+                    ->setCellValue('B'.$row, $DatosDetalle[$i]['sMake'])
+                    ->setCellValue('C'.$row, '')
+                    ->setCellValue('D'.$row, $DatosDetalle[$i]['sVIN'])
+                    ->setCellValue('E'.$row, $DatosDetalle[$i]['iPDAmount'])
+                    ->setCellValue('F'.$row, $DatosDetalle[$i]['sTipo']);
+                    
+                }else if($DatosReporte['iTipoReporte'] == "2"){
+                    $objPHPExcel->getActiveSheet()
+                    ->setCellValue('A'.$row, $DatosDetalle[$i]['sNombre'])
+                    ->setCellValue('B'.$row, $DatosDetalle[$i]['dFechaNacimiento'])
+                    ->setCellValue('C'.$row, $DatosDetalle[$i]['iNumLicencia'])
+                    ->setCellValue('D'.$row, $DatosDetalle[$i]['dFechaExpiracionLicencia'])
+                    ->setCellValue('E'.$row, $DatosDetalle[$i]['iExperienciaYear']);
+                }   
+                
+            }
+             
+            
+            #------------------------------SYNOPSIS---------------------------#
+            $objPHPExcel->setActiveSheetIndex(0);
+            $objPHPExcel->getActiveSheet()->setTitle("Synopsis");
+            $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloBorderTop, "A1:C1");
+            $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloBorderRight, "C1:C29"); 
+            $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloBorderBottom, "A29:C29"); 
+            
+            //Insured:
+            $objPHPExcel->getActiveSheet()->setCellValue('A1', 'Insured'); 
+            $objPHPExcel->getActiveSheet()->setCellValue('A1', $DatosReporte['sNombreCompania']);
+            //Policy #
+            $objPHPExcel->getActiveSheet()->setCellValue('A1', 'Policy #/UMR'); 
+            $objPHPExcel->getActiveSheet()->setCellValue('A1', $NoPolizas);
+            
+            
+            #CREATE A FILE NAME:
+            if($DatosReporte['iTipoReporte'] == "1"){$titleName = "Equipment List - ";}elseif($DatosReporte['iTipoReporte'] == "1"){$titleName = "Operator List - ";}
+            
+            $nombre_archivo = $titleName.'with Montly Reporting Tabs_'.$DatosReporte['sNombreCompania']."_".$DatosReporte['dFechaInicio']."_".$DatosReporte['dFechaFin'];
+            $nombre_archivo = $nombre_archivo.".xlsx";
+            
+            // Redirect output to a client’s web browser (Excel2007)
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment;filename="'.$nombre_archivo.'"');
+            header('Cache-Control: max-age=0');
+            // If you're serving to IE 9, then the following may be needed
+            header('Cache-Control: max-age=1');
+
+            // If you're serving to IE over SSL, then the following may be needed
+            header ('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+            header ('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT'); // always modified
+            header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+            header ('Pragma: public'); // HTTP/1.0
+
+            $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+            $objWriter->save('php://output');
         }
         exit;
         
@@ -140,6 +228,7 @@
         
         
         //Encabezado del reporte.
+        
         $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado, "A1:G1");
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', 'SOLO-TRUCKING INSURANCE COMPANY');
         $objPHPExcel->setActiveSheetIndex(0)->mergeCells("A1:G1");
@@ -190,28 +279,6 @@
         $objPHPExcel->getActiveSheet()->setTitle('Policies');
         // Set active sheet index to the first sheet, so Excel opens this as the first sheet
         $objPHPExcel->setActiveSheetIndex(0);
-        
-        #CREATE A FILE NAME:
-        $info_fecha = getdate();
-        $nombre_archivo = 'Report_of_Policies'.$info_fecha['year']."_".$info_fecha['month']."_".$info_fecha['mday'];
-        $nombre_archivo = $nombre_archivo.".xlsx";
-        
-        // Redirect output to a client’s web browser (Excel2007)
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="'.$nombre_archivo.'"');
-        header('Cache-Control: max-age=0');
-        // If you're serving to IE 9, then the following may be needed
-        header('Cache-Control: max-age=1');
-
-        // If you're serving to IE over SSL, then the following may be needed
-        header ('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-        header ('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT'); // always modified
-        header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
-        header ('Pragma: public'); // HTTP/1.0
-
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        $objWriter->save('php://output');
-        //exit; 
         
     }else{
        echo '<script language="javascript">alert(\'There were no results in your query, please try again..\')</script>';
