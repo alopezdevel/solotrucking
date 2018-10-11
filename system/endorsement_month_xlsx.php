@@ -104,7 +104,7 @@
             $EstiloYellow = new PHPExcel_Style();
             $EstiloYellow->applyFromArray(array(
                 'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID,'color' => array('rgb' => 'FFFF00')),
-                'borders' => array('bottom' => array('style' => PHPExcel_Style_Border::BORDER_THIN),'color' => array('rgb' => '000000')),
+                'borders' => array('bottom' => array('style' => PHPExcel_Style_Border::BORDER_THIN),'color' => array('rgb' => '000000'),'right' => array('style' => PHPExcel_Style_Border::BORDER_THIN),'color' => array('rgb' => '000000')),
                 'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
                 'font' => array('bold' => true,'underline' => PHPExcel_Style_Font::UNDERLINE_DOUBLE)
             ));
@@ -321,10 +321,18 @@
             }else{$row = 12;}
             
             //Linea division Amarilla:
-            $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloYellow, "A24:C24");
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A24', 'NOTES AND WARRANTIES');
-            $objPHPExcel->setActiveSheetIndex(0)->mergeCells("A24:C24");
-            $objPHPExcel->getActiveSheet()->getRowDimension('24')->setRowHeight(15);
+            $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloYellow, "A".$row.":C".$row);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A'.$row, 'NOTES AND WARRANTIES');
+            $objPHPExcel->setActiveSheetIndex(0)->mergeCells("A".$row.":C".$row);
+            $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(15);
+            
+            $row+=1;
+            $content = "\- All values should be stated amount or ACV.\r\n".
+                       "\- Values cannot depreciate during the policy term. If a unit is totalled, it must remain on the list of equipment.\r\n".
+                       "\- Vehicle license for over the road use must have a full and verified 17-character VIN.  Helpful Websites to verify:";
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A'.$row,$content);
+            $objPHPExcel->setActiveSheetIndex(0)->mergeCells("A".$row.":C".$row);
+            $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(50);
             
             
             #CREATE A FILE NAME:
