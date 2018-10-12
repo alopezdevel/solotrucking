@@ -86,6 +86,7 @@
                    <ul>
                         <li><a href="endorsement_request">New for Drivers</a></li>
                         <li><a href="endorsement_request_units">New for Units</a></li> 
+                        <li><a href="endorsement_month">Monthly Report to CRC</a></li>
                         <li><a href="endorsement_files">Upload files to endorsements</a></li> 
                         <li><a href="brokers">Configure e-mails for Brokers</a></li>
                         <li style="display: none;"><a href="endorsements">New Endorsement like a company</a></li> 

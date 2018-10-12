@@ -82,7 +82,7 @@
                          case 'SB': 
                             $estado      = 'SENT TO BROKERS<br><span style="font-size:11px!important;">Your endorsement has been sent to the brokers.</span>';
                             $class       = "yellow";
-                            //$btn_confirm = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of endorsement\"><i class=\"fa fa-pencil-square-o\"></i></div>"; 
+                            $btn_confirm = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of endorsement\"><i class=\"fa fa-pencil-square-o\"></i></div>"; 
                             //$btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$usuario['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>";
                          break;
                          case 'P': 
@@ -448,5 +448,91 @@
       $response = array("msj"=>"$msj","error"=>"$error");   
       echo json_encode($response);    
   }
+  
+  #ESTATUS ENDOSO:
+  function estatus_get_data(){
+    
+    #VARIABLES
+    $error   = '0';
+    $msj     = "";
+    $fields  = "";
+    $clave   = trim($_POST['clave']);
+    $domroot = $_POST['domroot'];
+    
+    include("cn_usuarios.php");
+    $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+    $transaccion_exitosa = true;
+    $sql    = "SELECT iConsecutivo,sComentarios,iConsecutivoPoliza,sNumeroEndosoBroker,eStatus,iConsecutivoCompania,iConsecutivoBroker,eStatus,iRatePercent,sComentarios,sEmail,sMensajeEmail,iTipoReporte, DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio,DATE_FORMAT(dFechaFin,'%m/%d/%Y') AS dFechaFin ".
+              "FROM cb_endoso_mensual WHERE iConsecutivo = '$clave'";
+    $result = $conexion->query($sql);
+    $items  = $result->num_rows;   
+    if ($items > 0) {     
+        $data    = $result->fetch_assoc();
+        $llaves  = array_keys($data);
+        $datos   = $data;
+        foreach($datos as $i => $b){
+             $fields .= "\$('#$domroot :input[name=".$i."]').val('".$datos[$i]."');"; 
+        } 
+        $poliza = $data['iConsecutivoPoliza']; 
+    }
+    $conexion->rollback();
+    $conexion->close(); 
+    $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields","poliza"=>"$poliza");   
+    echo json_encode($response);
+  }
+  function estatus_save_data(){
+      #VARIABLES:
+      $error   = '0'; 
+      $valores = array();
+      $campos  = array(); 
+      $msj     = ""; 
+      
+      //Conexion:
+      include("cn_usuarios.php"); 
+      $conexion->autocommit(FALSE);
+                                                                                                                                                                                                                                            
+      $transaccion_exitosa = true;
+      $edit_mode           = trim($_POST['edit_mode']);
+      $iConsecutivo        = trim($_POST['iConsecutivo']);
+      $iConsecutivoBroker  = trim($_POST['iConsecutivoBroker']);
+    //$sComentarios        = $_POST['sComentarios'] != "" ? "'".utf8_decode(trim($_POST['sComentarios']))."'" : "''";
+      $sComentarios        = "''";
+      $iRatePercent        = trim($_POST['iRatePercent']);
+      $sEmail              = trim($_POST['sEmail']);  
+      $sMensajeEmail       = $_POST['sMensajeEmail'] != "" ? "'".utf8_decode(trim($_POST['sMensajeEmail']))."'" : "''";
+      $fecha_inicial       = date('Y-m-d',strtotime(trim($_POST['dFechaInicio'])));
+      $fecha_final         = date('Y-m-d',strtotime(trim($_POST['dFechaFin'])));
+      $dFechaActual        = date("Y-m-d H:i:s");
+      $IP                  = $_SERVER['REMOTE_ADDR'];
+      $sUsuario            = $_SESSION['usuario_actual'];
+      $iTipoReporte        = trim($_POST['iTipoReporte']);
+      $iConsecutivoPoliza  = trim($_POST['iConsecutivoPoliza']);
+      
+      #INSERT
+      if($edit_mode == 'false'){
+            $sql     = "INSERT INTO cb_endoso_mensual (iConsecutivoCompania,iConsecutivoBroker,eStatus,sComentarios,sEmail,sMensajeEmail,dFechaInicio,dFechaFin,dFechaIngreso,sIP,sUsuarioIngreso, iRatePercent, iTipoReporte, iConsecutivoPoliza) ".
+                       "VALUES ('$iConsecutivoCompania','$iConsecutivoBroker','S',$sComentarios,'$sEmail',$sMensajeEmail,'$fecha_inicial','$fecha_final','$dFechaActual','$IP','$sUsuario','$iRatePercent','$iTipoReporte','$iConsecutivoPoliza')";
+            $success = $conexion->query($sql);
+            if(!($success)){$transaccion_exitosa = false; $msj = "Error: The data of report has not been save successfully, please try again.";}
+            else{
+                $iConsecutivo = $conexion->insert_id;
+                $add_endosos  = set_endosos_data($iTipoReporte,$iConsecutivo,$iConsecutivoCompania,$iConsecutivoBroker,$iConsecutivoPoliza,$fecha_inicial,$fecha_final,false,$conexion); 
+                if(!($add_endosos)){$transaccion_exitosa = false;}
+            }
  
+      }
+      #UPDATE
+      else if($edit_mode == "true"){
+          $sql     = "UPDATE cb_endoso_mensual SET sComentarios=$sComentarios,sEmail='$sEmail',sMensajeEmail=$sMensajeEmail, dFechaActualizacion='$dFechaActual',sIP='$IP',sUsuarioActualizacion='$sUsuario',iRatePercent='$iRatePercent' ".
+                     "WHERE iConsecutivo='$iConsecutivo' AND iConsecutivoCompania='$iConsecutivoCompania' ";
+          $success = $conexion->query($sql);
+          if(!($success)){$transaccion_exitosa = false; $msj = "Error: The data of report has not been save successfully, please try again.";}
+      }
+     
+      if($transaccion_exitosa){$conexion->commit();$msj = "The data has been saved successfully.";}else{$conexion->rollback();$error="1";}
+      
+      $conexion->close();
+      $response = array("error"=>"$error","msj"=>"$msj","iConsecutivo"=>"$iConsecutivo");
+      echo json_encode($response);
+  }
 ?>
