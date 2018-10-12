@@ -105,7 +105,7 @@ var fn_endosos = {
                     $(fn_endosos.data_grid + " tfoot #pagina_actual").val(data.pagina);
                     fn_endosos.pagina_actual = data.pagina; 
                     fn_endosos.edit();
-                    //fn_endosos.delete_confirm();
+                    fn_endosos.delete_confirm();
                 }
             }); 
         },
@@ -151,7 +151,9 @@ var fn_endosos = {
                 },"json");      
            } 
         },
-        save : function (){
+        save : function (ghost){
+            
+           if(!(ghost)){ghost = false;}
            
            //Validate Fields:
            var valid = true;
@@ -169,8 +171,10 @@ var fn_endosos = {
                 function(data){
                     switch(data.error){
                      case '0':
-                        fn_solotrucking.mensaje(data.msj);
-                        fn_endosos.get_data(data.iConsecutivo);
+                        if(!(ghost)){
+                            fn_solotrucking.mensaje(data.msj);
+                            fn_endosos.get_data(data.iConsecutivo);
+                        }  
                      break;
                      case '1': fn_solotrucking.mensaje(data.msj); break;
                     }
@@ -243,7 +247,7 @@ var fn_endosos = {
            });  
         },
         borrar : function(clave){
-          $.post("endorsement_month_server.php",{accion:"delete_company", 'clave': clave},
+          $.post("endorsement_month_server.php",{accion:"delete_data", 'clave': clave},
            function(data){
                 fn_solotrucking.mensaje(data.msj);
                 fn_endosos.filtraInformacion();
@@ -315,7 +319,7 @@ var fn_endosos = {
                             $(fn_endosos.detalle.data_grid+" tfoot .pagina_actual").val(data.pagina);
                             fn_endosos.detalle.pagina_actual = data.pagina;
                             $("#frm_edit_new select[name=iConsecutivoPoliza").val(data.iConsecutivoPoliza); 
-                            //fn_endosos.delete_confirm();
+                            fn_endosos.detalle.borrar();
                         }
                     });     
                 }
@@ -343,13 +347,47 @@ var fn_endosos = {
                     fn_endosos.detalle.pagina_actual = $(fn_endosos.detalle.data_grid+" .paginas_total").val();
                     fn_endosos.detalle.fillgrid();
                 }
+            },
+            borrar : function(){
+              $(fn_endosos.detalle.data_grid + " tbody .btn_delete_detalle").bind("click",function(){
+                   var clave = $(this).parent().parent().find("td:eq(0)").html();
+                   $.post("endorsement_month_server.php",{accion:"detalle_delete_data", 'clave': clave,'claveReporte':fn_endosos.detalle.iConsecutivo},
+                   function(data){
+                        fn_solotrucking.mensaje(data.msj);
+                        fn_endosos.detalle.fillgrid();
+                   },"json"); 
+               });  
             },  
         },
         download_excel : function(iConsecutivoReporte){
            if(iConsecutivoReporte != ""){
                 window.open('endorsement_month_xlsx.php?idReport='+iConsecutivoReporte);
            }else{fn_solotrucking.mensaje("Please select before a valid dates."); } 
-        }
+        },
+        //Email:
+        email : { 
+            send : function(){
+              var iConsecutivo  = $('#data_general input[name=iConsecutivo]').val();
+              fn_endosos.save(true);
+              $.ajax({             
+                type:"POST", 
+                url:"endorsement_month_server.php", 
+                data:{'accion' : 'send_email','iConsecutivoReporte' : iConsecutivo},
+                async : true,
+                dataType : "json",
+                success : function(data){                               
+                    if(data.error == '0'){
+                          fn_solotrucking.mensaje(data.msj);
+                          fn_endosos.fillgrid();
+                    }
+                    
+                }
+              });    
+            },
+            send_confirm : function(){
+               $('#dialog_send_email').dialog('open');   
+            }, 
+        }, 
 }     
 </script> 
 <div id="layer_content" class="main-section">
@@ -383,7 +421,7 @@ var fn_endosos = {
                 <td class="etiqueta_grid"      onclick="fn_endosos.ordenamiento('sNombreCompania',this.cellIndex);">Company</td>
                 <td class="etiqueta_grid"      onclick="fn_endosos.ordenamiento('sNombreBroker',this.cellIndex);">Broker</td>
                 <td class="etiqueta_grid"      onclick="fn_endosos.ordenamiento('sEmail',this.cellIndex);">E-mails</td>
-                <td class="etiqueta_grid"      onclick="fn_endosos.ordenamiento('dFechaAplicacion',this.cellIndex);">Application Date</td>
+                <td class="etiqueta_grid"      onclick="fn_endosos.ordenamiento('dFechaAplicacion',this.cellIndex);">Sent Date</td>
                 <td class="etiqueta_grid"></td> 
             </tr>
         </thead>
@@ -440,7 +478,7 @@ var fn_endosos = {
                                 <select tabindex="2" id="iTipoReporte"  name="iTipoReporte" style="height: 25px!important;width: 99%!important;" class="required-field">
                                     <option value="">Select an opction...</option>
                                     <option value="1">Vehicles (Unit/Trailer)</option>
-                                    <option value="2">Drivers</option>
+                                    <!--<option value="2">Drivers</option>-->
                                 </select>
                             </div> 
                         </td>
@@ -516,7 +554,7 @@ var fn_endosos = {
                         <tfoot>
                             <tr>
                                 <td colspan="100%">
-                                    <div class="datagrid-pages" style="display: none;">
+                                    <div class="datagrid-pages">
                                         <input class="pagina_actual" type="text" readonly="readonly" size="3">
                                         <label> / </label>
                                         <input class="paginas_total" type="text" readonly="readonly" size="3">
@@ -525,11 +563,11 @@ var fn_endosos = {
                             </tr>
                             <tr>
                                 <td colspan="100%">
-                                    <div class="datagrid-menu-pages" style="display: none;">
-                                        <button class="pgn-inicio"    onclick="fn_endosos.detalle.firstPage();" title="First page"><span></span></button>
-                                        <button class="pgn-anterior"  onclick="fn_endosos.detalle.previousPage();" title="Previous"><span></span></button>
-                                        <button class="pgn-siguiente" onclick="fn_endosos.detalle.nextPage();" title="Next"><span></span></button>
-                                        <button class="pgn-final"     onclick="fn_endosos.detalle.lastPage();" title="Last Page"><span></span></button>
+                                    <div class="datagrid-menu-pages">
+                                        <button class="pgn-inicio"    onclick="fn_endosos.detalle.firstPage();" title="First page" type="button"><span></span></button>
+                                        <button class="pgn-anterior"  onclick="fn_endosos.detalle.previousPage();" title="Previous" type="button"><span></span></button>
+                                        <button class="pgn-siguiente" onclick="fn_endosos.detalle.nextPage();" title="Next" type="button"><span></span></button>
+                                        <button class="pgn-final"     onclick="fn_endosos.detalle.lastPage();" title="Last Page" type="button"><span></span></button>
                                     </div>
                                 </td>
                             </tr>
@@ -539,9 +577,9 @@ var fn_endosos = {
                 </tr>
                 </table> 
                 <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('frm_edit_new');fn_endosos.fillgrid();" style="margin-right:10px;background:#e8051b;">CLOSE</button>
-                <button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.email.send_confirm();" style="margin-right:10px;background: #87c540;width: 140px;">SEND E-MAIL</button>
-                <button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.email.preview();" style="margin-right:10px;background:#5ec2d4;width: 140px;">PREVIEW E-MAIL</button> 
-                <button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.download_excel($('#frm_edit_new input[name=iConsecutivo]').val());" style="margin-right:10px;background: #87c540;width: 140px;">DOWNLOAD EXCEL FILE</button> 
+                <button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.save(true);fn_solotrucking.mensaje('The data has been sent!, please check the account customerservice@solo-trucking.com to receive the response from the brokers.');window.open('endorsement_month_xlsx.php?idReport='+$('#frm_edit_new input[name=iConsecutivo]').val()+'&mail=1');" style="margin-right:10px;background: #87c540;width: 140px;">SEND E-MAIL</button>
+                <!--<button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.email.preview();" style="margin-right:10px;background:#5ec2d4;width: 140px;">PREVIEW E-MAIL</button>--> 
+                <button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.download_excel($('#frm_edit_new input[name=iConsecutivo]').val());" style="margin-right:10px;background: #87c540;width: 180px;">DOWNLOAD EXCEL FILE</button> 
                 <button type="button" class="btn-1" onclick="fn_endosos.save();" style="margin-right:10px;">SAVE</button> 
             </fieldset>
         </form>
@@ -550,7 +588,7 @@ var fn_endosos = {
 </div>
 <!-- DIALOGUES -->
 <div id="dialog_delete" title="Delete" style="display:none;">
-  <p><span class="ui-icon ui-icon-alert" ></span> Are you sure you want to disable the company? <br><span class="name" style="color:#0a87c1;font-weight:600;padding-left:20px;"></span></p>
+  <p><span class="ui-icon ui-icon-alert" ></span> Are you sure you want to delete the report for company? <br><span class="name" style="color:#0a87c1;font-weight:600;padding-left:20px;"></span></p>
   <form><div><input type="hidden" name="iConsecutivo" /></div></form>  
 </div>
 <!-- FOOTER -->

@@ -40,10 +40,12 @@
     
     session_start();   
     include("cn_usuarios.php");
-    include("functiones_genericas.php");  
+    include("functiones_genericas.php"); 
+    $conexion->autocommit(FALSE);  
 
     #PARAMETERS:
     isset($_GET['idReport']) ? $iConsecutivoReporte = urldecode($_GET['idReport']) : $iConsecutivoReporte = ""; 
+    isset($_GET['mail'])     ? $iEmail              = urldecode($_GET['mail'])     : $iEmail = "0"; 
   
     /*$vFecha1 = substr($fecha_inicio,6,4).'-'.substr($fecha_inicio,0,2).'-'.substr($fecha_inicio,3,2); 
     $vFecha2 = substr($fecha_fin,6,4).'-'.substr($fecha_fin,0,2).'-'.substr($fecha_fin,3,2); */
@@ -52,7 +54,7 @@
     $filtro_query = "WHERE A.iConsecutivo = '$iConsecutivoReporte' ";
 
     #CONSULTA:
-    $query  = "SELECT A.iConsecutivo, A.iConsecutivoCompania, B.sNombreCompania, A.iConsecutivoBroker, C.sName AS sNombreBroker, A.dFechaInicio, A.dFechaFin, A.iRatePercent, A.iTipoReporte ".
+    $query  = "SELECT A.iConsecutivo, A.iConsecutivoCompania, B.sNombreCompania, A.iConsecutivoBroker, C.sName AS sNombreBroker, A.dFechaInicio, A.dFechaFin, A.iRatePercent, A.iTipoReporte, A.sMensajeEmail, A.sEmail ".
               "FROM cb_endoso_mensual  AS A ".
               "LEFT JOIN ct_companias  AS B ON A.iConsecutivoCompania = B.iConsecutivo ".
               "LEFT JOIN ct_brokers    AS C ON A.iConsecutivoBroker = C.iConsecutivo ".
@@ -70,18 +72,19 @@
            $flt_join.= "LEFT  JOIN ct_unidad_modelo           AS M ON U.iModelo            = M.iConsecutivo ";
            $flt_field= "C.sVINUnidad, C.iConsecutivoUnidad, U.sVIN, U.iYear, M.sAlias, M.sDescripcion AS sMake, U.sTipo, C.iPDAmount AS iPDAmount "; 
            
-        }else if($DatosReporte['iTipoReporte'] == "2"){
+        }
+        else if($DatosReporte['iTipoReporte'] == "2"){
            $flt_join  = "LEFT JOIN ct_operadores AS U ON C.iConsecutivoOperador = U.iConsecutivo "; 
            $flt_field = "C.sNombreOperador, C.iConsecutivoOperador, U.sNombre, DATE_FORMAT(U.dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, U.iExperienciaYear, U.iNumLicencia, DATE_FORMAT(U.dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia "; 
         }
         
         $sql    = "SELECT A.iConsecutivo AS iConsecutivoEndosoMensual,C.iConsecutivo, A.iConsecutivoCompania, IF(C.eAccion = 'A','ADD','DELETE') AS eAccion, ".
-                  "C.iConsecutivo AS iConsecutivoEndoso, E.sNumeroPoliza, F.sDescripcion,DATE_FORMAT(C.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, DATE_FORMAT(E.dFechaInicio,'%m/%d/%Y') AS inceptionDate, DATE_FORMAT(E.dFechaCaducidad,'%m/%d/%Y') AS expirationDate,".
+                  "C.iConsecutivo AS iConsecutivoEndoso, D.iConsecutivoPoliza, E.sNumeroPoliza, F.sDescripcion,F.sAlias,DATE_FORMAT(C.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, DATE_FORMAT(E.dFechaInicio,'%m/%d/%Y') AS inceptionDate, DATE_FORMAT(E.dFechaCaducidad,'%m/%d/%Y') AS expirationDate,".
                   "$flt_field ".
                   "FROM cb_endoso_mensual AS A ".
                   "INNER JOIN cb_endoso_mensual_relacion AS B ON A.iConsecutivo       = B.iConsecutivoEndosoMensual ".
                   "INNER JOIN cb_endoso                  AS C ON B.iConsecutivoEndoso = C.iConsecutivo AND A.iTipoReporte = C.iConsecutivoTipoEndoso  ".
-                  "INNER JOIN cb_endoso_estatus          AS D ON C.iConsecutivo       = D.iConsecutivoEndoso AND D.eStatus = 'S' ".
+                  "INNER JOIN cb_endoso_estatus          AS D ON C.iConsecutivo       = D.iConsecutivoEndoso AND D.eStatus = 'S' AND D.iConsecutivoPoliza = A.iConsecutivoPoliza ".
                   "INNER JOIN ct_polizas                 AS E ON D.iConsecutivoPoliza = E.iConsecutivo AND E.iDeleted = '0' AND A.iConsecutivoBroker = E.iConsecutivoBrokers  ".
                   "INNER JOIN ct_tipo_poliza             AS F ON E.iTipoPoliza        = F.iConsecutivo  ".$flt_join.
                   "WHERE A.iConsecutivo='$iConsecutivoReporte' ORDER BY A.dFechaAplicacion DESC"; 
@@ -383,24 +386,142 @@
             $nombre_archivo = $titleName.'with Montly Reporting Tabs_'.$DatosReporte['sNombreCompania']."_".$DatosReporte['dFechaInicio']."_".$DatosReporte['dFechaFin'];
             $nombre_archivo = $nombre_archivo.".xlsx";
             
-            // Redirect output to a client’s web browser (Excel2007)
-            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            header('Content-Disposition: attachment;filename="'.$nombre_archivo.'"');
-            header('Cache-Control: max-age=0');
-            // If you're serving to IE 9, then the following may be needed
-            header('Cache-Control: max-age=1');
+            if($iEmail == "1"){
+                
+                $nombre_archivo = "/tmp/$nombre_archivo";
+                $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007'); 
+                $objWriter->save("$nombre_archivo"); //Crea el archivo temporal en la ruta especifica.
+                                                                                 
+                $subject  = "Endorsement application - policy number: ".$DatosReporte['sNombreCompania'].", ".$DatosDetalle[0]['sNumeroPoliza']." - ".$DatosDetalle[0]['sAlias'];
+                $bodyData = "<p style=\"color:#000;margin:5px auto; text-align:left;\">".utf8_decode($DatosReporte['sMensajeEmail'])."</p><br><br>"; 
+                $htmlEmail= "<table style=\"font-size:12px;border:1px solid #6191df;border-radius:3px;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">".
+                            "<tr><td><h2 style=\"color:#313131;text-transform: uppercase; text-align:center;\">Endorsement application from Solo-Trucking Insurance</h2></td></tr>".
+                            "<tr><td>$bodyData</td></tr>".
+                            "<tr><td><p style=\"color:#010101;margin:5px auto 10px; text-align:left;font-size:11px;\">Please reply this email to the account:<a href=\"mailto:customerservice@solo-trucking.com\"> customerservice@solo-trucking.com</a></p></td></tr>". 
+                            "<tr><td><p style=\"color:#858585;margin:5px auto; text-align:left;font-size:10px;\">e-mail sent from Solo-trucking Insurance System.</p></td></tr>".
+                            "</table>";
+                
+                #HTML:
+                $htmlEmail  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"\"http://www.w3.org/TR/html4/strict.dtd\"><html>".
+                                "<head><meta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\">".
+                                "<title>Endorsement from Solo-Trucking Insurance</title></head>"; 
+                $htmlEmail .= "<body>$htmlEmail</body>";   
+                $htmlEmail .= "</html>";
+                
+                #EMAILS TO SEND (VALIDATE)
+                $emailRegex   = "/^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/"; 
+                $emailstosend = explode(",",$DatosReporte['sEmail']);
+                $countemails  = count($emailstosend);
+                $emailerror   = "";
+                  
+                for($z = 0; $z < $countemails; $z++){ 
+                    if($emailstosend[$z] != ""){
+                          $validaemail = preg_match($emailRegex,trim($emailstosend[$z]));
+                          if(!($validaemail)){$emailerror .= $emailstosend[$z]."<br>";}
+                    }
+                }
+                if($emailerror != ""){
+                    echo '<script language="javascript">alert(\'Please check the e-mail(s) address of the brokers and try again.\')</script>';
+                    echo "<script language='javascript'>window.close();</script>"; 
+                }
+                else{
+                    #Building Email Body:                                   
+                    require_once("./lib/phpmailer_master/class.phpmailer.php");
+                    require_once("./lib/phpmailer_master/class.smtp.php");
+                    
+                    #TERMINA CUERPO DEL MENSAJE
+                    $mail = new PHPMailer();   
+                    $mail->IsSMTP(); // telling the class to use SMTP
+                    $mail->Host       = "mail.solo-trucking.com"; // SMTP server
+                    //$mail->SMTPDebug  = 2; // enables SMTP debug information (for testing) 1 = errors and messages 2 = messages only
+                    $mail->SMTPAuth   = true;                  // enable SMTP authentication
+                    $mail->SMTPSecure = "TLS";                 // sets the prefix to the servier
+                    $mail->Host       = "smtp.gmail.com";      // sets GMAIL as the SMTP server
+                    $mail->Port       = 587;                   // set the SMTP port for the GMAIL server
+                    $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
+                    $mail->Password   = "SL09100242"; 
+                    $mail->SetFrom('systemsupport@solo-trucking.com', 'Solo-Trucking Insurance');
+                    $mail->AddReplyTo('customerservice@solo-trucking.com','Customer service Solo-Trucking');
+                    $mail->Subject    = $subject;
+                    $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
+                    $mail->MsgHTML($htmlEmail);
+                    $mail->IsHTML(true); 
+                    
+                    //Receptores:
+                    $nombre_destinatario = trim($DatosReporte['sNombreBroker']);
+                    foreach($emailstosend as $direccion){
+                        $mail->AddAddress(trim($direccion),$nombre_destinatario);
+                    }
+                    $mail->AddAttachment($nombre_archivo);
+                    $mail_error = false;
+                    if(!$mail->Send()){
+                        echo '<script language="javascript">alert(\'Error with sending the e-mail, please try again.\')</script>';
+                        echo "<script language='javascript'>window.close();</script>";  
+                        $mail->ClearAddresses();
+                    }else{
+                        
+                        $dFechaActual = date("Y-m-d H:i:s");
+                        $IP           = $_SERVER['REMOTE_ADDR'];
+                        $sUsuario     = $_SESSION['usuario_actual'];
+                        
+                        #ACTUALIZAR REPORTE COMO ENVIADO A LOS BROKERS:
+                        $query = "UPDATE cb_endoso_mensual SET eStatus='SB',dFechaAplicacion='$dFechaActual',dFechaActualizacion='$dFechaActual',sUsuarioActualizacion='$sUsuario',sIP='$IP' ".
+                                 "WHERE iConsecutivo = '".$DatosReporte['iConsecutivo']."'";
+                        $success = $conexion->query($query);
+                        if($success){
+                            
+                            #ACTUALIZAR ENDOSOS ASOCIADOS:
+                            $transaccion_exitosa = true;
+                            foreach($DatosDetalle as $i => $l){
+                               $query   = "UPDATE cb_endoso_estatus SET eStatus='SB',dFechaAplicacion='$dFechaActual',dFechaActualizacion='$dFechaActual',sUsuarioActualizacion='$sUsuario',sIP='$IP' ".
+                                          "WHERE iConsecutivoEndoso='".$DatosDetalle[$i]['iConsecutivo']."' AND iConsecutivoPoliza='".$DatosDetalle[$i]['iConsecutivoPoliza']."'"; 
+                               $success = $conexion->query($query);
+                               if(!($success)){$transaccion_exitosa=false;}
+                            }
+                            
+                            if($transaccion_exitosa){
+                                $conexion->commit(); 
+                                echo "<script language='javascript'>window.close();</script>";
+                            }else{
+                                echo '<script language="javascript">alert(\'Error with sending the e-mail, please try again.\')</script>';
+                                $conexion->rollback();
+                            }
+                            
+                        }
+                        else{
+                           $conexion->rollback();
+                           echo '<script language="javascript">alert(\'Error with sending the e-mail, please try again.\')</script>';
+                           echo "<script language='javascript'>window.close();</script>"; 
+                        }
+                    }
+                    $conexion->close();  
+                    $mail->ClearAttachments();
+                    unlink($nombre_archivo);  
+                }
+            }
+            else{
+                $conexion->rollback();
+                $conexion->close();  
+                // Redirect output to a client’s web browser (Excel2007)
+                header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                header('Content-Disposition: attachment;filename="'.$nombre_archivo.'"');
+                header('Cache-Control: max-age=0');
+                // If you're serving to IE 9, then the following may be needed
+                header('Cache-Control: max-age=1');
 
-            // If you're serving to IE over SSL, then the following may be needed
-            header ('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-            header ('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT'); // always modified
-            header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
-            header ('Pragma: public'); // HTTP/1.0
+                // If you're serving to IE over SSL, then the following may be needed
+                header ('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+                header ('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT'); // always modified
+                header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+                header ('Pragma: public'); // HTTP/1.0
 
-            $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-            $objWriter->save('php://output');
+                $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007'); 
+                $objWriter->save('php://output'); 
+            }
         }
        
-    }else{
+    }
+    else{
        echo '<script language="javascript">alert(\'There were no results in your query, please try again..\')</script>';
        echo "<script language='javascript'>window.close();</script>"; 
     }  

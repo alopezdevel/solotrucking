@@ -50,7 +50,7 @@
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
         
-        $sql    = "SELECT A.iConsecutivo, B.sNombreCompania, C.sName AS sNombreBroker, DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y %H:%i') AS dFechaAplicacion,B.iOnRedList,A.sEmail ".
+        $sql    = "SELECT A.iConsecutivo, B.sNombreCompania, C.sName AS sNombreBroker, DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y %H:%i') AS dFechaAplicacion,B.iOnRedList,A.sEmail, A.eStatus ".
                   "FROM cb_endoso_mensual  AS A ".
                   "INNER JOIN ct_companias AS B ON A.iConsecutivoCompania = B.iConsecutivo ".
                   "LEFT JOIN ct_brokers    AS C ON A.iConsecutivoBroker = C.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
@@ -59,19 +59,53 @@
            
         if($rows > 0){    
             while ($items = $result->fetch_assoc()) { 
+                
+                    switch($items["eStatus"]){
+                         case 'S': 
+                            $estado      = 'SENT TO SOLO-TRUCKING<br><span style="font-size:11px!important;">The data can be edited by you or by the employees of just-trucking.</span>';
+                            $class       = "blue";
+                            $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>".
+                                           "<div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete\"><i class=\"fa fa-trash\"></i> <span></span></div>"; 
+                         break;
+                         case 'A': 
+                            $estado      = 'APPROVED<br><span style="font-size:11px!important;">Your endorsement has been approved successfully.</span>';
+                            $class       = "green";
+                            $btn_confirm = "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$usuario['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>"; 
+                         break;
+                         case 'D': 
+                            $estado      = 'CANCELED<br><span style="font-size:11px!important;">Your endorsement has been canceled, please see the reasons on the edit button.</span>';
+                            $class       = "red";
+                            $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"View and Edit Endorsement Status\"><i class=\"fa fa-pencil-square-o\"></i></div>".
+                                           "<div class=\"btn_edit_estatus btn-icon send-email btn-left\" title=\"Send e-mail to the brokers\"><i class=\"fa fa-envelope\"></i></div>";
+                                        
+                         break;
+                         case 'SB': 
+                            $estado      = 'SENT TO BROKERS<br><span style="font-size:11px!important;">Your endorsement has been sent to the brokers.</span>';
+                            $class       = "yellow";
+                            //$btn_confirm = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of endorsement\"><i class=\"fa fa-pencil-square-o\"></i></div>"; 
+                            //$btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$usuario['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>";
+                         break;
+                         case 'P': 
+                            $estado      = 'IN PROCESS<br><span style="font-size:11px!important;">Your endorsement is being in process by the brokers.</span>';
+                            $class       = "orange";
+                            $btn_confirm = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of endorsement\"><i class=\"fa fa-pencil-square-o\"></i></div>";
+                            $btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$usuario['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>";
+                         break;
+                     }
+                
+                
                  //Redlist:
-                 if($items['iOnRedList'] == '1'){$redlist_class = "class=\"row_red\"";$redlist_icon  = "<i class=\"fa fa-star\" style=\"color:#e8051b;margin-right:4px;\"></i>";}
+                 if($items['iOnRedList'] == '1'){$redlist_class = "row_red";$redlist_icon  = "<i class=\"fa fa-star\" style=\"color:#e8051b;margin-right:4px;\"></i>";}
                  else{$redlist_icon = ""; $redlist_class = "";}
                  
-                 $btns = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>".
-                         "<div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete\"><i class=\"fa fa-trash\"></i> <span></span></div>";
-                 $htmlTabla .= "<tr ".$redlist_class.">
+                 $class = " class=\"$class $redlist_class\"";
+                 $htmlTabla .= "<tr$class>
                                     <td>".$items['iConsecutivo']."</td>".
                                    "<td>".$redlist_icon.$items['sNombreCompania']."</td>".
                                    "<td>".$items['sNombreBroker']."</td>". 
                                    "<td>".$items['sEmail']."</td>".
                                    "<td>".$items['dFechaAplicacion']."</td>".
-                                   "<td>$btns</td></tr>";
+                                   "<td>$btn_confirm</td></tr>";
             }
         
             
@@ -147,8 +181,8 @@
       
       #INSERT
       if($edit_mode == 'false'){
-            $sql     = "INSERT INTO cb_endoso_mensual (iConsecutivoCompania,iConsecutivoBroker,eStatus,sComentarios,sEmail,sMensajeEmail,dFechaInicio,dFechaFin,dFechaIngreso,sIP,sUsuarioIngreso, iRatePercent, iTipoReporte) ".
-                       "VALUES ('$iConsecutivoCompania','$iConsecutivoBroker','S',$sComentarios,'$sEmail',$sMensajeEmail,'$fecha_inicial','$fecha_final','$dFechaActual','$IP','$sUsuario','$iRatePercent','$iTipoReporte')";
+            $sql     = "INSERT INTO cb_endoso_mensual (iConsecutivoCompania,iConsecutivoBroker,eStatus,sComentarios,sEmail,sMensajeEmail,dFechaInicio,dFechaFin,dFechaIngreso,sIP,sUsuarioIngreso, iRatePercent, iTipoReporte, iConsecutivoPoliza) ".
+                       "VALUES ('$iConsecutivoCompania','$iConsecutivoBroker','S',$sComentarios,'$sEmail',$sMensajeEmail,'$fecha_inicial','$fecha_final','$dFechaActual','$IP','$sUsuario','$iRatePercent','$iTipoReporte','$iConsecutivoPoliza')";
             $success = $conexion->query($sql);
             if(!($success)){$transaccion_exitosa = false; $msj = "Error: The data of report has not been save successfully, please try again.";}
             else{
@@ -172,27 +206,28 @@
       $response = array("error"=>"$error","msj"=>"$msj","iConsecutivo"=>"$iConsecutivo");
       echo json_encode($response);
   }  
-  function delete_company(){
+  function delete_data(){
       
       $error = '0';  
-      $msj   = "";  
+      $msj   = ""; 
+      $clave = trim($_POST["clave"]); 
       //Conexion:
       include("cn_usuarios.php"); 
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
       $transaccion_exitosa = true;
       
-      //DESACTIVAR COMPANY:
-      $query = "UPDATE ct_companias SET iDeleted = '1' WHERE iConsecutivo = '".$_POST["clave"]."'";
-      $conexion->query($query);
-      $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
+      //BORRAR DATOS DE TABLA HIJA
+      $query = "DELETE FROM cb_endoso_mensual_relacion WHERE iConsecutivoEndosoMensual='$clave'";
+      $transaccion_exitosa = $conexion->query($query);
+      
       if($transaccion_exitosa){
         
-        //DESACTIVAR SUS USUARIOS:
-        $query   = "UPDATE cu_control_acceso SET iDeleted = '1', hActivado = '0' WHERE iConsecutivoCompania = '".$_POST["clave"]."' AND iConsecutivoTipoUsuario ='2' ";
+        //BORRRAR DATOS DEL REPORTE:
+        $query   = "DELETE FROM cb_endoso_mensual WHERE iConsecutivo='$clave'";
         $success = $conexion->query($query);
         
         if(!($success)){$msj = "A general system error ocurred : internal error, please try again.";$error = "1";}
-        else{$msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The company has been disabled succesfully!</p>';}
+        else{$msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The Report has been deleted succesfully!</p>';}
         
       }
       else{$msj = "A general system error ocurred : internal error";$error = "1";}
@@ -325,7 +360,7 @@
                   "FROM cb_endoso_mensual AS A ".
                   "INNER JOIN cb_endoso_mensual_relacion AS B ON A.iConsecutivo       = B.iConsecutivoEndosoMensual ".
                   "INNER JOIN cb_endoso                  AS C ON B.iConsecutivoEndoso = C.iConsecutivo AND A.iTipoReporte = C.iConsecutivoTipoEndoso  ".
-                  "INNER JOIN cb_endoso_estatus          AS D ON C.iConsecutivo       = D.iConsecutivoEndoso AND D.eStatus = 'S' ".
+                  "INNER JOIN cb_endoso_estatus          AS D ON C.iConsecutivo       = D.iConsecutivoEndoso AND D.eStatus = 'S' AND D.iConsecutivoPoliza = A.iConsecutivoPoliza ".
                   "INNER JOIN ct_polizas                 AS E ON D.iConsecutivoPoliza = E.iConsecutivo AND E.iDeleted = '0' AND A.iConsecutivoBroker = E.iConsecutivoBrokers  ".
                   "INNER JOIN ct_tipo_poliza             AS F ON E.iTipoPoliza        = F.iConsecutivo  ".$flt_join.$filtroQuery;
     $Result     = $conexion->query($query_rows);
@@ -350,7 +385,7 @@
                   "FROM cb_endoso_mensual AS A ".
                   "INNER JOIN cb_endoso_mensual_relacion AS B ON A.iConsecutivo       = B.iConsecutivoEndosoMensual ".
                   "INNER JOIN cb_endoso                  AS C ON B.iConsecutivoEndoso = C.iConsecutivo AND A.iTipoReporte = C.iConsecutivoTipoEndoso  ".
-                  "INNER JOIN cb_endoso_estatus          AS D ON C.iConsecutivo       = D.iConsecutivoEndoso AND D.eStatus = 'S' ".
+                  "INNER JOIN cb_endoso_estatus          AS D ON C.iConsecutivo       = D.iConsecutivoEndoso AND D.eStatus = 'S' AND D.iConsecutivoPoliza = A.iConsecutivoPoliza ".
                   "INNER JOIN ct_polizas                 AS E ON D.iConsecutivoPoliza = E.iConsecutivo AND E.iDeleted = '0' AND A.iConsecutivoBroker = E.iConsecutivoBrokers  ".
                   "INNER JOIN ct_tipo_poliza             AS F ON E.iTipoPoliza        = F.iConsecutivo  ".$flt_join.$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
         $result = $conexion->query($sql);
@@ -388,4 +423,30 @@
      $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla","iConsecutivoPoliza"=>"$iConsecutivoPoliza");   
      echo json_encode($response); 
   }
+  function detalle_delete_data(){
+      $error = '0';  
+      $msj   = ""; 
+      $clave = trim($_POST["clave"]); 
+      $claveR= trim($_POST["claveReporte"]);
+      //Conexion:
+      include("cn_usuarios.php"); 
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      
+      //BORRAR DATOS DE TABLA HIJA
+      $query = "DELETE FROM cb_endoso_mensual_relacion WHERE iConsecutivoEndoso='$clave' AND iConsecutivoEndosoMensual='$claveR'";
+      $transaccion_exitosa = $conexion->query($query);
+      
+      if($transaccion_exitosa){
+        $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The data in this report has been deleted succesfully!</p>';
+      }
+      else{$msj = "A general system error ocurred : internal error";$error = "1";}
+      
+      if($error == "0"){$conexion->commit();$conexion->close();}
+      else{$conexion->rollback();$conexion->close();}
+        
+      $response = array("msj"=>"$msj","error"=>"$error");   
+      echo json_encode($response);    
+  }
+ 
 ?>
