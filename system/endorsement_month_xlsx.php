@@ -92,7 +92,6 @@
             #DATOS DEL DETALLE DEL REPORTE
             $DatosDetalle = mysql_fetch_all($r);
             $NoPolizas    = array();
-            $TotalValuePD = 0;
             
             #EXCEL BEGINS:
             $objPHPExcel = new PHPExcel();  // Create new PHPExcel object
@@ -118,6 +117,19 @@
             $EstiloBorderbottom = new PHPExcel_Style();
             $EstiloBorderbottom->applyFromArray(array('borders' => array('bottom' => array('style' => PHPExcel_Style_Border::BORDER_MEDIUM,'color' => array('rgb' => '000000'))),));
         
+            $EstiloBorderTopRightB = new PHPExcel_Style();
+            $EstiloBorderTopRightB->applyFromArray(array(
+                'borders' => array('top' => array('style' => PHPExcel_Style_Border::BORDER_MEDIUM,'color' => array('rgb' => '000000')),'right' => array('style' => PHPExcel_Style_Border::BORDER_MEDIUM,'color' => array('rgb' => '000000')),'bottom' => array('style' => PHPExcel_Style_Border::BORDER_MEDIUM,'color' => array('rgb' => '000000'))),
+                'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,'vertical' => PHPExcel_Style_Alignment::VERTICAL_TOP, 'wrap' => true),
+            ));
+            
+            $EstiloBorderRightB = new PHPExcel_Style();
+            $EstiloBorderRightB->applyFromArray(array(
+                'borders' => array('right' => array('style' => PHPExcel_Style_Border::BORDER_MEDIUM,'color' => array('rgb' => '000000')),'bottom' => array('style' => PHPExcel_Style_Border::BORDER_MEDIUM,'color' => array('rgb' => '000000'))),
+                'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,'vertical' => PHPExcel_Style_Alignment::VERTICAL_TOP, 'wrap' => true),
+            ));
+            
+            
             $EstiloEncabezado = new PHPExcel_Style();
             $EstiloEncabezado->applyFromArray(array(
                 'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
@@ -129,6 +141,12 @@
             
             $EstiloAlignR = new PHPExcel_Style();
             $EstiloAlignR->applyFromArray(array('alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT)));
+            
+            $EstiloLink = new PHPExcel_Style();
+            $EstiloLink->applyFromArray(array(
+                'font' => array('color' => array('rgb' => '3b63c1'),'underline' => 'single'),
+                'borders' => array('right' => array('style' => PHPExcel_Style_Border::BORDER_MEDIUM,'color' => array('rgb' => '000000'))),
+            ));
             #------------------------------INCEPTION---------------------------#
             // Agregar un Sheet nuevo
             $objPHPExcel->createSheet(1);
@@ -186,8 +204,6 @@
                     if(!(in_array($DatosDetalle[$i]['sNumeroPoliza']."|".$DatosDetalle[$i]['inceptionDate']."|".$DatosDetalle[$i]['expirationDate'],$NoPolizas))){
                        array_push($NoPolizas,$DatosDetalle[$i]['sNumeroPoliza']."|".$DatosDetalle[$i]['inceptionDate']."|".$DatosDetalle[$i]['expirationDate']); 
                     }
-                    
-                    $TotalValuePD += $DatosDetalle[$i]['iPDAmount'];
                     
                 }else if($DatosReporte['iTipoReporte'] == "2"){
                     $objPHPExcel->getActiveSheet()
@@ -252,12 +268,13 @@
             $objPHPExcel->getActiveSheet()->setCellValue('B5', $iRatePercent);
             
             //Current Values:
-            $TotalValuePD = number_format($TotalValuePD,2,'.','')."%";
+            //$TotalValuePD = number_format($TotalValuePD,2,'.','')."%";
             $objPHPExcel->getActiveSheet()->getStyle('B7')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
             $objPHPExcel->getActiveSheet()->setCellValue('A7', 'Current Total Values**'); 
-            $objPHPExcel->getActiveSheet()->setCellValue('B7', $TotalValuePD);
+            $objPHPExcel->getActiveSheet()->setCellValue('C7', '=SUM(C10:C22)');
             
             //Set number style to all Column C
+            $objPHPExcel->getActiveSheet()->getStyle('C7')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
             $objPHPExcel->getActiveSheet()->getStyle('C10')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
             $objPHPExcel->getActiveSheet()->getStyle('C11')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
             $objPHPExcel->getActiveSheet()->getStyle('C12')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
@@ -277,7 +294,7 @@
             $objPHPExcel->getActiveSheet()->setCellValue('C9', 'Value Changes');
             $objPHPExcel->getActiveSheet()->setCellValue('A10', 'INCEPTION'); 
             $objPHPExcel->getActiveSheet()->setCellValue('B10', 'INCEPTION');
-            $objPHPExcel->getActiveSheet()->setCellValue('C10', $TotalValuePD);
+            $objPHPExcel->getActiveSheet()->setCellValue('C10', '=SUM(Inception!E:E)');
             
             $objPHPExcel->getActiveSheet()->setCellValue('A11', '1'); 
             $objPHPExcel->getActiveSheet()->setCellValue('A12', '2'); 
@@ -327,13 +344,38 @@
             $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(15);
             
             $row+=1;
-            $content = "\- All values should be stated amount or ACV.\r\n".
-                       "\- Values cannot depreciate during the policy term. If a unit is totalled, it must remain on the list of equipment.\r\n".
-                       "\- Vehicle license for over the road use must have a full and verified 17-character VIN.  Helpful Websites to verify:";
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A'.$row,$content);
-            $objPHPExcel->setActiveSheetIndex(0)->mergeCells("A".$row.":C".$row);
-            $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(50);
+            $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(76);
+            $objPHPExcel->getActiveSheet()->getStyle($row)->getAlignment()->setWrapText(true); 
+            $content = "- All values should be stated amount or ACV.
+- Values cannot depreciate during the policy term. If a unit is totalled, it must remain on the list of equipment.
+- Vehicle license for over the road use must have a full and verified 17-character VIN.  Helpful Websites to verify:";
+            $objPHPExcel->getActiveSheet()->setCellValue('A'.$row,$content);
+            $objPHPExcel->getActiveSheet()->mergeCells("A".$row.":C".$row);
             
+            $row+=1;
+            $objPHPExcel->getActiveSheet()->mergeCells("A".$row.":C".$row);
+            $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloLink, "A".$row.":C".$row);
+            $objPHPExcel->getActiveSheet()->setCellValue('A'.$row,'http://www.nisrinc.com/apps/cmvid/');
+            $objPHPExcel->getActiveSheet()->getCell('A'.$row)->getHyperlink()->setUrl("http://www.nisrinc.com/apps/cmvid/");
+            $row+=1;
+            $objPHPExcel->getActiveSheet()->mergeCells("A".$row.":C".$row);
+            $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloLink, "A".$row.":C".$row);
+            $objPHPExcel->getActiveSheet()->setCellValue('A'.$row,'http://www.autocheck.com/vehiclehistory/autocheck/en/');
+            $objPHPExcel->getActiveSheet()->getCell('A'.$row)->getHyperlink()->setUrl("http://www.autocheck.com/vehiclehistory/autocheck/en/");
+            
+            $row+=1;
+            $objPHPExcel->getActiveSheet()->mergeCells("A".$row.":C".$row);
+            $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloBorderTopRightB, "A".$row.":C".$row);
+            $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(160); 
+            $content = "Any person who knowingly and with intent to defraud any insurance company files an application for insurance or statement of claim containing any materially false or misleading information, or conceals for the purpose of misleading, information concerning any fact material thereto, commits a fraudulent insurance act, which is a crime and subjects the person to criminal and (NY; substantial) civil penalties.  In some states insurance benfits may also be denied.  By submission of this application the insured and the agent represent that all information is true and correct to the best of their knowledge and that they have not deleted or altered the questions herein. ";
+            $objPHPExcel->getActiveSheet()->setCellValue('A'.$row,$content);
+            
+            $row+=1;
+            $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloBorderRightB, "A".$row.":C".$row);
+            $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(43);
+            $content = "If there are any mortgagees, lien holders, loss payees, additional named insureds or other additional interests, attach a list to this CRC Application/Schedule of Values.";
+            $objPHPExcel->getActiveSheet()->setCellValue('A'.$row,$content);
+            $objPHPExcel->getActiveSheet()->mergeCells("A".$row.":C".$row);
             
             #CREATE A FILE NAME:
             if($DatosReporte['iTipoReporte'] == "1"){$titleName = "Equipment List - ";}elseif($DatosReporte['iTipoReporte'] == "1"){$titleName = "Operator List - ";}
@@ -357,64 +399,7 @@
             $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
             $objWriter->save('php://output');
         }
-        exit;
-        
-        
-        
-        
-        //Encabezado del reporte.
-        
-        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado, "A1:G1");
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', 'SOLO-TRUCKING INSURANCE COMPANY');
-        $objPHPExcel->setActiveSheetIndex(0)->mergeCells("A1:G1");
-        $objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(40);
-        
-        //Subtitulo del Reporte:
-        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado2, "A2:G2");
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A2', 'Results of the On-line Report: '.date('m/d/Y',strtotime($vFecha1))." - ".date('m/d/Y',strtotime($vFecha2))." ");
-        $objPHPExcel->setActiveSheetIndex(0)->mergeCells("A2:G2");
-        $objPHPExcel->getActiveSheet()->getRowDimension('2')->setRowHeight(25);
-        
-        //Columnas:
-        $row = 3;
-        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado3, "A".$row.":G".$row);
-        $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(35);
-        $objPHPExcel->setActiveSheetIndex(0)
-                ->setCellValue('A'.$row, 'COMPANY NAME')
-                ->setCellValue('B'.$row, 'POLICY NUMBER')
-                ->setCellValue('C'.$row, 'POLICY TYPE')
-                ->setCellValue('D'.$row, 'EFFECTIVE DATE')
-                ->setCellValue('E'.$row, 'EXPIRATION DATE')
-                ->setCellValue('F'.$row, 'BROKER')
-                ->setCellValue('G'.$row, 'INSURANCE');   
-              
-        while ($items = $result->fetch_assoc()){ 
-             
-             $row++;
-             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloContenido, "A".$row.":G".$row); 
-             $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(20);
-             //Reporte contenido:
-             $objPHPExcel->setActiveSheetIndex(0)
-                         ->setCellValue('A'.$row, $items['sNombreCompania'])
-                         ->setCellValue('B'.$row, $items['sNumeroPoliza'])
-                         ->setCellValue('C'.$row, $items['sTipoPoliza'])
-                         ->setCellValue('D'.$row, $items['dFechaEfectiva'])
-                         ->setCellValue('E'.$row, $items['dFechaCaducidad'])
-                         ->setCellValue('F'.$row, $items['sBrokerName'])
-                         ->setCellValue('G'.$row, $items['sInsuranceCo']); 
-              
-        }
-        
-        //Ajustar la dimension de las columnas:
-        foreach(range('A','G') as $columnID) {
-            $objPHPExcel->getActiveSheet()->getColumnDimension($columnID)->setAutoSize(true);
-        }
-                  
-        // Rename worksheet
-        $objPHPExcel->getActiveSheet()->setTitle('Policies');
-        // Set active sheet index to the first sheet, so Excel opens this as the first sheet
-        $objPHPExcel->setActiveSheetIndex(0);
-        
+       
     }else{
        echo '<script language="javascript">alert(\'There were no results in your query, please try again..\')</script>';
        echo "<script language='javascript'>window.close();</script>"; 

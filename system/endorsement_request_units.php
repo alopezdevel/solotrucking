@@ -178,6 +178,8 @@
             add : function(){
                $('#endorsements_edit_form input, #endorsements_edit_form select, #endorsements_edit_form textarea').val('');
                $("#frm_endorsement_information .required-field").removeClass("error");
+               $("#endorsements_edit_form #iConsecutivoCompania").removeClass('readonly').removeProp('disabled');
+               $("#endorsements_edit_form #eAccion").removeClass('readonly').removeProp('disabled');
                $("#files_datagrid, #info_policies").hide();//ocultar grid de archivos...
                $("#info_policies tbody").empty();
                fn_popups.resaltar_ventana('endorsements_edit_form'); 

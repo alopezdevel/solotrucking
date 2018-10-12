@@ -46,6 +46,7 @@
                         <li><a href="endorsements">New Endorsement</a></li> 
                         <li><a href="endorsement_request">Applications for Drivers</a></li>
                         <li><a href="endorsement_request_units">Applications for Units</a></li> 
+                        <li><a href="endorsement_month">Monthly Report to CRC</a></li>
                         <li><a href="endorsement_files">Upload Files</a></li>  
                         <li><a href="brokers">Brokers to send email</a></li>
                     </ul>

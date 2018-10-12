@@ -143,6 +143,7 @@
       $IP                  = $_SERVER['REMOTE_ADDR'];
       $sUsuario            = $_SESSION['usuario_actual'];
       $iTipoReporte        = trim($_POST['iTipoReporte']);
+      $iConsecutivoPoliza  = trim($_POST['iConsecutivoPoliza']);
       
       #INSERT
       if($edit_mode == 'false'){
@@ -152,7 +153,7 @@
             if(!($success)){$transaccion_exitosa = false; $msj = "Error: The data of report has not been save successfully, please try again.";}
             else{
                 $iConsecutivo = $conexion->insert_id;
-                $add_endosos  = set_endosos_data($iTipoReporte,$iConsecutivo,$iConsecutivoCompania,$iConsecutivoBroker,$fecha_inicial,$fecha_final,false,$conexion); 
+                $add_endosos  = set_endosos_data($iTipoReporte,$iConsecutivo,$iConsecutivoCompania,$iConsecutivoBroker,$iConsecutivoPoliza,$fecha_inicial,$fecha_final,false,$conexion); 
                 if(!($add_endosos)){$transaccion_exitosa = false;}
             }
  
@@ -210,9 +211,33 @@
       $items  = $result->fetch_assoc();
       echo $items['sEmail'];
   }
+  function get_policies_data(){
+     include("cn_usuarios.php");
+     $conexion->autocommit(FALSE);
+     $iBroker = trim($_POST['iConsecutivoBroker']);
+     $iCompan = trim($_POST['iConsecutivoCompania']); 
+       
+     $sql    = "SELECT P.iConsecutivo, P.sNumeroPoliza, T.sAlias, T.sDescripcion ".
+               "FROM ct_polizas AS P ".
+               "LEFT JOIN ct_tipo_poliza AS T ON P.iTipoPoliza = T.iConsecutivo ".
+               "WHERE iConsecutivoBrokers = '$iBroker' AND iConsecutivoCompania = '$iCompan'  AND P.iDeleted='0' AND dFechaCaducidad >= CURDATE() ORDER BY P.iConsecutivo DESC";
+     $result = $conexion->query($sql);
+     $rows   = $result->num_rows; 
+     
+     $htmlTabla = "<option value=\"\">Select an option...</option>"; 
+     if($rows > 0){     
+        while ($items = $result->fetch_assoc()) {
+            $htmlTabla .= "<option value=\"".$items['iConsecutivo']."\">".$items['iConsecutivo']."|".utf8_decode($items['sNumeroPoliza'])." - ".$items['sDescripcion']." (".$items['sAlias'].")"."</option>";
+        }                                                                                                                                                                       
+     }else {$htmlTabla .="";}
+     $conexion->rollback();
+     $conexion->close();
+     $htmlTabla = utf8_encode($htmlTabla);  
+     echo $htmlTabla; 
+  }
   
   #CARGAR DATOS DE ENDOSOS:
-  function set_endosos_data($iTipoReporte = "",$iConsecutivo,$iConsecutivoCompania,$iConsecutivoBroker,$fecha_inicial,$fecha_final,$post=false,$conexion = ""){
+  function set_endosos_data($iTipoReporte = "",$iConsecutivo,$iConsecutivoCompania,$iConsecutivoBroker,$iConsecutivoPoliza,$fecha_inicial,$fecha_final,$post=false,$conexion = ""){
       
       $valid = true;
       
@@ -237,6 +262,7 @@
                     AND C.iConsecutivoBrokers = '$iConsecutivoBroker' 
                     AND B.eStatus  = 'S'
                     AND C.iDeleted = '0' $flt_query
+                    AND B.iConsecutivoPoliza='$iConsecutivoPoliza'
                     AND A.dFechaAplicacion BETWEEN '$fecha_inicial' 
                     AND '$fecha_final'";
       $result = $conexion->query($query);
@@ -319,7 +345,7 @@
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
         
-        $sql    = "SELECT A.iConsecutivo AS iConsecutivoEndosoMensual,C.iConsecutivo, A.iConsecutivoCompania, IF(C.eAccion = 'A','ADD','DELETE') AS eAccion, C.iConsecutivo AS iConsecutivoEndoso, E.sNumeroPoliza, F.sDescripcion,DATE_FORMAT(C.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
+        $sql    = "SELECT A.iConsecutivo AS iConsecutivoEndosoMensual,D.iConsecutivoPoliza,C.iConsecutivo, A.iConsecutivoCompania, IF(C.eAccion = 'A','ADD','DELETE') AS eAccion, C.iConsecutivo AS iConsecutivoEndoso, E.sNumeroPoliza, F.sDescripcion,DATE_FORMAT(C.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
                   "$flt_field ".
                   "FROM cb_endoso_mensual AS A ".
                   "INNER JOIN cb_endoso_mensual_relacion AS B ON A.iConsecutivo       = B.iConsecutivoEndosoMensual ".
@@ -347,6 +373,7 @@
                               "<td>".$Descripcion."</td>".
                               "<td class=\"txt-c\">".$items['dFechaAplicacion']."</td>".
                               "<td>$btns</td></tr>";
+                $iConsecutivoPoliza = $items['iConsecutivoPoliza'];
             }
         
             
@@ -358,7 +385,7 @@
             
         } 
     }
-     $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
+     $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla","iConsecutivoPoliza"=>"$iConsecutivoPoliza");   
      echo json_encode($response); 
   }
 ?>

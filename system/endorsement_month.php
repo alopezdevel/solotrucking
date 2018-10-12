@@ -116,10 +116,11 @@ var fn_endosos = {
            $("#frm_edit_new input[name=dFechaFin]").val(fechas[2]);
            //Habilitar campos:
            $('#dFechaInicio, #dFechaFin').removeProp('readonly').removeClass('readonly');
-           $('#frm_edit_new select[name=iConsecutivoCompania], #frm_edit_new select[name=iConsecutivoBroker],#frm_edit_new select[name=iTipoReporte]').removeProp('disabled').removeClass('readonly'); 
+           $('#frm_edit_new select[name=iConsecutivoCompania], #frm_edit_new select[name=iConsecutivoBroker],#frm_edit_new select[name=iTipoReporte], #frm_edit_new select[name=iConsecutivoPoliza]').removeProp('disabled').removeClass('readonly'); 
            $("#frm_edit_new input[name=dFechaInicio], #frm_edit_new input[name=dFechaFin]" ).datepicker( "option", "disabled", false );
            $("#frm_edit_new textarea[name=sMensajeEmail]").val("Please create new endorsement for the following insured."); 
            $('#frm_edit_new #data_grid_detalle,#frm_edit_new .btns_only_edit').hide();
+           fn_endosos.get_policies_co();
            fn_popups.resaltar_ventana('frm_edit_new');  
         },
         edit : function (){
@@ -136,10 +137,11 @@ var fn_endosos = {
                         $('#frm_edit_new :text, #frm_edit_new select,#frm_edit_new input ').val('').removeClass('error');
                         //Deshabilitar campos:
                         $('#dFechaInicio, #dFechaFin').addClass('readonly').prop('readonly','readonly');
-                        $('#frm_edit_new select[name=iConsecutivoCompania], #frm_edit_new select[name=iConsecutivoBroker],#frm_edit_new select[name=iTipoReporte]').prop('disabled','disabled').addClass('readonly');
+                        $('#frm_edit_new select[name=iConsecutivoCompania], #frm_edit_new select[name=iConsecutivoBroker],#frm_edit_new select[name=iTipoReporte], #frm_edit_new select[name=iConsecutivoPoliza]').prop('disabled','disabled').addClass('readonly');
                         $("#frm_edit_new input[name=dFechaInicio], #frm_edit_new input[name=dFechaFin]" ).datepicker( "option", "disabled", true );
                         eval(data.fields);
                         $('#frm_edit_new #data_grid_detalle, #frm_edit_new .btns_only_edit').show();
+                        fn_endosos.get_policies_co();
                         fn_endosos.detalle.iConsecutivo = clave;
                         fn_endosos.detalle.fillgrid(); 
                         fn_popups.resaltar_ventana('frm_edit_new');
@@ -259,8 +261,24 @@ var fn_endosos = {
                     success : function(data){
                         $("#frm_edit_new input[name=sEmail").val(data);
                     }
-               });  
+               });
+               fn_endosos.get_policies_co();  
             }
+        },
+        get_policies_co : function(){
+           var broker   = $("#frm_edit_new select[name=iConsecutivoBroker]").val();
+           var compania =  $("#frm_edit_new select[name=iConsecutivoCompania]").val();
+           $.ajax({             
+                type:"POST", 
+                url:"endorsement_month_server.php", 
+                data:{accion:"get_policies_data","iConsecutivoBroker":broker,"iConsecutivoCompania":compania},
+                async : true,
+                dataType : "text",
+                success : function(data){
+                    $("#frm_edit_new select[name=iConsecutivoPoliza").empty().append(data);
+                }
+           });  
+             
         },
         //Detalle:
         detalle : {
@@ -293,9 +311,10 @@ var fn_endosos = {
                             $(fn_endosos.detalle.data_grid+" tbody").empty().append(data.tabla);
                             $(fn_endosos.detalle.data_grid+" tbody tr:even").addClass('gray');
                             $(fn_endosos.detalle.data_grid+" tbody tr:odd").addClass('white');
-                            $(fn_endosos.detalle.data_grid + " tfoot .paginas_total").val(data.total);
-                            $(fn_endosos.detalle.data_grid + " tfoot .pagina_actual").val(data.pagina);
-                            fn_endosos.detalle.pagina_actual = data.pagina; 
+                            $(fn_endosos.detalle.data_grid+" tfoot .paginas_total").val(data.total);
+                            $(fn_endosos.detalle.data_grid+" tfoot .pagina_actual").val(data.pagina);
+                            fn_endosos.detalle.pagina_actual = data.pagina;
+                            $("#frm_edit_new select[name=iConsecutivoPoliza").val(data.iConsecutivoPoliza); 
                             //fn_endosos.delete_confirm();
                         }
                     });     
@@ -412,7 +431,7 @@ var fn_endosos = {
                             <input id="iConsecutivo" name="iConsecutivo" type="hidden">
                             <div class="field_item">
                                 <label>Company <span style="color:#ff0000;">*</span>:</label>  
-                                <select tabindex="1" id="iConsecutivoCompania"  name="iConsecutivoCompania" class="required-field" style="height: 25px!important;width: 99%!important;"><option value="">Select an option...</option></select>
+                                <select tabindex="1" id="iConsecutivoCompania"  name="iConsecutivoCompania" class="required-field" style="height: 25px!important;width: 99%!important;" onchange="fn_endosos.get_policies_co();"><option value="">Select an option...</option></select>
                             </div>
                         </td>
                         <td style="width:50%!important;">
@@ -430,7 +449,7 @@ var fn_endosos = {
                         <td style="width:50%!important;">
                             <div class="field_item">
                                 <label>Broker <span style="color:#ff0000;">*</span>:</label>  
-                                <select tabindex="2" id="iConsecutivoBroker"  name="iConsecutivoBroker" class="required-field" style="height: 25px!important;width: 99%!important;" onchange="fn_endosos.get_broker_data();">
+                                <select tabindex="3" id="iConsecutivoBroker"  name="iConsecutivoBroker" class="required-field" style="height: 25px!important;width: 99%!important;" onchange="fn_endosos.get_broker_data();">
                                     <option value="">Select an option...</option>
                                     <option value="5">CRC INSURANCE SERVICES INC</option>
                                 </select>
@@ -438,8 +457,16 @@ var fn_endosos = {
                         </td>
                         <td style="width:50%!important;">
                             <div class="field_item">
+                                <label>Policy <span style="color:#ff0000;">*</span>:</label>  
+                                <select tabindex="4" id="iConsecutivoPoliza"  name="iConsecutivoPoliza" class="required-field" style="height: 25px!important;width: 99%!important;"><option value="">Select an option...</option></select>
+                            </div> 
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="100%">
+                            <div class="field_item">
                                 <label title="If you need to write more than one email, please separate them by comma symbol (,).">Broker E-mail <span style="color:#ff0000;">*</span>:</label>  
-                                <input id="sEmail"  name="sEmail" class="required-field" style="width: 99%!important;" title="If you need to write more than one email, please separate them by comma symbol (,)."/>
+                                <input tabindex="5" id="sEmail"  name="sEmail" class="required-field" style="width: 99%!important;" title="If you need to write more than one email, please separate them by comma symbol (,)."/>
                             </div> 
                         </td>
                     </tr>
@@ -447,7 +474,7 @@ var fn_endosos = {
                         <td colspan="100%">
                         <div class="field_item">
                             <label>Message to send: <span style="color:#044c8b;font-size:10px;">(This message will be displayed before the endorsement information.)</span></label> 
-                            <textarea tabindex="3" id="sMensajeEmail" name="sMensajeEmail" maxlenght="1000" style="resize: none;" title="Max. 1000 characters." style="height: 50px!important;"></textarea>
+                            <textarea tabindex="6" id="sMensajeEmail" name="sMensajeEmail" maxlenght="1000" style="resize: none;" title="Max. 1000 characters." style="height: 50px!important;"></textarea>
                         </div>
                         </td>
                     </tr>
@@ -456,16 +483,16 @@ var fn_endosos = {
                             <div class="field_item"> 
                                 <label style="padding: 9px 0px;"><span style="color:#ff0000;">*</span> Application date from </label><br>
                                 <div>
-                                    <input tabindex="5" id="dFechaInicio" name="dFechaInicio" type="text"  placeholder="MM/DD/YY" style="width: 40%;margin: 5px 0px!important;" class="required-field">
+                                    <input tabindex="7" id="dFechaInicio" name="dFechaInicio" type="text"  placeholder="MM/DD/YY" style="width: 40%;margin: 5px 0px!important;" class="required-field">
                                     <label class="check-label" style="position: relative;top: 0px;color: #000!important;padding: 0;width: 10%;display: inline-block;margin: 0;text-align: center;">To</label>
-                                    <input tabindex="6" id="dFechaFin" name="dFechaFin"   type="text"  placeholder="MM/DD/YY" style="width: 40%;margin: 5px 0px!important;" class="required-field">
+                                    <input tabindex="8" id="dFechaFin" name="dFechaFin"   type="text"  placeholder="MM/DD/YY" style="width: 40%;margin: 5px 0px!important;" class="required-field">
                                 </div>
                             </div> 
                         </td>
                         <td style="width:50%!important;vertical-align: top;">
                         <div class="field_item">
                             <label>Rate %:</label> 
-                            <input tabindex="4" id="iRatePercent" name="iRatePercent" value="" type="text" class="decimal"/>
+                            <input tabindex="9" id="iRatePercent" name="iRatePercent" value="" type="text" class="decimal"/>
                         </div>
                         </td>
                     </tr>
