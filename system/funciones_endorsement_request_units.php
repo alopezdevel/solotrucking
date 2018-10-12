@@ -724,84 +724,87 @@
       $Emails    = get_email_data($iConsecutivo);  
       $count     = count($Emails);
       $htmlTabla = "";
-      
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);
       
-      #ACTUALIZAMOS ENDOSO A SB..
-      if($count > 0){
-          #UPDATE ENDORSEMENT DETAILS:
-          $query = "UPDATE cb_endoso SET eStatus = 'SB',dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
-                   "WHERE iConsecutivo = '$iConsecutivo'"; 
-          $conexion->query($query);
-          if($conexion->affected_rows < 1){$success = false;$mensaje="Error to update the endorsement status, please check with de system admin.";} 
+      #ACTUALIZAMOS ENDOSO A SB..   
+      if($count > 0){ 
+          if($Emails['error']=="0"){
+              #UPDATE ENDORSEMENT DETAILS:
+              $query = "UPDATE cb_endoso SET eStatus = 'SB',dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
+                       "WHERE iConsecutivo = '$iConsecutivo'"; 
+              $conexion->query($query);
+              if($conexion->affected_rows < 1){$success = false;$mensaje="Error to update the endorsement status, please check with de system admin.";}     
+          }
+          else{$success = false;$msj=$Emails['error'];}
       }
       
-      for($x=0;$x < $count;$x++){
-          if($Emails[$x]['html']!= ""){
+      if($success){
+         for($x=0;$x < $count;$x++){
+              if($Emails[$x]['html']!= ""){
+                      
+                #UPDATE ENDORSEMENT DETAILS:
+                $query = "UPDATE cb_endoso_estatus SET eStatus = 'SB', dFechaAplicacion='".date("Y-m-d H:i:s")."', dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
+                         "WHERE iConsecutivoEndoso = '$iConsecutivo' AND iConsecutivoPoliza = '".$Emails[$x]['idPoliza']."'"; 
+                $conexion->query($query);
+                if($conexion->affected_rows < 1){$success = false;$mensaje="Error to update the endorsement status, please check with de system admin.";}    
                   
-            #UPDATE ENDORSEMENT DETAILS:
-            $query = "UPDATE cb_endoso_estatus SET eStatus = 'SB', dFechaAplicacion='".date("Y-m-d H:i:s")."', dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
-                     "WHERE iConsecutivoEndoso = '$iConsecutivo' AND iConsecutivoPoliza = '".$Emails[$x]['idPoliza']."'"; 
-            $conexion->query($query);
-            if($conexion->affected_rows < 1){$success = false;$mensaje="Error to update the endorsement status, please check with de system admin.";}    
-              
-            #HTML:
-            $htmlEmail  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"\"http://www.w3.org/TR/html4/strict.dtd\"><html>".
-                            "<head><meta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\">".
-                            "<title>Endorsement from Solo-Trucking Insurance</title></head>"; 
-            $htmlEmail .= "<body>".$Emails[$x]['html']."</body>";   
-            $htmlEmail .= "</html>";
-            
-            #TERMINA CUERPO DEL MENSAJE
-            $mail = new PHPMailer();   
-            $mail->IsSMTP(); // telling the class to use SMTP
-            $mail->Host       = "mail.solo-trucking.com"; // SMTP server
-            //$mail->SMTPDebug  = 2; // enables SMTP debug information (for testing) 1 = errors and messages 2 = messages only
-            $mail->SMTPAuth   = true;                  // enable SMTP authentication
-            $mail->SMTPSecure = "TLS";                 // sets the prefix to the servier
-            $mail->Host       = "smtp.gmail.com";      // sets GMAIL as the SMTP server
-            $mail->Port       = 587;                   // set the SMTP port for the GMAIL server
-            $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
-            $mail->Password   = "SL09100242"; 
-            $mail->SetFrom('systemsupport@solo-trucking.com', 'Solo-Trucking Insurance');
-            $mail->AddReplyTo('customerservice@solo-trucking.com','Customer service Solo-Trucking');
-            $mail->Subject    = $Emails[$x]['subject'];
-            $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
-            $mail->MsgHTML($htmlEmail);
-            $mail->IsHTML(true); 
-             
-            //Receptores:
-            $direcciones         = explode(",",trim($Emails[$x]['emails']));
-            $nombre_destinatario = trim($Emails[$x]['broker']);
-            foreach($direcciones as $direccion){
-                $mail->AddAddress(trim($direccion),$nombre_destinatario);
-            }
-              
-            //Atachments:
-            $files        = $Emails[$x]['files'];
-            $delete_files = "";
-            if($files != ""){
-               include("./lib/fpdf153/fpdf.php");//libreria fpdf
-               $file_tmp = fopen('tmp/'.$files["name"],"w") or die("Error when creating the file. Please check."); 
-               fwrite($file_tmp,$files["content"]); 
-               fclose($file_tmp);     
-               $archivo = "tmp/".$files["name"];  
-               $mail->AddAttachment($archivo);
-               $delete_files .= "unlink(\"tmp/\".".$files["name"].");"; 
-            }
-            
-            $mail_error = false;
-            if(!$mail->Send()){$mail_error = true; $mail->ClearAddresses();}
-            if(!($mail_error)){$msj = "The mail has been sent to the brokers";}
-            else{$msj = "Error: The e-mail cannot be sent.";$error = "1";}
-            
-            $mail->ClearAttachments();
-            eval($delete_files);
+                #HTML:
+                $htmlEmail  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"\"http://www.w3.org/TR/html4/strict.dtd\"><html>".
+                                "<head><meta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\">".
+                                "<title>Endorsement from Solo-Trucking Insurance</title></head>"; 
+                $htmlEmail .= "<body>".$Emails[$x]['html']."</body>";   
+                $htmlEmail .= "</html>";
+                
+                #TERMINA CUERPO DEL MENSAJE
+                $mail = new PHPMailer();   
+                $mail->IsSMTP(); // telling the class to use SMTP
+                $mail->Host       = "mail.solo-trucking.com"; // SMTP server
+                //$mail->SMTPDebug  = 2; // enables SMTP debug information (for testing) 1 = errors and messages 2 = messages only
+                $mail->SMTPAuth   = true;                  // enable SMTP authentication
+                $mail->SMTPSecure = "TLS";                 // sets the prefix to the servier
+                $mail->Host       = "smtp.gmail.com";      // sets GMAIL as the SMTP server
+                $mail->Port       = 587;                   // set the SMTP port for the GMAIL server
+                $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
+                $mail->Password   = "SL09100242"; 
+                $mail->SetFrom('systemsupport@solo-trucking.com', 'Solo-Trucking Insurance');
+                $mail->AddReplyTo('customerservice@solo-trucking.com','Customer service Solo-Trucking');
+                $mail->Subject    = $Emails[$x]['subject'];
+                $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
+                $mail->MsgHTML($htmlEmail);
+                $mail->IsHTML(true); 
+                 
+                //Receptores:
+                $direcciones         = explode(",",trim($Emails[$x]['emails']));
+                $nombre_destinatario = trim($Emails[$x]['broker']);
+                foreach($direcciones as $direccion){
+                    $mail->AddAddress(trim($direccion),$nombre_destinatario);
+                }
+                  
+                //Atachments:
+                $files        = $Emails[$x]['files'];
+                $delete_files = "";
+                if($files != ""){
+                   include("./lib/fpdf153/fpdf.php");//libreria fpdf
+                   $file_tmp = fopen('tmp/'.$files["name"],"w") or die("Error when creating the file. Please check."); 
+                   fwrite($file_tmp,$files["content"]); 
+                   fclose($file_tmp);     
+                   $archivo = "tmp/".$files["name"];  
+                   $mail->AddAttachment($archivo);
+                   $delete_files .= "unlink(\"tmp/\".".$files["name"].");"; 
+                }
+                
+                $mail_error = false;
+                if(!$mail->Send()){$mail_error = true; $mail->ClearAddresses();}
+                if(!($mail_error)){$msj = "The mail has been sent to the brokers";}
+                else{$msj = "Error: The e-mail cannot be sent.";$error = "1";}
+                
+                $mail->ClearAttachments();
+                eval($delete_files);
 
+              } 
           } 
       }
-      
       
       $success && $error == '0' ? $conexion->commit() : $conexion->rollback();
       $conexion->close();
@@ -901,7 +904,7 @@
              $result = $conexion->query($query) or die($conexion->error);
              $rows   = $result->num_rows;
              
-             if($rows == 0){$error = '1';$mensaje = "Error to query the endorsement email data, please try again later.";}
+             if($rows == 0){$error = '1';$mensaje = "The emails can not be generated.Please check that the endorsement has brokers to send email from this module.";}
              else{
                 while($data = $result->fetch_assoc()){ 
                     //Variables por Email:

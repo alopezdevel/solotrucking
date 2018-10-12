@@ -651,7 +651,7 @@
                         if(data.error == '0'){
                               fn_solotrucking.mensaje(data.msj);
                               fn_endorsement.fillgrid();
-                              fn_popups.cerrar_ventana('form_estatus');
+                              //fn_popups.cerrar_ventana('form_estatus');
                         }
                         
                     }

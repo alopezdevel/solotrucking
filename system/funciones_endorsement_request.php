@@ -268,10 +268,10 @@
          $success = $conexion->query($query);
                   
       }else{
-         $query   = "INSERT INFO ct_operadores (iConsecutivoCompania,sNombre,dFechaNacimiento,iExperienciaYear,eTipoLicencia,iNumLicencia,dFechaExpiracionLicencia,sIP,sUsuarioIngreso,dFechaIngreso) ".
+         $query   = "INSERT INTO ct_operadores (iConsecutivoCompania,sNombre,dFechaNacimiento,iExperienciaYear,eTipoLicencia,iNumLicencia,dFechaExpiracionLicencia,sIP,sUsuarioIngreso,dFechaIngreso) ".
                     "VALUES('$iConsecutivoCompania','$sNombre','$dFechaNacimiento',$iExperienciaYear,'$eTipoLicencia','$iNumLicencia','$dFechaExpLicencia','$sIP','$sUsuario','$dFecha')";
          $success = $conexion->query($query);
-         if($success){$iConsecutivoUnidad = $conexion->insert_id;}
+         if($success){$iConsecutivoOperador = $conexion->insert_id;}
       }
       if(!($success)){$error = '1';$mensaje = "Error to save the unit data, please try again later.";}
       else{
@@ -1149,15 +1149,18 @@
       $conexion->autocommit(FALSE);
       
       #ACTUALIZAMOS ENDOSO A SB..
-      if($count > 0){
-          #UPDATE ENDORSEMENT DETAILS:
-          $query = "UPDATE cb_endoso SET eStatus = 'SB',dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
-                   "WHERE iConsecutivo = '$iConsecutivo'"; 
-          $conexion->query($query);
-          if($conexion->affected_rows < 1){$success = false;$mensaje="Error to update the endorsement status, please check with de system admin.";} 
+       if($count > 0){ 
+          if($Emails['error']=="0"){
+              #UPDATE ENDORSEMENT DETAILS:
+              $query = "UPDATE cb_endoso SET eStatus = 'SB',dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
+                       "WHERE iConsecutivo = '$iConsecutivo'"; 
+              $conexion->query($query);
+              if($conexion->affected_rows < 1){$success = false;$mensaje="Error to update the endorsement status, please check with de system admin.";}     
+          }
+          else{$success = false;$msj=$Emails['error'];}
       }
-      
-      for($x=0;$x < $count;$x++){
+      if($success){
+        for($x=0;$x < $count;$x++){
           if($Emails[$x]['html']!= ""){
                   
             #UPDATE ENDORSEMENT DETAILS:
@@ -1221,7 +1224,7 @@
 
           } 
       }
-      
+      }
       
       $success && $error == '0' ? $conexion->commit() : $conexion->rollback();
       $conexion->close();
@@ -1318,7 +1321,7 @@
              $result = $conexion->query($query) or die($conexion->error);
              $rows   = $result->num_rows;
              
-             if($rows == 0){$error = '1';$mensaje = "Error to query the endorsement email data, please try again later.";}
+             if($rows == 0){$error = '1';$mensaje = "The emails can not be generated.Please check that the endorsement has brokers to send email from this module.";}
              else{
                 while($data = $result->fetch_assoc()){ 
                     //Variables por Email:
