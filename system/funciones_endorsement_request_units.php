@@ -325,7 +325,7 @@
          $success = $conexion->query($query);
                   
       }else{
-         $query   = "INSERT INFO ct_unidades (iConsecutivoCompania,sTipo,iYear,iModelo,sVIN,iConsecutivoRadio,sIP,sUsuarioIngreso,dFechaIngreso) ".
+         $query   = "INSERT INTO ct_unidades (iConsecutivoCompania,sTipo,iYear,iModelo,sVIN,iConsecutivoRadio,sIP,sUsuarioIngreso,dFechaIngreso) ".
                     "VALUES('$iConsecutivoCompania','$sTipo','$iYear',$iModelo,'$sVIN',$iConsecutivoRadio,'$sIP','$sUsuario','$dFecha')";
          $success = $conexion->query($query);
          if($success){$iConsecutivoUnidad = $conexion->insert_id;}
