@@ -14,7 +14,7 @@
       $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
         
      //Filtros de informacion //
-     $filtroQuery = " WHERE A.eStatus != 'E' AND iConsecutivoTipoEndoso = '2' ";
+     $filtroQuery = " WHERE A.eStatus != 'E' AND iConsecutivoTipoEndoso = '2' AND A.iDeleted='0' ";
      $array_filtros = explode(",",$_POST["filtroInformacion"]);
      foreach($array_filtros as $key => $valor){
         if($array_filtros[$key] != ""){
@@ -1187,8 +1187,11 @@
             $mail->Port       = 587;                   // set the SMTP port for the GMAIL server
             $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
             $mail->Password   = "SL09100242"; 
+            
             $mail->SetFrom('systemsupport@solo-trucking.com', 'Solo-Trucking Insurance');
             $mail->AddReplyTo('customerservice@solo-trucking.com','Customer service Solo-Trucking');
+            $mail->AddCC('customerservice@solo-trucking.com', 'Customer service Solo-Trucking');
+            
             $mail->Subject    = $Emails[$x]['subject'];
             $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
             $mail->MsgHTML($htmlEmail);

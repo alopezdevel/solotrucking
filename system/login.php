@@ -131,7 +131,7 @@ function actualizarMensajeAlerta(t) {
     <form method="post" action="" >
         <p class="mensaje_valido">&nbsp;All form fields are required.</p>
         <input id="loginUser" class="user" name="user" type="text" placeholder="User" <?php if(isset($_COOKIE['USER'])){echo 'value="'.$_COOKIE['USER'].'"';}else{echo 'value=""';} ?> >
-        <input id="loginPassword" class="pass" name="password" type="password" placeholder="Password" maxlength="9">
+        <input id="loginPassword" class="pass" name="password" type="password" placeholder="Password" maxlength="10">
         <button id="button_aceptar" class="btn_login" type="button">LOGIN</button>
         <p class="m_inf" style="display:none"><a href="#">Forgot your password?</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;         |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;          
         <a href="#">Create Account</a></p>

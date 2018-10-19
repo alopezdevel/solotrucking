@@ -91,8 +91,8 @@ var fn_policies = {
         init : function(){
             fn_policies.fillgrid();
             
-            $('.num').keydown(fn_solotrucking.inputnumero());  
-            $('.decimal').keydown(fn_solotrucking.inputdecimals());  
+            $('.num').keydown(fn_solotrucking.inputnumero);  
+            $('.decimal').keydown(fn_solotrucking.inputdecimals);  
             //Cargar companias, tipos y brokers:
             $.ajax({             
                 type:"POST", 

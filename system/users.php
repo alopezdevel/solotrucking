@@ -408,7 +408,7 @@
                         <td>
                         <div class="field_item">
                             <label>Password <span style="color:#ff0000;">*</span>: (6 to 10 characters)</label>  
-                            <input tabindex="3" id="hClave" name="hClave" type="password" maxlength="9" style="width:90%;float:left;margin-right:1%">
+                            <input tabindex="3" id="hClave" name="hClave" type="password" maxlength="10" style="width:90%;float:left;margin-right:1%">
                             <div id="view_password" class="btn-icon-2 btn-left" title="View Password" style="position: relative;top: 1px;">
                             <i class="fa fa-eye" style="padding: 8px;"></i>
                             </div> 
@@ -422,7 +422,7 @@
                         <td>
                         <div class="field_item" style="clear:both;">
                             <label>Repeat Password <span style="color:#ff0000;">*</span>:</label>  
-                            <input tabindex="3" id="hClave2" name="hClave2" type="password" maxlength="9">
+                            <input tabindex="3" id="hClave2" name="hClave2" type="password" maxlength="10">
                         </div>
                         </td>
                     </tr>
