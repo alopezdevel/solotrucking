@@ -84,7 +84,8 @@
                   "FROM cb_endoso_mensual AS A ".
                   "INNER JOIN cb_endoso_mensual_relacion AS B ON A.iConsecutivo       = B.iConsecutivoEndosoMensual ".
                   "INNER JOIN cb_endoso                  AS C ON B.iConsecutivoEndoso = C.iConsecutivo AND A.iTipoReporte = C.iConsecutivoTipoEndoso  ".
-                  "INNER JOIN cb_endoso_estatus          AS D ON C.iConsecutivo       = D.iConsecutivoEndoso AND D.eStatus = 'S' AND D.iConsecutivoPoliza = A.iConsecutivoPoliza ".
+                  "INNER JOIN cb_endoso_estatus          AS D ON C.iConsecutivo       = D.iConsecutivoEndoso ".//" AND D.eStatus = 'S' ".
+                  "AND D.iConsecutivoPoliza = A.iConsecutivoPoliza ".
                   "INNER JOIN ct_polizas                 AS E ON D.iConsecutivoPoliza = E.iConsecutivo AND E.iDeleted = '0' AND A.iConsecutivoBroker = E.iConsecutivoBrokers  ".
                   "INNER JOIN ct_tipo_poliza             AS F ON E.iTipoPoliza        = F.iConsecutivo  ".$flt_join.
                   "WHERE A.iConsecutivo='$iConsecutivoReporte' ORDER BY A.dFechaAplicacion DESC"; 
@@ -95,7 +96,7 @@
             #DATOS DEL DETALLE DEL REPORTE
             $DatosDetalle = mysql_fetch_all($r);
             $NoPolizas    = array();
-            
+                    
             #EXCEL BEGINS:
             $objPHPExcel = new PHPExcel();  // Create new PHPExcel object
             
@@ -155,10 +156,8 @@
             $objPHPExcel->createSheet(1);
             $objPHPExcel->setActiveSheetIndex(1);
             $objPHPExcel->getActiveSheet()->setTitle("Inception");
-            //Encabezados:
+           
             $row = 1;
-            $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado, "A".$row.":L".$row);
-            $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(25);
             //Definir encabezados:
             if($DatosReporte['iTipoReporte'] == "1"){
                 $objPHPExcel->getActiveSheet()
@@ -167,13 +166,14 @@
                 ->setCellValue('C'.$row, 'Model')
                 ->setCellValue('D'.$row, 'VIN')
                 ->setCellValue('E'.$row, 'Value')
-                ->setCellValue('F'.$row, 'Type')
-                ->setCellValue('G'.$row, 'Leinholder Name')
+                ->setCellValue('F'.$row, 'Type');
+                /*->setCellValue('G'.$row, 'Leinholder Name')
                 ->setCellValue('H'.$row, 'Leinholder Address')
                 ->setCellValue('I'.$row, 'GVW')
                 ->setCellValue('J'.$row, 'Additional Vehicle Detail')
                 ->setCellValue('K'.$row, 'Garaging Location')
-                ->setCellValue('L'.$row, 'Garaging State');
+                ->setCellValue('L'.$row, 'Garaging State');*/
+                $limitCol = "F";
   
             }
             else if($DatosReporte['iTipoReporte'] == "2"){
@@ -183,13 +183,17 @@
                 ->setCellValue('C'.$row, 'License Number')
                 ->setCellValue('D'.$row, 'License Expiration Date')
                 ->setCellValue('E'.$row, 'Experience Years');
+                $limitCol = "E";
             } 
+            
+            $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado, "A".$row.":".$limitCol.$row);
+            $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(25);
             
             foreach($DatosDetalle as $i => $l){
                 
                 $row++;
-                $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloContenido, "A".$row.":L".$row); 
-                $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(20);
+                $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloContenido, "A".$row.":".$limitCol.$row); 
+                $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(20); 
                 if($DatosReporte['iTipoReporte'] == "1"){ 
                     
                     //Agregar formato numerico a columna de value:
@@ -208,19 +212,24 @@
                        array_push($NoPolizas,$DatosDetalle[$i]['sNumeroPoliza']."|".$DatosDetalle[$i]['inceptionDate']."|".$DatosDetalle[$i]['expirationDate']); 
                     }
                     
-                }else if($DatosReporte['iTipoReporte'] == "2"){
+                }
+                else if($DatosReporte['iTipoReporte'] == "2"){
                     $objPHPExcel->getActiveSheet()
                     ->setCellValue('A'.$row, $DatosDetalle[$i]['sNombre'])
                     ->setCellValue('B'.$row, $DatosDetalle[$i]['dFechaNacimiento'])
                     ->setCellValue('C'.$row, $DatosDetalle[$i]['iNumLicencia'])
                     ->setCellValue('D'.$row, $DatosDetalle[$i]['dFechaExpiracionLicencia'])
                     ->setCellValue('E'.$row, $DatosDetalle[$i]['iExperienciaYear']);
-                }   
+                    
+                    if(!(in_array($DatosDetalle[$i]['sNumeroPoliza']."|".$DatosDetalle[$i]['inceptionDate']."|".$DatosDetalle[$i]['expirationDate'],$NoPolizas))){
+                       array_push($NoPolizas,$DatosDetalle[$i]['sNumeroPoliza']."|".$DatosDetalle[$i]['inceptionDate']."|".$DatosDetalle[$i]['expirationDate']); 
+                    }
+                } 
                 
             }
              
             //Ajustar la dimension de las columnas:
-            foreach(range('A','G') as $columnID) {
+            foreach(range('A',$limitCol) as $columnID) {
                 $objPHPExcel->getActiveSheet()->getColumnDimension($columnID)->setAutoSize(true);
             }
              
@@ -229,8 +238,8 @@
             $objPHPExcel->setActiveSheetIndex(0);
             $objPHPExcel->getActiveSheet()->setTitle("Synopsis");
             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloBorderTop, "A1:C1");
-            $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloBorderRight, "C1:C29"); 
-            $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloBorderbottom, "A29:C29"); 
+            $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloBorderRight, "C1:C12"); 
+            //$objPHPExcel->getActiveSheet()->setSharedStyle($EstiloBorderbottom, "A29:C12");
             $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth('20');
             $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth('30');
             $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth('25');
@@ -265,106 +274,110 @@
             //Rate:
             $iRatePercent = number_format($DatosReporte['iRatePercent'],2,'.','')."%";
             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignR, "B5");
-            //$objPHPExcel->getActiveSheet()->getStyle('B5')->getNumberFormat()->setFormatCode('0.00%');
             $objPHPExcel->getActiveSheet()->getStyle('B5')->getNumberFormat()->applyFromArray(array('code'=>PHPExcel_Style_NumberFormat::FORMAT_PERCENTAGE));
             $objPHPExcel->getActiveSheet()->setCellValue('A5', 'Rate'); 
             $objPHPExcel->getActiveSheet()->setCellValue('B5', $iRatePercent);
             
-            //Current Values:
-            //$TotalValuePD = number_format($TotalValuePD,2,'.','')."%";
-            $objPHPExcel->getActiveSheet()->getStyle('B7')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
-            $objPHPExcel->getActiveSheet()->setCellValue('A7', 'Current Total Values**'); 
-            $objPHPExcel->getActiveSheet()->setCellValue('C7', '=SUM(C10:C22)');
-            
-            //Set number style to all Column C
-            $objPHPExcel->getActiveSheet()->getStyle('C7')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
-            $objPHPExcel->getActiveSheet()->getStyle('C10')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
-            $objPHPExcel->getActiveSheet()->getStyle('C11')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
-            $objPHPExcel->getActiveSheet()->getStyle('C12')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
-            $objPHPExcel->getActiveSheet()->getStyle('C13')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
-            $objPHPExcel->getActiveSheet()->getStyle('C14')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
-            $objPHPExcel->getActiveSheet()->getStyle('C15')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
-            $objPHPExcel->getActiveSheet()->getStyle('C16')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
-            $objPHPExcel->getActiveSheet()->getStyle('C17')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
-            $objPHPExcel->getActiveSheet()->getStyle('C18')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
-            $objPHPExcel->getActiveSheet()->getStyle('C19')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
-            $objPHPExcel->getActiveSheet()->getStyle('C20')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
-            $objPHPExcel->getActiveSheet()->getStyle('C21')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
-            $objPHPExcel->getActiveSheet()->getStyle('C22')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
-            
-            $objPHPExcel->getActiveSheet()->setCellValue('A9', 'TAB'); 
-            $objPHPExcel->getActiveSheet()->setCellValue('B9', 'Month');
-            $objPHPExcel->getActiveSheet()->setCellValue('C9', 'Value Changes');
-            $objPHPExcel->getActiveSheet()->setCellValue('A10', 'INCEPTION'); 
-            $objPHPExcel->getActiveSheet()->setCellValue('B10', 'INCEPTION');
-            $objPHPExcel->getActiveSheet()->setCellValue('C10', '=SUM(Inception!E:E)');
-            
-            $objPHPExcel->getActiveSheet()->setCellValue('A11', '1'); 
-            $objPHPExcel->getActiveSheet()->setCellValue('A12', '2'); 
-            $objPHPExcel->getActiveSheet()->setCellValue('A13', '3'); 
-            $objPHPExcel->getActiveSheet()->setCellValue('A14', '4'); 
-            $objPHPExcel->getActiveSheet()->setCellValue('A15', '5'); 
-            $objPHPExcel->getActiveSheet()->setCellValue('A16', '6'); 
-            $objPHPExcel->getActiveSheet()->setCellValue('A17', '7'); 
-            $objPHPExcel->getActiveSheet()->setCellValue('A18', '8'); 
-            $objPHPExcel->getActiveSheet()->setCellValue('A19', '9');
-            $objPHPExcel->getActiveSheet()->setCellValue('A20', '10'); 
-            $objPHPExcel->getActiveSheet()->setCellValue('A21', '11'); 
-            $objPHPExcel->getActiveSheet()->setCellValue('A22', '12'); 
-            
-            //Calcular mes de fecha inicial:
-            if($count = count($NoPolizas[0]) == 1){
-                $fechaP = explode("/",$inDate);
-                $fechaP = strtotime($fechaP[2]."-".$fechaP[0]."-".$fechaP[1]);
-                $fechaP = getdate($fechaP);
-                $mes    = $fechaP['mon'];
-                $meses  = array(1=>"Juanary",2=>"February",3=>"March",4=>"April",5=>"May",6=>"June",7=>"July",8=>"August",9=>"September",10=>"October",11=>"November",12=>"December");
-                $array  = array();
+            if($DatosReporte['iTipoReporte'] == "1"){
                 
-                $mes > 1 ? $mesRes = 12 - $mes : $mesRes = 0;
-                for($m=$mes;$m < 12;$m++){array_push($array,$meses[$m]);}
-                if($mesRes > 0){for($m=1;$m <= $mesRes;$m++){array_push($array,$meses[$m]);}} 
+                $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloBorderRight, "C13:C25"); 
+                //Current Values:
+                $objPHPExcel->getActiveSheet()->getStyle('B7')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
+                $objPHPExcel->getActiveSheet()->setCellValue('A7', 'Current Total Values**'); 
+                $objPHPExcel->getActiveSheet()->setCellValue('C7', '=SUM(C10:C22)');
                 
-                $objPHPExcel->getActiveSheet()->setCellValue('B11', $array[0]);
-                $objPHPExcel->getActiveSheet()->setCellValue('B12', $array[1]);
-                $objPHPExcel->getActiveSheet()->setCellValue('B13', $array[2]);
-                $objPHPExcel->getActiveSheet()->setCellValue('B14', $array[3]);
-                $objPHPExcel->getActiveSheet()->setCellValue('B15', $array[4]);
-                $objPHPExcel->getActiveSheet()->setCellValue('B16', $array[5]);
-                $objPHPExcel->getActiveSheet()->setCellValue('B17', $array[6]);
-                $objPHPExcel->getActiveSheet()->setCellValue('B18', $array[7]);
-                $objPHPExcel->getActiveSheet()->setCellValue('B19', $array[8]);
-                $objPHPExcel->getActiveSheet()->setCellValue('B20', $array[9]); 
-                $objPHPExcel->getActiveSheet()->setCellValue('B21', $array[10]);
-                $objPHPExcel->getActiveSheet()->setCellValue('B22', $array[11]); 
-                $row = 24;
-            }else{$row = 12;}
-            
-            //Linea division Amarilla:
-            $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloYellow, "A".$row.":C".$row);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A'.$row, 'NOTES AND WARRANTIES');
-            $objPHPExcel->setActiveSheetIndex(0)->mergeCells("A".$row.":C".$row);
-            $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(15);
-            
-            $row+=1;
-            $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(76);
-            $objPHPExcel->getActiveSheet()->getStyle($row)->getAlignment()->setWrapText(true); 
-            $content = "- All values should be stated amount or ACV.
-- Values cannot depreciate during the policy term. If a unit is totalled, it must remain on the list of equipment.
-- Vehicle license for over the road use must have a full and verified 17-character VIN.  Helpful Websites to verify:";
-            $objPHPExcel->getActiveSheet()->setCellValue('A'.$row,$content);
-            $objPHPExcel->getActiveSheet()->mergeCells("A".$row.":C".$row);
-            
-            $row+=1;
-            $objPHPExcel->getActiveSheet()->mergeCells("A".$row.":C".$row);
-            $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloLink, "A".$row.":C".$row);
-            $objPHPExcel->getActiveSheet()->setCellValue('A'.$row,'http://www.nisrinc.com/apps/cmvid/');
-            $objPHPExcel->getActiveSheet()->getCell('A'.$row)->getHyperlink()->setUrl("http://www.nisrinc.com/apps/cmvid/");
-            $row+=1;
-            $objPHPExcel->getActiveSheet()->mergeCells("A".$row.":C".$row);
-            $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloLink, "A".$row.":C".$row);
-            $objPHPExcel->getActiveSheet()->setCellValue('A'.$row,'http://www.autocheck.com/vehiclehistory/autocheck/en/');
-            $objPHPExcel->getActiveSheet()->getCell('A'.$row)->getHyperlink()->setUrl("http://www.autocheck.com/vehiclehistory/autocheck/en/");
+                //Set number style to all Column C
+                $objPHPExcel->getActiveSheet()->getStyle('C7')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
+                $objPHPExcel->getActiveSheet()->getStyle('C10')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
+                $objPHPExcel->getActiveSheet()->getStyle('C11')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
+                $objPHPExcel->getActiveSheet()->getStyle('C12')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
+                $objPHPExcel->getActiveSheet()->getStyle('C13')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
+                $objPHPExcel->getActiveSheet()->getStyle('C14')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
+                $objPHPExcel->getActiveSheet()->getStyle('C15')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
+                $objPHPExcel->getActiveSheet()->getStyle('C16')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
+                $objPHPExcel->getActiveSheet()->getStyle('C17')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
+                $objPHPExcel->getActiveSheet()->getStyle('C18')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
+                $objPHPExcel->getActiveSheet()->getStyle('C19')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
+                $objPHPExcel->getActiveSheet()->getStyle('C20')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
+                $objPHPExcel->getActiveSheet()->getStyle('C21')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
+                $objPHPExcel->getActiveSheet()->getStyle('C22')->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
+                
+                $objPHPExcel->getActiveSheet()->setCellValue('A9', 'TAB'); 
+                $objPHPExcel->getActiveSheet()->setCellValue('B9', 'Month');
+                $objPHPExcel->getActiveSheet()->setCellValue('C9', 'Value Changes');
+                $objPHPExcel->getActiveSheet()->setCellValue('A10', 'INCEPTION'); 
+                $objPHPExcel->getActiveSheet()->setCellValue('B10', 'INCEPTION');
+                $objPHPExcel->getActiveSheet()->setCellValue('C10', '=SUM(Inception!E:E)');
+                
+                $objPHPExcel->getActiveSheet()->setCellValue('A11', '1'); 
+                $objPHPExcel->getActiveSheet()->setCellValue('A12', '2'); 
+                $objPHPExcel->getActiveSheet()->setCellValue('A13', '3'); 
+                $objPHPExcel->getActiveSheet()->setCellValue('A14', '4'); 
+                $objPHPExcel->getActiveSheet()->setCellValue('A15', '5'); 
+                $objPHPExcel->getActiveSheet()->setCellValue('A16', '6'); 
+                $objPHPExcel->getActiveSheet()->setCellValue('A17', '7'); 
+                $objPHPExcel->getActiveSheet()->setCellValue('A18', '8'); 
+                $objPHPExcel->getActiveSheet()->setCellValue('A19', '9');
+                $objPHPExcel->getActiveSheet()->setCellValue('A20', '10'); 
+                $objPHPExcel->getActiveSheet()->setCellValue('A21', '11'); 
+                $objPHPExcel->getActiveSheet()->setCellValue('A22', '12'); 
+                
+                //Calcular mes de fecha inicial:
+                if($count = count($NoPolizas[0]) == 1){
+                    $fechaP = explode("/",$inDate);
+                    $fechaP = strtotime($fechaP[2]."-".$fechaP[0]."-".$fechaP[1]);
+                    $fechaP = getdate($fechaP);
+                    $mes    = $fechaP['mon'];
+                    $meses  = array(1=>"Juanary",2=>"February",3=>"March",4=>"April",5=>"May",6=>"June",7=>"July",8=>"August",9=>"September",10=>"October",11=>"November",12=>"December");
+                    $array  = array();
+                    
+                    $mes > 1 ? $mesRes = 12 - $mes : $mesRes = 0;
+                    for($m=$mes;$m < 12;$m++){array_push($array,$meses[$m]);}
+                    if($mesRes > 0){for($m=1;$m <= $mesRes;$m++){array_push($array,$meses[$m]);}} 
+                    
+                    $objPHPExcel->getActiveSheet()->setCellValue('B11', $array[0]);
+                    $objPHPExcel->getActiveSheet()->setCellValue('B12', $array[1]);
+                    $objPHPExcel->getActiveSheet()->setCellValue('B13', $array[2]);
+                    $objPHPExcel->getActiveSheet()->setCellValue('B14', $array[3]);
+                    $objPHPExcel->getActiveSheet()->setCellValue('B15', $array[4]);
+                    $objPHPExcel->getActiveSheet()->setCellValue('B16', $array[5]);
+                    $objPHPExcel->getActiveSheet()->setCellValue('B17', $array[6]);
+                    $objPHPExcel->getActiveSheet()->setCellValue('B18', $array[7]);
+                    $objPHPExcel->getActiveSheet()->setCellValue('B19', $array[8]);
+                    $objPHPExcel->getActiveSheet()->setCellValue('B20', $array[9]); 
+                    $objPHPExcel->getActiveSheet()->setCellValue('B21', $array[10]);
+                    $objPHPExcel->getActiveSheet()->setCellValue('B22', $array[11]); 
+                    $row = 24;
+                }
+                else{$row = 12;} 
+                
+                //Linea division Amarilla:
+                $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloYellow, "A".$row.":C".$row);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A'.$row, 'NOTES AND WARRANTIES');
+                $objPHPExcel->setActiveSheetIndex(0)->mergeCells("A".$row.":C".$row);
+                $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(15);
+                
+                $row+=1;
+                $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(76);
+                $objPHPExcel->getActiveSheet()->getStyle($row)->getAlignment()->setWrapText(true); 
+                $content = "- All values should be stated amount or ACV.
+    - Values cannot depreciate during the policy term. If a unit is totalled, it must remain on the list of equipment.
+    - Vehicle license for over the road use must have a full and verified 17-character VIN.  Helpful Websites to verify:";
+                $objPHPExcel->getActiveSheet()->setCellValue('A'.$row,$content);
+                $objPHPExcel->getActiveSheet()->mergeCells("A".$row.":C".$row);
+                
+                $row+=1;
+                $objPHPExcel->getActiveSheet()->mergeCells("A".$row.":C".$row);
+                $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloLink, "A".$row.":C".$row);
+                $objPHPExcel->getActiveSheet()->setCellValue('A'.$row,'http://www.nisrinc.com/apps/cmvid/');
+                $objPHPExcel->getActiveSheet()->getCell('A'.$row)->getHyperlink()->setUrl("http://www.nisrinc.com/apps/cmvid/");
+                $row+=1;
+                $objPHPExcel->getActiveSheet()->mergeCells("A".$row.":C".$row);
+                $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloLink, "A".$row.":C".$row);
+                $objPHPExcel->getActiveSheet()->setCellValue('A'.$row,'http://www.autocheck.com/vehiclehistory/autocheck/en/');
+                $objPHPExcel->getActiveSheet()->getCell('A'.$row)->getHyperlink()->setUrl("http://www.autocheck.com/vehiclehistory/autocheck/en/");   
+            }
+            else{$row = 12;}
             
             $row+=1;
             $objPHPExcel->getActiveSheet()->mergeCells("A".$row.":C".$row);
@@ -381,7 +394,7 @@
             $objPHPExcel->getActiveSheet()->mergeCells("A".$row.":C".$row);
             
             #CREATE A FILE NAME:
-            if($DatosReporte['iTipoReporte'] == "1"){$titleName = "Equipment List - ";}elseif($DatosReporte['iTipoReporte'] == "1"){$titleName = "Operator List - ";}
+            if($DatosReporte['iTipoReporte'] == "1"){$titleName = "Equipment List - ";}elseif($DatosReporte['iTipoReporte'] == "2"){$titleName = "Operator List - ";}
             
             $nombre_archivo = $titleName.'with Montly Reporting Tabs_'.$DatosReporte['sNombreCompania']."_".$DatosReporte['dFechaInicio']."_".$DatosReporte['dFechaFin'];
             $nombre_archivo = $nombre_archivo.".xlsx";

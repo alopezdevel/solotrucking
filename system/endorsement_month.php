@@ -526,7 +526,7 @@ var fn_endosos = {
                                 <select tabindex="2" id="iTipoReporte"  name="iTipoReporte" style="height: 25px!important;width: 99%!important;" class="required-field">
                                     <option value="">Select an opction...</option>
                                     <option value="1">Vehicles (Unit/Trailer)</option>
-                                    <!--<option value="2">Drivers</option>-->
+                                    <option value="2">Drivers</option>
                                 </select>
                             </div> 
                         </td>
