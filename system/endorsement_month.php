@@ -403,6 +403,8 @@ var fn_endosos = {
                         $('#frm_edit_estatus select[name=iConsecutivoCompania], #frm_edit_estatus select[name=iConsecutivoBroker],#frm_edit_estatus select[name=iTipoReporte], #frm_edit_estatus select[name=iConsecutivoPoliza]').prop('disabled','disabled').addClass('readonly');
                         eval(data.fields);
                         fn_endosos.get_policies_co("#frm_edit_estatus",data.poliza);
+                        fn_endosos.detalle_enviados.iConsecutivo = clave;
+                        fn_endosos.detalle_enviados.fillgrid(); 
                         fn_popups.resaltar_ventana('frm_edit_estatus');
                     }else{
                        fn_solotrucking.mensaje(data.msj);  
@@ -434,6 +436,70 @@ var fn_endosos = {
                 },"json");
            }
            else{fn_solotrucking.mensaje('<p>Please check the following::</p><ul>'+msj+'</ul>');} 
+        },
+        //detalle_enviados:
+        detalle_enviados : {
+            iConsecutivo : "",
+            iTipo        : "",
+            data_grid    : "#data_grid_detalle_enviados .popup-datagrid",
+            pagina_actual: "",
+            filtro       : "",
+            orden        : "A.dFechaAplicacion",
+            sort         : "DESC",
+            fillgrid: function(){
+                if(fn_endosos.detalle_enviados.iConsecutivo != ""){
+                    fn_endosos.detalle_enviados.iTipo = $("#frm_edit_estatus select[name=iTipoReporte]").val();
+                    $.ajax({             
+                        type:"POST", 
+                        url:"endorsement_month_server.php", 
+                        data:{
+                            accion               : "detalle_enviados_get_datagrid",
+                            iConsecutivo         : fn_endosos.detalle_enviados.iConsecutivo,
+                            iTipoReporte         : fn_endosos.detalle_enviados.iTipo,
+                            registros_por_pagina : "15", 
+                            pagina_actual        : fn_endosos.detalle_enviados.pagina_actual, 
+                            filtroInformacion    : fn_endosos.detalle_enviados.filtro,  
+                            ordenInformacion     : fn_endosos.detalle_enviados.orden,
+                            sortInformacion      : fn_endosos.detalle_enviados.sort,
+                        },
+                        async : true,
+                        dataType : "json",
+                        success : function(data){                               
+                            $(fn_endosos.detalle_enviados.data_grid+" tbody").empty().append(data.tabla);
+                            $(fn_endosos.detalle_enviados.data_grid+" tbody tr:even").addClass('gray');
+                            $(fn_endosos.detalle_enviados.data_grid+" tbody tr:odd").addClass('white');
+                            $(fn_endosos.detalle_enviados.data_grid+" tfoot .paginas_total").val(data.total);
+                            $(fn_endosos.detalle_enviados.data_grid+" tfoot .pagina_actual").val(data.pagina);
+                            fn_endosos.detalle_enviados.pagina_actual = data.pagina;
+                            $("#frm_edit_estatus select[name=iConsecutivoPoliza").val(data.iConsecutivoPoliza); 
+                        }
+                    });     
+                }
+            },
+            firstPage : function(){
+                if($(fn_endosos.detalle_enviados.data_grid+" .pagina_actual").val() != "1"){
+                    fn_endosos.detalle_enviados.pagina_actual = "";
+                    fn_endosos.detalle_enviados.fillgrid();
+                }
+            },
+            previousPage : function(){
+                if($(fn_endosos.detalle_enviados.data_grid+" .pagina_actual").val() != "1"){
+                    fn_endosos.detalle_enviados.pagina_actual = (parseInt($(fn_endosos.detalle_enviados.data_grid+" .pagina_actual").val()) - 1) + "";
+                    fn_endosos.detalle_enviados.fillgrid();
+                }
+            },
+            nextPage : function(){
+                if($(fn_endosos.detalle_enviados.data_grid+" .pagina_actual").val() != $(fn_endosos.detalle_enviados.data_grid+" .paginas_total").val()){
+                    fn_endosos.detalle_enviados.pagina_actual = (parseInt($(fn_endosos.detalle_enviados.data_grid+" .pagina_actual").val()) + 1) + "";
+                    fn_endosos.detalle_enviados.fillgrid();
+                }
+            },
+            lastPage : function(){
+                if($(fn_endosos.detalle_enviados.data_grid+" .pagina_actual").val() != $(fn_endosos.detalle_enviados.data_grid+" .paginas_total").val()){
+                    fn_endosos.detalle_enviados.pagina_actual = $(fn_endosos.detalle_enviados.data_grid+" .paginas_total").val();
+                    fn_endosos.detalle_enviados.fillgrid();
+                }
+            },
         },
         
 }     
@@ -659,7 +725,7 @@ var fn_endosos = {
                                 <select name="iTipoReporte" style="height: 25px!important;width: 99%!important;">
                                     <option value="">Select an opction...</option>
                                     <option value="1">Vehicles (Unit/Trailer)</option>
-                                    <!--<option value="2">Drivers</option>-->
+                                    <option value="2">Drivers</option>
                                 </select>
                             </div> 
                         </td>
@@ -718,13 +784,54 @@ var fn_endosos = {
                         <td colspan="100%">
                         <div class="field_item">
                             <label>General Comments: <span style="color:#044c8b;font-size:10px;">(This field will be displayed to the customer in our system.)</span></label> 
-                            <textarea tabindex="2" id="sComentarios" name="sComentarios" maxlenght="1000" style="resize: none;" title="Max. 1000 characters." style="height: 50px!important;"></textarea>
+                            <textarea tabindex="2" id="sComentarios" name="sComentarios" maxlenght="1000" style="resize: none;" title="Max. 1000 characters." style="height: 30px!important;"></textarea>
                         </div>
                         </td>
                     </tr>
                 </table>
+                <table style="width: 100%;" cellpadding="0" cellspacing="0" style="margin-bottom: 5px;">
+                <tr id="data_grid_detalle_enviados">
+                    <td colspan="2">
+                    <h4 class="popup-gridtit">Endorsement Description</h4>
+                    <table class="popup-datagrid" style="margin-bottom: 10px;" cellpadding="0" cellspacing="0">
+                        <thead>
+                            <tr id="grid-head2">
+                                <td class="etiqueta_grid txt-c" title="ID of endorsement on internal system.">ID</td>
+                                <td class="etiqueta_grid txt-c" style="width: 65px;">Action</td>
+                                <td class="etiqueta_grid" style="width: 200px;">Policy No.</td>
+                                <td class="etiqueta_grid">Descripcion</td>
+                                <td class="etiqueta_grid txt-c" style="width: 115px;">Application Date</td>
+                                <td class="etiqueta_grid" style="width: 80px;text-align: center;"></td>
+                            </tr>
+                        </thead>
+                        <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="100%">
+                                    <div class="datagrid-pages">
+                                        <input class="pagina_actual" type="text" readonly="readonly" size="3">
+                                        <label> / </label>
+                                        <input class="paginas_total" type="text" readonly="readonly" size="3">
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="100%">
+                                    <div class="datagrid-menu-pages">
+                                        <button class="pgn-inicio"    onclick="fn_endosos.detalle.firstPage();" title="First page" type="button"><span></span></button>
+                                        <button class="pgn-anterior"  onclick="fn_endosos.detalle.previousPage();" title="Previous" type="button"><span></span></button>
+                                        <button class="pgn-siguiente" onclick="fn_endosos.detalle.nextPage();" title="Next" type="button"><span></span></button>
+                                        <button class="pgn-final"     onclick="fn_endosos.detalle.lastPage();" title="Last Page" type="button"><span></span></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    </td>
+                </tr>
+                </table> 
                 <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('frm_edit_estatus');fn_endosos.fillgrid();" style="margin-right:10px;background:#e8051b;">CLOSE</button>
-                <button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.download_excel($('#frm_edit_estatus input[name=iConsecutivo]').val());" style="margin-right:10px;background: #87c540;width: 180px;">DOWNLOAD EXCEL FILE</button> 
+                <!--<button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.download_excel($('#frm_edit_estatus input[name=iConsecutivo]').val());" style="margin-right:10px;background: #87c540;width: 180px;">DOWNLOAD EXCEL FILE</button>--> 
                 <button type="button" class="btn-1" onclick="fn_endosos.estatus_save();" style="margin-right:10px;">SAVE</button> 
             </fieldset>
         </form>

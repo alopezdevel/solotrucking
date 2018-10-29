@@ -380,7 +380,7 @@
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
         
-        $sql    = "SELECT A.iConsecutivo AS iConsecutivoEndosoMensual,D.iConsecutivoPoliza,C.iConsecutivo, A.iConsecutivoCompania, IF(C.eAccion = 'A','ADD','DELETE') AS eAccion, C.iConsecutivo AS iConsecutivoEndoso, E.sNumeroPoliza, F.sDescripcion,DATE_FORMAT(C.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
+        $sql    = "SELECT A.iConsecutivo AS iConsecutivoEndosoMensual,D.iConsecutivoPoliza,A.eStatus,C.iConsecutivo, A.iConsecutivoCompania, IF(C.eAccion = 'A','ADD','DELETE') AS eAccion, C.iConsecutivo AS iConsecutivoEndoso, E.sNumeroPoliza, F.sDescripcion,DATE_FORMAT(C.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
                   "$flt_field ".
                   "FROM cb_endoso_mensual AS A ".
                   "INNER JOIN cb_endoso_mensual_relacion AS B ON A.iConsecutivo       = B.iConsecutivoEndosoMensual ".
@@ -399,8 +399,10 @@
                 }else if($iTipoReporte == "2"){
                     $Descripcion = $items['sNombre']." - DOB: ".$items['dFechaNacimiento']." - LIC: ".$items['iNumLicencia']." EXP.".$items['dFechaExpiracionLicencia'];
                 }
-                 
-                $btns       = "<div class=\"btn_delete_detalle btn-icon trash btn-left\" title=\"Delete of this Report\"><i class=\"fa fa-trash\"></i> <span></span></div>";
+                if($items['eStatus'] == "S"){
+                   $btns       = "<div class=\"btn_delete_detalle btn-icon trash btn-left\" title=\"Delete of this Report\"><i class=\"fa fa-trash\"></i> <span></span></div>"; 
+                } 
+                
                 $htmlTabla .= "<tr>".
                               "<td style=\"width: 25px;\">".$items['iConsecutivo']."</td>".
                               "<td class=\"txt-c\">".$items['eAccion']."</td>".
@@ -447,7 +449,112 @@
         
       $response = array("msj"=>"$msj","error"=>"$error");   
       echo json_encode($response);    
-  }
+  } 
+  
+  #DETALLE ENDOSOS ENVIADOS:
+  function detalle_enviados_get_datagrid(){
+    
+    $iConsecutivo = trim($_POST['iConsecutivo']);
+    $iTipoReporte = trim($_POST['iTipoReporte']); 
+    
+    include("cn_usuarios.php");
+    $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+    $transaccion_exitosa   = true;
+    $registros_por_pagina  = $_POST["registros_por_pagina"];
+    $pagina_actual         = (isset($_POST["pagina_actual"]) && $_POST["pagina_actual"] != '' ? $_POST["pagina_actual"] : 1);
+    $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
+        
+    //Filtros de informacion //
+    $filtroQuery = " WHERE A.iConsecutivo='$iConsecutivo' ";
+    $array_filtros = explode(",",$_POST["filtroInformacion"]);
+    foreach($array_filtros as $key => $valor){
+        if($array_filtros[$key] != ""){
+            $campo_valor = explode("|",$array_filtros[$key]);
+            $campo_valor[0] == 'A.iConsecutivo' ? $filtroQuery.= " AND  ".$campo_valor[0]."='".$campo_valor[1]."' " : $filtroQuery == "" ? $filtroQuery.= " AND  ".$campo_valor[0]." LIKE '%".$campo_valor[1]."%'": $filtroQuery.= " AND ".$campo_valor[0]." LIKE '%".$campo_valor[1]."%'";
+        }
+    }
+    // ordenamiento//
+    $ordenQuery = " ORDER BY ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"];
+    
+    if($iTipoReporte == "1"){
+       $flt_join = "LEFT  JOIN ct_unidades                AS U ON C.iConsecutivoUnidad = U.iConsecutivo ";
+       $flt_join.= "LEFT  JOIN ct_unidad_modelo           AS M ON U.iModelo            = M.iConsecutivo";
+       $flt_field= "C.sVINUnidad, C.iConsecutivoUnidad, U.sVIN, U.iYear, M.sAlias AS sMake, U.sTipo, C.iPDAmount AS iPDAmount "; 
+    }else if($iTipoReporte == "2"){
+       $flt_join  = "LEFT JOIN ct_operadores AS U ON C.iConsecutivoOperador = U.iConsecutivo "; 
+       $flt_field = "C.sNombreOperador, C.iConsecutivoOperador, U.sNombre, DATE_FORMAT(U.dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, U.iExperienciaYear, U.iNumLicencia, DATE_FORMAT(U.dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia "; 
+    }
+    
+    //contando registros // 
+    $query_rows = "SELECT COUNT(A.iConsecutivo) AS total ".
+                  "FROM cb_endoso_mensual AS A ".
+                  "INNER JOIN cb_endoso_mensual_relacion AS B ON A.iConsecutivo       = B.iConsecutivoEndosoMensual ".
+                  "INNER JOIN cb_endoso                  AS C ON B.iConsecutivoEndoso = C.iConsecutivo AND A.iTipoReporte = C.iConsecutivoTipoEndoso  ".
+                  "INNER JOIN cb_endoso_estatus          AS D ON C.iConsecutivo       = D.iConsecutivoEndoso AND D.iConsecutivoPoliza = A.iConsecutivoPoliza ".
+                  "INNER JOIN ct_polizas                 AS E ON D.iConsecutivoPoliza = E.iConsecutivo AND E.iDeleted = '0' AND A.iConsecutivoBroker = E.iConsecutivoBrokers  ".
+                  "INNER JOIN ct_tipo_poliza             AS F ON E.iTipoPoliza        = F.iConsecutivo  ".$flt_join.$filtroQuery;
+    $Result     = $conexion->query($query_rows);
+    $items      = $Result->fetch_assoc();
+    $registros  = $items["total"];
+    
+    if($registros == "0"){$pagina_actual = 0;}
+    $paginas_total = ceil($registros / $registros_por_pagina);
+    
+    if($registros == "0"){
+        $limite_superior = 0;
+        $limite_inferior = 0;
+        $htmlTabla      .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";
+    }
+    else{
+        $pagina_actual  == "0" ? $pagina_actual = 1 : false;
+        $limite_superior = $registros_por_pagina;
+        $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
+        
+        $sql    = "SELECT A.iConsecutivo AS iConsecutivoEndosoMensual,D.iConsecutivoPoliza,A.eStatus,C.iConsecutivo, A.iConsecutivoCompania, IF(C.eAccion = 'A','ADD','DELETE') AS eAccion, C.iConsecutivo AS iConsecutivoEndoso, E.sNumeroPoliza, F.sDescripcion,DATE_FORMAT(C.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
+                  "$flt_field ".
+                  "FROM cb_endoso_mensual AS A ".
+                  "INNER JOIN cb_endoso_mensual_relacion AS B ON A.iConsecutivo       = B.iConsecutivoEndosoMensual ".
+                  "INNER JOIN cb_endoso                  AS C ON B.iConsecutivoEndoso = C.iConsecutivo AND A.iTipoReporte = C.iConsecutivoTipoEndoso  ".
+                  "INNER JOIN cb_endoso_estatus          AS D ON C.iConsecutivo       = D.iConsecutivoEndoso AND D.iConsecutivoPoliza = A.iConsecutivoPoliza ".
+                  "INNER JOIN ct_polizas                 AS E ON D.iConsecutivoPoliza = E.iConsecutivo AND E.iDeleted = '0' AND A.iConsecutivoBroker = E.iConsecutivoBrokers  ".
+                  "INNER JOIN ct_tipo_poliza             AS F ON E.iTipoPoliza        = F.iConsecutivo  ".$flt_join.$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
+        $result = $conexion->query($sql);
+        $rows   = $result->num_rows; 
+           
+        if($rows > 0){    
+            while ($items = $result->fetch_assoc()) { 
+                
+                if($iTipoReporte == "1"){
+                    $Descripcion = $items['iYear']." - ".$items['sMake']." - ".$items['sVIN']." - \$".number_format($items['iPDAmount'],2,'.','')." ".$items['sTipo'];
+                }else if($iTipoReporte == "2"){
+                    $Descripcion = $items['sNombre']." - DOB: ".$items['dFechaNacimiento']." - LIC: ".$items['iNumLicencia']." EXP.".$items['dFechaExpiracionLicencia'];
+                }
+                if($items['eStatus'] == "S"){
+                   $btns       = "<div class=\"btn_delete_detalle btn-icon trash btn-left\" title=\"Delete of this Report\"><i class=\"fa fa-trash\"></i> <span></span></div>"; 
+                } 
+                
+                $htmlTabla .= "<tr>".
+                              "<td style=\"width: 25px;\">".$items['iConsecutivo']."</td>".
+                              "<td class=\"txt-c\">".$items['eAccion']."</td>".
+                              "<td>".$items['sNumeroPoliza']." - ".$items['sDescripcion']."</td>". 
+                              "<td>".$Descripcion."</td>".
+                              "<td class=\"txt-c\">".$items['dFechaAplicacion']."</td>".
+                              "<td>$btns</td></tr>";
+                $iConsecutivoPoliza = $items['iConsecutivoPoliza'];
+            }
+        
+            
+            $conexion->rollback();
+            $conexion->close();                                                                                                                                                                       
+        } else { 
+            
+            $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";    
+            
+        } 
+    }
+     $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla","iConsecutivoPoliza"=>"$iConsecutivoPoliza");   
+     echo json_encode($response); 
+  }  
   
   #ESTATUS ENDOSO:
   function estatus_get_data(){
@@ -462,7 +569,8 @@
     include("cn_usuarios.php");
     $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
     $transaccion_exitosa = true;
-    $sql    = "SELECT iConsecutivo,sComentarios,iConsecutivoPoliza,sNumeroEndosoBroker,eStatus,iConsecutivoCompania,iConsecutivoBroker,eStatus,iRatePercent,sComentarios,sEmail,sMensajeEmail,iTipoReporte, DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio,DATE_FORMAT(dFechaFin,'%m/%d/%Y') AS dFechaFin ".
+    $sql    = "SELECT iConsecutivo,sComentarios,iConsecutivoPoliza,sNumeroEndosoBroker,eStatus,iConsecutivoCompania,iConsecutivoBroker,eStatus,iRatePercent,sComentarios,".
+              "sEmail,sMensajeEmail,iTipoReporte, DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio,DATE_FORMAT(dFechaFin,'%m/%d/%Y') AS dFechaFin ".
               "FROM cb_endoso_mensual WHERE iConsecutivo = '$clave'";
     $result = $conexion->query($sql);
     $items  = $result->num_rows;   
