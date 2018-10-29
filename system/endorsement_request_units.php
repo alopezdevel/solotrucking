@@ -834,13 +834,13 @@
                         <td>
                             <div class="field_item">
                                 <label>Company <span style="color:#ff0000;">*</span>:</label>  
-                                <select id="iConsecutivoCompania" onchange="fn_endorsement.get_company_data();"  name="iConsecutivoCompania" class="required-field" style="height: 25px!important;width: 99%!important;"><option value="">Select an option...</option></select>
+                                <select tabindex="1" id="iConsecutivoCompania" onchange="fn_endorsement.get_company_data();"  name="iConsecutivoCompania" class="required-field" style="height: 25px!important;width: 99%!important;"><option value="">Select an option...</option></select>
                             </div>
                         </td>
                         <td>
                             <div class="field_item">
                                 <label>Action <span style="color:#ff0000;">*</span>:</label> 
-                                <Select id="eAccion" name"eAccion" class="required-field" onblur="fn_endorsement.valid_action();" style="height: 25px!important;">
+                                <Select tabindex="2" id="eAccion" name"eAccion" class="required-field" onblur="fn_endorsement.valid_action();" style="height: 25px!important;">
                                     <option value="">Select an option...</option> 
                                     <option value="A">ADD</option>
                                     <option value="D">DELETE</option>
@@ -851,12 +851,33 @@
                 </table>
                 <legend>Unit Information</legend>
                 <table id="frm_unit_information" style="width:100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td>
+                            <div class="field_item">
+                                <label>VIN <span style="color:#ff0000;">*</span>:</label> 
+                                <input tabindex="3" id="sUnitTrailer" class="txt-uppercase required-field" type="text" placeholder="Write the VIN or system id of the Unit or Trailer" style="width: 96%;" onblur="fn_endorsement.set_unidades();">
+                            </div>
+                        </td>
+                        <td>
+                        <div class="field_item">
+                            <label>Radius <span style="color:#ff0000;" class="add_field">*</span>: </label>
+                            <Select tabindex="4" id="iConsecutivoRadio" style="width:99%!important;height: 25px!important;"><option value="">Select an option...</option></select>
+                        </div>
+                        </td>
+                        <!-- only if the company has a PD Policy -->
+                        <td>
+                        <div class="field_item pd_information">
+                            <label>PD Amount $ <span style="color:#ff0000;">*</span>:</label>
+                            <input tabindex="5" id="iPDAmount" name="iPDAmount" type="text" class="decimals readonly" readonly="readonly"> 
+                        </div>
+                        </td>
+                    </tr>
                     <tr>
                         <td>
                         <div class="field_item">
                             <input id="iConsecutivoUnidad" type="hidden" value="">
                             <label>Type <span style="color:#ff0000;">*</span>: </label>
-                            <Select id="sTipo" style="width:99%!important;height: 25px!important;" class="required-field">
+                            <Select tabindex="6" id="sTipo" style="width:99%!important;height: 25px!important;" class="required-field">
                                 <option value="">Select an option...</option>
                                 <option value="UNIT">Unit</option>
                                 <option value="TRAILER">Trailer</option>
@@ -867,45 +888,37 @@
                         <td>
                         <div class="field_item">
                             <label>Year <span style="color:#ff0000;">*</span>: </label>
-                            <Select id="iYear" style="width:99%!important;height: 25px!important;" class="required-field"><option value="">Select an option...</option></select> 
+                            <Select tabindex="7" id="iYear" style="width:99%!important;height: 25px!important;" class="required-field"><option value="">Select an option...</option></select> 
                         </div>
                         </td>
                         <td>
                         <div class="field_item">
                             <label>Make: </label>
-                            <Select id="iModelo" style="width:99%!important;height: 25px!important;"><option value="">Select an option...</option></select>
-                        </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="field_item">
-                                <label>VIN <span style="color:#ff0000;">*</span>:</label> 
-                                <input id="sUnitTrailer" class="txt-uppercase required-field" type="text" placeholder="Write the VIN or system id of the Unit or Trailer" style="width: 97%;" onblur="fn_endorsement.set_unidades();">
-                            </div>
-                        </td>
-                        <td>
-                        <div class="field_item">
-                            <label>Radius <span style="color:#ff0000;" class="add_field">*</span>: </label>
-                            <Select id="iConsecutivoRadio" style="width:99%!important;height: 25px!important;"><option value="">Select an option...</option></select>
-                        </div>
-                        </td>
-                        <!-- only if the company has a PD Policy -->
-                        <td>
-                        <div class="field_item pd_information">
-                            <label>PD Amount $ <span style="color:#ff0000;">*</span>:</label>
-                            <input id="iPDAmount" name="iPDAmount" type="text" class="decimals readonly" readonly="readonly"> 
+                            <Select tabindex="8" id="iModelo" style="width:99%!important;height: 25px!important;"><option value="">Select an option...</option></select>
                         </div>
                         </td>
                     </tr>
                     <tr>
                     <td colspan="100%">
-                    <div class="field_item">
-                        <label>General Comments:</label> 
-                        <textarea id="sComentarios" name ="sComentarios" style="resize:none;height:50px;"></textarea>
-                    </div>
+                    <table id="unidades_datagrid" class="popup-datagrid" style="width: 100%;margin-top: 10px;margin-bottom: 10px;" cellpadding="0" cellspacing="0">
+                        <thead>
+                            <tr id="grid-head2">
+                                <td class="etiqueta_grid">Year</td>
+                                <td class="etiqueta_grid">Make</td>
+                                <td class="etiqueta_grid">VIN</td>
+                                <td class="etiqueta_grid">Radius</td> 
+                                <td class="etiqueta_grid">Weight</td> 
+                                <td class="etiqueta_grid">Type</td> 
+                                <td class="etiqueta_grid">PD Amount</td> 
+                                <td class="etiqueta_grid" style="width: 100px;text-align: center;">
+                                    <div class="btn-icon edit btn-left" title="Upload files" onclick="fn_endorsement.unidad.add();" style="width: auto!important;"><i class="fa fa-check"></i><span style="    padding-left: 5px;font-size: 0.8em;text-transform: uppercase;">Save Unit</span></div>
+                                </td>
+                            </tr>
+                        </thead>
+                        <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
+                    </table>
                     </td>
-                </tr>
+                    </tr>
                 </table>
             </fieldset>
             <table style="width: 100%;" cellpadding="0" cellspacing="0">
@@ -945,6 +958,14 @@
                             </tr>
                         </tfoot>
                     </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="100%">
+                    <div class="field_item">
+                        <label>General Comments:</label> 
+                        <textarea tabindex="9" id="sComentarios" name ="sComentarios" style="resize:none;height:30px!important;"></textarea>
+                    </div>
                     </td>
                 </tr>
             </table> 

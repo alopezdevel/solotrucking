@@ -17,7 +17,7 @@
     $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
         
     //Filtros de informacion //
-    $filtroQuery = " WHERE A.iConsecutivo IS NOT NULL AND B.iDeleted = '0' ";
+    $filtroQuery = " WHERE A.iConsecutivo IS NOT NULL AND B.iDeleted = '0' AND A.eOrigenReporte='CRC' ";
     $array_filtros = explode(",",$_POST["filtroInformacion"]);
     foreach($array_filtros as $key => $valor){
         if($array_filtros[$key] != ""){
