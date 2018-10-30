@@ -59,6 +59,28 @@ function inicio(){
             }
         });
         
+        $('#dialog_driver_unit').dialog({
+            modal: true,
+            autoOpen: false,
+            width : 350,
+            height : 200,
+            resizable : false,
+            buttons : {
+                'OK' : function() {
+                    var clave = $('#dialog_driver_unit select[name=iConsecutivoCompania]').val();
+                    var nombre= $('#dialog_driver_unit select[name=iConsecutivoCompania] option:selected').text();
+                    if(clave != ""){
+                        $(this).dialog('close');
+                        fn_policies.get_list_description(clave,nombre); 
+                    }else{fn_solotrucking.mensaje("Please select before a company from the list");}
+                                
+                },
+                 'CLOSE' : function(){
+                    $(this).dialog('close');
+                }
+            }
+        });
+        
         //DATEPICKERS
         var dates_rp = $( "#flt_dateFrom, #flt_dateTo" ).datepicker({
             changeMonth: true,
@@ -106,7 +128,10 @@ var fn_policies = {
                     
                     //Reportes Select:
                     $("#dialog_report_policies .flt_company").empty().append(data.select);
-                    $("#dialog_report_policies .flt_company option:first-child").text('All');   
+                    $("#dialog_report_policies .flt_company option:first-child").text('All'); 
+                    
+                    //List de drivers/vehicles dialog:
+                    $("#dialog_driver_unit select[name=iConsecutivoCompania]").empty().append(data.select);  
                 }
             });
             $.ajax({             
@@ -162,7 +187,7 @@ var fn_policies = {
                 }
             });
             //Filtrado con la tecla enter
-            $(fn_policies.data_grid + ' #grid-head1 input').keyup(function(event){
+            $(fn_policies.data_grid + ' .grid-head1 input').keyup(function(event){
                 if (event.keyCode == '13') {
                     event.preventDefault();
                     fn_policies.filtraInformacion();
@@ -549,20 +574,20 @@ var fn_policies = {
             }
         }, 
         ordenamiento : function(campo,objeto){
-            $(fn_policies.data_grid + " #grid-head2 td").removeClass('down').removeClass('up');
+            $(fn_policies.data_grid + " .grid-head2 td").removeClass('down').removeClass('up');
 
             if(campo == fn_policies.orden){
                 if(fn_policies.sort == "ASC"){
                     fn_policies.sort = "DESC";
-                    $(fn_policies.data_grid + " #grid-head2 td:eq("+objeto+")").addClass('up');
+                    $(fn_policies.data_grid + " .grid-head2 td:eq("+objeto+")").addClass('up');
                 }else{
                     fn_policies.sort = "ASC";
-                    $(fn_policies.data_grid + " #grid-head2 td:eq("+objeto+")").addClass('down');
+                    $(fn_policies.data_grid + " .grid-head2 td:eq("+objeto+")").addClass('down');
                 }
             }else{
                 fn_policies.sort = "ASC";
                 fn_policies.orden = campo;
-                $(fn_policies.data_grid + " #grid-head2 td:eq("+objeto+")").addClass('down');
+                $(fn_policies.data_grid + " .grid-head2 td:eq("+objeto+")").addClass('down');
             }
             if(fn_policies.filtro_table == 'active'){fn_policies.fillgrid();}else if(fn_policies.filtro_table == 'expired'){fn_policies.fillgrid_expired();}
 
@@ -625,17 +650,22 @@ var fn_policies = {
                 $("#file_edit_form .company_policies").empty();
             }
         },
-        get_list_description : function(policy,company,sNumeroPoliza){
+        get_list_open : function(){
+           $('#dialog_driver_unit :text').val('');
+           $('#dialog_driver_unit').dialog( 'open' );
+           return false; 
+        },
+        get_list_description : function(clave,nombre){
 
-            fn_policies.list.id_policy = policy; 
-            fn_policies.list.id_company = company;
+           
+            fn_policies.list.id_company = clave;
             fn_policies.list.fill_drivers_actives();
             fn_policies.list.fill_units_actives();
             $("#driver_tabs" ).tabs('option', 'active', 0);
             $('#drivers_active_table,#units_active_table ').show();
             $('#drivers_edit_form,#unit_edit_form ').hide(); 
             
-            $('#driver_list_form h2').empty().append('Policy Number: '+sNumeroPoliza);
+            $('#driver_list_form h2').empty().append('DRIVERS/VEHICLES LIST OF: '+nombre);
             fn_popups.resaltar_ventana('driver_list_form');
         },
         list : {
@@ -977,7 +1007,7 @@ var fn_policies = {
         </div>
         <table id="data_grid_policies" class="data_grid">
         <thead>
-            <tr id="grid-head1">
+            <tr class="grid-head1">
                 <td style="width:50px!important;"><input class="flt_pid" type="text" placeholder="ID:"></td> 
                 <td style="width:350px;"><input class="flt_pcompany" type="text" placeholder="Company:"></td>
                 <td><input class="flt_policynumber" type="text" placeholder="Policy Numer:"></td>
@@ -992,14 +1022,15 @@ var fn_policies = {
             <tr id="grid-head-tools">
                 <td colspan="100%">
                     <ul>
-                        <li><div class="btn-icon report btn-left" title="Report of Policies"  onclick="fn_policies.dialog_report_open();"><i class="fa fa-folder-open"></i></div></li>  
-                        <li><div class="btn-icon add btn-left active active_policies" title="View Actived Policies "  onclick="fn_policies.pagina_actual='';fn_policies.fillgrid();"><i class="fa fa-file-text"></i></div></li> 
-                        <li><div class="btn-icon edit btn-left expired_policies" title="View Canceled & Expired Policies "  onclick="fn_policies.pagina_actual='';fn_policies.fillgrid_expired();"><i class="fa fa-file-text"></i></div></li>
-                        <li><div class="btn-icon add btn-left" title="Upload drivers or units of a company"  onclick="fn_policies.upload_file_form();"><i class="fa fa-upload"></i></div></li>
+                        <li><div class="btn-icon report btn-left"                     title="Drivers/Vehicle List"                   onclick="fn_policies.get_list_open();" style="width:auto!important;"><i class="fa fa-list-ul"></i><span style="margin-left:5px;font-size: 10px!important;">Drivers/Vehicle List</span></div></li>
+                        <li><div class="btn-icon report btn-left"                     title="Report of Policies"                   onclick="fn_policies.dialog_report_open();" style="width:auto!important;"><i class="fa fa-folder-open"></i><span style="margin-left:5px;font-size: 10px!important;">Report of Policies</span></div></li>  
+                        <li><div class="btn-icon add btn-left active active_policies" title="View Actived Policies "               onclick="fn_policies.pagina_actual='';fn_policies.fillgrid();"><i class="fa fa-file-text"></i></div></li> 
+                        <li><div class="btn-icon trash btn-left expired_policies"      title="View Canceled & Expired Policies "    onclick="fn_policies.pagina_actual='';fn_policies.fillgrid_expired();"><i class="fa fa-clock-o"></i></div></li>
+                        <li><div class="btn-icon add btn-left"                        title="Upload drivers or units of a company" onclick="fn_policies.upload_file_form();"><i class="fa fa-upload"></i></div></li>
                     </ul>
                 </td>
             </tr>
-            <tr id="grid-head2">
+            <tr class="grid-head2">
                 <td class="etiqueta_grid down" onclick="fn_policies.ordenamiento('A.iConsecutivo',this.cellIndex);">ID</td> 
                 <td class="etiqueta_grid"      onclick="fn_policies.ordenamiento('sNombreCompania',this.cellIndex);">Company Name</td> 
                 <td class="etiqueta_grid"      onclick="fn_policies.ordenamiento('sNumeroPoliza',this.cellIndex);">Policy Number</td>
@@ -1185,7 +1216,7 @@ var fn_policies = {
                     </tr>
                 </table>
                 <div class="policy_jacker_file" style="display:none;">
-                    <legend>POLICY FILES</legend>
+                    <!--<legend>POLICY FILES</legend>-->
                     <div class="file_certificate files"> 
                         <label>Policy Jacker: <span style="color:#9e2e2e;">Please upload the policy jacker in PDF format.</span></label> 
                         <input  id="txtPolicyJacker" type="text" readonly="readonly" value="" size="40" style="width:85%;" />
@@ -1198,7 +1229,7 @@ var fn_policies = {
                         <button id="btnPolicyPFA" type="button">Upload file</button>
                         <input  id="iConsecutivoArchivoPFA" type="hidden">
                     </div>
-                </div> 
+                </div>
                 <br> 
                 <button type="button" class="btn-1" onclick="fn_policies.save();">SAVE</button> 
                 <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('policies_edit_form');fn_policies.fillgrid();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
@@ -1247,6 +1278,16 @@ var fn_policies = {
     </div>
 </div>
 <!-- DRIVERS & UNITS -->
+<div id="dialog_driver_unit" title="Driver/Vehicle LIST" style="display:none;" >
+    <p>Please select a company:</p>
+    <form id="frm_report_policies" method="post">
+        <fieldset>
+        <div class="field_item"> 
+            <select name="iConsecutivoCompania" class="flt_company"><option value="">Select an option...</option></select>
+        </div>
+        </fieldset>
+    </form>  
+</div>
 <div id="driver_list_form" class="popup-form" style="width:90%!important;">
     <div class="p-header">
         <h2>LIST OF DRIVERS</h2>
@@ -1254,15 +1295,15 @@ var fn_policies = {
     </div>
     <div class="p-container">
     <div id="driver_tabs">
-      <ul>
-        <li><a href="#tabs-1" onclick="fn_policies.list.fill_drivers_actives();">Drivers actives in this policy</a></li>
-        <li><a href="#tabs-2" onclick="fn_policies.list.fill_units_actives();">Units actives in this policy</a></li>
+      <ul style="border-radius: 4px 4px 0px 0px;">
+        <li><a href="#tabs-1" onclick="fn_policies.list.fill_drivers_actives();">Drivers</a></li>
+        <li><a href="#tabs-2" onclick="fn_policies.list.fill_units_actives();">Vechicles</a></li>
       </ul>
-      <div id="tabs-1">
-        <table id="drivers_active_table" class="popup-datagrid">
+      <div id="tabs-1" style="padding:0!important;">
+        <table id="drivers_active_table" class="popup-datagrid" style="width:100%!important;">
             <thead>
                     <tr id="grid-head1">
-                        <td style="width:500px;"><input class="flt_dName" type="text" placeholder="Name:"></td> 
+                        <td style="width:380px;"><input class="flt_dName" type="text" placeholder="Name:"></td> 
                         <td><input class="flt_dDob flt_fecha"  type="text" placeholder="MM-DD-YY"></td>
                         <td><input class="flt_dLicense" type="text" placeholder="License #:"></td> 
                         <td>
@@ -1274,6 +1315,7 @@ var fn_policies = {
                         </td> 
                         <td><input class="flt_dExpire flt_fecha" type="text" placeholder="MM-DD-YY"></td> 
                         <td style="width:80px;"><input class="flt_dYears num" type="text" placeholder="Years:"></td>  
+                        <td></td>  
                         <td style='width:120px;'>
                             <div class="btn-icon-2 btn-left" title="Search" onclick="fn_policies.list.filtraInformacion();"><i class="fa fa-search"></i></div>
                             <div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_policies.list.drivers_add();"><i class="fa fa-plus"></i></div>
@@ -1286,6 +1328,7 @@ var fn_policies = {
                         <td class="etiqueta_grid">LICENSE TYPE</td> 
                         <td class="etiqueta_grid">EXPIRE DATE</td> 
                         <td class="etiqueta_grid">EXPERIENCE YEARS</td>
+                        <td class="etiqueta_grid">Is in Policies</td>
                         <td class="etiqueta_grid"></td>
                     </tr>
                 </thead>
@@ -1314,56 +1357,78 @@ var fn_policies = {
         </table>
         <!-- FORMULARIOS DE EDICION DRIVERS-->
         <div id="drivers_edit_form" style="display:none;">
-           <form>
-                <div class="field_item">
-                    <label>Select policies: <span style="color:#ff0000;">*</span>:</label>  
+           <form style="padding:10px;" action="" method="post">
+           <fieldset>
+               <legend>DRIVER DATA</legend>
+               <div class="field_item" style="font-size: 12px;">
+                    <label style="font-size: 12px;">Select policies: <span style="color:#ff0000;">*</span>:</label>  
                     <div class="company_policies" style="padding:10px;"></div>
                     <br>
                 </div> 
-           <fieldset id="data_driver_form">
-                <legend>Data of Driver</legend> 
-                <input type="hidden" id="iConsecutivo" value="">
-                <input type="hidden" id="iConsecutivoCompania" value="">
-                <input type="hidden" id="siConsecutivosPolizas" value="">
-                <div class="field_item"> 
-                    <label>Name <span style="color:#ff0000;">*</span>: </label>
-                    <input id="sNombre" type="text" placeholder="Please write a name..." class="txt-uppercase required-field">
-                </div>
-                <div class="field_item"> 
-                    <label>Date of Birth: </label>
-                    <input id="dFechaNacimiento" type="text" class="txt-uppercase fecha">
-                </div>
-                <div class="field_item_operador"> 
-                      <label>Licence Type: </label>
-                      <Select id="eTipoLicencia">
-                        <option value="">Select an option...</option>
-                        <option value="1">FEDERAL / B1</option>
-                        <option value="2">COMMERCIAL / CDL-1</option>
-                      </select>
-                </div>
-                <div class="field_item"> 
-                    <label>License Number: </label>
-                    <input id="iNumLicencia" class="txt-uppercase" maxlength="10" type="text" placeholder="Please write the license number...">
-                </div>
-                <div class="field_item"> 
-                    <label>Expiration Date: </label>
-                    <input id="dFechaExpiracionLicencia" type="text" class="txt-uppercase fecha">
-                </div>
-                <div class="field_item"> 
-                    <label>Experience Years: </label>
-                    <input id="iExperienciaYear" class="num txt-uppercase" type="text" placeholder="Please write only the number.">
-                </div>
-                <button type="button" class="btn-1" onclick="fn_policies.list.drivers_save();">SAVE</button>
-                <button type="button" class="btn-1" onclick="$('#drivers_active_table').show();$('#drivers_edit_form').hide();" style="margin-right:10px;background:#e8051b;">CLOSE</button>
+               <table id="data_driver_form" cellpadding="0" cellspacing="0" style="width: 100%;">
+                <tr>
+                    <td colspan="100%">
+                        <input type="hidden" id="iConsecutivo" value="">
+                        <input type="hidden" id="iConsecutivoCompania" value="">
+                        <input type="hidden" id="siConsecutivosPolizas" value="">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                    <div class="field_item"> 
+                        <label>Name <span style="color:#ff0000;">*</span>: </label>
+                        <input tabindex="1" id="sNombre" type="text" placeholder="Please write a name..." class="txt-uppercase required-field" style="width: 97%;">
+                    </div>
+                    </td>
+                    <td>
+                    <div class="field_item"> 
+                        <label>Date of Birth: </label>
+                        <input tabindex="2" id="dFechaNacimiento" type="text" class="txt-uppercase fecha" style="width: 90%;">
+                    </div>
+                    </td>
+                    <td>
+                    <div class="field_item"> 
+                        <label>Experience Years: </label>
+                        <input tabindex="3" id="iExperienciaYear" class="num txt-uppercase" type="text" placeholder="Please write only the number." style="width: 97%;">
+                    </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                    <div class="field_item"> 
+                        <label>License Number: </label>
+                        <input tabindex="4" id="iNumLicencia" class="txt-uppercase" maxlength="10" type="text" placeholder="Please write the license number..." style="width: 97%;">
+                    </div>
+                    </td>
+                    <td>
+                    <div class="field_item_operador"> 
+                          <label>Licence Type: </label>
+                          <Select tabindex="5" id="eTipoLicencia" style="width: 99%!important;height: 25px!important;">
+                            <option value="">Select an option...</option>
+                            <option value="1">FEDERAL / B1</option>
+                            <option value="2">COMMERCIAL / CDL-1</option>
+                          </select>
+                    </div>
+                    </td>
+                    <td>
+                    <div class="field_item"> 
+                        <label>Expiration Date: </label>
+                        <input tabindex="6" id="dFechaExpiracionLicencia" type="text" class="txt-uppercase fecha" style="width: 90%;">
+                    </div>
+                    </td>
+                </tr>
+               </table>
+               <button type="button" class="btn-1" onclick="fn_policies.list.drivers_save();" style="font: 400 13.3333px Arial!important;">SAVE</button>
+               <button type="button" class="btn-1" onclick="$('#drivers_active_table').show();$('#drivers_edit_form').hide();" style="margin-right:10px;background:#e8051b;font: 400 13.3333px Arial!important;">CLOSE</button>
             </fieldset>
             </form> 
         </div>
       </div>
-      <div id="tabs-2">
-        <table id="units_active_table" class="popup-datagrid">
+      <div id="tabs-2" style="padding:0!important;">
+        <table id="units_active_table" class="popup-datagrid" style="width:100%!important;">
             <thead>
                 <tr id="grid-head1">
-                        <td style="width:500px;"><input class="flt_uVIN" type="text" placeholder="Name:"></td> 
+                        <td style="width:380px;"><input class="flt_uVIN" type="text" placeholder="Name:"></td> 
                         <td>
                             <select class="flt_uRadio" type="text" onblur="fn_policies.list.units_filtraInformacion();">
                                 <option value="">Select an option...</option>
@@ -1376,9 +1441,10 @@ var fn_policies = {
                         <td><input class="flt_uMake" type="text" placeholder="Make:"></td>  
                         <td><input class="flt_uType" type="text" placeholder="Type:"></td> 
                         <td style="width:80px;"><input class="flt_uWeight" type="text" placeholder="Weigth:"></td>  
+                        <td></td> 
                         <td style='width:120px;'>
                             <div class="btn-icon-2 btn-left" title="Search" onclick="fn_policies.list.units_filtraInformacion();"><i class="fa fa-search"></i></div>
-                            <div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_policies.list.unit_add();"><i class="fa fa-plus"></i></div> 
+                            <!--<div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_policies.list.unit_add();"><i class="fa fa-plus"></i></div>--> 
                         </td> 
                     </tr>
                     <tr id="grid-head2">
@@ -1388,6 +1454,7 @@ var fn_policies = {
                         <td class="etiqueta_grid">MAKE</td> 
                         <td class="etiqueta_grid">TYPE</td> 
                         <td class="etiqueta_grid">WEIGHT</td> 
+                        <td class="etiqueta_grid">Is in Policies</td>
                         <td class="etiqueta_grid"></td>
                     </tr>
             </thead>
@@ -1416,47 +1483,70 @@ var fn_policies = {
         </table>
         <!-- FORMULARIOS DE EDICION DRIVERS -->
         <div id="unit_edit_form" style="display:none;">
-           <form>
+           <form style="padding:10px;">
+           <fieldset>
+                <legend>VEHICLE DATA</legend>
                 <div class="field_item">
                     <label>Select policies: <span style="color:#ff0000;">*</span>:</label>  
                     <div class="company_policies" style="padding:10px;"></div>
                     <br>
                 </div> 
-           <fieldset id="data_unit_form">
-                <legend>Data of Unit</legend> 
-                <input type="hidden" id="iConsecutivo" value="">
-                <input type="hidden" id="iConsecutivoCompania" value="">
-                <input type="hidden" id="siConsecutivosPolizas" value="">
-                <div class="field_item required_field"> 
-                    <label>Type <span style="color:#ff0000;">*</span>: </label>
-                    <Select id="sTipo">
-                        <option value="">Select an option...</option>
-                        <option value="UNIT">Unit</option>
-                        <option value="TRAILER">Trailer</option>
-                    </select>    
-                </div>
-                <div class="field_item required_field"> 
-                    <label>Year <span style="color:#ff0000;">*</span>: </label>
-                    <Select id="iYear"><option value="">Select an option...</option></select> 
-                </div>
-                <div class="field_item"> 
-                      <label>Make: </label>
-                      <Select id="iModelo"><option value="">Select an option...</option></select>
-                </div>
-                <div class="field_item required_field"> 
-                    <label>VIN Number <span style="color:#ff0000;">*</span>: </label>
-                    <input id="sVIN" type="text" class="txt-uppercase" maxlength="17">
-                </div>
-                <div class="field_item"> 
-                      <label>Radius: </label>
-                      <Select id="iConsecutivoRadio" onblur=""><option value="">Select an option...</option></select>
-                </div>
-                <div class="field_item required_field"> 
-                    <label>Deductible ($): </label>
-                    <input id="iTotalPremiumPD" type="text" class="num" maxlength="25">
-                </div>
-                <button type="button" class="btn-1" onclick="fn_policies.list.unit_save();">SAVE</button>
-                <button type="button" class="btn-1" onclick="$('#units_active_table').show();$('#unit_edit_form').hide();" style="margin-right:10px;background:#e8051b;">CLOSE</button>
+                <table id="data_unit_form" cellpadding="0" cellspacing="0" style="width:100%;">
+                    <tr>
+                        <td colspan="100%">
+                            <input type="hidden" id="iConsecutivo" value="">
+                            <input type="hidden" id="iConsecutivoCompania" value="">
+                            <input type="hidden" id="siConsecutivosPolizas" value="">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                        <div class="field_item required_field"> 
+                            <label>VIN Number <span style="color:#ff0000;">*</span>: </label>
+                            <input tabindex="1" id="sVIN" type="text" class="txt-uppercase" value="" style="width: 97%;">
+                        </div>
+                        </td>
+                        <td>
+                        <div class="field_item required_field"> 
+                            <label>Type <span style="color:#ff0000;">*</span>: </label>
+                            <Select tabindex="2" id="sTipo" style="width: 99%!important;height: 25px!important;">
+                                <option value="">Select an option...</option>
+                                <option value="UNIT">Unit</option>
+                                <option value="TRAILER">Trailer</option>
+                                <option value="TRACTOR">Tractor</option>
+                            </select>    
+                        </div>
+                        </td>
+                        <td>
+                        <div class="field_item required_field"> 
+                            <label>Year <span style="color:#ff0000;">*</span>: </label>
+                            <Select tabindex="3" id="iYear" style="width: 99%!important;height: 25px!important;"><option value="">Select an option...</option></select> 
+                        </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                        <div class="field_item"> 
+                              <label>Make: </label>
+                              <Select tabindex="4" id="iModelo" style="width: 99%!important;height: 25px!important;"><option value="">Select an option...</option></select>
+                        </div>
+                        </td>
+                        <td>
+                        <div class="field_item"> 
+                              <label>Radius: </label>
+                              <Select tabindex="5" id="iConsecutivoRadio"  style="width: 99%!important;height: 25px!important;"><option value="">Select an option...</option></select>
+                        </div>
+                        </td>
+                        <td>
+                        <div class="field_item required_field"> 
+                            <label>PD Amount ($): </label>
+                            <input id="iTotalPremiumPD" type="text" class="num" maxlength="25">
+                        </div>
+                        </td>
+                    </tr>
+                </table> 
+                <button type="button" class="btn-1" onclick="fn_policies.list.unit_save();" style="font: 400 13.3333px Arial!important;">SAVE</button>
+                <button type="button" class="btn-1" onclick="$('#units_active_table').show();$('#unit_edit_form').hide();" style="margin-right:10px;background:#e8051b;font: 400 13.3333px Arial!important;">CLOSE</button>
             </fieldset>
             </form> 
         </div>

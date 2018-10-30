@@ -84,7 +84,7 @@
                          }
                          if($dias >= 0){
                             $iConsecutivoPoliza = $items['clave'];
-                            $btn_drivers  = "<div class=\"btn-icon view btn-left\" title=\"View list of Drivers & Units\" onclick=\"fn_policies.get_list_description('$iConsecutivoPoliza','".$items['iConsecutivoCompania']."','".$items['sNumeroPoliza']."');\"><i class=\"fa fa-list-alt\"></i> <span></span></div>"; 
+                            //$btn_drivers  = "<div class=\"btn-icon view btn-left\" title=\"View list of Drivers & Units\" onclick=\"fn_policies.get_list_description('$iConsecutivoPoliza','".$items['iConsecutivoCompania']."','".$items['sNumeroPoliza']."');\"><i class=\"fa fa-list-alt\"></i> <span></span></div>"; 
          
                             $htmlTabla .= "<tr $EstatusPoliza >
                                             <td>".$items['clave']."</td>".
@@ -978,6 +978,8 @@
       echo json_encode($response); 
       
   }
+  
+  #DATA GRID DRIVERS/VEHICLES
   function get_drivers_active(){
       
       $iConsecutivoPoliza   = trim($_POST['iConsecutivoPoliza']);
@@ -1036,8 +1038,11 @@
                                        "<td>".$items['iNumLicencia']."</td>". 
                                        "<td>".$items['TipoLicencia']."</td>".
                                        "<td>".$items['dFechaExpiracionLicencia']."</td>".  
-                                       "<td>".$items['iExperienciaYear']."</td>".                                                                                                                                                                                                                    
-                                       "<td><div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>  </td></tr>";   
+                                       "<td>".$items['iExperienciaYear']."</td>". 
+                                       "<td></td>".                                                                                                                                                                                                                   
+                                       "<td>".
+                                       //"<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i></div>".
+                                       "</td></tr>";   
                 }
                 $conexion->rollback();
                 $conexion->close();                                                                                                                                                                       
@@ -1371,8 +1376,11 @@
                                            "<td>".$items['iYear']."</td>". 
                                            "<td>".$items['Make']."</td>".
                                            "<td>".$items['sTipo']."</td>".  
-                                           "<td>".$items['sPeso']."</td>".                                                                                                                                                                                                                    
-                                           "<td><div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div></td></tr>";
+                                           "<td>".$items['sPeso']."</td>".
+                                           "<td></td>".                                                                                                                                                                                                                     
+                                           "<td>".
+                                           //"<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i></div>".
+                                           "</td></tr>";
  
                      }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}    
                 }
