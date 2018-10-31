@@ -765,12 +765,14 @@
                 $mail->SMTPSecure = "TLS";                 // sets the prefix to the servier
                 $mail->Host       = "smtp.gmail.com";      // sets GMAIL as the SMTP server
                 $mail->Port       = 587;                   // set the SMTP port for the GMAIL server
-                $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
-                $mail->Password   = "SL09100242"; 
+                /*$mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
+                $mail->Password   = "SL09100242"; */
+                $mail->Username   = "customerservice@solo-trucking.com";  // GMAIL username
+                $mail->Password   = "SL641404tK"; 
                 
-                $mail->SetFrom('systemsupport@solo-trucking.com', 'Solo-Trucking Insurance');
-                $mail->AddReplyTo('customerservice@solo-trucking.com','Customer service Solo-Trucking');
-                $mail->AddCC('customerservice@solo-trucking.com', 'Customer service Solo-Trucking');
+                $mail->SetFrom('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');
+                $mail->AddReplyTo('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance'); 
+                $mail->AddCC('systemsupport@solo-trucking.com','System Support Solo-Trucking Insurance');
                 
                 $mail->Subject    = $Emails[$x]['subject'];
                 $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test

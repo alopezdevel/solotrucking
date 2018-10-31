@@ -652,11 +652,11 @@
                     data:{'accion' : 'send_email','iConsecutivoEndoso' : iConsecutivo},
                     async : true,
                     dataType : "json",
-                    success : function(data){                               
+                    success : function(data){ 
+                        fn_solotrucking.mensaje(data.msj);                              
                         if(data.error == '0'){
-                              fn_solotrucking.mensaje(data.msj);
                               fn_endorsement.fillgrid();
-                              //fn_popups.cerrar_ventana('form_estatus');
+                              fn_popups.cerrar_ventana('form_estatus');
                         }
                         
                     }
@@ -897,7 +897,7 @@
                         <td>
                         <div class="field_item">
                             <label>Expire Date. <span style="color:#ff0000;" class="add_field">*</span></label>
-                            <input id="dFechaExpiracionLicencia" name="dFechaExpiracionLicencia" class="txt-uppercase fecha required-field" placeholder="mm/dd/yyyy" type="text" style="width: 85%;">
+                            <input id="dFechaExpiracionLicencia" name="dFechaExpiracionLicencia" class="txt-uppercase fecha" placeholder="mm/dd/yyyy" type="text" style="width: 85%;">
                         </div>
                         </td>
                     </tr>

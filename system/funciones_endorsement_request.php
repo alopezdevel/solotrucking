@@ -245,7 +245,7 @@
       $iExperienciaYear     = trim($_POST['iExperienciaYear']);
       $eTipoLicencia        = trim($_POST['eTipoLicencia']);
       $iNumLicencia         = trim($_POST['iNumLicencia']);
-      $dFechaExpLicencia    = date('Y-m-d',strtotime(trim($_POST['dFechaExpiracionLicencia'])));
+      $dFechaExpLicencia    = $_POST['dFechaExpiracionLicencia'] != "" ? "'".date('Y-m-d',strtotime(trim($_POST['dFechaExpiracionLicencia'])))."'" : $_POST['dFechaExpiracionLicencia'] = 'NULL';
       $sIP                  = $_SERVER['REMOTE_ADDR'];
       $sUsuario             = $_SESSION['usuario_actual'];
       $dFecha               = date("Y-m-d H:i:s");
@@ -262,14 +262,14 @@
       if($iConsecutivoOperador!= ""){
           
          $query   = "UPDATE ct_operadores SET sNombre='$sNombre',dFechaNacimiento='$dFechaNacimiento',iExperienciaYear=$iExperienciaYear,eTipoLicencia='$eTipoLicencia',".
-                    "iNumLicencia='$iNumLicencia',dFechaExpiracionLicencia='$dFechaExpLicencia', ".
+                    "iNumLicencia='$iNumLicencia',dFechaExpiracionLicencia=$dFechaExpLicencia, ".
                     "sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha' ".
                     "WHERE iConsecutivo ='$iConsecutivoOperador' AND iConsecutivoCompania = '$iConsecutivoCompania'"; 
          $success = $conexion->query($query);
                   
       }else{
          $query   = "INSERT INTO ct_operadores (iConsecutivoCompania,sNombre,dFechaNacimiento,iExperienciaYear,eTipoLicencia,iNumLicencia,dFechaExpiracionLicencia,sIP,sUsuarioIngreso,dFechaIngreso) ".
-                    "VALUES('$iConsecutivoCompania','$sNombre','$dFechaNacimiento',$iExperienciaYear,'$eTipoLicencia','$iNumLicencia','$dFechaExpLicencia','$sIP','$sUsuario','$dFecha')";
+                    "VALUES('$iConsecutivoCompania','$sNombre','$dFechaNacimiento',$iExperienciaYear,'$eTipoLicencia','$iNumLicencia',$dFechaExpLicencia,'$sIP','$sUsuario','$dFecha')";
          $success = $conexion->query($query);
          if($success){$iConsecutivoOperador = $conexion->insert_id;}
       }
@@ -279,7 +279,7 @@
           if($edit_mode == 'true'){
               //UPDATE
               $query   = "UPDATE cb_endoso SET iConsecutivoOperador='$iConsecutivoOperador',sComentarios=$sComentarios, ".
-                         "sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha' ".
+                         "sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha', eAccion='$eAccion' ".
                          "WHERE iConsecutivo='$iConsecutivo' AND iConsecutivoCompania='$iConsecutivoCompania'";
               $mensaje = "The data was updated successfully.";
           
@@ -1185,12 +1185,14 @@
             $mail->SMTPSecure = "TLS";                 // sets the prefix to the servier
             $mail->Host       = "smtp.gmail.com";      // sets GMAIL as the SMTP server
             $mail->Port       = 587;                   // set the SMTP port for the GMAIL server
-            $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
-            $mail->Password   = "SL09100242"; 
+            /*$mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
+            $mail->Password   = "SL09100242"; */
+            $mail->Username   = "customerservice@solo-trucking.com";  // GMAIL username
+            $mail->Password   = "SL641404tK"; 
             
-            $mail->SetFrom('systemsupport@solo-trucking.com', 'Solo-Trucking Insurance');
-            $mail->AddReplyTo('customerservice@solo-trucking.com','Customer service Solo-Trucking');
-            $mail->AddCC('customerservice@solo-trucking.com', 'Customer service Solo-Trucking');
+            $mail->SetFrom('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');
+            $mail->AddReplyTo('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance'); 
+            $mail->AddCC('systemsupport@solo-trucking.com','System Support Solo-Trucking Insurance');
             
             $mail->Subject    = $Emails[$x]['subject'];
             $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
