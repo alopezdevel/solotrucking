@@ -848,7 +848,7 @@
                             </div>-->
                             <div class="field_item">
                                 <label>Application Date <span style="color:#ff0000;">*</span>:</label> 
-                                <input id="dFechaExpiracionLicencia" name="dFechaExpiracionLicencia" class="txt-uppercase fecha required-field" placeholder="mm/dd/yyyy" type="text" style="width: 85%;">
+                                <input id="dFechaAplicacion" name="dFechaAplicacion" class="txt-uppercase fecha required-field" placeholder="mm/dd/yyyy" type="text" style="width: 85%;">
                             </div>
                         </td>
                     </tr>
