@@ -301,7 +301,7 @@
       $sTipo                = trim($_POST['sTipo']);
       $iYear                = trim($_POST['iYear']);
       $iModelo              = $_POST['iModelo'] != "" ? "'".trim($_POST['iModelo'])."'" : 'NULL';
-      $sVIN                 = trim($_POST['sUnitTrailer']);
+      $sVIN                 = trim(strtoupper($_POST['sUnitTrailer']));
       $iConsecutivoRadio    = $_POST['iConsecutivoRadio'] != "" ? "'".trim($_POST['iConsecutivoRadio'])."'" : 'NULL';
       $iConsecutivoCompania = trim($_POST['iConsecutivoCompania']);
       $sIP                  = $_SERVER['REMOTE_ADDR'];
@@ -849,7 +849,7 @@
              $UnidadTipo = strtolower($Detalle['sTipo']);
              $ComNombre  = $Endoso['sNombreCompania'];
              $PDAmount   = number_format($Endoso["iPDAmount"],2,'.','');
-             $VIN        = $Detalle['sVIN'];
+             $VIN        = strtoupper($Detalle['sVIN']);
              $Radius     = $Detalle['sRadio'];
              $Peso       = $Detalle['sPeso'];
              $Year       = $Detalle['iYear'];
@@ -923,7 +923,7 @@
                     #ENDOSO TIPO ADD:
                     if($Endoso["eAccion"] == 'A'){
                         
-                        $action  = "Please add to my policy the following $UnidadTipo.";
+                        $action  = "Please add the following $UnidadTipo from policy number: $ComNombre, $sNumPoliza - $sTipoPoliza.";
                         $subject = "Endorsement application - please add the following $UnidadTipo from policy number: $ComNombre, $sNumPoliza - $sTipoPoliza";
                         
                         $bodyData = "<p style=\"color:#000;margin:5px auto; text-align:left;\">".
@@ -938,7 +938,7 @@
                       
                     }else
                     if($Endoso["eAccion"] == 'D'){
-                       $action   = "Please delete of my policy the following $UnidadTipo";                                                                   
+                       $action   = "Please delete the following $UnidadTipo from policy number: $ComNombre, $sNumPoliza - $sTipoPoliza";                                                                   
                        $subject  = "Endorsement application - please delete the following $UnidadTipo from policy number: $ComNombre, $sNumPoliza - $sTipoPoliza";
                        $bodyData = "<p style=\"color:#000;margin:5px auto; text-align:left;\"> $Year $Make $VIN </p><br><br>";         
                     }    

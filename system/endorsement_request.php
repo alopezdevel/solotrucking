@@ -897,7 +897,7 @@
                         <td>
                         <div class="field_item">
                             <label>Expire Date. <span style="color:#ff0000;" class="add_field">*</span></label>
-                            <input id="dFechaExpiracionLicencia" name="dFechaExpiracionLicencia"  type="text"  style="width: 95%;" placeholder="Expire Date. ">
+                            <input id="dFechaExpiracionLicencia" name="dFechaExpiracionLicencia" class="txt-uppercase fecha required-field" placeholder="mm/dd/yyyy" type="text" style="width: 85%;">
                         </div>
                         </td>
                     </tr>

@@ -838,14 +838,18 @@
                             </div>
                         </td>
                         <td>
-                            <div class="field_item">
+                            <!--<div class="field_item">
                                 <label>Action <span style="color:#ff0000;">*</span>:</label> 
                                 <Select tabindex="2" id="eAccion" name"eAccion" class="required-field" onblur="fn_endorsement.valid_action();" style="height: 25px!important;">
                                     <option value="">Select an option...</option> 
                                     <option value="A">ADD</option>
                                     <option value="D">DELETE</option>
                                 </select>
-                            </div> 
+                            </div>-->
+                            <div class="field_item">
+                                <label>Application Date <span style="color:#ff0000;">*</span>:</label> 
+                                <input id="dFechaExpiracionLicencia" name="dFechaExpiracionLicencia" class="txt-uppercase fecha required-field" placeholder="mm/dd/yyyy" type="text" style="width: 85%;">
+                            </div>
                         </td>
                     </tr>
                 </table>

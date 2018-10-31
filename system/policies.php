@@ -700,6 +700,7 @@ var fn_policies = {
                 if($(fn_policies.list.domroot_nav+" .flt_dLicense").val() != ""){ fn_policies.list.filtro += "iNumLicencia|"+$(fn_policies.list.domroot_nav+" .flt_dLicense").val()+","} 
                 if($(fn_policies.list.domroot_nav+" .flt_dtype").val() != ""){ fn_policies.list.filtro += "eTipoLicencia|"+$(fn_policies.list.domroot_nav+" .flt_dtype").val()+","}  
                 if($(fn_policies.list.domroot_nav+" .flt_dExpire").val() != ""){ fn_policies.list.filtro += "dFechaExpiracionLicencia|"+$(fn_policies.list.domroot_nav+" .flt_dExpire").val()+","} 
+                //if($(fn_policies.list.domroot_nav+" .flt_dApp").val() != ""){ fn_policies.list.filtro += "dFechaAplicacion|"+$(fn_policies.list.domroot_nav+" .flt_dApp").val()+","} 
                 if($(fn_policies.list.domroot_nav+" .flt_dYears").val() != ""){ fn_policies.list.filtro += "iExperienciaYear|"+$(fn_policies.list.domroot_nav+" .flt_dYears").val()+","} 
                 fn_policies.list.fill_drivers_actives();
             },    
@@ -709,7 +710,7 @@ var fn_policies = {
                     url:"funciones_policies.php", 
                     data:{
                         accion:"get_drivers_active",
-                        registros_por_pagina : "15", 
+                        registros_por_pagina : "25", 
                         iConsecutivoPoliza :  fn_policies.list.id_policy,
                         iConsecutivoCompania : fn_policies.list.id_company, 
                         pagina_actual : fn_policies.list.drivers_pagina_actual, 
@@ -847,7 +848,7 @@ var fn_policies = {
                     url:"funciones_policies.php", 
                     data:{
                         accion:"get_units_active",
-                        registros_por_pagina : "15", 
+                        registros_por_pagina : "25", 
                         iConsecutivoPoliza :  fn_policies.list.id_policy,
                         iConsecutivoCompania : fn_policies.list.id_company,
                         pagina_actual : fn_policies.list.units_pagina_actual, 
@@ -1241,7 +1242,7 @@ var fn_policies = {
 <!-- upload file form -->
 <div id="file_edit_form" class="popup-form">
     <div class="p-header">
-        <h2>UPLOAS DRIVER/UNITS FILE</h2>
+        <h2>UPLOAD DRIVER/VEHICLE FILE FROM AMIC LIST</h2>
         <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('file_edit_form');"><i class="fa fa-times"></i></div>
     </div>
     <div class="p-container">
@@ -1251,20 +1252,17 @@ var fn_policies = {
                 <p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p>
                 <div class="field_item">
                     <label>Company <span style="color:#ff0000;">*</span>:</label>  
-                    <select tabindex="1" id="iConsecutivoCompania"  name="File_iConsecutivoCompania" onblur="fn_policies.get_company_policies(this.value);">
+                    <select tabindex="1" id="iConsecutivoCompania"  name="File_iConsecutivoCompania" onblur="fn_policies.get_company_policies(this.value);" style="height:25px!important;">
                         <option value="">Select an option...</option>
                     </select>
                 </div>                
                 <div class="field_item">
-                    <label>Policies: <span style="color:#ff0000;">*</span>:</label>  
-                    <div class="company_policies" style="padding:10px;">
-                        
-                    </div>
-                    <br>
+                    <label>Policies <span style="color:#ff0000;">*</span>:</label>  
+                    <div class="company_policies" style="padding:5px 10px;"></div>
                 </div>
                 <div class="field_item"> 
-                    <label>File: <span style="color:#9e2e2e;">Please upload an TXT File with the content.</span></label> 
-                    <input id="txtFile" type="text" readonly="readonly" value="" size="40" />
+                    <label>File: <span style="color:#ff0000;">(Please upload an Excel File with the layout example).</span></label> 
+                    <input id="txtFile" type="text" readonly="readonly" value="" size="40" style="width:98%;" />
                 </div>
                 <table id="reporte_policy_update"></table>
                 <br> 
@@ -1306,7 +1304,7 @@ var fn_policies = {
                         <td style="width:380px;"><input class="flt_dName" type="text" placeholder="Name:"></td> 
                         <td><input class="flt_dDob flt_fecha"  type="text" placeholder="MM-DD-YY"></td>
                         <td><input class="flt_dLicense" type="text" placeholder="License #:"></td> 
-                        <td>
+                        <td style="width: 120px;">
                             <select class="flt_dtype" type="text" onblur="fn_policies.list.drivers_filtraInformacion();">
                                 <option value="">Select an option...</option>
                                 <option value="1">Federal / B1</option> 
@@ -1314,8 +1312,9 @@ var fn_policies = {
                             </select>
                         </td> 
                         <td><input class="flt_dExpire flt_fecha" type="text" placeholder="MM-DD-YY"></td> 
-                        <td style="width:80px;"><input class="flt_dYears num" type="text" placeholder="Years:"></td>  
-                        <td></td>  
+                        <td style="width:80px;"><input class="flt_dYears num" type="text" placeholder="Years:"></td> 
+                        <td style='width:110px;'><!--<input class="flt_dApp flt_fecha" type="text" placeholder="MM-DD-YY">--></td>  
+                        <td style='width:150px;'></td>  
                         <td style='width:120px;'>
                             <div class="btn-icon-2 btn-left" title="Search" onclick="fn_policies.list.filtraInformacion();"><i class="fa fa-search"></i></div>
                             <div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_policies.list.drivers_add();"><i class="fa fa-plus"></i></div>
@@ -1328,7 +1327,8 @@ var fn_policies = {
                         <td class="etiqueta_grid">LICENSE TYPE</td> 
                         <td class="etiqueta_grid">EXPIRE DATE</td> 
                         <td class="etiqueta_grid">EXPERIENCE YEARS</td>
-                        <td class="etiqueta_grid">Is in Policies</td>
+                        <td class="etiqueta_grid">APPLICATION DATE</td>
+                        <td class="etiqueta_grid">IS IN POLICIES</td>
                         <td class="etiqueta_grid"></td>
                     </tr>
                 </thead>
@@ -1440,8 +1440,10 @@ var fn_policies = {
                         <td><input class="flt_uYear num" type="text" placeholder="Year:"></td> 
                         <td><input class="flt_uMake" type="text" placeholder="Make:"></td>  
                         <td><input class="flt_uType" type="text" placeholder="Type:"></td> 
-                        <td style="width:80px;"><input class="flt_uWeight" type="text" placeholder="Weigth:"></td>  
-                        <td></td> 
+                        <td style="width:80px;"><input class="flt_uWeight" type="text" placeholder="Weigth:"></td>
+                        <td style='width:100px;'></td> 
+                        <td style='width:110px;'><!--<input class="flt_dApp flt_fecha" type="text" placeholder="MM-DD-YY">--></td>  
+                        <td style='width:150px;'></td>    
                         <td style='width:120px;'>
                             <div class="btn-icon-2 btn-left" title="Search" onclick="fn_policies.list.units_filtraInformacion();"><i class="fa fa-search"></i></div>
                             <!--<div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_policies.list.unit_add();"><i class="fa fa-plus"></i></div>--> 
@@ -1454,7 +1456,9 @@ var fn_policies = {
                         <td class="etiqueta_grid">MAKE</td> 
                         <td class="etiqueta_grid">TYPE</td> 
                         <td class="etiqueta_grid">WEIGHT</td> 
-                        <td class="etiqueta_grid">Is in Policies</td>
+                        <td class="etiqueta_grid">$ VALUE</td> 
+                        <td class="etiqueta_grid">APPLICATION DATE</td>
+                        <td class="etiqueta_grid">IS IN POLICIES</td>
                         <td class="etiqueta_grid"></td>
                     </tr>
             </thead>

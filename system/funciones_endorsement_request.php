@@ -273,7 +273,7 @@
          $success = $conexion->query($query);
          if($success){$iConsecutivoOperador = $conexion->insert_id;}
       }
-      if(!($success)){$error = '1';$mensaje = "Error to save the unit data, please try again later.";}
+      if(!($success)){$error = '1';$mensaje = "Error to save the driver data, please try again later.";}
       else{
           //GUARDAMOS EL ENDOSO
           if($edit_mode == 'true'){
@@ -1340,12 +1340,12 @@
                     #ENDOSO TIPO ADD:
                     if($Endoso["eAccion"] == 'A'){
                         
-                        $action  = "Please add to my policy the following $Tipo.";
+                        $action  = "Please add the following $Tipo from policy number: $ComNombre, $sNumPoliza - $sTipoPoliza.";
                         $subject = "Endorsement application - please add the following $Tipo from policy number: $ComNombre, $sNumPoliza - $sTipoPoliza";
              
                     }
                     else if($Endoso["eAccion"] == 'D'){
-                       $action   = "Please delete of my policy the following $Tipo";                                                                   
+                       $action   = "Please delete the following $Tipo from policy number: $ComNombre, $sNumPoliza - $sTipoPoliza";                                                                   
                        $subject  = "Endorsement application - please delete the following $Tipo from policy number: $ComNombre, $sNumPoliza - $sTipoPoliza";
                     }
                     
