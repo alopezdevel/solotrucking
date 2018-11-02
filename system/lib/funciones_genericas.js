@@ -144,7 +144,13 @@ var fn_solotrucking = {
         var dia = fn_solotrucking.pad((parseInt(t.getDate())+0)+"",2,'0',STR_PAD_LEFT);
         var mes = fn_solotrucking.pad((parseInt(t.getMonth()) + 1)+"",2,'0',STR_PAD_LEFT);
         $(input_name).val(mes+"/"+dia+"/"+t.getFullYear());
-      },
+     },
+     get_time : function(input_name){
+         var time = new Date();
+         var hour = fn_solotrucking.pad((time.getHours())+"",2,'0',STR_PAD_LEFT)+":"+fn_solotrucking.pad((time.getMinutes())+"",2,'0',STR_PAD_LEFT);
+         $(input_name).val(hour); 
+         
+     },
      pad : function(str, len, pad, dir){
         if (typeof(len) == "undefined") { var len = 0; }
         if (typeof(pad) == "undefined") { var pad = ' '; }
@@ -287,7 +293,7 @@ var struct_data_post = {
                 if(check){datakey[obj_dom[i].id] ="1";}else{datakey[obj_dom[i].id] ="0";}
             }else{
                 datakey[obj_dom[i].id] = $(this.domroot+" :input[id="+obj_dom[i].id+"]").val();
-            }
+            }  
         }
         //Domroot2:
         if(struct_data_post.domroot_2 != ''){
@@ -304,6 +310,49 @@ var struct_data_post = {
         }
         
         
+        return datakey;
+    }
+}
+var struct_data_post_new = {
+    action    : "",
+    domroot   : "",
+    edit_mode : "",
+    parse     : function(){
+        var obj_dom                = $(this.domroot+" :input:not(:button)");
+        var id_len                 = obj_dom.length;
+        var datakey                = {};
+        datakey["accion"]          = this.action;
+        datakey["tupla_existente"] = this.tupla_existente;
+        datakey["edit_mode"]       = this.edit_mode;
+        for(i=0; i < id_len; i++){
+            if(obj_dom[i].type == "checkbox"){
+                //Revisamos si el atributo name no esta vacio, se le da prioridad...
+                if(obj_dom[i].name != ""){
+                    check=$(this.domroot+" :checkbox[name="+obj_dom[i].name+"]").is(":checked");
+                    if(check){datakey[obj_dom[i].name] ="1";}else{datakey[obj_dom[i].name] ="0";}
+                }else if(obj_dom[i].id != ""){
+                    check=$(this.domroot+" :checkbox[id="+obj_dom[i].id+"]").is(":checked");
+                    if(check){datakey[obj_dom[i].id] ="1";}else{datakey[obj_dom[i].id] ="0";} 
+                }
+            }else{
+                
+                //Revisamos si el atributo name no esta vacio, se le da prioridad... 
+                if(obj_dom[i].name != ""){
+                    
+                    //Convertir a Mayusculas todos los campos de tipo input:text
+                    var typeInput = $(this.domroot+" :input[name="+obj_dom[i].name+"]");
+                    if(typeInput.prop("type") == 'text' || typeInput.hasClass("txt-uppercase")){$(this.domroot+" :input[name="+obj_dom[i].name+"]").val(typeInput.val().toUpperCase());}
+                    datakey[obj_dom[i].name] = $(this.domroot+" :input[name="+obj_dom[i].name+"]").val();   
+                    
+                }else if(obj_dom[i].id != ""){
+                    
+                    //Convertir a Mayusculas todos los campos de tipo input:text
+                    var typeInput = $(this.domroot+" :input[id="+obj_dom[i].id+"]");
+                    if(typeInput.prop("type") == 'text' || typeInput.hasClass("txt-uppercase")){$(this.domroot+" :input[id="+obj_dom[i].id+"]").val(typeInput.val().toUpperCase());}
+                    datakey[obj_dom[i].id] = $(this.domroot+" :input[id="+obj_dom[i].id+"]").val();
+                }
+            }
+        }
         return datakey;
     }
 }

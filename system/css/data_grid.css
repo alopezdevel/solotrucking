@@ -418,7 +418,7 @@ div.btn-icon span{font-weight: bold;font-size: 13px;}
 .p-header .btn-close:hover{background: #053f6a;cursor: pointer;}
 .p-container{width:98%;margin:0px auto;height:550px; padding:0px 5px;overflow-y:scroll;top: -20px;position: relative;}
 /*contenido popup*/
-.p-container fieldset legend{color:#006dbf;text-transform:uppercase;font-weight:bold;text-align:center;font-size: 15px;}
+.p-container fieldset legend{color:#006dbf;text-transform:uppercase;font-weight:bold;text-align:center;font-size: 13px;}
 .p-container label{color:#464646;font-weight:bold;}
 .p-container .mensaje_valido{font-size:12px;}
 

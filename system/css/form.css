@@ -39,8 +39,8 @@ form input, form select, form textarea, .form input, .form select, .form textare
     font-size:14px;
 } 
 form input[type=radio], form input[type=checkbox], .form input[type=radio], .form input[type=checkbox]{
-    width:18px;
-    height:18px;
+    width:15px;
+    height:15px;
     -webkit-box-shadow:inset 0px 0px 3px transparent!important;
     -moz-box-shadow:inset 0px 0px 3px transparent!important;
     box-shadow:inset 0px 0px 3px transparent!important;  
