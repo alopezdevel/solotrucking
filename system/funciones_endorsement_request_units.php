@@ -1025,152 +1025,159 @@
       else{
           
           $Endoso = $result->fetch_assoc();
-          #CONSULTAR DESCRIPCION DEL ENDOSO:
-          $query  = "SELECT A.iConsecutivo, A.sVIN, A.iYear, A.sPeso,A.sTipo, A.iValue, A.iTotalPremiumPD, B.sDescripcion AS sModelo, B.sAlias AS sAliasModelo, C.sDescripcion AS sRadio ".
-                    "FROM   ct_unidades AS A ".
-                    "LEFT JOIN ct_unidad_modelo AS B ON A.iModelo = B.iConsecutivo ".
-                    "LEFT JOIN ct_unidad_radio  AS C ON A.iConsecutivoRadio = C.iConsecutivo ".
-                    "WHERE A.iConsecutivo = '".$Endoso['iConsecutivoUnidad']."' AND A.iConsecutivoCompania = '".$Endoso['iConsecutivoCompania']."' ";
-          $result = $conexion->query($query) or die($conexion->error);
-          $rows   = $result->num_rows;
-          if($rows == 0){$error = '1';$mensaje = "Error to query the endorsement description data, please try again later.";}
-          else{
+          //REVISAMOS SI EL ENDOSO ES MULTIPLE O NO:
+          if($Endoso['iEndosoMultiple'] == 0){
               
-             //Variables: 
-             $Detalle    = $result->fetch_assoc(); 
-             $UnidadTipo = strtolower($Detalle['sTipo']);
-             $ComNombre  = $Endoso['sNombreCompania'];
-             $PDAmount   = number_format($Endoso["iPDAmount"],2,'.','');
-             $VIN        = strtoupper($Detalle['sVIN']);
-             $Radius     = $Detalle['sRadio'];
-             $Peso       = $Detalle['sPeso'];
-             $Year       = $Detalle['iYear'];
-             
-             if($Detalle['sAliasModelo'] != ''){$Make = $Detalle['sAliasModelo'];}
-             else if($Detalle['sModelo'] != ''){$Make = $Detalle['sModelo']; }
-             
-             #CONSULTAR ARCHIVOS:
-             $file = array();
-             $Endoso["eAccion"] == 'A' ? $filtroArchivo = " AND eArchivo ='TITLE'" : $filtroArchivo = " AND (eArchivo='DA' OR eArchivo='BS' OR eArchivo='NOR' OR eArchivo='PTL')";
-             //Buscamos archivos primero por endoso...
-             $query  = "SELECT iConsecutivo, sNombreArchivo, eArchivo, hContenidoDocumentoDigitalizado, sTipoArchivo, iTamanioArchivo ".
-                       "FROM cb_endoso_files WHERE iConsecutivoEndoso = '$iConsecutivo' $filtroArchivo"; 
-             $result = $conexion->query($query) or die($conexion->error);
-             $rows   = $result->num_rows; 
-             if($rows > 0){
-                    while ($files = $result->fetch_assoc()){
-                       #Here will constructed the temporary files: 
-                       if($files['sNombreArchivo'] != ""){ 
-                         $file['id']     = $files['iConsecutivo'];
-                         $file['name']   = $files['sNombreArchivo'];
-                         $file['tipo']   = $files['eArchivo'];
-                         $file['content']= $files['hContenidoDocumentoDigitalizado'];
-                         $file['size']   = $files['iTamanioArchivo'];
-                         $file['type']   = $files['sTipoArchivo'];
-                       }
-                    }
-             }else{
-                 //Buscamos archivos por unidad
+              #CONSULTAR DESCRIPCION DEL ENDOSO: 
+              $query  = "SELECT A.iConsecutivo, A.sVIN, A.iYear, A.sPeso,A.sTipo, A.iValue, A.iTotalPremiumPD, B.sDescripcion AS sModelo, B.sAlias AS sAliasModelo, C.sDescripcion AS sRadio ".
+                        "FROM   ct_unidades AS A ".
+                        "LEFT JOIN ct_unidad_modelo AS B ON A.iModelo = B.iConsecutivo ".
+                        "LEFT JOIN ct_unidad_radio  AS C ON A.iConsecutivoRadio = C.iConsecutivo ".
+                        "WHERE A.iConsecutivo = '".$Endoso['iConsecutivoUnidad']."' AND A.iConsecutivoCompania = '".$Endoso['iConsecutivoCompania']."' ";
+              $result = $conexion->query($query) or die($conexion->error);
+              $rows   = $result->num_rows;
+              if($rows == 0){$error = '1';$mensaje = "Error to query the endorsement description data, please try again later.";}
+              else{
+                  
+                 //Variables: 
+                 $Detalle    = $result->fetch_assoc(); 
+                 $UnidadTipo = strtolower($Detalle['sTipo']);
+                 $ComNombre  = $Endoso['sNombreCompania'];
+                 $PDAmount   = number_format($Endoso["iPDAmount"],2,'.','');
+                 $VIN        = strtoupper($Detalle['sVIN']);
+                 $Radius     = $Detalle['sRadio'];
+                 $Peso       = $Detalle['sPeso'];
+                 $Year       = $Detalle['iYear'];
+                 
+                 if($Detalle['sAliasModelo'] != ''){$Make = $Detalle['sAliasModelo'];}
+                 else if($Detalle['sModelo'] != ''){$Make = $Detalle['sModelo']; }
+                 
+                 #CONSULTAR ARCHIVOS:
+                 $file = array();
+                 $Endoso["eAccion"] == 'A' ? $filtroArchivo = " AND eArchivo ='TITLE'" : $filtroArchivo = " AND (eArchivo='DA' OR eArchivo='BS' OR eArchivo='NOR' OR eArchivo='PTL')";
+                 //Buscamos archivos primero por endoso...
                  $query  = "SELECT iConsecutivo, sNombreArchivo, eArchivo, hContenidoDocumentoDigitalizado, sTipoArchivo, iTamanioArchivo ".
-                           "FROM cb_unidad_files WHERE  iConsecutivoUnidad = '".$Endoso['iConsecutivoUnidad']."' $filtroArchivo "; 
+                           "FROM cb_endoso_files WHERE iConsecutivoEndoso = '$iConsecutivo' $filtroArchivo"; 
+                 $result = $conexion->query($query) or die($conexion->error);
+                 $rows   = $result->num_rows; 
+                 if($rows > 0){
+                        while ($files = $result->fetch_assoc()){
+                           #Here will constructed the temporary files: 
+                           if($files['sNombreArchivo'] != ""){ 
+                             $file['id']     = $files['iConsecutivo'];
+                             $file['name']   = $files['sNombreArchivo'];
+                             $file['tipo']   = $files['eArchivo'];
+                             $file['content']= $files['hContenidoDocumentoDigitalizado'];
+                             $file['size']   = $files['iTamanioArchivo'];
+                             $file['type']   = $files['sTipoArchivo'];
+                           }
+                        }
+                 }else{
+                     //Buscamos archivos por unidad
+                     $query  = "SELECT iConsecutivo, sNombreArchivo, eArchivo, hContenidoDocumentoDigitalizado, sTipoArchivo, iTamanioArchivo ".
+                               "FROM cb_unidad_files WHERE  iConsecutivoUnidad = '".$Endoso['iConsecutivoUnidad']."' $filtroArchivo "; 
+                     $result = $conexion->query($query) or die($conexion->error);
+                     $rows   = $result->num_rows;
+                     if($rows > 0){
+                        while ($files = $result->fetch_assoc()){
+                           #Here will constructed the temporary files: 
+                           if($files['sNombreArchivo'] != ""){ 
+                             $file['id']     = $files['iConsecutivo'];
+                             $file['nombre'] = $files['sNombreArchivo'];
+                             $file['tipo']   = $files['eArchivo'];
+                           }
+                        }
+                     }
+                 }
+                 if(count($file)==0){$file="";} 
+                 /**************/ 
+                 
+                 #CONSULTAMOS POLIZAS DEL ENDOSO E INFO DE LOS EMAILS:
+                 $query  = "SELECT iConsecutivoEndoso,iConsecutivoPoliza,B.sNumeroPoliza,B.iTipoPoliza,D.sDescripcion AS sTipoPoliza, sMensajeEmail, A.sEmail, C.iConsecutivo AS iConsecutivoBroker, C.sName AS sBrokerName, C.bEndosoMensual ".
+                           "FROM cb_endoso_estatus   AS A ".
+                           "LEFT JOIN ct_polizas     AS B ON A.iConsecutivoPoliza  = B.iConsecutivo ".
+                           "LEFT JOIN ct_tipo_poliza AS D ON B.iTipoPoliza = D.iConsecutivo ".
+                           "LEFT JOIN ct_brokers     AS C ON B.iConsecutivoBrokers = C.iConsecutivo ".
+                           "WHERE A.iConsecutivoEndoso = '$iConsecutivo' AND C.bEndosoMensual='0'"; 
                  $result = $conexion->query($query) or die($conexion->error);
                  $rows   = $result->num_rows;
-                 if($rows > 0){
-                    while ($files = $result->fetch_assoc()){
-                       #Here will constructed the temporary files: 
-                       if($files['sNombreArchivo'] != ""){ 
-                         $file['id']     = $files['iConsecutivo'];
-                         $file['nombre'] = $files['sNombreArchivo'];
-                         $file['tipo']   = $files['eArchivo'];
-                       }
-                    }
-                 }
-             }
-             if(count($file)==0){$file="";} 
-             /**************/ 
-             
-             #CONSULTAMOS POLIZAS DEL ENDOSO E INFO DE LOS EMAILS:
-             $query  = "SELECT iConsecutivoEndoso,iConsecutivoPoliza,B.sNumeroPoliza,B.iTipoPoliza,D.sDescripcion AS sTipoPoliza, sMensajeEmail, A.sEmail, C.iConsecutivo AS iConsecutivoBroker, C.sName AS sBrokerName, C.bEndosoMensual ".
-                       "FROM cb_endoso_estatus   AS A ".
-                       "LEFT JOIN ct_polizas     AS B ON A.iConsecutivoPoliza  = B.iConsecutivo ".
-                       "LEFT JOIN ct_tipo_poliza AS D ON B.iTipoPoliza = D.iConsecutivo ".
-                       "LEFT JOIN ct_brokers     AS C ON B.iConsecutivoBrokers = C.iConsecutivo ".
-                       "WHERE A.iConsecutivoEndoso = '$iConsecutivo' AND C.bEndosoMensual='0'"; 
-             $result = $conexion->query($query) or die($conexion->error);
-             $rows   = $result->num_rows;
-             
-             if($rows == 0){$error = '1';$mensaje = "The emails can not be generated.Please check that the endorsement has brokers to send email from this module.";}
-             else{
-                while($data = $result->fetch_assoc()){ 
-                    //Variables por Email:
-                    $email      = array();
-                    $sMensaje   = $data['sMensajeEmail'];
-                    $sNumPoliza = $data['sNumeroPoliza'];
-                    $sEmails    = $data['sEmail'];
-                    $sBrokerName= $data['sBrokerName'];
-                    $sTipoPoliza= $data['sTipoPoliza'];
-                    $idPoliza   = $data['iConsecutivoPoliza'];
-                    $tipoPoliza = get_policy_type($data['iTipoPoliza']); 
-                    
-                    #ENDOSO TIPO ADD:
-                    if($Endoso["eAccion"] == 'A'){
+                 
+                 if($rows == 0){$error = '1';$mensaje = "The emails can not be generated.Please check that the endorsement has brokers to send email from this module.";}
+                 else{
+                    while($data = $result->fetch_assoc()){ 
+                        //Variables por Email:
+                        $email      = array();
+                        $sMensaje   = $data['sMensajeEmail'];
+                        $sNumPoliza = $data['sNumeroPoliza'];
+                        $sEmails    = $data['sEmail'];
+                        $sBrokerName= $data['sBrokerName'];
+                        $sTipoPoliza= $data['sTipoPoliza'];
+                        $idPoliza   = $data['iConsecutivoPoliza'];
+                        $tipoPoliza = get_policy_type($data['iTipoPoliza']); 
                         
-                        $action  = "Please add the following $UnidadTipo from policy number: $ComNombre, $sNumPoliza - $sTipoPoliza.";
-                        $subject = "Endorsement application - please add the following $UnidadTipo from policy number: $ComNombre, $sNumPoliza - $sTipoPoliza";
-                        
-                        $bodyData = "<p style=\"color:#000;margin:5px auto; text-align:left;\">".
-                                    "$Year $Make $VIN $Radius $Peso ";
+                        #ENDOSO TIPO ADD:
+                        if($Endoso["eAccion"] == 'A'){
+                            
+                            $action  = "Please add the following $UnidadTipo from policy number: $ComNombre, $sNumPoliza - $sTipoPoliza.";
+                            $subject = "Endorsement application - please add the following $UnidadTipo from policy number: $ComNombre, $sNumPoliza - $sTipoPoliza";
+                            
+                            $bodyData = "<p style=\"color:#000;margin:5px auto; text-align:left;\">".
+                                        "$Year $Make $VIN $Radius $Peso ";
 
-                        #PDAmount
-                        if($data['iTipoPoliza'] == '1' && $Endoso["iPDAmount"] != ''){$bodyData.=$PDAmount;}
+                            #PDAmount
+                            if($data['iTipoPoliza'] == '1' && $Endoso["iPDAmount"] != ''){$bodyData.=$PDAmount;}
+                            
+                            $bodyData .= "</p><br><br>";
+                            
+                            
+                          
+                        }else
+                        if($Endoso["eAccion"] == 'D'){
+                           $action   = "Please delete the following $UnidadTipo from policy number: $ComNombre, $sNumPoliza - $sTipoPoliza";                                                                   
+                           $subject  = "Endorsement application - please delete the following $UnidadTipo from policy number: $ComNombre, $sNumPoliza - $sTipoPoliza";
+                           $bodyData = "<p style=\"color:#000;margin:5px auto; text-align:left;\"> $Year $Make $VIN </p><br><br>";         
+                        }    
                         
-                        $bodyData .= "</p><br><br>";
+                        $htmlEmail = "<table style=\"font-size:12px;border:1px solid #6191df;border-radius:3px;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">".
+                                     "<tr><td><h2 style=\"color:#313131;text-transform: uppercase; text-align:center;\">Endorsement application from Solo-Trucking Insurance</h2></td></tr>".
+                                     "<tr><td><p style=\"color:#000;margin:5px auto; text-align:left;\">$action</p><br><br></td></tr>".
+                                     "<tr><td>$bodyData</td></tr>".
+                                     "<tr><td><p style=\"color:#010101;margin:5px auto 10px; text-align:left;font-size:11px;\">Please reply this email to the account:<a href=\"mailto:customerservice@solo-trucking.com\"> customerservice@solo-trucking.com</a></p></td></tr>". 
+                                     "<tr><td><p style=\"color:#858585;margin:5px auto; text-align:left;font-size:10px;\">e-mail sent from Solo-trucking Insurance System.</p></td></tr>".
+                                     "</table>";
                         
+                        #ADD DATA TO ARRAY:
+                        $email["subject"] = $subject;
+                        $email['html']    = $htmlEmail;
+                        $email['broker']  = $sBrokerName;
+                        $email['files']   = $file;
+                        $email['idPoliza']= $idPoliza;
                         
-                      
-                    }else
-                    if($Endoso["eAccion"] == 'D'){
-                       $action   = "Please delete the following $UnidadTipo from policy number: $ComNombre, $sNumPoliza - $sTipoPoliza";                                                                   
-                       $subject  = "Endorsement application - please delete the following $UnidadTipo from policy number: $ComNombre, $sNumPoliza - $sTipoPoliza";
-                       $bodyData = "<p style=\"color:#000;margin:5px auto; text-align:left;\"> $Year $Make $VIN </p><br><br>";         
-                    }    
-                    
-                    $htmlEmail = "<table style=\"font-size:12px;border:1px solid #6191df;border-radius:3px;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">".
-                                 "<tr><td><h2 style=\"color:#313131;text-transform: uppercase; text-align:center;\">Endorsement application from Solo-Trucking Insurance</h2></td></tr>".
-                                 "<tr><td><p style=\"color:#000;margin:5px auto; text-align:left;\">$action</p><br><br></td></tr>".
-                                 "<tr><td>$bodyData</td></tr>".
-                                 "<tr><td><p style=\"color:#010101;margin:5px auto 10px; text-align:left;font-size:11px;\">Please reply this email to the account:<a href=\"mailto:customerservice@solo-trucking.com\"> customerservice@solo-trucking.com</a></p></td></tr>". 
-                                 "<tr><td><p style=\"color:#858585;margin:5px auto; text-align:left;font-size:10px;\">e-mail sent from Solo-trucking Insurance System.</p></td></tr>".
-                                 "</table>";
-                    
-                    #ADD DATA TO ARRAY:
-                    $email["subject"] = $subject;
-                    $email['html']    = $htmlEmail;
-                    $email['broker']  = $sBrokerName;
-                    $email['files']   = $file;
-                    $email['idPoliza']= $idPoliza;
-                    
-                    #EMAILS TO SEND (VALIDATE)
-                    $emailRegex   = "/^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/"; 
-                    $emailstosend = explode(",",$sEmails);
-                    $countemails  = count($emailstosend);
-                    $emailerror   = "";
-                      
-                    for($z = 0; $z < $countemails; $z++){ 
-                        if($emailstosend[$z] != ""){
-                              $validaemail = preg_match($emailRegex,trim($emailstosend[$z]));
-                              if(!($validaemail)){$emailerror .= $emailstosend[$z]."<br>";}
+                        #EMAILS TO SEND (VALIDATE)
+                        $emailRegex   = "/^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/"; 
+                        $emailstosend = explode(",",$sEmails);
+                        $countemails  = count($emailstosend);
+                        $emailerror   = "";
+                          
+                        for($z = 0; $z < $countemails; $z++){ 
+                            if($emailstosend[$z] != ""){
+                                  $validaemail = preg_match($emailRegex,trim($emailstosend[$z]));
+                                  if(!($validaemail)){$emailerror .= $emailstosend[$z]."<br>";}
+                            }
                         }
-                    }
-                    if($emailerror == ""){$email["emails"] = $sEmails;$email["error"] = "0";}
-                    else{$email["emails"] = $emailerror; $email["error"] = "1";} 
-                    
-                    $Emails[] = $email;
-                    if($email["error"] == "1"){$error .= $email["emails"];}  
-                    
-             } 
+                        if($emailerror == ""){$email["emails"] = $sEmails;$email["error"] = "0";}
+                        else{$email["emails"] = $emailerror; $email["error"] = "1";} 
+                        
+                        $Emails[] = $email;
+                        if($email["error"] == "1"){$error .= $email["emails"];}  
+                        
+                 } 
+              }
+          }    
           }
-      }
+          else if($Endoso['iEndosoMultiple'] == 1){
+              
+          }
       
       $error != "" ? $Emails['error'] = $mensaje : $Emails['error'] = "0";
       $conexion->close(); 
