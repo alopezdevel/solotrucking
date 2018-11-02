@@ -3,7 +3,7 @@
   // Generic functions lib 
   include("functiones_genericas.php"); 
   $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accion"],array()) : ""; 
-  define('USER',$_SESSION['usuario_actual']); // Constante UserId  
+  define('USER',$_SESSION['usuario_actual']); // Constante UserId 
  
   function get_policies(){
     include("cn_usuarios.php");
@@ -477,7 +477,71 @@
       
   }
   function upload_list_file(){
-      require('./lib/excel/reader.php');
+      
+        
+      error_reporting(E_ALL);
+      ini_set('display_errors', TRUE);
+      ini_set('display_startup_errors', TRUE); 
+      
+      /** Include PHPExcel */
+      require_once dirname(__FILE__) . '/lib/PHPExcel-1.8/Classes/PHPExcel.php';
+      
+      #variables:
+      $iConsecutivoCompania = $_POST['iConsecutivoCompania'];
+      $iConsecutivoPolizas  = $_POST['iConsecutivoPolizas'];
+      $iConsecutivoPolizas  = explode(',',$iConsecutivoPolizas);
+      $error = 0;
+      $mensaje = "";
+      $htmlTabla = ""; 
+      //Archivo Data:
+      $fileName      = $_FILES['userfile']['name'];
+      $tmpName       = $_FILES['userfile']['tmp_name'];
+      $inputFileName = $tmpName.'.xls';
+      
+      //Crear archivo fisico en el Temporal:
+      $fp      = fopen($tmpName, 'r'); 
+      $content = fread($fp, filesize($tmpName));  
+      $fp      = fopen($inputFileName,"w") or die("Error al momento de crear el archivo. Favor de verificarlo.");
+      fwrite($fp,$content); 
+      fclose($fp);
+      
+      try {
+            $inputFileType = PHPExcel_IOFactory::identify($inputFileName);
+            $objReader     = PHPExcel_IOFactory::createReader($inputFileType);
+            $objPHPExcel   = $objReader->load($inputFileName);
+      }catch(Exception $e) {
+            $error   = 1;
+            $mensaje = 'Error loading file "'.pathinfo($inputFileName,PATHINFO_BASENAME).'": '.$e->getMessage();
+      }
+      
+      if($error == 0 && $iConsecutivoCompania != '' && $iConsecutivoPolizas != ''){
+          
+            //Open Connection.
+            include("cn_usuarios.php");  
+            $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+            $transaccion_exitosa = true;
+          
+            #CONTAMOS LAS SHEET:
+            $sheetCount = $objPHPExcel->getSheetCount();
+            if($sheetCount <= 0){$error = 1; $mensaje = "The Excel file is empty, please check it.";}
+            else{
+                for($x = 0;$x<$sheetCount;$x++){
+                    #OBTENER NOMBRE DE SHEET:
+                    $sheet      = $objPHPExcel->getSheet($x);
+                    $sheetNames = $objPHPExcel->getSheetName(); 
+                    echo $sheetNames; 
+                }
+            }
+            
+            /*$sheetNames    = $objPHPExcel->getSheetNames();
+            $sheet         = $objPHPExcel->getSheet(0); 
+            $highestRow    = $sheet->getHighestRow(); 
+            $highestColumn = $sheet->getHighestColumn(); */
+      }
+      
+      
+      /////
+      /*require('./lib/excel/reader.php');
       
       
       #variables:
@@ -907,131 +971,8 @@
           }
       }
       
-      $htmlTabla = $htmlTabla.$tabla_error;
+      $htmlTabla = $htmlTabla.$tabla_error; */
       $response = array("mensaje"=>"$mensaje","error"=>"$error", "name_file" => "$fileName"); 
-      echo json_encode($response); 
-      
-  }
-  function upload_unit_txt(){
-      
-      include("cn_usuarios.php");  
-      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
-      $transaccion_exitosa = true;
-      
-      #variables:
-      $iConsecutivoCompania = $_POST['iConsecutivoCompania'];
-      $iConsecutivoPolizas  = $_POST['iConsecutivoPolizas'];
-      $error = "0";
-      $mensaje = "";
-      $htmlTabla = ""; 
-      $fileName = $_FILES['userfile']['name'];
-      $tmpName  = $_FILES['userfile']['tmp_name'];
-      
-      if($iConsecutivoCompania != '' && $iConsecutivoPolizas != ''){
-          #Revisamos contenido del archivo:
-          $fp      = fopen($tmpName, 'r'); 
-          $content = fread($fp, filesize($tmpName));
-          $content = addslashes($content);
-          fclose($fp);
-          $array_contenido = explode("\r\n",$content);
-          foreach($array_contenido as $key => $valor){
-             
-              $valores = array();
-              $campos  = array();
-               
-            if($transaccion_exitosa){    
-              if($array_contenido[$key] != ""){ 
-                  $array_unit = explode("|",$array_contenido[$key]);
-                  $sVIN = strtoupper(trim($array_unit[0]));
-                  $iYear = $array_unit[1];
-                  $iModelo = $array_unit[2];
-                  $iConsecutivoRadio = $array_unit[3];
-                  
-                  //Header table:
-                  $htmlTabla = '&lt;tr style="background: rgb(55, 101, 176);color:#ffffff!important;">'.
-                               '&lt;td&gt; VIN</td>'.
-                               '&lt;td&gt; RADIO</td>'.
-                               '&lt;td&gt; YEAR</td>'.
-                               '&lt;td&gt; MAKE</td>'.
-                               '&lt;td&gt; TYPE</td>'.
-                               '&lt;td&gt; WEIGHT</td>';
-                  
-                  #Verificamos si el driver no existe:
-                  $sql = "SELECT COUNT(iConsecutivo) AS total FROM ct_unidades WHERE sVIN = '$sVIN' AND iConsecutivoCompania = '".trim($iConsecutivoCompania)."'";
-                  $result = $conexion->query($sql);
-                  $items = $result->fetch_assoc();
-                  $existe = $items["total"];
-                  if($existe == "0"){
-                      #armando Array:
-                      array_push($campos ,"iConsecutivoCompania"); array_push($valores,trim($iConsecutivoCompania));
-                      if($sVIN != ''){array_push($campos ,"sVIN"); array_push($valores,trim($sVIN));}
-                      if($iYear != ''){array_push($campos ,"iYear"); array_push($valores,trim($iYear));}
-                      if($iModelo != ''){array_push($campos ,"iModelo"); array_push($valores,trim($iModelo));}
-                      if($iConsecutivoRadio != ''){array_push($campos ,"iConsecutivoRadio"); array_push($valores,trim($iConsecutivoRadio));}
-                      array_push($campos ,"dFechaIngreso"); array_push($valores,date("Y-m-d H:i:s"));
-                      array_push($campos ,"sIP"); array_push($valores,$_SERVER['REMOTE_ADDR']);
-                      array_push($campos ,"sUsuarioIngreso"); array_push($valores,$_SESSION['usuario_actual']);
-                      array_push($campos ,"siConsecutivosPolizas"); array_push($valores,trim($iConsecutivoPolizas)); 
-                      array_push($campos ,"inPoliza"); array_push($valores,'1'); 
-                      
-                      $insert = "INSERT INTO ct_unidades (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
-                      $conexion->query($insert);
-                      if($conexion->affected_rows < 1){ 
-                         $transaccion_exitosa = false;
-                         $msj = "The data of unit was not saved properly, please try again.";               
-                      }else{
-                        $htmlTabla .= '&lt;tr style="background: rgb(234, 255, 226);">'.
-                                      '&lt;td&gt;'.$sVIN.'</td>'.
-                                      '&lt;td&gt;'.$iYear.'</td>'.
-                                      '&lt;td&gt;'.$iModelo.'</td>'.
-                                      '&lt;td&gt;'.$iConsecutivoRadio.'</td>';
-                      }
-                      
-                  }else{
-                     #YA EXISTE: 
-                     
-                     //if($sVIN != ''){array_push($valores,"sVIN='".trim($sVIN)."'");}
-                     if($iYear != ''){array_push($valores,"iYear='".trim($iYear)."'");}
-                     if($iModelo != ''){array_push($valores,"iModelo='".trim($iModelo)."'"); }
-                     if($iConsecutivoRadio != ''){array_push($valores,"iConsecutivoRadio='".trim($iConsecutivoRadio)."'"); }
-                     array_push($valores,"sIPActualizacion='".$_SERVER['REMOTE_ADDR']."'");
-                     array_push($valores,"dFechaActualizacion='".date_to_server(date("Y-m-d H:i:s"))."'");
-                     array_push($valores,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'");
-                     array_push($valores,"iConsecutivosPolizas='".trim($iConsecutivoPolizas)."'");
-                     array_push($valores,"inPoliza='1'");
-                     
-                      $update = "UPDATE ct_unidades SET ".implode(",",$valores)." WHERE sVIN = '$sVIN' AND iConsecutivoCompania = '$iConsecutivoCompania'";
-                      
-                      if($conexion->query($update)){ 
-                          $htmlTabla .= '&lt;tr style="background: rgb(254, 232, 154);">'.
-                                        '&lt;td&gt;'.$sVIN.'</td>'.
-                                        '&lt;td&gt;'.$iYear.'</td>'.
-                                        '&lt;td&gt;'.$iModelo.'</td>'.
-                                        '&lt;td&gt;'.$iConsecutivoRadio.'</td>';             
-                      }else{
-                          $transaccion_exitosa = false;
-                          $msj = "The data of unit was not saved properly, please try again."; 
-                      }
-      
-                  }
-              } 
-            }
-          }
-                
-          
-      }
-      if($transaccion_exitosa){
-            $conexion->commit();
-            $conexion->close();
-            $mensaje = "The drivers has been uploaded successfully, please verify the data in the company policies.";
-      }else{
-            $conexion->rollback();
-            $conexion->close();
-            $error = "1";
-      }
-      $htmlTabla = $htmlTabla.$tabla_error;
-      //$htmlTabla = utf8_encode($htmlTabla.$tabla_error);
-      $response = array("mensaje"=>"$mensaje","error"=>"$error", "name_file" => "$fileName","reporte"=>"$htmlTabla"); 
       echo json_encode($response); 
       
   }
@@ -1739,5 +1680,565 @@
       $response = array("mensaje"=>"$mensaje","error"=>"$error", "name_file" => "$fileName","reporte"=>"$htmlTabla"); 
       echo json_encode($response); 
       
+  } 
+  function upload_unit_txt(){
+      
+      include("cn_usuarios.php");  
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      
+      #variables:
+      $iConsecutivoCompania = $_POST['iConsecutivoCompania'];
+      $iConsecutivoPolizas  = $_POST['iConsecutivoPolizas'];
+      $error = "0";
+      $mensaje = "";
+      $htmlTabla = ""; 
+      $fileName = $_FILES['userfile']['name'];
+      $tmpName  = $_FILES['userfile']['tmp_name'];
+      
+      if($iConsecutivoCompania != '' && $iConsecutivoPolizas != ''){
+          #Revisamos contenido del archivo:
+          $fp      = fopen($tmpName, 'r'); 
+          $content = fread($fp, filesize($tmpName));
+          $content = addslashes($content);
+          fclose($fp);
+          $array_contenido = explode("\r\n",$content);
+          foreach($array_contenido as $key => $valor){
+             
+              $valores = array();
+              $campos  = array();
+               
+            if($transaccion_exitosa){    
+              if($array_contenido[$key] != ""){ 
+                  $array_unit = explode("|",$array_contenido[$key]);
+                  $sVIN = strtoupper(trim($array_unit[0]));
+                  $iYear = $array_unit[1];
+                  $iModelo = $array_unit[2];
+                  $iConsecutivoRadio = $array_unit[3];
+                  
+                  //Header table:
+                  $htmlTabla = '&lt;tr style="background: rgb(55, 101, 176);color:#ffffff!important;">'.
+                               '&lt;td&gt; VIN</td>'.
+                               '&lt;td&gt; RADIO</td>'.
+                               '&lt;td&gt; YEAR</td>'.
+                               '&lt;td&gt; MAKE</td>'.
+                               '&lt;td&gt; TYPE</td>'.
+                               '&lt;td&gt; WEIGHT</td>';
+                  
+                  #Verificamos si el driver no existe:
+                  $sql = "SELECT COUNT(iConsecutivo) AS total FROM ct_unidades WHERE sVIN = '$sVIN' AND iConsecutivoCompania = '".trim($iConsecutivoCompania)."'";
+                  $result = $conexion->query($sql);
+                  $items = $result->fetch_assoc();
+                  $existe = $items["total"];
+                  if($existe == "0"){
+                      #armando Array:
+                      array_push($campos ,"iConsecutivoCompania"); array_push($valores,trim($iConsecutivoCompania));
+                      if($sVIN != ''){array_push($campos ,"sVIN"); array_push($valores,trim($sVIN));}
+                      if($iYear != ''){array_push($campos ,"iYear"); array_push($valores,trim($iYear));}
+                      if($iModelo != ''){array_push($campos ,"iModelo"); array_push($valores,trim($iModelo));}
+                      if($iConsecutivoRadio != ''){array_push($campos ,"iConsecutivoRadio"); array_push($valores,trim($iConsecutivoRadio));}
+                      array_push($campos ,"dFechaIngreso"); array_push($valores,date("Y-m-d H:i:s"));
+                      array_push($campos ,"sIP"); array_push($valores,$_SERVER['REMOTE_ADDR']);
+                      array_push($campos ,"sUsuarioIngreso"); array_push($valores,$_SESSION['usuario_actual']);
+                      array_push($campos ,"siConsecutivosPolizas"); array_push($valores,trim($iConsecutivoPolizas)); 
+                      array_push($campos ,"inPoliza"); array_push($valores,'1'); 
+                      
+                      $insert = "INSERT INTO ct_unidades (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
+                      $conexion->query($insert);
+                      if($conexion->affected_rows < 1){ 
+                         $transaccion_exitosa = false;
+                         $msj = "The data of unit was not saved properly, please try again.";               
+                      }else{
+                        $htmlTabla .= '&lt;tr style="background: rgb(234, 255, 226);">'.
+                                      '&lt;td&gt;'.$sVIN.'</td>'.
+                                      '&lt;td&gt;'.$iYear.'</td>'.
+                                      '&lt;td&gt;'.$iModelo.'</td>'.
+                                      '&lt;td&gt;'.$iConsecutivoRadio.'</td>';
+                      }
+                      
+                  }else{
+                     #YA EXISTE: 
+                     
+                     //if($sVIN != ''){array_push($valores,"sVIN='".trim($sVIN)."'");}
+                     if($iYear != ''){array_push($valores,"iYear='".trim($iYear)."'");}
+                     if($iModelo != ''){array_push($valores,"iModelo='".trim($iModelo)."'"); }
+                     if($iConsecutivoRadio != ''){array_push($valores,"iConsecutivoRadio='".trim($iConsecutivoRadio)."'"); }
+                     array_push($valores,"sIPActualizacion='".$_SERVER['REMOTE_ADDR']."'");
+                     array_push($valores,"dFechaActualizacion='".date_to_server(date("Y-m-d H:i:s"))."'");
+                     array_push($valores,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'");
+                     array_push($valores,"iConsecutivosPolizas='".trim($iConsecutivoPolizas)."'");
+                     array_push($valores,"inPoliza='1'");
+                     
+                      $update = "UPDATE ct_unidades SET ".implode(",",$valores)." WHERE sVIN = '$sVIN' AND iConsecutivoCompania = '$iConsecutivoCompania'";
+                      
+                      if($conexion->query($update)){ 
+                          $htmlTabla .= '&lt;tr style="background: rgb(254, 232, 154);">'.
+                                        '&lt;td&gt;'.$sVIN.'</td>'.
+                                        '&lt;td&gt;'.$iYear.'</td>'.
+                                        '&lt;td&gt;'.$iModelo.'</td>'.
+                                        '&lt;td&gt;'.$iConsecutivoRadio.'</td>';             
+                      }else{
+                          $transaccion_exitosa = false;
+                          $msj = "The data of unit was not saved properly, please try again."; 
+                      }
+      
+                  }
+              } 
+            }
+          }
+                
+          
+      }
+      if($transaccion_exitosa){
+            $conexion->commit();
+            $conexion->close();
+            $mensaje = "The drivers has been uploaded successfully, please verify the data in the company policies.";
+      }else{
+            $conexion->rollback();
+            $conexion->close();
+            $error = "1";
+      }
+      $htmlTabla = $htmlTabla.$tabla_error;
+      //$htmlTabla = utf8_encode($htmlTabla.$tabla_error);
+      $response = array("mensaje"=>"$mensaje","error"=>"$error", "name_file" => "$fileName","reporte"=>"$htmlTabla"); 
+      echo json_encode($response); 
+      
   }
+  function upload_list_file_backup(){
+      require('./lib/excel/reader.php');
+      
+      
+      #variables:
+      $iConsecutivoCompania = $_POST['iConsecutivoCompania'];
+      $iConsecutivoPolizas  = $_POST['iConsecutivoPolizas'];
+      $iConsecutivoPolizas  = explode(',',$iConsecutivoPolizas);
+      $error = 0;
+      $mensaje = "";
+      $htmlTabla = ""; 
+      //Archivo Data:
+      $fileName = $_FILES['userfile']['name'];
+      $tmpName  = $_FILES['userfile']['tmp_name'];
+      
+      if($iConsecutivoCompania != '' && $iConsecutivoPolizas != ''){
+          #creamos instancia para la clase Excel Reader: 
+          $data = new Spreadsheet_Excel_Reader();
+          $data->setOutputEncoding('UTF-8');
+          $url =  $tmpName.'.xls'; 
+          //Crear archivo fisico en el Temporal:
+          $fp = fopen($tmpName, 'r'); 
+          $content = fread($fp, filesize($tmpName));  
+          $fp = fopen($url,"w") or die("Error al momento de crear el archivo. Favor de verificarlo.");
+          fwrite($fp,$content); 
+          fclose($fp);
+          $data->read($url);
+          error_reporting(E_ALL ^ E_NOTICE);
+          
+          foreach($data->sheets as $x => $y){
+                 
+               //$rows = $y['numRows'];
+               $rows = count($y['cells']); 
+               $col  = $y['numCols']; 
+ 
+               if($data->boundsheets[$x]['name'] == 'UNITS' && $error == '0'){ 
+                   //Open Connection.
+                   include("cn_usuarios.php");  
+                   $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+                   $transaccion_exitosa = true;
+                   
+                   for($i = 2; $i <= $rows; $i++){
+                      //Arrays:
+                      $campos_unit       = array(); //<--- insert
+                      $valores_unit      = array(); //<--- insert
+                      $update_unit_array = array(); //<--- update
+                      
+                      $success_unit = 0;
+                      $existe = '0';             
+                      for($z = 1; $z <= $col; $z++){
+                              if($y['cells'][1][$z] == 'VIN'){
+                                  
+                                  $sVIN = trim($y['cells'][$i][$z]); 
+                                  $sVIN = str_replace(' ','',nl2br($sVIN));
+                                  if(strpos($sVIN,'<br/>')){$sVIN =  str_replace('<br/>','',nl2br($sVIN));}
+                              
+                                  if($sVIN != ""){
+                                      
+                                          $sVIN = strtoupper(trim($sVIN));
+                                          $sVIN = ereg_replace("[^A-Za-z0-9]", "", $sVIN);
+                                          
+                                          if(strlen($sVIN) > 18){
+                                             $error = '1';
+                                             $mensaje = "Error: Please verify the VIN on the column $z row $i from XLS file.";   
+                                          }else{  
+                                              //Revisamos si ya existe la unidad para esta compañia:
+                                              $query = "SELECT COUNT(iConsecutivo) AS total FROM ct_unidades WHERE sVIN = '$sVIN' AND iConsecutivoCompania = '$iConsecutivoCompania'";
+                                              $result = $conexion->query($query);
+                                              $items = $result->fetch_assoc();
+                                              $existe = $items["total"];
+                                              if($existe == "0"){
+                                                  array_push($campos_unit ,"sVIN"); 
+                                                  array_push($valores_unit,$sVIN); 
+                                              } 
+                                          } 
+                                
+                                  }else{
+                                      $error = '1';
+                                      $mensaje = "Error: Please verify the VIN \"$sVIN\" on the row $i from XLS file.";
+                                      $transaccion_exitosa = false;
+                                      
+                                  }
+                              }
+                              else if($y['cells'][1][$z] == 'MAKE'){
+                                  $iMake = strtoupper(trim($y['cells'][$i][$z]));
+                                  //Revisamos si existe el modelo en el catalogo:
+                                  $query = "SELECT iConsecutivo AS Make FROM ct_unidad_modelo WHERE sDescripcion = '$iMake' OR sAlias = '$iMake'";
+                                  $result = $conexion->query($query);
+                                  $items = $result->fetch_assoc();
+                                  $iMake = $items["Make"];
+                                  if($iMake != ""){
+                                     //UPDATE 
+                                     array_push($update_unit_array,"iModelo='$iMake'");
+                                     //INSERT 
+                                     array_push($campos_unit ,"iModelo");
+                                     array_push($valores_unit,$iMake); 
+                                  }
+                                  
+                              }
+                              else if($y['cells'][1][$z] == 'YEAR'){
+                                  $iYear = trim($y['cells'][$i][$z]);
+                                  if($iYear != ""){
+                                     //UPDATE  
+                                     array_push($update_unit_array,"iYear='$iYear'");
+                                     //INSERT  
+                                     array_push($campos_unit ,"iYear");
+                                     array_push($valores_unit,$iYear);  
+                                  }
+                              }
+                              else if($y['cells'][1][$z] == 'RADIUS'){
+                                  $iRadius = trim($y['cells'][$i][$z]);
+                                  $iRadius = str_replace(' ','',$iRadius);
+                                  //Revisamos si existe el Radius en el catalogo: 
+                                  $query = "SELECT iConsecutivo AS Radius FROM ct_unidad_radio WHERE sDescripcion = '$iRadius'";
+                                  $result = $conexion->query($query);
+                                  $items = $result->fetch_assoc();
+                                  $iRadius = $items["Radius"];
+                                  if($iRadius != ""){
+                                      //UPDATE 
+                                      array_push($update_unit_array,"iConsecutivoRadio='$iRadius'");
+                                      //INSERT
+                                      array_push($campos_unit ,"iConsecutivoRadio");
+                                      array_push($valores_unit,$iRadius); 
+                                  }
+                              }
+                              else if($y['cells'][1][$z] == 'TYPE'){
+                                  $sTypeU = trim($y['cells'][$i][$z]); 
+                                  if($sTypeU == 'UNIT' || $sTypeU == 'TRAILER'){
+                                      //UPDATE 
+                                      array_push($update_unit_array,"sTipo='$sTypeU'");
+                                      //INSERT 
+                                      array_push($campos_unit ,"sTipo");
+                                      array_push($valores_unit,$sTypeU);
+                                  }
+                              }
+                              else if($y['cells'][1][$z] == 'TOTALPREMIUM' || $y['cells'][1][$z] == 'PD'){
+                                  
+                                  $totalP = trim($y['cells'][$i][$z]);
+                                  $totalP = str_replace(" ","",$totalP);
+                                  $totalP = str_replace(",","",$totalP);
+                                  $totalP = str_replace("\$","",$totalP);
+                                  $totalP = preg_replace('/[^0-9]+/', '', $totalP);
+                                  $totalP = intval(trim($totalP)); 
+                                  if($totalP != ''){
+                                      //UPDATE 
+                                      array_push($update_unit_array,"iTotalPremiumPD='$totalP'");
+                                      //INSERT 
+                                      array_push($campos_unit ,"iTotalPremiumPD");
+                                      array_push($valores_unit,$totalP); 
+                                  }
+                              }
+                      }
+                      if($error != '0'){$transaccion_exitosa = false;}
+                      else{
+                        if($sVIN != ""){  
+                            if($existe != "0"){
+                                #UPDATE INFORMATION:
+                                //Agregando campos adicionales:
+                                array_push($update_unit_array ,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
+                                array_push($update_unit_array ,"sIP='".$_SERVER['REMOTE_ADDR']."'");
+                                array_push($update_unit_array ,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'");
+                                //array_push($update_unit_array ,"siConsecutivosPolizas='$iConsecutivoPolizas'");
+                                //array_push($update_unit_array ,"inPoliza='1'"); 
+                                array_push($update_unit_array ,"eModoIngreso='EXCEL'");
+                                $query = "UPDATE ct_unidades SET ".implode(",",$update_unit_array)." WHERE sVIN = '$sVIN' AND iConsecutivoCompania ='".trim($iConsecutivoCompania)."'";
+                                if(!($conexion->query($query))){ $transaccion_exitosa = false;$msj = "The data of unit was not saved properly, please try again.";}
+                                else{
+                                    #ACTUALIZAR TABLA DE POLIZAS/UNIDADES:
+                                    $query = "SELECT iConsecutivo FROM ct_unidades WHERE sVIN = '$sVIN' AND iConsecutivoCompania ='".trim($iConsecutivoCompania)."'";
+                                    $result= $conexion->query($query);
+                                    $row   = $result->fetch_assoc();
+                                    
+                                    $count = count($iConsecutivoPolizas);
+                                    for($p=0;$p<$count;$p++){
+                                        $query = "SELECT COUNT(iConsecutivoUnidad) AS total FROM cb_poliza_unidad WHERE iConsecutivoPoliza='".$iConsecutivoPolizas[$p]."' AND iConsecutivoUnidad='".$row['iConsecutivo']."'";
+                                        $result= $conexion->query($query);
+                                        $valid = $result->fetch_assoc();
+                                        
+                                        if($valid['total'] == 0){
+                                            $query = "INSERT INTO cb_poliza_unidad (iConsecutivoPoliza,iConsecutivoUnidad) VALUES('".$iConsecutivoPolizas[$p]."','".$row['iConsecutivo']."')";
+                                            if(!($conexion->query($query))){ $transaccion_exitosa = false;$msj = "The data of unit in the policy was not saved properly, please try again.";}
+                                            else{$success_unit ++;}
+                                        }
+                                    }
+               
+                                } 
+                                
+                            }
+                            else{
+                                #INSERT INFORMATION:
+                                //Agregando campos adicionales:
+                                array_push($campos_unit ,"iConsecutivoCompania"); array_push($valores_unit,trim($iConsecutivoCompania)); //<-- Compania
+                                array_push($campos_unit ,"dFechaIngreso"); array_push($valores_unit,date("Y-m-d H:i:s"));
+                                array_push($campos_unit ,"sIP"); array_push($valores_unit,$_SERVER['REMOTE_ADDR']);
+                                array_push($campos_unit ,"sUsuarioIngreso"); array_push($valores_unit,$_SESSION['usuario_actual']);
+                                array_push($campos_unit ,"eModoIngreso"); array_push($valores_unit,'EXCEL');
+                                
+                                $query = "INSERT INTO ct_unidades (".implode(",",$campos_unit).") VALUES ('".implode("','",$valores_unit)."')";
+                                $conexion->query($query);
+                                
+                                if($conexion->affected_rows < 1){ $transaccion_exitosa = false;$msj = "The data of unit was not saved properly, please try again.";}
+                                else{
+                                    #ACTUALIZAR TABLA DE POLIZAS/UNIDADES:
+                                    $iConsecutivoUnidad = $conexion->insert_id;
+                                    $count              = count($iConsecutivoPolizas);
+                                    
+                                    for($p=0;$p<$count;$p++){
+                                        $query = "INSERT INTO cb_poliza_unidad (iConsecutivoPoliza,iConsecutivoUnidad) VALUES('".$iConsecutivoPolizas[$p]."','$iConsecutivoUnidad')";
+                                        if(!($conexion->query($query))){ $transaccion_exitosa = false;$msj = "The data of unit was not saved properly, please try again.";}
+                                        else{$success_unit ++;}
+                                        
+                                    }
+                                }
+                            }
+                        } 
+                      }
+                      
+                   }
+ 
+                   if($transaccion_exitosa){
+                        $conexion->commit();
+                        $conexion->close();
+                        $mensaje .= "The data of units has been uploaded successfully, please verify the data in the company policies.<br><br>";
+                   }
+                   else{
+                        $conexion->rollback();
+                        $conexion->close();
+                        $mensaje .= 'Error to upload the units information.<br>';
+                   }
+               }
+               
+               if($data->boundsheets[$x]['name'] == 'DRIVERS' && $error == '0'){
+                    //Open Connection.
+                    include("cn_usuarios.php");  
+                    $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+                    $transaccion_exitosa = true;
+                    for($i = 2; $i <= $rows; $i++){ 
+                        //Arrays:
+                        $campos_driv         = array(); //insert
+                        $valores_driv        = array(); //insert
+                        $update_driver_array = array(); // update
+                        
+                        $success_driv   = 0;
+                        $existe = '0';
+                        for($z = 1; $z <= $col; $z++){
+                               if($y['cells'][1][$z] == 'LICENSE'){
+                                  
+                                  $iLicense = strtoupper(trim($y['cells'][$i][$z]));
+                                  $iLicense = str_replace(' ','',nl2br($iLicense));
+                                  $iLicense = trim($iLicense);
+
+                                  if($iLicense != ""){
+                                        if(strpos($iLicense,'<br/>')){
+                                              $error = '1';
+                                              $mensaje = "Error: Please verify the LICENSE on the column $z row $i from XLS file."; 
+                                        }
+                                        else{ 
+                                          $pos = strpos($iLicense,'-');
+                                          if (!($pos === false)) {
+                                              $iLicense = substr($iLicense,0,$pos);
+                                          }  
+                                          //Revisamos si ya existe el driver para esta compañia:
+                                          $query  = "SELECT COUNT(iConsecutivo) AS total FROM ct_operadores WHERE iNumLicencia = '".trim($iLicense)."' AND iConsecutivoCompania = '$iConsecutivoCompania'";
+                                          $result = $conexion->query($query);
+                                          $items  = $result->fetch_assoc();
+                                          $existe = $items["total"];
+                                          if($existe == "0"){
+                                              array_push($campos_driv,"iNumLicencia"); 
+                                              array_push($valores_driv,trim($iLicense)); 
+                                          }
+                                        }       
+                                  } 
+                               }
+                               else if($y['cells'][1][$z] == 'NAME'){
+                                   $sName = strtoupper(trim($y['cells'][$i][$z]));
+                                   if($sName != ""){
+                                       $sName = str_replace(",","",$sName);
+                                       //UPDATE 
+                                       array_push($update_driver_array,"sNombre='".trim($sName)."'"); 
+                                       //INSERT 
+                                       array_push($campos_driv ,"sNombre");
+                                       array_push($valores_driv,trim($sName)); 
+                                   } 
+                                    
+                               }
+                               else if($y['cells'][1][$z] == 'DOB'){
+                                   $DOB = trim($y['cells'][$i][$z]); 
+                                   if($DOB != ""){
+                                       $unixDate  = ($DOB - 25569) * 86400;
+                                       $ExcelDate = 25569 + ($unixDate / 86400);
+                                       $unixDate  = ($ExcelDate - 25569) * 86400;
+                                       $DOB = gmdate("Y-m-d", $unixDate); 
+                                        
+                                       //UPDATE 
+                                       array_push($update_driver_array,"dFechaNacimiento='$DOB'"); 
+                                       //INSERT 
+                                       array_push($campos_driv ,"dFechaNacimiento");
+                                       array_push($valores_driv,$DOB);
+                                   } 
+                                    
+                               }
+                               else if($y['cells'][1][$z] == 'YOE'){
+                                   $YOE = trim($y['cells'][$i][$z]); 
+                                   if($YOE != ""){
+                                       $YOE = str_replace("+",'',$YOE);
+                                       //UPDATE 
+                                       array_push($update_driver_array,"iExperienciaYear='$YOE'"); 
+                                       //INSERT 
+                                       array_push($campos_driv ,"iExperienciaYear");
+                                       array_push($valores_driv,$YOE);
+                                   } 
+                                    
+                               }
+                               else if($y['cells'][1][$z] == 'EXPIREDATE'){
+                                   $ExpireDate = trim($y['cells'][$i][$z]); 
+                                   if($ExpireDate != ""){
+                                       $UNIX_DATE = ($ExpireDate - 25569) * 86400;
+                                       $EXCEL_DATE = 25569 + ($UNIX_DATE / 86400);
+                                       $UNIX_DATE = ($EXCEL_DATE - 25569) * 86400;
+                                       $ExpireDate = gmdate("Y-m-d", $UNIX_DATE);
+                                       //UPDATE 
+                                       array_push($update_driver_array,"dFechaExpiracionLicencia='$ExpireDate'"); 
+                                       //INSERT 
+                                       array_push($campos_driv ,"dFechaExpiracionLicencia");
+                                       array_push($valores_driv,$ExpireDate); 
+                                   }
+
+                               }
+                               else if($y['cells'][1][$z] == 'TYPE'){
+                                   $Type = strtoupper(trim($y['cells'][$i][$z])); 
+                                   if($Type != ""){
+                                       //UPDATE 
+                                       array_push($update_driver_array,"eTipoLicencia='$Type'"); 
+                                       //INSERT 
+                                       array_push($campos_driv ,"eTipoLicencia");
+                                       array_push($valores_driv,$Type); 
+                                   } 
+                                    
+                               }  
+                        }
+   
+                        #INSERT: 
+                        if($error != '0'){$transaccion_exitosa = false;}
+                        else{
+                          if(count($update_driver_array) != "0" && count($campos_driv) != "0"){  
+                              if($iLicense != ""){  
+                                if($existe != "0"){
+                                    #UPDATE:
+                                    //Agregando campos adicionales:
+                                    array_push($update_driver_array ,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
+                                    array_push($update_driver_array ,"sIP='".$_SERVER['REMOTE_ADDR']."'");
+                                    array_push($update_driver_array ,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'");
+                                    array_push($update_driver_array ,"eModoIngreso='EXCEL'");
+                                    $query = "UPDATE ct_operadores SET ".implode(",",$update_driver_array)." WHERE iNumLicencia = '$iLicense' AND iConsecutivoCompania = '$iConsecutivoCompania' ";
+                                    
+                                    if(!($conexion->query($query))){ $transaccion_exitosa = false;$msj = "The data of driver was not saved properly, please try again.";}
+                                    else{
+                                        #ACTUALIZAR TABLA DE POLIZAS/UNIDADES:
+                                        $query = "SELECT iConsecutivo FROM ct_operadores WHERE iNumLicencia='$iLicense' AND iConsecutivoCompania='$iConsecutivoCompania'";
+                                        $result= $conexion->query($query);
+                                        $row   = $result->fetch_assoc();
+                                        
+                                        $count = count($iConsecutivoPolizas);
+                                        for($p=0;$p<$count;$p++){
+                                            $query = "SELECT COUNT(iConsecutivoOperador) AS total FROM cb_poliza_operador WHERE iConsecutivoPoliza='".$iConsecutivoPolizas[$p]."' AND iConsecutivoOperador='".$row['iConsecutivo']."'";
+                                            $result= $conexion->query($query);
+                                            $valid = $result->fetch_assoc();
+                                            
+                                            if($valid['total'] == 0){
+                                                $query = "INSERT INTO cb_poliza_operador (iConsecutivoPoliza,iConsecutivoOperador) VALUES('".$iConsecutivoPolizas[$p]."','".$row['iConsecutivo']."')";
+                                                if(!($conexion->query($query))){ $transaccion_exitosa = false;$msj = "The data of driver in the policy was not saved properly, please try again.";}
+                                                else{$success_driv ++;}
+                                            }
+                                        }
+                                    }
+                                    
+                                }
+                                else{
+                                    #INSERT:
+                                    //Agregando campos adicionales:
+                                    array_push($campos_driv ,"iConsecutivoCompania"); array_push($valores_driv,trim($iConsecutivoCompania)); //<-- Compania
+                                    array_push($campos_driv ,"dFechaIngreso"); array_push($valores_driv,date("Y-m-d H:i:s"));
+                                    array_push($campos_driv ,"sIP"); array_push($valores_driv,$_SERVER['REMOTE_ADDR']);
+                                    array_push($campos_driv ,"sUsuarioIngreso"); array_push($valores_driv,$_SESSION['usuario_actual']);
+                                    array_push($campos_driv ,"eModoIngreso"); array_push($valores_driv,'EXCEL');
+                                    
+                                    $query = "INSERT INTO ct_operadores (".implode(",",$campos_driv).") VALUES ('".implode("','",$valores_driv)."')";
+                                    $conexion->query($query);
+                                    
+                                    if($conexion->affected_rows < 1){ $transaccion_exitosa = false;$msj = "The data of driver was not saved properly, please try again.";}
+                                    else{
+                                        #ACTUALIZAR TABLA DE POLIZAS/UNIDADES:
+                                        $iConsecutivoOperador = $conexion->insert_id;
+                                        $count                = count($iConsecutivoPolizas);
+                                        
+                                        for($p=0;$p<$count;$p++){
+                                            $query = "INSERT INTO cb_poliza_operador (iConsecutivoPoliza,iConsecutivoOperador) VALUES('".$iConsecutivoPolizas[$p]."','$iConsecutivoOperador')";
+                                            if(!($conexion->query($query))){ $transaccion_exitosa = false;$msj = "The data of driver in policy was not saved properly, please try again.";}
+                                            else{$success_driv ++;}
+                                            
+                                        }
+                                    }  
+                                }
+                              }else{
+                                  $error = '1';
+                                  $mensaje = "Error: Please verify the LICENSE# on the row $i from XLS file.";
+                                  $transaccion_exitosa = false;
+                              }
+                          }
+                        }
+                    }  
+                    if($transaccion_exitosa){
+                        $conexion->commit();
+                        $conexion->close();
+                        $mensaje .= "The data of drivers has been uploaded successfully, please verify the data in the company policies.";
+                    }else{
+                        $conexion->rollback();
+                        $conexion->close();
+                        $mensaje .= 'Error to upload the drivers information.<br>'; 
+                    }
+
+               }       
+               
+               if($data->boundsheets[$x]['name'] != 'UNITS' && $data->boundsheets[$x]['name'] != 'DRIVERS'){
+                   $error = '1';
+                   $mensaje = "Error: Please upload the file with the layout format and try again.";
+               } 
+               
+          }
+      }
+      
+      $htmlTabla = $htmlTabla.$tabla_error;
+      $response = array("mensaje"=>"$mensaje","error"=>"$error", "name_file" => "$fileName"); 
+      echo json_encode($response); 
+      
+  }
+  
 ?>

@@ -268,8 +268,8 @@
          $success = $conexion->query($query);
                   
       }else{
-         $query   = "INSERT INTO ct_operadores (iConsecutivoCompania,sNombre,dFechaNacimiento,iExperienciaYear,eTipoLicencia,iNumLicencia,dFechaExpiracionLicencia,sIP,sUsuarioIngreso,dFechaIngreso) ".
-                    "VALUES('$iConsecutivoCompania','$sNombre','$dFechaNacimiento',$iExperienciaYear,'$eTipoLicencia','$iNumLicencia',$dFechaExpLicencia,'$sIP','$sUsuario','$dFecha')";
+         $query   = "INSERT INTO ct_operadores (iConsecutivoCompania,sNombre,dFechaNacimiento,iExperienciaYear,eTipoLicencia,iNumLicencia,dFechaExpiracionLicencia,sIP,sUsuarioIngreso,dFechaIngreso,eModoIngreso) ".
+                    "VALUES('$iConsecutivoCompania','$sNombre','$dFechaNacimiento',$iExperienciaYear,'$eTipoLicencia','$iNumLicencia',$dFechaExpLicencia,'$sIP','$sUsuario','$dFecha','ENDORSEMENT')";
          $success = $conexion->query($query);
          if($success){$iConsecutivoOperador = $conexion->insert_id;}
       }
@@ -1036,7 +1036,8 @@
             $conexion->commit();
             $conexion->close();
             $mensaje = "The data has been saved successfully, Thank you!";
-      }else{
+      }
+      else{
             $conexion->rollback();
             $conexion->close(); 
             $error = "1";
