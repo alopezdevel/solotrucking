@@ -9,9 +9,9 @@
      include("cn_usuarios.php");
      $conexion->autocommit(FALSE);
      $error = "0";   
-     $sql = "SELECT iConsecutivo AS clave, sNombreCompania AS descripcion 
-             FROM ct_companias ORDER BY sNombreCompania ASC";
-     $result = $conexion->query($sql);
+     $sql   = "SELECT iConsecutivo AS clave, sNombreCompania AS descripcion 
+              FROM ct_companias WHERE iDeleted='0' ORDER BY sNombreCompania ASC";
+     $result= $conexion->query($sql);
      $tipos = $result->num_rows;  
         if($tipos > 0){
             $htmlTabla .= "<option value=\"\">Select an option...</option>";      

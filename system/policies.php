@@ -1313,7 +1313,7 @@ var fn_policies = {
                         </td> 
                         <td><input class="flt_dExpire flt_fecha" type="text" placeholder="MM-DD-YY"></td> 
                         <td style="width:80px;"><input class="flt_dYears num" type="text" placeholder="Years:"></td> 
-                        <td style='width:110px;'><!--<input class="flt_dApp flt_fecha" type="text" placeholder="MM-DD-YY">--></td>  
+                        <td style='width:130px;' class="txt-c"><!--<input class="flt_dApp flt_fecha" type="text" placeholder="MM-DD-YY">--></td>  
                         <td style='width:150px;'></td>  
                         <td style='width:120px;'>
                             <div class="btn-icon-2 btn-left" title="Search" onclick="fn_policies.list.filtraInformacion();"><i class="fa fa-search"></i></div>
@@ -1442,7 +1442,7 @@ var fn_policies = {
                         <td><input class="flt_uType" type="text" placeholder="Type:"></td> 
                         <td style="width:80px;"><input class="flt_uWeight" type="text" placeholder="Weigth:"></td>
                         <td style='width:100px;'></td> 
-                        <td style='width:110px;'><!--<input class="flt_dApp flt_fecha" type="text" placeholder="MM-DD-YY">--></td>  
+                        <td style='width:130px;' class="txt-c"><!--<input class="flt_dApp flt_fecha" type="text" placeholder="MM-DD-YY">--></td>  
                         <td style='width:150px;'></td>    
                         <td style='width:120px;'>
                             <div class="btn-icon-2 btn-left" title="Search" onclick="fn_policies.list.units_filtraInformacion();"><i class="fa fa-search"></i></div>

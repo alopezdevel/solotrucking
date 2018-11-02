@@ -81,7 +81,8 @@
                          case 'A': 
                             $estado      = 'APPROVED<br><span style="font-size:11px!important;">Your endorsement has been approved successfully.</span>';
                             $class       = "class = \"green\"";
-                            $btn_confirm = "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$usuario['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>"; 
+                            $btn_confirm = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of endorsement\"><i class=\"fa fa-pencil-square-o\"></i></div>";
+                            $btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$usuario['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>"; 
                          break;
                          case 'D': 
                             $estado      = 'CANCELED<br><span style="font-size:11px!important;">Your endorsement has been canceled, please see the reasons on the edit button.</span>';
@@ -318,9 +319,11 @@
       }
       
       if($iConsecutivoUnidad!= ""){
+         
+         $eAccion == "A" ? $flt_modo = ",eModoIngreso='ENDORSEMENT'" : $flt_modo = ""; 
           
          $query   = "UPDATE ct_unidades SET sTipo='$sTipo',iYear='$iYear',iModelo=$iModelo,sVIN='$sVIN',iConsecutivoRadio=$iConsecutivoRadio, ".
-                    "sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha' ".
+                    "sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha' $flt_modo ".
                     "WHERE iConsecutivo ='$iConsecutivoUnidad' AND iConsecutivoCompania = '$iConsecutivoCompania'"; 
          $success = $conexion->query($query);
                   
@@ -566,8 +569,8 @@
       echo json_encode($response); 
   }
   function save_estatus_info(){
-      $error = '0';  
-      $msj = ""; 
+      $error          = '0';  
+      $mensaje        = ""; 
       $Comentarios    = trim($_POST['sMensaje']);
       $iConsecutivo   = trim($_POST['iConsecutivoEndoso']);
       $PolizasEstatus = trim($_POST['polizas']);
@@ -578,8 +581,10 @@
       $transaccion_exitosa = true;
       
       //Revisar si hay que actualizar polizas:
-      $array = explode(";",$PolizasEstatus);
-      $count = count($array);
+      $array       = explode(";",$PolizasEstatus);
+      $count       = count($array);
+      $iAprobacion = 0;
+      $iDenegado   = 0;
       
       if($count > 0){
           
@@ -587,8 +592,9 @@
               $actualiza = "";
               $poliza    = explode("|",$array[$x]);
               $polizaID  = $poliza[0];
+              $eStatus == "A" ? $eStatusP = 'A' : $eStatusP  = trim($poliza[1]);
               
-              $actualiza .= " eStatus ='".trim($poliza[1])."' "; 
+              $actualiza .= " eStatus ='$eStatusP' "; 
               $actualiza != "" ? $actualiza .= ", sComentarios ='".utf8_encode(trim($poliza[2]))."'"        : $actualiza = "sComentarios ='".utf8_encode(trim($poliza[2]))."'";
               $actualiza != "" ? $actualiza .= ", sNumeroEndosoBroker ='".trim($poliza[3])."'" : $actualiza = "sNumeroEndosoBroker ='".trim($poliza[3])."'"; 
               
@@ -596,9 +602,25 @@
                  $query   = "UPDATE cb_endoso_estatus SET $actualiza WHERE iConsecutivoPoliza ='$polizaID' AND iConsecutivoEndoso = '$iConsecutivo'";
                  $success = $conexion->query($query);
                  if(!($success)){$transaccion_exitosa = false;$mensaje = "The data was not updated properly, please try again."; }
+                 
+                 //Incrementamos contador para verificar aprobacion:
+                 if($eStatusP == "A"){
+                     
+                     $iAprobacion++;
+                     $validaAccion = set_endoso_poliza($iConsecutivo,$polizaID,$conexion);
+                    
+                     if(!($validaAccion)){$transaccion_exitosa=false;$mensaje="The policy data was not updated properly, please try again.";}
+                     else{
+                        $mensaje = "The data has been saved successfully and the vehicle has been updated in the company policy. <br>Thank you!"; 
+                     }
+                 }else
+                 if($eStatusP == "D"){$iDenegado++;}
               }
               
           }  
+          //VERIFICAMOS SI TODOS LOS ESTATUS ESTAN APROBADOS, MARCAMOS EL ENDOSO TAMBIEN:
+          if($iAprobacion == $count){$eStatus = 'A';}else
+          if($iDenegado == $count){$eStatus = 'D';}
       }
       
       if($transaccion_exitosa){
@@ -615,7 +637,7 @@
       if($transaccion_exitosa){
             $conexion->commit();
             $conexion->close();
-            $mensaje = "The data has been saved successfully, Thank you!";
+            if($mensaje == ""){$mensaje = "The data has been saved successfully, Thank you!";}
       }else{
             $conexion->rollback();
             $conexion->close(); 
@@ -765,10 +787,15 @@
                 $mail->SMTPSecure = "TLS";                 // sets the prefix to the servier
                 $mail->Host       = "smtp.gmail.com";      // sets GMAIL as the SMTP server
                 $mail->Port       = 587;                   // set the SMTP port for the GMAIL server
-                /*$mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
-                $mail->Password   = "SL09100242"; */
-                $mail->Username   = "customerservice@solo-trucking.com";  // GMAIL username
-                $mail->Password   = "SL641404tK"; 
+                
+                #VERIFICAR SERVIDOR DONDE SE ENVIAN CORREOS:
+                if($_SERVER["HTTP_HOST"]=="stdev.websolutionsac.com"){
+                  $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
+                  $mail->Password   = "SL09100242";  
+                }else if($_SERVER["HTTP_HOST"] == "solotrucking.laredo2.net"){
+                  $mail->Username   = "customerservice@solo-trucking.com";  // GMAIL username
+                  $mail->Password   = "SL641404tK";   
+                }
                 
                 $mail->SetFrom('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');
                 $mail->AddReplyTo('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance'); 
@@ -1106,6 +1133,48 @@
         
       $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
       echo json_encode($response); 
+  }
+  
+  #FUNCION PARA APLICAR ACCION DEL ENDOSO EN UNIDAD/POLIZA:
+  function set_endoso_poliza($iConsecutivoEndoso,$iConsecutivoPoliza,$conexion){
+    
+      $transaccion_exitosa = true;
+      
+      #CONSULTAR DATOS DEL ENDOSO:
+      $query  = "SELECT * FROM cb_endoso WHERE iConsecutivo='$iConsecutivoEndoso'"; 
+      $result = $conexion->query($query); 
+      $rows   = $result->num_rows; 
+      
+      if($rows > 0){
+          $data = $result->fetch_assoc();
+          #ENDOSOS NO MULTIPLES:
+          if($data['iEndosoMultiple']==0){
+              //Tomamos variables:
+              $eAccion   = $data['eAccion'];
+              $idDetalle = $data['iConsecutivoUnidad']; 
+              
+              //Revisamos Action:
+              if($eAccion == "A"){
+                 $query   = "INSERT INTO cb_poliza_unidad (iConsecutivoPoliza,iConsecutivoUnidad) VALUES('$iConsecutivoPoliza','$idDetalle')";
+                 $success = $conexion->query($query); 
+              
+                 $query   = "UPDATE ct_unidades SET iDeleted='0' WHERE iConsecutivo='$idDetalle'";
+                 $success = $conexion->query($query);
+                 if(!($success)){$transaccion_exitosa = false;} 
+                
+              }
+              else if($eAccion == "D"){
+                  $query   = "DELETE FROM cb_poliza_unidad WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoUnidad='$idDetalle'";
+                  $success = $conexion->query($query); 
+                  if(!($success)){$transaccion_exitosa = false;}
+              }
+              
+          }
+      }
+      else{$transaccion_exitosa = false;}
+   
+      return $transaccion_exitosa;
+      
   }
   
 ?>

@@ -986,12 +986,12 @@
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
       $transaccion_exitosa = true;
     
-      $registros_por_pagina = $_POST["registros_por_pagina"];
-      $pagina_actual = (isset($_POST["pagina_actual"]) && $_POST["pagina_actual"] != '' ? $_POST["pagina_actual"] : 1);
+      $registros_por_pagina  = $_POST["registros_por_pagina"];
+      $pagina_actual         = (isset($_POST["pagina_actual"]) && $_POST["pagina_actual"] != '' ? $_POST["pagina_actual"] : 1);
       $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
         
       //Filtros de informacion //
-      $filtroQuery = " WHERE  iConsecutivoCompania = '$iConsecutivoCompania'  ";
+      $filtroQuery   = " WHERE  iConsecutivoCompania = '$iConsecutivoCompania'  ";
       $array_filtros = explode(",",$_POST["filtroInformacion"]);
       foreach($array_filtros as $key => $valor){
         if($array_filtros[$key] != ""){
@@ -1004,9 +1004,10 @@
     
     //contando registros // 
     $query_rows = "SELECT COUNT(iConsecutivo) AS total FROM ct_operadores ".$filtroQuery;
-    $Result = $conexion->query($query_rows);
-    $items = $Result->fetch_assoc();
-    $registros = $items["total"];
+    $Result     = $conexion->query($query_rows);
+    $items      = $Result->fetch_assoc();
+    $registros  = $items["total"];
+    
     if($registros == "0"){$pagina_actual = 0;}
     $paginas_total = ceil($registros / $registros_por_pagina);
     if($registros == "0"){
@@ -1017,6 +1018,7 @@
         $pagina_actual == "0" ? $pagina_actual = 1 : false;
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
+        
         $sql    = "SELECT iConsecutivo, sNombre, DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, iExperienciaYear, iNumLicencia, (CASE eTipoLicencia WHEN  1 THEN 'Federal / B1' WHEN  2 THEN 'Commercial / CDL - A' END) AS TipoLicencia, siConsecutivosPolizas,eModoIngreso ".
                   "FROM ct_operadores ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
         $result = $conexion->query($sql);
@@ -1026,8 +1028,18 @@
                     
                     //Revisar modo ingreso:
                     $modoIngreso = $items['eModoIngreso'];
+                    $textoIngreso= "";
                     
-                    if($modoIngreso == 'EXCEL'){$textoIngreso = "AMIC";}
+                    if($modoIngreso == 'EXCEL'){$textoIngreso = "AMIC";}else
+                    if($modoIngreso == 'ENDORSEMENT'){
+                        #CONSULTAR DATOS DEL ENDOSO:
+                        $query = "SELECT DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y %H:%i') AS dFechaAplicacion, iConsecutivo ".
+                                 "FROM cb_endoso AS A ".
+                                 "WHERE A.iConsecutivoOperador='".$items['iConsecutivo']."' AND eStatus='A' ORDER BY dFechaAplicacion DESC";
+                        $res   = $conexion->query($query);
+                        $endoso= $res->fetch_assoc();
+                        $textoIngreso = "ENDORSEMENT - ".$endoso['iConsecutivo']."<br>".$endoso['dFechaAplicacion'];
+                    }
                     
                     //Revisar polizas:
                     $query  = "SELECT iConsecutivoPoliza, B.sNumeroPoliza, C.sDescripcion AS sTipoPoliza, C.sAlias ".
@@ -1047,25 +1059,19 @@
                         }
                         $polizas .= "</ul>"; 
                     }
-                     
-                     
-                     /*if($items['siConsecutivosPolizas']!= ""){
-                         $polizas = explode(",",$items['siConsecutivosPolizas']);
-                         in_array($iConsecutivoPoliza, $polizas) ? $class = "class=\"green\"" : $class = "";
-                     }*/
-                    
-                         $htmlTabla .= "<tr>".
-                                       "<td id=\"".$items['iConsecutivo']."\" >".$items['sNombre']."</td>".
-                                       "<td class=\"txt-c\">".$items['dFechaNacimiento']."</td>".
-                                       "<td>".$items['iNumLicencia']."</td>". 
-                                       "<td>".$items['TipoLicencia']."</td>".
-                                       "<td class=\"txt-c\">".$items['dFechaExpiracionLicencia']."</td>".  
-                                       "<td class=\"txt-c\">".$items['iExperienciaYear']."</td>".
-                                       "<td class=\"txt-c\">".$textoIngreso."</td>".  
-                                       "<td>$polizas</td>".                                                                                                                                                                                                                   
-                                       "<td>".
-                                       //"<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i></div>".
-                                       "</td></tr>";   
+        
+                    $htmlTabla .= "<tr>".
+                                  "<td id=\"idOP_".$items['iConsecutivo']."\" >".$items['sNombre']."</td>".
+                                  "<td class=\"txt-c\">".$items['dFechaNacimiento']."</td>".
+                                  "<td>".$items['iNumLicencia']."</td>". 
+                                  "<td>".$items['TipoLicencia']."</td>".
+                                  "<td class=\"txt-c\">".$items['dFechaExpiracionLicencia']."</td>".  
+                                  "<td class=\"txt-c\">".$items['iExperienciaYear']."</td>".
+                                  "<td class=\"txt-c\">".$textoIngreso."</td>".  
+                                  "<td>$polizas</td>".                                                                                                                                                                                                                   
+                                  "<td>".
+                                  //"<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i></div>".
+                                  "</td></tr>";   
                 }
                 $conexion->rollback();
                 $conexion->close();                                                                                                                                                                       
