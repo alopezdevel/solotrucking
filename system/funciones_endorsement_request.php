@@ -1326,7 +1326,7 @@
                          $file['type']   = $files['sTipoArchivo'];
                        }
                     }
-             }else{
+             }/*else{
                  //Buscamos archivos por Operador
                  $query  = "SELECT iConsecutivo, sNombreArchivo, eArchivo, hContenidoDocumentoDigitalizado, sTipoArchivo, iTamanioArchivo ".
                            "FROM cb_operador_files WHERE  iConsecutivoOperador = '".$Endoso['iConsecutivoOperador']."' $filtroArchivo "; 
@@ -1342,7 +1342,7 @@
                        }
                     }
                  }
-             }
+             }*/
              if(count($file)==0){$file="";} 
              /**************/ 
              
