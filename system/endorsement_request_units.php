@@ -182,12 +182,16 @@
                $('#endorsements_edit_form input, #endorsements_edit_form select, #endorsements_edit_form textarea').val('');
                $("#frm_endorsement_information .required-field").removeClass("error");
                $("#endorsements_edit_form #iConsecutivoCompania").removeClass('readonly').removeProp('disabled');
-               $("#endorsements_edit_form #eAccion").removeClass('readonly').removeProp('disabled');
                $("#files_datagrid, #info_policies").hide();//ocultar grid de archivos...
                $("#info_policies tbody").empty();
                fn_solotrucking.get_date("#dFechaAplicacion.fecha");
                fn_solotrucking.get_time("#dFechaAplicacionHora");
+               //DETALLE:
+               fn_endorsement.detalle.iConsecutivoEndoso = "";
+               fn_endorsement.detalle.pd_valid = false;
                fn_endorsement.detalle.add();
+               fn_endorsement.detalle.fillgrid();
+                
                fn_popups.resaltar_ventana('endorsements_edit_form'); 
             },
             edit : function (){
@@ -297,25 +301,27 @@
            },
             save : function(ghost_mode){
                
-               var valid = true;
-               var msj   = "";
-               $("#frm_endorsement_information .general_information .required-field").removeClass("error");
                if(ghost_mode == ""){ghost_mode = false;}
-               //Revisamos polizas seleccionadas:
-               var polizas_list = "";
-               $("#info_policies tbody input:checkbox").each(function(){
-                   if($(this).prop('checked')){
-                      if(polizas_list == ""){polizas_list = $(this).val();}else{polizas_list+='|'+$(this).val();} 
-                   }
-               });
-               if(polizas_list == ""){valid = false; msj = "<li>You must select at least one policy.</li>";}
-               
-               //Revisamos campos obligatorios: (SOLO LOS DEL ENDOSO GENERALES)
-               $("#frm_endorsement_information .general_information .required-field").each(function(){
+                
+                var valid = true;
+                var msj   = "";
+                $("#frm_endorsement_information .general_information .required-field").removeClass("error");
+                
+                //Revisamos polizas seleccionadas:
+                var polizas_list = "";
+                $("#info_policies tbody input:checkbox").each(function(){
+                       if($(this).prop('checked')){
+                          if(polizas_list == ""){polizas_list = $(this).val();}else{polizas_list+='|'+$(this).val();} 
+                       }
+                });
+                if(polizas_list == ""){valid = false; msj = "<li>You must select at least one policy.</li>";}
+                   
+                //Revisamos campos obligatorios: (SOLO LOS DEL ENDOSO GENERALES)
+                $("#frm_endorsement_information .general_information .required-field").each(function(){
                    if($(this).val() == ""){valid = false; $(this).addClass('error');msj = "<li>You must capture the required fields.</li>";}
-               });
+                });
                
-               if(valid){ 
+                if(valid){ 
                   if($('#endorsements_edit_form .general_information #iConsecutivo').val() != ""){struct_data_post.edit_mode = "true";}else{struct_data_post.edit_mode = "false";}
                   struct_data_post.action  = "save_endorsement";
                   struct_data_post.domroot = ".general_information";
@@ -330,14 +336,18 @@
                          case '0':
                             if(!(ghost_mode)){fn_solotrucking.mensaje(data.msj);}
                             fn_endorsement.fillgrid();
-                            fn_endorsement.get_data($('#endorsements_edit_form #iConsecutivo').val(),ghost_mode);
+                            
+                            if($(fn_endorsement.detalle.form+" input[name=sVIN]").val()){ghost_mode = true;}
+                            
+                            fn_endorsement.get_data(data.iConsecutivo,ghost_mode);
                          break;
                          case '1': fn_solotrucking.mensaje(data.msj); break;
                         }
                     }
                   }); 
-               }
-               else{fn_solotrucking.mensaje('<p>Please check the following::</p><ul>'+msj+'</ul>');} 
+                }
+                else{fn_solotrucking.mensaje('<p>Please check the following::</p><ul>'+msj+'</ul>');}     
+                
             },
             files : {
                pagina_actual : "",
@@ -740,7 +750,7 @@
                     else{
                         var valid = true;
                         var msj   = "";
-                        $(fn_endorsement.detalle.form+" .required-field, "+fn_endorsement.detalle.form+" .required-field-add").removeClass("error");
+                        $(fn_endorsement.detalle.form+" .required-field, "+fn_endorsement.detalle.form+" .required-field-add").removeClass("error"); 
                         
                         //Asignar Compañia:
                         var company = $("#frm_endorsement_information .general_information [name=iConsecutivoCompania]").val();
@@ -758,6 +768,13 @@
                            if($(this).val() == ""){valid = false; $(this).addClass('error');msj = "<li>You must capture the required fields.</li>";}
                         });
                         
+                        //Validar ancho del sVIN MAX 18 
+                        if($(fn_endorsement.detalle.form+" [name=sVIN]").val().length > 18){
+                           valid = false; 
+                           $(this).addClass('error');
+                           msj = "<li>The maximum number of characters for the VIN is 18.</li>"; 
+                        }
+                        
                         //Validar dependiendo la accion:
                         var action = $(fn_endorsement.detalle.form+" select[name=eAccion]").val();
                         if(action == 'ADD' || action == 'ADDSWAP'){
@@ -770,7 +787,7 @@
                         }
                        
                        if(valid){
-                              if($(fn_endorsement.detalle.form+' #iConsecutivoUnidad').val() != ""){struct_data_post_new.edit_mode = "true";}else{struct_data_post_new.edit_mode = "false";}
+                              if($(fn_endorsement.detalle.form+' [name=iConsecutivoUnidad]').val() != ""){struct_data_post_new.edit_mode = "true";}else{struct_data_post_new.edit_mode = "false";}
                               struct_data_post_new.action  = "unit_save";
                               struct_data_post_new.domroot = fn_endorsement.detalle.form;
                               $.ajax({             
@@ -807,7 +824,8 @@
                         dataType : "json",
                         success : function(data){                               
                             $(fn_endorsement.detalle.data_grid+" tbody").empty().append(data.tabla);
-                            //fn_endorsement.edit();
+                              fn_endorsement.detalle.edit(); 
+                              fn_endorsement.detalle.borrar(); 
                         }
                     });     
                 },
@@ -827,6 +845,59 @@
                     else{
                        $(fn_endorsement.detalle.form+" [name=iConsecutivoUnidad]").val('');
                     }
+                },
+                edit : function (){
+                    $(fn_endorsement.detalle.data_grid + " tbody td .btn_edit_detalle").bind("click",function(){
+                        var clave = $(this).parent().parent().find("td:eq(0)").prop('id');
+                            clave = clave.split('idUnit_');
+                            clave = clave[1];
+                        
+                        $.ajax({             
+                            type:"POST", 
+                            url:"funciones_endorsement_request_units.php", 
+                            data:{
+                                accion              : "unit_get",
+                                "iConsecutivoEndoso": fn_endorsement.detalle.iConsecutivoEndoso,
+                                "iConsecutivoUnidad": clave,
+                                "domroot"           : fn_endorsement.detalle.form},
+                            async : true,
+                            dataType : "json",
+                            success : function(data){ 
+                                if(data.error == "0"){
+                                   fn_endorsement.detalle.add();
+                                   eval(data.fields);
+                                   fn_endorsement.detalle.valid_action(); 
+                                }else{fn_solotrucking.mensaje(data.msj);}                          
+                                
+                            }
+                        });        
+                  });  
+                },
+                borrar : function (){
+                    $(fn_endorsement.detalle.data_grid + " tbody td .btn_delete_detalle").bind("click",function(){
+                        var clave = $(this).parent().parent().find("td:eq(0)").prop('id');
+                            clave = clave.split('idUnit_');
+                            clave = clave[1];
+                        
+                        $.ajax({             
+                            type:"POST", 
+                            url:"funciones_endorsement_request_units.php", 
+                            data:{
+                                accion              : "unit_delete",
+                                "iConsecutivoEndoso": fn_endorsement.detalle.iConsecutivoEndoso,
+                                "iConsecutivoUnidad": clave,
+                            },
+                            async : true,
+                            dataType : "json",
+                            success : function(data){ 
+                                fn_solotrucking.mensaje(data.msj);
+                                if(data.error == "0"){
+                                   fn_endorsement.detalle.fillgrid();
+                                }                         
+                                
+                            }
+                        });        
+                  });  
                 },
             },
             
