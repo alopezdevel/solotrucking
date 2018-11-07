@@ -187,6 +187,7 @@
                $("#info_policies tbody").empty();
                fn_solotrucking.get_date("#dFechaAplicacion.fecha");
                fn_solotrucking.get_time("#dFechaAplicacionHora");
+               fn_endorsement.detalle.add();
                fn_popups.resaltar_ventana('endorsements_edit_form'); 
             },
             edit : function (){
@@ -194,6 +195,7 @@
                     var clave    = $(this).parent().parent().find("td:eq(0)").html();
                     var company  = $(this).parent().parent().find("td:eq(1)").text(); 
                     $('#endorsements_edit_form .p-header h2').empty().text('Endorsement request from ' + company + ': E#' + clave);
+                    fn_endorsement.detalle.add();
                     fn_endorsement.get_data(clave);
               });  
             },
@@ -727,7 +729,8 @@
                 },  
                 add : function(){
                    $(fn_endorsement.detalle.form+" .required-field, "+fn_endorsement.detalle.form+" .required-field-add").removeClass("error");
-                   $(fn_endorsement.detalle.form+" input, "+fn_endorsement.detalle.form+" select").val(""); 
+                   $(fn_endorsement.detalle.form+" input, "+fn_endorsement.detalle.form+" select").val("");
+                   fn_endorsement.detalle.valid_action(); 
                 },
                 save: function(){
                     //VALIDAR SI EL ENDOSO YA SE GUARDO:

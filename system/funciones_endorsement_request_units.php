@@ -53,7 +53,7 @@
       $pagina_actual == "0" ? $pagina_actual = 1 : false;
       $limite_superior = $registros_por_pagina;
       $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-      $sql = "SELECT A.iConsecutivo,D.sNombreCompania,DATE_FORMAT( A.dFechaAplicacion, '%m/%d/%Y %H:%i' ) AS dFechaIngreso,C.sDescripcion,A.eStatus,eAccion,D.iOnRedList,sVIN ".
+      $sql = "SELECT A.iConsecutivo,D.sNombreCompania,DATE_FORMAT( A.dFechaAplicacion, '%m/%d/%Y %H:%i' ) AS dFechaIngreso,C.sDescripcion,A.eStatus,eAccion,D.iOnRedList,sVIN, A.iEndosoMultiple ".
              "FROM cb_endoso AS A ".
              "LEFT JOIN ct_tipo_endoso AS C ON A.iConsecutivoTipoEndoso = C.iConsecutivo ".
              "LEFT JOIN ct_companias   AS D ON A.iConsecutivoCompania = D.iConsecutivo ".
@@ -63,15 +63,15 @@
       $rows = $result->num_rows; 
          
         if ($rows > 0) {    
-            while ($usuario = $result->fetch_assoc()) { 
-               if($usuario["iConsecutivo"] != ""){
+            while ($items = $result->fetch_assoc()) { 
+               if($items["iConsecutivo"] != ""){
                    
                      $btn_confirm = "";
                      $estado      = "";
                      $class       = "";
                      $descripcion = ""; 
-                     
-                     switch($usuario["eStatus"]){
+                     #ESTATUS DEL ENDOSO:
+                     switch($items["eStatus"]){
                          case 'S': 
                             $estado      = 'SENT TO SOLO-TRUCKING<br><span style="font-size:11px!important;">The data can be edited by you or by the employees of just-trucking.</span>';
                             $class       = "class = \"blue\"";
@@ -81,7 +81,7 @@
                          case 'A': 
                             $estado      = 'APPROVED<br><span style="font-size:11px!important;">Your endorsement has been approved successfully.</span>';
                             $class       = "class = \"green\"";
-                            $btn_confirm = "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$usuario['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>"; 
+                            $btn_confirm = "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$items['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>"; 
                          break;
                          case 'D': 
                             $estado      = 'CANCELED<br><span style="font-size:11px!important;">Your endorsement has been canceled, please see the reasons on the edit button.</span>';
@@ -94,37 +94,47 @@
                             $estado      = 'SENT TO BROKERS<br><span style="font-size:11px!important;">Your endorsement has been sent to the brokers.</span>';
                             $class       = "class = \"yellow\"";
                             $btn_confirm = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of endorsement\"><i class=\"fa fa-pencil-square-o\"></i></div>"; 
-                            $btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$usuario['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>";
+                            $btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$items['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>";
                          break;
                          case 'P': 
                             $estado      = 'IN PROCESS<br><span style="font-size:11px!important;">Your endorsement is being in process by the brokers.</span>';
                             $class       = "class = \"orange\"";
                             $btn_confirm = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of endorsement\"><i class=\"fa fa-pencil-square-o\"></i></div>";
-                            $btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$usuario['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>";
+                            $btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$items['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>";
                          break;
                      } 
+                     
                      $color_action = "";
                      $action       = "";
-                     switch($usuario["eAccion"]){
-                         case 'A': 
-                            $action = 'ADD';
-                            //$color_action = "font-weight: bold;"; 
-                         break;
-                         case 'D': 
-                            $action = 'DELETE'; 
-                            //$color_action = "font-weight: bold;"; 
-                         break;
+                     
+                     if($items['iEndosoMultiple'] == "0"){
+                         switch($items["eAccion"]){
+                             case 'A': $action = 'ADD'; break;
+                             case 'D': $action = 'DELETE'; break;
+                         }
+                         $detalle = strtoupper($items['sVIN']);
+                     }else if($items['iEndosoMultiple'] == "1"){
+                         #CONSULTAR DETALLE DEL ENDOSO:
+                         $query = "SELECT A.sVIN, (CASE 
+                                    WHEN A.eAccion = 'ADDSWAP'    THEN 'ADD SWAP'
+                                    WHEN A.eAccion = 'DELETESWAP' THEN 'DELETE SWAP'
+                                    ELSE A.eAccion
+                                    END) AS eAccion FROM cb_endoso_unidad AS A WHERE A.iConsecutivoEndoso = '".$items['iConsecutivo']."' ORDER BY sVIN ASC";
+                         $r     = $conexion->query($query);
+                         while($item = $r->fetch_assoc()){
+                            $detalle == "" ? $detalle = $item['sVIN']    : $detalle.= "<br>".$item['sVIN'];
+                            $action  == "" ? $action  = $item['eAccion'] : $action .= "<br>".$item['eAccion']; 
+                         }
                      }
                      
-                     
                       //Redlist:
-                     $usuario['iOnRedList'] == '1' ? $redlist_icon = "<i class=\"fa fa-star\" style=\"color:#e8051b;margin-right:4px;\"></i>" : $redlist_icon = ""; 
+                     $items['iOnRedList'] == '1' ? $redlist_icon = "<i class=\"fa fa-star\" style=\"color:#e8051b;margin-right:4px;\"></i>" : $redlist_icon = ""; 
                      $htmlTabla .= "<tr $class>
-                                        <td>".$usuario['iConsecutivo']."</td>".
-                                       "<td>".$redlist_icon.$usuario['sNombreCompania']."</td>".
-                                       "<td>".strtoupper($usuario['sVIN'])."</td>". 
-                                       "<td class=\"text-center\" style=\"$color_action\">".$action."</td>".
-                                       "<td class=\"text-center\">".$usuario['dFechaIngreso']."</td>". 
+                                        <td>".$items['iConsecutivo']."</td>".
+                                       "<td>".$redlist_icon.$items['sNombreCompania']."</td>".
+                                       "<td>".$detalle."</td>". 
+                                       "<td class=\"text-center\">".$action."</td>".
+                                       "<td class=\"text-center\">".$items['dFechaIngreso']."</td>". 
                                        "<td class=\"text-center\">".$estado."</td>".                                                                                                                                                                                                                       
                                        "<td> $btn_confirm</td></tr>";
                  }else{                                                                                                                                                                                                        
@@ -864,34 +874,43 @@
       $Emails    = get_email_data($iConsecutivo); 
       $count     = count($Emails);
       $htmlTabla = "";
-      
-      for($x=0;$x < $count;$x++){
-          if($Emails[$x]['html']!= ""){
-              $htmlTabla  .= "<table style=\"font-size:12px;border:1px solid #dedede;border-radius:3px;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">";
-              $htmlTabla  .= "<tr><td><h3 style=\"color:#6191df;\">E-mail ".($x+1)."</h3></td></tr>"; 
-              $htmlTabla  .= "<tr><td><b style=\"display: inline-block;width: 80px;\">Subject: </b>".$Emails[$x]['subject']."</td></tr>";
-              $htmlTabla  .= "<tr><td><b style=\"display: inline-block;width: 80px;\">To: </b>(".$Emails[$x]['broker'].") - ".$Emails[$x]['emails']."</td></tr>"; 
-              $htmlTabla .= "<tr><td><hr></td></tr>"; 
-              $htmlTabla .= "<tr><td>".$Emails[$x]['html']."</td></tr>"; 
-              
-              //Atachments:
-              $files = $Emails[$x]['files'];
-              if($files != ""){
-                  $htmlTabla .= "<tr><td>".
-                                "<table style=\"font-size:12px;border-top:1px solid #dedede;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">";
-                  $htmlTabla .= "<tr><td colspan=\"100%;\"><h3>Attachments</h3><td></tr>";
-                  $htmlTabla .= "<tr>".
-                                "<td>".$files['name']."</td>".
-                                "<td>".$files['type']."</td>".
-                                "<td>".$files['size']."</td>". 
-                                "<td>".
-                                   "<div class=\"btn-icon edit btn-left\" title=\"Open file in a new window\" onclick=\"window.open('open_pdf.php?idfile=".$files['id']."&type=endoso');\"><i class=\"fa fa-external-link\"></i><span></span></div>". 
-                                "</td></tr>";
-                  $htmlTabla .= "</table></td></tr>";
-              }
-              $htmlTabla  .= "</table>";
-          } 
+     
+      if($Emails['error'] != "0"){
+          $htmlTabla.= "<table style=\"font-size:12px;border:1px solid #dedede;border-radius:3px;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">";
+          $htmlTabla.= "<tr><td><hr></td></tr>"; 
+          $htmlTabla.= "<tr><td style=\"text-align:center;\">".$Emails['error']."</td></tr>";
+          $htmlTabla.= "</table>";
       }
+      else{
+          for($x=0;$x < $count;$x++){
+              if($Emails[$x]['html']!= ""){
+                  $htmlTabla  .= "<table style=\"font-size:12px;border:1px solid #dedede;border-radius:3px;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">";
+                  $htmlTabla  .= "<tr><td><h3 style=\"color:#6191df;\">E-mail ".($x+1)."</h3></td></tr>"; 
+                  $htmlTabla  .= "<tr><td><b style=\"display: inline-block;width: 80px;\">Subject: </b>".$Emails[$x]['subject']."</td></tr>";
+                  $htmlTabla  .= "<tr><td><b style=\"display: inline-block;width: 80px;\">To: </b>(".$Emails[$x]['broker'].") - ".$Emails[$x]['emails']."</td></tr>"; 
+                  $htmlTabla .= "<tr><td><hr></td></tr>"; 
+                  $htmlTabla .= "<tr><td>".$Emails[$x]['html']."</td></tr>"; 
+                  
+                  //Atachments:
+                  $files = $Emails[$x]['files'];
+                  if($files != ""){
+                      $htmlTabla .= "<tr><td>".
+                                    "<table style=\"font-size:12px;border-top:1px solid #dedede;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">";
+                      $htmlTabla .= "<tr><td colspan=\"100%;\"><h3>Attachments</h3><td></tr>";
+                      $htmlTabla .= "<tr>".
+                                    "<td>".$files['name']."</td>".
+                                    "<td>".$files['type']."</td>".
+                                    "<td>".$files['size']."</td>". 
+                                    "<td>".
+                                       "<div class=\"btn-icon edit btn-left\" title=\"Open file in a new window\" onclick=\"window.open('open_pdf.php?idfile=".$files['id']."&type=endoso');\"><i class=\"fa fa-external-link\"></i><span></span></div>". 
+                                    "</td></tr>";
+                      $htmlTabla .= "</table></td></tr>";
+                  }
+                  $htmlTabla  .= "</table>";
+              } 
+          }
+      }
+      
       
       $response = array("msj"=>"$msj","error"=>"$error","tabla" => "$htmlTabla");   
       echo json_encode($response);
@@ -1178,7 +1197,7 @@
           }
           else if($Endoso['iEndosoMultiple'] == 1){
              #CONSULTAR DESCRIPCION DEL ENDOSO: 
-             $query  = "SELECT A.sVIN, A.eAccion,B.iYear, A.iTotalPremiumPD, C.sDescripcion AS sRadio, D.sDescripcion AS sModelo, D.sAlias AS sAliasModelo ".
+             $query  = "SELECT A.sVIN, A.eAccion,B.iYear, A.iTotalPremiumPD, C.sDescripcion AS sRadio, D.sDescripcion AS sModelo, D.sAlias AS sAliasModelo, B.sPeso ".
                        "FROM cb_endoso_unidad      AS A ".
                        "LEFT JOIN ct_unidades      AS B ON A.iConsecutivoUnidad = B.iConsecutivo ".
                        "LEFT JOIN ct_unidad_radio  AS C ON A.iConsecutivoRadio = C.iConsecutivo ".
@@ -1192,13 +1211,6 @@
                  #DECLARAR ARRAY DE DETALLE:
                  $Detalle = mysql_fetch_all($result);
                  $countD  = count($Detalle);
-                 
-                 for($x=0;$x<$countD;$x++){
-                     
-                     $detalle == "" ? $detalle = "$Year $Make $VIN $Radius $Peso " : $detalle .= "<br>"."$Year $Make $VIN $Radius $Peso ";
-                 }
-                 
-                 
                  
                  #CONSULTAR ARCHIVOS:
                  $file = array();
@@ -1229,9 +1241,10 @@
                            "LEFT JOIN ct_tipo_poliza AS D ON B.iTipoPoliza = D.iConsecutivo ".
                            "LEFT JOIN ct_brokers     AS C ON B.iConsecutivoBrokers = C.iConsecutivo ".
                            "WHERE A.iConsecutivoEndoso = '$iConsecutivo' AND C.bEndosoMensual='0'"; 
+                           
                  $result = $conexion->query($query) or die($conexion->error);
                  $rows   = $result->num_rows;
-                 if($rows == 0){$error = '1';$mensaje = "The emails can not be generated.Please check that the endorsement has brokers to send email from this module.";}
+                 if($rows <= 0){$error = '1';$mensaje = "The emails can not be generated.Please check that the endorsement has brokers to send email from this module.";}
                  else{
                     while($data = $result->fetch_assoc()){ 
                         //Variables por Email:
@@ -1244,28 +1257,32 @@
                         $idPoliza   = $data['iConsecutivoPoliza'];
                         $tipoPoliza = get_policy_type($data['iTipoPoliza']); 
                         
-                        #ENDOSO TIPO ADD:
-                        if($Endoso["eAccion"] == 'A'){
-                            
-                            $action  = "Please add the following vehicles from policy number: $ComNombre, $sNumPoliza - $sTipoPoliza.";
-                            $subject = "$ComNombre//$sNumPoliza - $sTipoPoliza. Endorsement application - please add the following vehicles from policy.";
-                            
-                            $bodyData = "<p style=\"color:#000;margin:5px auto; text-align:left;\">".
-                                        "$Year $Make $VIN $Radius $Peso ";
-
-                            #PDAmount
-                            if($data['iTipoPoliza'] == '1' && $Endoso["iPDAmount"] != ''){$bodyData.=$PDAmount;}
-                            
-                            $bodyData .= "</p><br><br>";
-                            
-                            
-                          
-                        }else
-                        if($Endoso["eAccion"] == 'D'){
-                           $action   = "Please delete the following $UnidadTipo from policy number: $ComNombre, $sNumPoliza - $sTipoPoliza";                                                                   
-                           $subject  = "Endorsement application - please delete the following $UnidadTipo from policy number: $ComNombre, $sNumPoliza - $sTipoPoliza";
-                           $bodyData = "<p style=\"color:#000;margin:5px auto; text-align:left;\"> $Year $Make $VIN </p><br><br>";         
-                        }    
+                        #DATOS DEL CORREO:
+                        $action   = "Please do the following in vehicles from policy: $ComNombre, $sNumPoliza - $sTipoPoliza.";
+                        $subject  = "$ComNombre//$sNumPoliza - $sTipoPoliza. Endorsement application - please do the following in vehicles from policy.";
+                        $bodyData = "<p style=\"color:#000;margin:5px auto; text-align:left;\">";
+                        
+                        //Recorremos array de DETALLE:
+                        for($x=0;$x<$countD;$x++){
+                     
+                             if($Detalle[$x]['eAccion'] == "ADDSWAP"){$Detalle[$x]['eAccion'] = "ADD SWAP";}
+                             if($Detalle[$x]['eAccion'] == "DELETESWAP"){$Detalle[$x]['eAccion'] = "DELETE SWAP";}
+                             
+                             $Acti = $Detalle[$x]['eAccion'];
+                             $Year = " ".$Detalle[$x]['iYear'];
+                             $Detalle[$x]['sAliasModelo'] != '' ? $Make = " ".$Detalle[$x]['sAliasModelo'] : $Make = " ".$Detalle[$x]['sModelo']; 
+                             $VIN  = " ".$Detalle[$x]['sVIN'];
+                             $Detalle[$x]['sRadio'] !=  '' ? $Radius = " ".$Detalle[$x]['sRadio'] : $Radius = "";
+                             $Peso = " ".$Detalle['sPeso'];
+                             
+                         
+                             $detalle == "" ? $detalle = $Acti.$Year.$Make.$VIN.$Radius.$Peso : $detalle .= "<br>".$Acti.$Year.$Make.$VIN.$Radius.$Peso;
+                             
+                             if($data['iTipoPoliza'] == '1' && $Detalle[$x]["iTotalPremiumPD"] > 0){$detalle .= number_format($Detalle[$x]["iTotalPremiumPD"],2,'.','');}
+                        }
+                        
+                        $bodyData .= $detalle;
+                        $bodyData .= "</p><br><br>";
                         
                         $htmlEmail = "<table style=\"font-size:12px;border:1px solid #6191df;border-radius:3px;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">".
                                      "<tr><td><h2 style=\"color:#313131;text-transform: uppercase; text-align:center;\">Endorsement application from Solo-Trucking Insurance</h2></td></tr>".
@@ -1305,7 +1322,7 @@
                  
              }
           }
-      
+   
       $error != "" ? $Emails['error'] = $mensaje : $Emails['error'] = "0";
       $conexion->close(); 
       return $Emails;
