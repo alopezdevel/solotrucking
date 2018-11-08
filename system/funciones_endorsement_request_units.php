@@ -81,7 +81,8 @@
                          case 'A': 
                             $estado      = 'APPROVED<br><span style="font-size:11px!important;">Your endorsement has been approved successfully.</span>';
                             $class       = "class = \"green\"";
-                            $btn_confirm = "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$items['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>"; 
+                            $btn_confirm = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of endorsement\"><i class=\"fa fa-pencil-square-o\"></i></div>";
+                            $btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$items['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>"; 
                          break;
                          case 'D': 
                             $estado      = 'CANCELED<br><span style="font-size:11px!important;">Your endorsement has been canceled, please see the reasons on the edit button.</span>';
@@ -451,11 +452,12 @@
          array_push($campoCatalogo ,"sIP"); array_push($valorCatalogo,$sIP); 
          array_push($campoCatalogo ,"eModoIngreso"); array_push($valorCatalogo,"ENDORSEMENT"); 
          
-         $query   = "INSERT INTO ct_unidades ((".implode(",",$campoCatalogo).") VALUES ('".implode("','",$valorCatalogo)."')";
+         $query   = "INSERT INTO ct_unidades (".implode(",",$campoCatalogo).") VALUES ('".implode("','",$valorCatalogo)."')";
          $success = $conexion->query($query);
          if($success){
              $iConsecutivoUnidad = $conexion->insert_id;
-             $_POST['iConsecutivoUnidad'] = $iConsecutivoUnidad;
+             array_push($campoDetalle ,"iConsecutivoUnidad");
+             array_push($valorDetalle, $iConsecutivoUnidad);
          }
          else{$mensaje = "Error: The data of unit has not been saved successfully, please try again.";$error = "1";}
       
@@ -1043,7 +1045,15 @@
                 $mail->Username   = "customerservice@solo-trucking.com";  // GMAIL username
                 $mail->Password   = "SL641404tK"; 
                 
-                $mail->SetFrom('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');
+                #VERIFICAR SERVIDOR DONDE SE ENVIAN CORREOS:
+                if($_SERVER["HTTP_HOST"]=="stdev.websolutionsac.com"){
+                  $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
+                  $mail->Password   = "SL09100242";  
+                }else if($_SERVER["HTTP_HOST"] == "solotrucking.laredo2.net"){
+                  $mail->Username   = "customerservice@solo-trucking.com";  // GMAIL username
+                  $mail->Password   = "SL641404tK";   
+                }
+                
                 $mail->AddReplyTo('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance'); 
                 $mail->AddCC('systemsupport@solo-trucking.com','System Support Solo-Trucking Insurance');
                 
@@ -1327,8 +1337,8 @@
                         #DATOS DEL CORREO:
                         $action   = "Please do the following in vehicles from policy: $ComNombre, $sNumPoliza - $sTipoPoliza.";
                         $subject  = "$ComNombre//$sNumPoliza - $sTipoPoliza. Endorsement application - please do the following in vehicles from policy.";
-                        $bodyData = "<p style=\"color:#000;margin:5px auto; text-align:left;\">";
-                        
+                        $bodyData = "<table cellspacing=\"0\" cellpadding=\"0\" style=\"color:#000;margin:5px auto; text-align:left;float:left;min-width:300px;\">";
+                        $detalle  = "";
                         //Recorremos array de DETALLE:
                         for($x=0;$x<$countD;$x++){
                      
@@ -1342,19 +1352,26 @@
                              $Detalle[$x]['sRadio'] !=  '' ? $Radius = " ".$Detalle[$x]['sRadio'] : $Radius = "";
                              $Peso = " ".$Detalle['sPeso'];
                              
-                         
-                             $detalle == "" ? $detalle = $Acti.$Year.$Make.$VIN.$Radius.$Peso : $detalle .= "<br>".$Acti.$Year.$Make.$VIN.$Radius.$Peso;
+                             $data['iTipoPoliza'] == '1' && $Detalle[$x]["iTotalPremiumPD"] > 0 ? $PDAmount = number_format($Detalle[$x]["iTotalPremiumPD"],2,'.','') : $PDAmount = "";
                              
-                             if($data['iTipoPoliza'] == '1' && $Detalle[$x]["iTotalPremiumPD"] > 0){$detalle .= number_format($Detalle[$x]["iTotalPremiumPD"],2,'.','');}
+                             $detalle .= "<tr>";
+                             $detalle .= "<td style=\"padding:1px 3px;\">$Acti</td>";
+                             $detalle .= "<td style=\"padding:1px 3px;\">$Year</td>";
+                             $detalle .= "<td style=\"padding:1px 3px;\">$Make</td>";
+                             $detalle .= "<td style=\"padding:1px 3px;\">$VIN</td>";
+                             $detalle .= "<td style=\"padding:1px 3px;\">$Radius</td>";
+                             $detalle .= "<td style=\"padding:1px 3px;\">$Peso</td>";
+                             $detalle .= "<td style=\"padding:1px 3px;\">$PDAmount</td>";
+                             $detalle .= "</tr>";
                         }
-                        
-                        $bodyData .= $detalle;
+                     
+                        $bodyData .= $detalle."</table>";
                         $bodyData .= "</p><br><br>";
                         
                         $htmlEmail = "<table style=\"font-size:12px;border:1px solid #6191df;border-radius:3px;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">".
                                      "<tr><td><h2 style=\"color:#313131;text-transform: uppercase; text-align:center;\">Endorsement application from Solo-Trucking Insurance</h2></td></tr>".
-                                     "<tr><td><p style=\"color:#000;margin:5px auto; text-align:left;\">$action</p><br><br></td></tr>".
-                                     "<tr><td>$bodyData</td></tr>".
+                                     "<tr><td><p style=\"color:#000;margin:5px auto; text-align:left;\">$action</p><br></td></tr>".
+                                     "<tr><td style=\"text-align:left;\">$bodyData</td></tr>".
                                      "<tr><td><p style=\"color:#010101;margin:5px auto 10px; text-align:left;font-size:11px;\">Please reply this email to the account:<a href=\"mailto:customerservice@solo-trucking.com\"> customerservice@solo-trucking.com</a></p></td></tr>". 
                                      "<tr><td><p style=\"color:#858585;margin:5px auto; text-align:left;font-size:10px;\">e-mail sent from Solo-trucking Insurance System.</p></td></tr>".
                                      "</table>";
@@ -1553,18 +1570,18 @@
           }
           else if($data['iEndosoMultiple']==1){
               //Consultamos las unidades relacionadas al endoso:
-              $query  = "SELECT * FROM cb_endoso_unidad WHERE iConsecutivoEndoso = '$iConsecutivoEndoso' ";  
+              $query  = "SELECT * FROM cb_endoso_unidad WHERE iConsecutivoEndoso = '$iConsecutivoEndoso' "; 
               $result = $conexion->query($query); 
               $rows   = $result->num_rows; 
               if($rows > 0){
                   //Recorremos resultado:
-                  while($item = $result->fetch_assoc()){
+                  while ($item = $result->fetch_assoc()) { 
                       //Tomamos variables:
                       $eAccion   = $item['eAccion'];
+                      echo $eAccion;
                       $idDetalle = $item['iConsecutivoUnidad']; 
-                  
                       //Revisamos Action:
-                      if($eAccion == "A"){
+                      if($eAccion == "ADD" || $eAccion == "ADDSWAP"){
                           
                          $iRadio   = $item['iConsecutivoRadio'];
                          $iTotalPD = $item['iTotalPremiumPD'];
@@ -1578,7 +1595,7 @@
                          if(!($success)){$transaccion_exitosa = false;} 
                         
                       }
-                      else if($eAccion == "D"){
+                      if($eAccion == "DELETE" || $eAccion == "DELETESWAP"){
                           //Borramos de la poliza la unidad:
                           $query   = "DELETE FROM cb_poliza_unidad WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoUnidad='$idDetalle'";
                           $success = $conexion->query($query); 
@@ -1588,8 +1605,8 @@
                               $query = "SELECT COUNT(A.iConsecutivo) AS total ".
                                        "FROM ct_unidades AS A INNER JOIN cb_poliza_unidad AS B ON A.iConsecutivo = B.iConsecutivoUnidad ".
                                        "WHERE A.iConsecutivo = '$idDetalle'";
-                              $result= $conexion->query($query);
-                              $valid = $result->fetch_assoc();
+                              $r     = $conexion->query($query);
+                              $valid = $r->fetch_assoc();
                               $valid['total'] > 0 ? $iElimina = false : $iElimina = true;
                               
                               if($iElimina){
@@ -1601,6 +1618,7 @@
                       }
                        
                   }
+                  exit;
               }
               else{$transaccion_exitosa = false;}
           }
