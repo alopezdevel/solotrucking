@@ -1332,10 +1332,12 @@
                         $sBrokerName= $data['sBrokerName'];
                         $sTipoPoliza= $data['sTipoPoliza'];
                         $idPoliza   = $data['iConsecutivoPoliza'];
-                        $tipoPoliza = get_policy_type($data['iTipoPoliza']); 
+                        $tipoPoliza = get_policy_type($data['iTipoPoliza']);
+                        
+                        $data['sMensajeEmail'] != "" ?  $action = $data['sMensajeEmail'] : $action = "Please do the following in vehicles from policy: ";
                         
                         #DATOS DEL CORREO:
-                        $action   = "Please do the following in vehicles from policy: $ComNombre, $sNumPoliza - $sTipoPoliza.";
+                        $action   = $action."$ComNombre, $sNumPoliza - $sTipoPoliza.";
                         $subject  = "$ComNombre//$sNumPoliza - $sTipoPoliza. Endorsement application - please do the following in vehicles from policy.";
                         $bodyData = "<table cellspacing=\"0\" cellpadding=\"0\" style=\"color:#000;margin:5px auto; text-align:left;float:left;min-width:300px;\">";
                         $detalle  = "";

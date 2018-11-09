@@ -198,7 +198,7 @@
                 $(fn_endorsement.data_grid + " tbody td .btn_edit").bind("click",function(){
                     var clave    = $(this).parent().parent().find("td:eq(0)").html();
                     var company  = $(this).parent().parent().find("td:eq(1)").text(); 
-                    $('#endorsements_edit_form .p-header h2').empty().text('Endorsement request from ' + company + ': E#' + clave);
+                    $('#endorsements_edit_form .p-header h2').empty().text('Endorsement / ' + company + ': ID# ' + clave);
                     fn_endorsement.detalle.add();
                     fn_endorsement.get_data(clave);
               });  
@@ -537,6 +537,8 @@
             edit_estatus : function(){
                 $(fn_endorsement.data_grid + " tbody .btn_edit_estatus").bind("click",function(){
                    var clave    = $(this).parent().parent().find("td:eq(0)").html();
+                    var company = $(this).parent().parent().find("td:eq(1)").text(); 
+                    $('#form_estatus .p-header h2').empty().text('Endorsements / ' + company + ': ID# ' + clave);
                    $.ajax({             
                         type:"POST", 
                         url:"funciones_endorsement_request_units.php", 
