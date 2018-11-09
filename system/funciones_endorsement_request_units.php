@@ -135,7 +135,7 @@
                                         <td>".$items['iConsecutivo']."</td>".
                                        "<td>".$redlist_icon.$items['sNombreCompania']."</td>".
                                        "<td>".$detalle."</td>". 
-                                       "<td class=\"text-center\">".$action."</td>".
+                                       "<td>".$action."</td>".
                                        "<td class=\"text-center\">".$items['dFechaIngreso']."</td>". 
                                        "<td class=\"text-center\">".$estado."</td>".                                                                                                                                                                                                                       
                                        "<td> $btn_confirm</td></tr>";
@@ -317,7 +317,7 @@
       //GUARDAMOS EL ENDOSO
       if($edit_mode == 'true'){
           //UPDATE
-          $query   = "UPDATE cb_endoso SET dFechaAplicacion='$dFechaApp', sComentarios=$sComentarios, sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha' ".
+          $query   = "UPDATE cb_endoso SET dFechaAplicacion='$dFechaApp', sComentarios=$sComentarios, sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha',iEndosoMultiple='1' ".
                      "WHERE iConsecutivo='$iConsecutivo' AND iConsecutivoCompania='$iConsecutivoCompania'";
           $mensaje = "The data was updated successfully.";
       
@@ -1578,7 +1578,6 @@
                   while ($item = $result->fetch_assoc()) { 
                       //Tomamos variables:
                       $eAccion   = $item['eAccion'];
-                      echo $eAccion;
                       $idDetalle = $item['iConsecutivoUnidad']; 
                       //Revisamos Action:
                       if($eAccion == "ADD" || $eAccion == "ADDSWAP"){
@@ -1618,7 +1617,6 @@
                       }
                        
                   }
-                  exit;
               }
               else{$transaccion_exitosa = false;}
           }

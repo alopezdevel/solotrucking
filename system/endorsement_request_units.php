@@ -553,7 +553,7 @@
                                 else{$('#form_estatus #iConsecutivoEndoso').val(clave);}
                                 $('#form_estatus .company_policies tbody').empty().append(data.policies_information);
                                 if($('#form_estatus textarea').val() == ""){
-                                    var mensaje_default = "Please create new endorsement for the following insured.";
+                                    var mensaje_default = "Please do the following in vehicles from policy:";
                                     $('#form_estatus textarea').val(mensaje_default);
                                 }
                                 fn_popups.resaltar_ventana('form_estatus');   
