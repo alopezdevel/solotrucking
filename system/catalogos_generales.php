@@ -229,8 +229,9 @@
     echo json_encode($response);
   } 
   function get_years(){
-     $actual_year = date("Y"); 
-     $htmlTabla .= "<option value=\"\">Select an option...</option>";
+      
+     $actual_year = date("Y")+1; 
+     $htmlTabla  .= "<option value=\"\">Select an option...</option>";
      for($actual_year+1; 1980<=$actual_year; $actual_year--) {
         $htmlTabla .= "<option value=\"".$actual_year."\">".$actual_year."</option>";
      }   

@@ -77,11 +77,8 @@
             sort : "DESC",
             orden : "A.dFechaAplicacion",
             init : function(){
-                
                 $('.num').keydown(fn_solotrucking.inputnumero); 
                 $('.decimals').keydown(fn_solotrucking.inputdecimals);
-                $('.hora').mask('00:00');
-                
                 //Filtrado con la tecla enter
                 $(fn_endorsement.data_grid + ' #grid-head1 input').keyup(function(event){
                     if (event.keyCode == '13') {
@@ -121,7 +118,7 @@
                     async : false,
                     dataType : "json",
                     success : function(data){                               
-                        $("#frm_unit_information [name=iModelo]").empty().append(data.select);
+                        $("#frm_unit_information #iModelo").empty().append(data.select);
                          
                     }
                 });
@@ -133,7 +130,7 @@
                     async : false,
                     dataType : "json",
                     success : function(data){                               
-                        $("#frm_unit_information [name=iConsecutivoRadio]").empty().append(data.select);
+                        $("#frm_unit_information #iConsecutivoRadio").empty().append(data.select);
                          
                     }
                 });
@@ -145,7 +142,7 @@
                     async : false,
                     dataType : "json",
                     success : function(data){                               
-                        $("#frm_unit_information [name=iYear]").empty().append(data.select);
+                        $("#frm_unit_information #iYear").empty().append(data.select);
                          
                     }
                 });
@@ -182,65 +179,51 @@
                $('#endorsements_edit_form input, #endorsements_edit_form select, #endorsements_edit_form textarea').val('');
                $("#frm_endorsement_information .required-field").removeClass("error");
                $("#endorsements_edit_form #iConsecutivoCompania").removeClass('readonly').removeProp('disabled');
+               $("#endorsements_edit_form #eAccion").removeClass('readonly').removeProp('disabled');
                $("#files_datagrid, #info_policies").hide();//ocultar grid de archivos...
                $("#info_policies tbody").empty();
-               fn_solotrucking.get_date("#dFechaAplicacion.fecha");
-               fn_solotrucking.get_time("#dFechaAplicacionHora");
-               //DETALLE:
-               fn_endorsement.detalle.iConsecutivoEndoso = "";
-               fn_endorsement.detalle.pd_valid = false;
-               fn_endorsement.detalle.add();
-               fn_endorsement.detalle.fillgrid();
-                
                fn_popups.resaltar_ventana('endorsements_edit_form'); 
             },
             edit : function (){
                 $(fn_endorsement.data_grid + " tbody td .btn_edit").bind("click",function(){
                     var clave    = $(this).parent().parent().find("td:eq(0)").html();
                     var company  = $(this).parent().parent().find("td:eq(1)").text(); 
-                    $('#endorsements_edit_form .p-header h2').empty().text('Endorsement / ' + company + ': ID# ' + clave);
-                    fn_endorsement.detalle.add();
-                    fn_endorsement.get_data(clave);
+                    $('#endorsements_edit_form .p-header h2').empty().text('Endorsement request from ' + company + ': E#' + clave);
+                    $.post("funciones_endorsement_request_units.php",
+                    {
+                        accion:"get_endorsement", 
+                        clave: clave,
+                        domroot : "endorsements_edit_form"
+                    },
+                    function(data){
+                        if(data.error == '0'){
+                           $("#files_datagrid, #info_policies").show();//mostrar grid de archivos... 
+                           $('#endorsements_edit_form input, #endorsements_edit_form select, #endorsements_edit_form textarea').val('');
+                           $("#frm_endorsement_information .required-field").removeClass("error");
+                           $("#endorsements_edit_form #info_policies table tbody").empty().append(data.policies);   
+                           eval(data.fields); 
+                           fn_endorsement.get_unidades();
+                           fn_endorsement.get_policies();
+                           eval(data.policies);
+                           $('#endorsements_edit_form #sComentarios').val(data.sComentarios);
+                           //if(data.files != ''){$('#endorsements_edit_form .data_files').empty().append(data.files);}  
+                           $('#frm_unit_information').show();
+                           
+                           fn_endorsement.valid_action();
+                           fn_endorsement.files.iConsecutivoEndoso = $('#endorsements_edit_form input[name=iConsecutivo]').val();
+                           fn_endorsement.files.fillgrid();
+                           
+                           //CAMPOS SOLO INHABILITADOS:
+                           $("#endorsements_edit_form #iConsecutivoCompania").addClass('readonly').prop('disabled','disabled');
+                           $("#endorsements_edit_form #eAccion").addClass('readonly').prop('disabled','disabled');
+                           
+                           fn_popups.resaltar_ventana('endorsements_edit_form');
+                            
+                        }else{
+                           fn_solotrucking.mensaje(data.msj);  
+                        }       
+                    },"json"); 
               });  
-            },
-            get_data : function(clave,ghost_mode){
-               if(ghost_mode == ""){ghost_mode = false;} 
-               $.post("funciones_endorsement_request_units.php",{
-                    accion:"get_endorsement", 
-                    clave: clave,
-                    domroot : "endorsements_edit_form"
-               },
-               function(data){
-                    if(data.error == '0'){
-                       $("#files_datagrid, #info_policies").show();//mostrar grid de archivos... 
-                       $('#endorsements_edit_form .general_information input, #endorsements_edit_form .general_information select, #endorsements_edit_form .general_information textarea').val('');
-                       $("#frm_endorsement_information .required-field").removeClass("error");
-                       $("#endorsements_edit_form #info_policies table tbody").empty().append(data.policies);   
-                       eval(data.fields); 
-                       fn_endorsement.get_unidades();
-                       fn_endorsement.get_policies();
-                       eval(data.policies);
-                       $('#endorsements_edit_form #sComentarios').val(data.sComentarios);
-    
-                       //CONSULTAR ARCHIVOS:
-                       fn_endorsement.files.iConsecutivoEndoso = $('#endorsements_edit_form input[name=iConsecutivo]').val();
-                       fn_endorsement.files.fillgrid();
-                       
-                       //CONSULTAR DETALLE:
-                       fn_endorsement.detalle.iConsecutivoEndoso = $('#endorsements_edit_form input[name=iConsecutivo]').val();
-                       fn_endorsement.detalle.fillgrid();
-                       
-                       //CAMPOS SOLO INHABILITADOS:
-                       $("#endorsements_edit_form #iConsecutivoCompania").addClass('readonly').prop('disabled','disabled');
-                       
-                       if(ghost_mode){fn_endorsement.detalle.save();}
-                       
-                       fn_popups.resaltar_ventana('endorsements_edit_form');
-                        
-                    }else{
-                       fn_solotrucking.mensaje(data.msj);  
-                    }       
-               },"json");  
             },
             firstPage : function(){
                 if($(fn_endorsement.data_grid+" #pagina_actual").val() != "1"){
@@ -299,32 +282,32 @@
                     if($(fn_endorsement.data_grid+" .flt_status").val() != ""){ fn_endorsement.filtro += "A.eStatus|"+$(fn_endorsement.data_grid+" .flt_status").val()+","}
                     fn_endorsement.fillgrid();
            },
-            save : function(ghost_mode){
+            save : function(){
                
-               if(ghost_mode == ""){ghost_mode = false;}
-                
-                var valid = true;
-                var msj   = "";
-                $("#frm_endorsement_information .general_information .required-field").removeClass("error");
-                
-                //Revisamos polizas seleccionadas:
-                var polizas_list = "";
-                $("#info_policies tbody input:checkbox").each(function(){
-                       if($(this).prop('checked')){
-                          if(polizas_list == ""){polizas_list = $(this).val();}else{polizas_list+='|'+$(this).val();} 
-                       }
-                });
-                if(polizas_list == ""){valid = false; msj = "<li>You must select at least one policy.</li>";}
-                   
-                //Revisamos campos obligatorios: (SOLO LOS DEL ENDOSO GENERALES)
-                $("#frm_endorsement_information .general_information .required-field").each(function(){
+               var valid = true;
+               var msj   = "";
+               $("#frm_endorsement_information .required-field").removeClass("error");
+               
+               //Revisamos polizas seleccionadas:
+               var polizas_list = "";
+               $("#info_policies tbody input:checkbox").each(function(){
+                   if($(this).prop('checked')){
+                      if(polizas_list == ""){polizas_list = $(this).val();}else{polizas_list+='|'+$(this).val();} 
+                   }
+               });
+               if(polizas_list == ""){valid = false; msj = "<li>You must select at least one policy.</li>";}
+               
+               //Revisamos campos obligatorios:
+               $("#frm_endorsement_information .required-field").each(function(){
                    if($(this).val() == ""){valid = false; $(this).addClass('error');msj = "<li>You must capture the required fields.</li>";}
-                });
+               });
                
-                if(valid){ 
-                  if($('#endorsements_edit_form .general_information #iConsecutivo').val() != ""){struct_data_post.edit_mode = "true";}else{struct_data_post.edit_mode = "false";}
+               if(valid){ 
+                  /*msg = "<p style=\"text-align:center;\">Updating endorsement data and send an e-mail to company, please wait...<br><img src=\"images/ajax-loader.gif\" alt=\"ajax-loader.gif\" style=\"margin-top:10px;\"><br></p>";
+                  $('#Wait').empty().append(msg).dialog('open'); */
+                  if($('#endorsements_edit_form #iConsecutivo').val() != ""){struct_data_post.edit_mode = "true";}else{struct_data_post.edit_mode = "false";}
                   struct_data_post.action  = "save_endorsement";
-                  struct_data_post.domroot = ".general_information";
+                  struct_data_post.domroot = "#frm_endorsement_information";
                   $.ajax({             
                     type  : "POST", 
                     url   : "funciones_endorsement_request_units.php", 
@@ -334,20 +317,16 @@
                     success  : function(data){                               
                         switch(data.error){ 
                          case '0':
-                            if(!(ghost_mode)){fn_solotrucking.mensaje(data.msj);}
+                            fn_solotrucking.mensaje(data.msj);
                             fn_endorsement.fillgrid();
-                            
-                            if($(fn_endorsement.detalle.form+" input[name=sVIN]").val()){ghost_mode = true;}
-                            
-                            fn_endorsement.get_data(data.iConsecutivo,ghost_mode);
+                            fn_popups.cerrar_ventana('endorsements_edit_form');
                          break;
                          case '1': fn_solotrucking.mensaje(data.msj); break;
                         }
                     }
                   }); 
-                }
-                else{fn_solotrucking.mensaje('<p>Please check the following::</p><ul>'+msj+'</ul>');}     
-                
+               }
+               else{fn_solotrucking.mensaje('<p>Please check the following::</p><ul>'+msj+'</ul>');} 
             },
             files : {
                pagina_actual : "",
@@ -513,6 +492,19 @@
                 }
                 
             },
+            set_unidades : function(){
+                var data = $("#sUnitTrailer").val();
+                var pipe = data.indexOf("|");
+                if(pipe > 0){
+                    var data = data.split("|");
+                    $("#frm_unit_information #sUnitTrailer").val(data[0].trim());//VIN
+                    $("#frm_unit_information #sTipo").val(data[1].trim());//Tipo
+                    $("#frm_unit_information #iYear").val(data[2].trim());//Year
+                    $("#frm_unit_information #iConsecutivoRadio").val(data[3].trim());//Radio
+                    $("#frm_unit_information #iModelo").val(data[4].trim());//iModelo
+                    $("#frm_unit_information #iConsecutivoUnidad").val(data[5].trim());//idUnidad
+                }
+            },
             get_policies : function(){
               if($("#frm_endorsement_information #iConsecutivoCompania").val() != ""){  
                   $.ajax({             
@@ -523,9 +515,13 @@
                         dataType : "json",
                         success : function(data){                               
                             if(data.error == '0'){
-                                //Si tiene POLIZA DE PD:
-                                if(data.pd_data == 'true'){fn_endorsement.detalle.pd_valid = true;}
-                                else{fn_endorsement.detalle.pd_valid = false;}
+                                if(data.pd_data == 'true'){
+                                    $("#endorsements_edit_form .pd_information").show();
+                                }
+                                else{
+                                    $("#endorsements_edit_form .pd_information").hide();
+                                    $("#endorsements_edit_form :input[name=iPDAmount]").prop('readonly','readonly').addClass('readonly');
+                                }
                                 $("#info_policies").show();//mostrar grid de archivos... 
                                 $("#info_policies table tbody").empty().append(data.policies_information);
                             }
@@ -533,12 +529,19 @@
                   });
               }   
             }, 
+            valid_action : function(){
+                var action = $("#frm_endorsement_information #eAccion").val();
+                $('#endorsements_edit_form .delete_field, #endorsements_edit_form .add_field, #endorsements_edit_form .pd_information').hide();
+                if(action == 'D'){
+                    $('#endorsements_edit_form .delete_field').show();
+                }else if(action == 'A'){
+                    $('#endorsements_edit_form .add_field, #endorsements_edit_form .pd_information').show();
+                }
+            }, 
             //PREVIEW AND SEND EMAILS:
             edit_estatus : function(){
                 $(fn_endorsement.data_grid + " tbody .btn_edit_estatus").bind("click",function(){
                    var clave    = $(this).parent().parent().find("td:eq(0)").html();
-                    var company = $(this).parent().parent().find("td:eq(1)").text(); 
-                    $('#form_estatus .p-header h2').empty().text('Endorsements / ' + company + ': ID# ' + clave);
                    $.ajax({             
                         type:"POST", 
                         url:"funciones_endorsement_request_units.php", 
@@ -555,7 +558,7 @@
                                 else{$('#form_estatus #iConsecutivoEndoso').val(clave);}
                                 $('#form_estatus .company_policies tbody').empty().append(data.policies_information);
                                 if($('#form_estatus textarea').val() == ""){
-                                    var mensaje_default = "Please do the following in vehicles from policy:";
+                                    var mensaje_default = "Please create new endorsement for the following insured.";
                                     $('#form_estatus textarea').val(mensaje_default);
                                 }
                                 fn_popups.resaltar_ventana('form_estatus');   
@@ -648,7 +651,7 @@
                         if(data.error == '0'){
                               fn_solotrucking.mensaje(data.msj);
                               fn_endorsement.fillgrid();
-                              fn_popups.cerrar_ventana('form_estatus');
+                              //fn_popups.cerrar_ventana('form_estatus');
                         }
                         
                     }
@@ -720,187 +723,6 @@
                         }
                      });   
                   }else{fn_solotrucking.mensaje('Please first select a status before you press save.');$('#form_change_estatus #eStatus').addClass('error');} 
-            },
-            detalle : {
-                form : "#frm_unit_information",
-                data_grid : "#unidades_datagrid",
-                pd_valid : false,
-                iConsecutivoEndoso : "",
-                valid_action : function(){
-                    var action = $(fn_endorsement.detalle.form+" select[name=eAccion]").val();
-                    
-                    $(fn_endorsement.detalle.form+' .delete_field, '+fn_endorsement.detalle.form+' .add_field').hide();
-                    $(fn_endorsement.detalle.form+" :input[name=iTotalPremiumPD]").prop('readonly','readonly').addClass('readonly');
-                    
-                    if(action == 'DELETE' || action == 'DELETESWAP'){
-                        $(fn_endorsement.detalle.form+' .delete_field').show();
-                    }else if(action == 'ADD' || action == 'ADDSWAP'){
-                        $(fn_endorsement.detalle.form+' .add_field').show();
-                        if(fn_endorsement.detalle.pd_valid){$(fn_endorsement.detalle.form+" :input[name=iTotalPremiumPD]").removeProp('readonly').removeClass('readonly');}
-                    }
-                },  
-                add : function(){
-                   $(fn_endorsement.detalle.form+" .required-field, "+fn_endorsement.detalle.form+" .required-field-add").removeClass("error");
-                   $(fn_endorsement.detalle.form+" input, "+fn_endorsement.detalle.form+" select").val("");
-                   fn_endorsement.detalle.valid_action(); 
-                },
-                save: function(){
-                    //VALIDAR SI EL ENDOSO YA SE GUARDO:
-                    if(fn_endorsement.detalle.iConsecutivoEndoso == ""){
-                         fn_endorsement.save(true);
-                    }
-                    else{
-                        var valid = true;
-                        var msj   = "";
-                        $(fn_endorsement.detalle.form+" .required-field, "+fn_endorsement.detalle.form+" .required-field-add").removeClass("error"); 
-                        
-                        //Asignar Compañia:
-                        var company = $("#frm_endorsement_information .general_information [name=iConsecutivoCompania]").val();
-                        if(company != ""){
-                           $(fn_endorsement.detalle.form+" input[name=iConsecutivoCompania]").val(company); 
-                        }else{
-                           valid = false; $(this).addClass('error');msj = "<li>You must select a company first.</li>"; 
-                        }
-                        
-                        var endoso = $("#frm_endorsement_information .general_information [name=iConsecutivo]").val();
-                        $(fn_endorsement.detalle.form+" input[name=iConsecutivoEndoso]").val(endoso);
-                        
-                        //Revisamos campos obligatorios: (SOLO LOS DEL ENDOSO GENERALES)
-                        $(fn_endorsement.detalle.form+" .required-field").each(function(){
-                           if($(this).val() == ""){valid = false; $(this).addClass('error');msj = "<li>You must capture the required fields.</li>";}
-                        });
-                        
-                        //Validar ancho del sVIN MAX 18 
-                        if($(fn_endorsement.detalle.form+" [name=sVIN]").val().length > 18){
-                           valid = false; 
-                           $(this).addClass('error');
-                           msj = "<li>The maximum number of characters for the VIN is 18.</li>"; 
-                        }
-                        
-                        //Validar dependiendo la accion:
-                        var action = $(fn_endorsement.detalle.form+" select[name=eAccion]").val();
-                        if(action == 'ADD' || action == 'ADDSWAP'){
-                           $(fn_endorsement.detalle.form+" .required-field-add").each(function(){
-                                var name = $(this).prop('name');
-                                if((name == 'iTotalPremiumPD' && fn_endorsement.detalle.pd_valid && $(this).val() == "") || (name != "iTotalPremiumPD" && $(this).val() == "")){
-                                   valid = false; $(this).addClass('error');msj = "<li>You must capture the required fields for an ADD OR ADD SWAP.</li>"; 
-                                }
-                           }); 
-                        }
-                       
-                       if(valid){
-                              if($(fn_endorsement.detalle.form+' [name=iConsecutivoUnidad]').val() != ""){struct_data_post_new.edit_mode = "true";}else{struct_data_post_new.edit_mode = "false";}
-                              struct_data_post_new.action  = "unit_save";
-                              struct_data_post_new.domroot = fn_endorsement.detalle.form;
-                              $.ajax({             
-                                type  : "POST", 
-                                url   : "funciones_endorsement_request_units.php", 
-                                data  : struct_data_post_new.parse(),
-                                async : true,
-                                dataType : "json",
-                                success  : function(data){                               
-                                    switch(data.error){ 
-                                     case '0':
-                                        fn_solotrucking.mensaje(data.msj);
-                                        if(data.error == "0"){
-                                           fn_endorsement.detalle.add();
-                                           fn_endorsement.detalle.fillgrid(); 
-                                        }
-                                        
-                                     break;
-                                     case '1': fn_solotrucking.mensaje(data.msj); break;
-                                    }
-                                }
-                              }); 
-                       }
-                       else{fn_solotrucking.mensaje('<p>Please check the following:</p><ul>'+msj+'</ul>');}
-                    }
-                     
-                },
-                fillgrid : function(){
-                    $.ajax({             
-                        type:"POST", 
-                        url:"funciones_endorsement_request_units.php", 
-                        data:{accion:"unit_datagrid","iConsecutivoEndoso":fn_endorsement.detalle.iConsecutivoEndoso},
-                        async : true,
-                        dataType : "json",
-                        success : function(data){                               
-                            $(fn_endorsement.detalle.data_grid+" tbody").empty().append(data.tabla);
-                              fn_endorsement.detalle.edit(); 
-                              fn_endorsement.detalle.borrar(); 
-                        }
-                    });     
-                },
-                set_unidades : function(){
-                    var data = $(fn_endorsement.detalle.form+" #sUnitTrailer").val();
-                    var pipe = data.indexOf("|");
-                    if(pipe > 0){
-                        var data = data.split("|");
-                        $(fn_endorsement.detalle.form+" #sUnitTrailer").val(data[0].trim());//VIN
-                        $(fn_endorsement.detalle.form+" select[name=sTipo]").val(data[1].trim());//Tipo
-                        $(fn_endorsement.detalle.form+" select[name=iYear]").val(data[2].trim());//Year
-                        $(fn_endorsement.detalle.form+" select[name=iConsecutivoRadio]").val(data[3].trim());//Radio
-                        $(fn_endorsement.detalle.form+" select[name=iModelo]").val(data[4].trim());//iModelo
-                        $(fn_endorsement.detalle.form+" input[name=iConsecutivoUnidad]").val(data[5].trim());//idUnidad
-                    }
-                    //Limpiar consecutivo:
-                    else{
-                       $(fn_endorsement.detalle.form+" [name=iConsecutivoUnidad]").val('');
-                    }
-                },
-                edit : function (){
-                    $(fn_endorsement.detalle.data_grid + " tbody td .btn_edit_detalle").bind("click",function(){
-                        var clave = $(this).parent().parent().find("td:eq(0)").prop('id');
-                            clave = clave.split('idUnit_');
-                            clave = clave[1];
-                        
-                        $.ajax({             
-                            type:"POST", 
-                            url:"funciones_endorsement_request_units.php", 
-                            data:{
-                                accion              : "unit_get",
-                                "iConsecutivoEndoso": fn_endorsement.detalle.iConsecutivoEndoso,
-                                "iConsecutivoUnidad": clave,
-                                "domroot"           : fn_endorsement.detalle.form},
-                            async : true,
-                            dataType : "json",
-                            success : function(data){ 
-                                if(data.error == "0"){
-                                   fn_endorsement.detalle.add();
-                                   eval(data.fields);
-                                   fn_endorsement.detalle.valid_action(); 
-                                }else{fn_solotrucking.mensaje(data.msj);}                          
-                                
-                            }
-                        });        
-                  });  
-                },
-                borrar : function (){
-                    $(fn_endorsement.detalle.data_grid + " tbody td .btn_delete_detalle").bind("click",function(){
-                        var clave = $(this).parent().parent().find("td:eq(0)").prop('id');
-                            clave = clave.split('idUnit_');
-                            clave = clave[1];
-                        
-                        $.ajax({             
-                            type:"POST", 
-                            url:"funciones_endorsement_request_units.php", 
-                            data:{
-                                accion              : "unit_delete",
-                                "iConsecutivoEndoso": fn_endorsement.detalle.iConsecutivoEndoso,
-                                "iConsecutivoUnidad": clave,
-                            },
-                            async : true,
-                            dataType : "json",
-                            success : function(data){ 
-                                fn_solotrucking.mensaje(data.msj);
-                                if(data.error == "0"){
-                                   fn_endorsement.detalle.fillgrid();
-                                }                         
-                                
-                            }
-                        });        
-                  });  
-                },
             },
             
     }    
@@ -976,7 +798,7 @@
     </div>
 </div>
 <!-- FORMULARIOS -->
-<div id="endorsements_edit_form" class="popup-form" style="width: 1300px;">
+<div id="endorsements_edit_form" class="popup-form">
     <div class="p-header">
         <h2>ENDORSEMENTS</h2>
         <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('endorsements_edit_form');fn_endorsement.filtraInformacion();"><i class="fa fa-times"></i></div>
@@ -987,7 +809,7 @@
         <form>
             <fieldset id="frm_endorsement_information">
                 <legend>GENERAL DATA</legend>
-                <table style="width:100%" cellpadding="0" cellspacing="0" class="general_information">
+                <table style="width:100%" cellpadding="0" cellspacing="0">
                     <tr>
                     <td colspan="100%">
                         <p class="mensaje_valido">
@@ -1009,58 +831,32 @@
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="100%">
+                        <td>
                             <div class="field_item">
                                 <label>Company <span style="color:#ff0000;">*</span>:</label>  
-                                <select tabindex="1" id="iConsecutivoCompania" onchange="fn_endorsement.get_company_data();"  name="iConsecutivoCompania" class="required-field" style="height: 25px!important;width:100%!important;"><option value="">Select an option...</option></select>
+                                <select id="iConsecutivoCompania" onchange="fn_endorsement.get_company_data();"  name="iConsecutivoCompania" class="required-field" style="height: 25px!important;width: 99%!important;"><option value="">Select an option...</option></select>
                             </div>
                         </td>
-                    </tr>
-                    <tr>
                         <td>
                             <div class="field_item">
-                                <label>Application Date <span style="color:#ff0000;">*</span>:</label> 
-                                <input tabindex="2" id="dFechaAplicacion" name="dFechaAplicacion" class="txt-uppercase fecha required-field" placeholder="mm/dd/yyyy" type="text" style="width: 85%;">
-                            </div>
-                        </td>
-                        <td>
-                        <div class="field_item"> 
-                            <label>Hour <span style="color:#ff0000;">*</span>: <span style="color: #5e8bd4;;">(Please capture the hour in 24/h format)</span></label><br>
-                            <input tabindex="3" id="dFechaAplicacionHora" name="dFechaAplicacionHora" type="text" class="hora required-field" title="Please capture the hour in 24/h format" style="width: 98%;" placeholder="HH:MM">
-                        </div>
+                                <label>Action <span style="color:#ff0000;">*</span>:</label> 
+                                <Select id="eAccion" name"eAccion" class="required-field" onblur="fn_endorsement.valid_action();" style="height: 25px!important;">
+                                    <option value="">Select an option...</option> 
+                                    <option value="A">ADD</option>
+                                    <option value="D">DELETE</option>
+                                </select>
+                            </div> 
                         </td>
                     </tr>
                 </table>
                 <legend>Unit Information</legend>
                 <table id="frm_unit_information" style="width:100%" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td colspan="2">
-                            <div class="field_item">
-                                <input name="iConsecutivoUnidad"   type="hidden" value=""> 
-                                <input name="iConsecutivoCompania" type="hidden" value="">
-                                <input name="iConsecutivoEndoso"   type="hidden" value="">
-                                <label>VIN <span style="color:#ff0000;">*</span>:</label> 
-                                <input tabindex="4" id="sUnitTrailer" name="sVIN" class="txt-uppercase required-field" type="text" placeholder="Write the VIN or system id of the Unit or Trailer" style="width: 98%;" onblur="fn_endorsement.detalle.set_unidades();">
-                            </div>
-                        </td>
-                        <td>
-                        <div class="field_item">
-                            <label>Year <span style="color:#ff0000;">*</span>: </label>
-                            <select tabindex="5" name="iYear" style="width:99%!important;height: 25px!important;" class="required-field"><option value="">Select an option...</option></select> 
-                        </div>
-                        </td>
-                        <td>
-                        <div class="field_item">
-                            <label>Make: </label>
-                            <select tabindex="6" name="iModelo" style="width:99%!important;height: 25px!important;"><option value="">Select an option...</option></select>
-                        </div>
-                        </td>
-                    </tr>
                     <tr>
                         <td>
                         <div class="field_item">
+                            <input id="iConsecutivoUnidad" type="hidden" value="">
                             <label>Type <span style="color:#ff0000;">*</span>: </label>
-                            <select tabindex="7" name="sTipo" style="width:99%!important;height: 25px!important;" class="required-field">
+                            <Select id="sTipo" style="width:99%!important;height: 25px!important;" class="required-field">
                                 <option value="">Select an option...</option>
                                 <option value="UNIT">Unit</option>
                                 <option value="TRAILER">Trailer</option>
@@ -1070,52 +866,46 @@
                         </td>
                         <td>
                         <div class="field_item">
-                            <label>Radius <span style="color:#ff0000;" class="add_field">*</span>: </label>
-                            <select tabindex="8" name="iConsecutivoRadio" style="width:99%!important;height: 25px!important;" class="required-field-add"><option value="">Select an option...</option></select>
+                            <label>Year <span style="color:#ff0000;">*</span>: </label>
+                            <Select id="iYear" style="width:99%!important;height: 25px!important;" class="required-field"><option value="">Select an option...</option></select> 
                         </div>
                         </td>
                         <td>
                         <div class="field_item">
-                            <label>Action <span style="color:#ff0000;">*</span>:</label> 
-                            <select tabindex="9" name="eAccion" class="required-field" onblur="fn_endorsement.detalle.valid_action();" style="height: 25px!important;width: 99%!important;">
-                                <option value="">Select an option...</option> 
-                                <option value="ADD">ADD</option>
-                                <option value="DELETE">DELETE</option>
-                                <option value="ADDSWAP">ADD SWAP</option>
-                                <option value="DELETESWAP">DELETE SWAP</option>
-                            </select>
+                            <label>Make: </label>
+                            <Select id="iModelo" style="width:99%!important;height: 25px!important;"><option value="">Select an option...</option></select>
+                        </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="field_item">
+                                <label>VIN <span style="color:#ff0000;">*</span>:</label> 
+                                <input id="sUnitTrailer" class="txt-uppercase required-field" type="text" placeholder="Write the VIN or system id of the Unit or Trailer" style="width: 97%;" onblur="fn_endorsement.set_unidades();">
+                            </div>
+                        </td>
+                        <td>
+                        <div class="field_item">
+                            <label>Radius <span style="color:#ff0000;" class="add_field">*</span>: </label>
+                            <Select id="iConsecutivoRadio" style="width:99%!important;height: 25px!important;"><option value="">Select an option...</option></select>
                         </div>
                         </td>
                         <!-- only if the company has a PD Policy -->
                         <td>
                         <div class="field_item pd_information">
-                            <label>PD Amount $ <span style="color:#ff0000;" class="add_field">*</span>:</label>
-                            <input tabindex="10" name="iTotalPremiumPD" type="text" class="decimals readonly" readonly="readonly"> 
+                            <label>PD Amount $ <span style="color:#ff0000;">*</span>:</label>
+                            <input id="iPDAmount" name="iPDAmount" type="text" class="decimals readonly" readonly="readonly"> 
                         </div>
                         </td>
                     </tr>
                     <tr>
                     <td colspan="100%">
-                    <table id="unidades_datagrid" class="popup-datagrid" style="width: 100%;margin-top: 10px;margin-bottom: 10px;" cellpadding="0" cellspacing="0">
-                        <thead>
-                            <tr id="grid-head2">
-                                <td class="etiqueta_grid">Action</td>
-                                <td class="etiqueta_grid">Year</td>
-                                <td class="etiqueta_grid">Make</td>
-                                <td class="etiqueta_grid" style="width:150px;">VIN</td>
-                                <td class="etiqueta_grid">Radius</td> 
-                                <td class="etiqueta_grid">Weight</td> 
-                                <td class="etiqueta_grid">Type</td> 
-                                <td class="etiqueta_grid">PD Amount</td> 
-                                <td class="etiqueta_grid" style="width: 120px;text-align: center;">
-                                    <div class="btn-icon edit btn-left" title="Save Vehicle" onclick="fn_endorsement.detalle.save();" style="width: auto!important;"><i class="fa fa-check"></i><span style="padding-left: 5px;font-size: 0.8em;text-transform: uppercase;">Save Vehicle</span></div>
-                                </td>
-                            </tr>
-                        </thead>
-                        <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
-                    </table>
+                    <div class="field_item">
+                        <label>General Comments:</label> 
+                        <textarea id="sComentarios" name ="sComentarios" style="resize:none;height:50px;"></textarea>
+                    </div>
                     </td>
-                    </tr>
+                </tr>
                 </table>
             </fieldset>
             <table style="width: 100%;" cellpadding="0" cellspacing="0">
@@ -1155,14 +945,6 @@
                             </tr>
                         </tfoot>
                     </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="100%" class="general_information">
-                    <div class="field_item">
-                        <label>General Comments:</label> 
-                        <textarea tabindex="9" id="sComentarios" name ="sComentarios" style="resize:none;height:30px!important;"></textarea>
-                    </div>
                     </td>
                 </tr>
             </table> 

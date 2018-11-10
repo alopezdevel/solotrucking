@@ -132,7 +132,7 @@
     include("cn_usuarios.php");
     $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
     $transaccion_exitosa = true;
-    $sql    = "SELECT iConsecutivo,iConsecutivoCompania,iConsecutivoBroker,eStatus,iRatePercent,sComentarios,sEmail,sMensajeEmail,iTipoReporte, DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio,DATE_FORMAT(dFechaFin,'%m/%d/%Y') AS dFechaFin ".
+    $sql    = "SELECT iConsecutivo,iConsecutivoCompania,iConsecutivoBroker,iConsecutivoPoliza, eStatus,iRatePercent,sComentarios,sEmail,sMensajeEmail,iTipoReporte, DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio,DATE_FORMAT(dFechaFin,'%m/%d/%Y') AS dFechaFin ".
               "FROM cb_endoso_mensual WHERE iConsecutivo = '$clave'";
     $result = $conexion->query($sql);
     $items  = $result->num_rows;   
@@ -294,9 +294,9 @@
                     LEFT JOIN ct_polizas AS C ON B.iConsecutivoPoliza = C.iConsecutivo 
                 WHERE
                     A.iConsecutivoCompania = '$iConsecutivoCompania' 
-                    AND C.iConsecutivoBrokers = '$iConsecutivoBroker' 
-                    AND B.eStatus  = 'S'
-                    AND C.iDeleted = '0' $flt_query
+                    AND C.iConsecutivoBrokers = '$iConsecutivoBroker' ".
+                    //AND B.eStatus  = 'S'
+                    "AND C.iDeleted = '0' $flt_query
                     AND B.iConsecutivoPoliza='$iConsecutivoPoliza'
                     AND A.dFechaAplicacion BETWEEN '$fecha_inicial' 
                     AND '$fecha_final'";
@@ -360,7 +360,7 @@
                   "FROM cb_endoso_mensual AS A ".
                   "INNER JOIN cb_endoso_mensual_relacion AS B ON A.iConsecutivo       = B.iConsecutivoEndosoMensual ".
                   "INNER JOIN cb_endoso                  AS C ON B.iConsecutivoEndoso = C.iConsecutivo AND A.iTipoReporte = C.iConsecutivoTipoEndoso  ".
-                  "INNER JOIN cb_endoso_estatus          AS D ON C.iConsecutivo       = D.iConsecutivoEndoso AND D.eStatus = 'S' AND D.iConsecutivoPoliza = A.iConsecutivoPoliza ".
+                  "INNER JOIN cb_endoso_estatus          AS D ON C.iConsecutivo       = D.iConsecutivoEndoso  AND D.iConsecutivoPoliza = A.iConsecutivoPoliza ".
                   "INNER JOIN ct_polizas                 AS E ON D.iConsecutivoPoliza = E.iConsecutivo AND E.iDeleted = '0' AND A.iConsecutivoBroker = E.iConsecutivoBrokers  ".
                   "INNER JOIN ct_tipo_poliza             AS F ON E.iTipoPoliza        = F.iConsecutivo  ".$flt_join.$filtroQuery;
     $Result     = $conexion->query($query_rows);
@@ -385,7 +385,7 @@
                   "FROM cb_endoso_mensual AS A ".
                   "INNER JOIN cb_endoso_mensual_relacion AS B ON A.iConsecutivo       = B.iConsecutivoEndosoMensual ".
                   "INNER JOIN cb_endoso                  AS C ON B.iConsecutivoEndoso = C.iConsecutivo AND A.iTipoReporte = C.iConsecutivoTipoEndoso  ".
-                  "INNER JOIN cb_endoso_estatus          AS D ON C.iConsecutivo       = D.iConsecutivoEndoso AND D.eStatus = 'S' AND D.iConsecutivoPoliza = A.iConsecutivoPoliza ".
+                  "INNER JOIN cb_endoso_estatus          AS D ON C.iConsecutivo       = D.iConsecutivoEndoso AND D.iConsecutivoPoliza = A.iConsecutivoPoliza ".
                   "INNER JOIN ct_polizas                 AS E ON D.iConsecutivoPoliza = E.iConsecutivo AND E.iDeleted = '0' AND A.iConsecutivoBroker = E.iConsecutivoBrokers  ".
                   "INNER JOIN ct_tipo_poliza             AS F ON E.iTipoPoliza        = F.iConsecutivo  ".$flt_join.$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
         $result = $conexion->query($sql);
