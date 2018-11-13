@@ -710,7 +710,7 @@ var fn_policies = {
                     url:"funciones_policies.php", 
                     data:{
                         accion:"get_drivers_active",
-                        registros_por_pagina : "25", 
+                        registros_por_pagina : "40", 
                         iConsecutivoPoliza :  fn_policies.list.id_policy,
                         iConsecutivoCompania : fn_policies.list.id_company, 
                         pagina_actual : fn_policies.list.drivers_pagina_actual, 
@@ -848,7 +848,7 @@ var fn_policies = {
                     url:"funciones_policies.php", 
                     data:{
                         accion:"get_units_active",
-                        registros_por_pagina : "25", 
+                        registros_por_pagina : "40", 
                         iConsecutivoPoliza :  fn_policies.list.id_policy,
                         iConsecutivoCompania : fn_policies.list.id_company,
                         pagina_actual : fn_policies.list.units_pagina_actual, 
@@ -986,6 +986,11 @@ var fn_policies = {
                     }); 
               });  
             },
+            download_report : function(company,reporttype,policy,filtro){
+               if(company != ""){
+                    window.open('xlsx_report_list.php?company='+company+'&reporttype='+reporttype+'&policy='+policy+'&filtro='+filtro);
+               }else{fn_solotrucking.mensaje("Please try again later."); }      
+            }
         },
         //FUNCIONES PARA REPORTE DE POLIZAS:
         dialog_report_open : function(){
@@ -1295,7 +1300,7 @@ var fn_policies = {
     <div id="driver_tabs">
       <ul style="border-radius: 4px 4px 0px 0px;">
         <li><a href="#tabs-1" onclick="fn_policies.list.fill_drivers_actives();">Drivers</a></li>
-        <li><a href="#tabs-2" onclick="fn_policies.list.fill_units_actives();">Vechicles</a></li>
+        <li><a href="#tabs-2" onclick="fn_policies.list.fill_units_actives();">Vehicles</a></li>
       </ul>
       <div id="tabs-1" style="padding:0!important;">
         <table id="drivers_active_table" class="popup-datagrid" style="width:100%!important;">
@@ -1329,7 +1334,7 @@ var fn_policies = {
                         <td class="etiqueta_grid">EXPERIENCE YEARS</td>
                         <td class="etiqueta_grid">APPLICATION DATE</td>
                         <td class="etiqueta_grid">IS IN POLICIES</td>
-                        <td class="etiqueta_grid"></td>
+                        <td class="etiqueta_grid"><div class="btn-icon report btn-left" title="Download excel list" onclick="fn_policies.list.download_report(fn_policies.list.id_company,'2','all',fn_policies.list.filtro);" style="width:auto!important;"><i class="fa fa-download"></i><span style="margin-left:5px;font-size: 10px!important;">Download Excel</span></div></td>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -1459,7 +1464,7 @@ var fn_policies = {
                         <td class="etiqueta_grid">$ VALUE</td> 
                         <td class="etiqueta_grid">APPLICATION DATE</td>
                         <td class="etiqueta_grid">IS IN POLICIES</td>
-                        <td class="etiqueta_grid"></td>
+                        <td class="etiqueta_grid"><div class="btn-icon report btn-left" title="Download excel list" onclick="fn_policies.list.download_report(fn_policies.list.id_company,'1','all',fn_policies.list.filtro);" style="width:auto!important;"><i class="fa fa-download"></i><span style="margin-left:5px;font-size: 10px!important;">Download Excel</span></div></td>
                     </tr>
             </thead>
             <tbody></tbody>
