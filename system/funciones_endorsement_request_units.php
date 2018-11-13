@@ -158,7 +158,7 @@
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                 
       $sql    = "SELECT A.iConsecutivo, iConsecutivoCompania, iConsecutivoTipoEndoso, A.eStatus, iReeferYear,iTrailerExchange, iPDAmount, ". 
-                "A.sComentarios, iPDApply, iConsecutivoUnidad, eAccion   ".  
+                "A.sComentarios, iPDApply, iConsecutivoUnidad, eAccion, DATE_FORMAT(dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, DATE_FORMAT(dFechaAplicacion,'%H:%i') AS dFechaAplicacionHora   ".  
                 "FROM cb_endoso A ".
                 "LEFT JOIN ct_tipo_endoso B ON A.iConsecutivoTipoEndoso = B.iConsecutivo ". 
                 "WHERE A.iConsecutivo = '$clave'";
@@ -308,6 +308,9 @@
       $sIP                  = $_SERVER['REMOTE_ADDR'];
       $sUsuario             = $_SESSION['usuario_actual'];
       $dFecha               = date("Y-m-d H:i:s");
+      $dFechaApp            = trim($_POST['dFechaAplicacion']) != "" ? date('Y-m-d',strtotime(trim($_POST['dFechaAplicacion']))) : date("Y-m-d");
+      $dFechaAppHora        = trim($_POST['dFechaAplicacionHora']) != "" ? date('H:i:s',strtotime(trim($_POST['dFechaAplicacionHora']))) : date("H:m:s");
+      $dFechaApp            = $dFechaApp." ".$dFechaAppHora;
       
       //REVISAMOS DATOS DE LA UNIDAD:
       if($iConsecutivoUnidad == ""){
@@ -340,14 +343,14 @@
           if($edit_mode == 'true'){
               //UPDATE
               $query   = "UPDATE cb_endoso SET iConsecutivoUnidad='$iConsecutivoUnidad',sComentarios=$sComentarios,iPDAmount='$iPDAmount', ".
-                         "sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha' ".
+                         "sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha', dFechaAplicacion='$dFechaApp' ".
                          "WHERE iConsecutivo='$iConsecutivo' AND iConsecutivoCompania='$iConsecutivoCompania'";
               $mensaje = "The data was updated successfully.";
           
           }else if($edit_mode == 'false'){
               //INSERT
-              $query   = "INSERT cb_endoso (iConsecutivoCompania,iConsecutivoTipoEndoso,eStatus,iPDAmount,iConsecutivoUnidad,eAccion,dFechaAplicacion,sComentarios,sIP,sUsuarioIngreso,dFechaIngreso) ".
-                         "VALUES('$iConsecutivoCompania','1','S','$iPDAmount','$iConsecutivoUnidad','$eAccion','$dFecha',$sComentarios,'$sIP','$sUsuario','$dFecha') ";
+              $query   = "INSERT cb_endoso (iConsecutivoCompania,iConsecutivoTipoEndoso,eStatus,iPDAmount,iConsecutivoUnidad,eAccion,dFechaAplicacion,sComentarios,sIP,sUsuarioIngreso,dFechaIngreso,iEndosoMultiple) ".
+                         "VALUES('$iConsecutivoCompania','1','S','$iPDAmount','$iConsecutivoUnidad','$eAccion','$dFechaApp',$sComentarios,'$sIP','$sUsuario','$dFecha','0') ";
               $mensaje = "The data was saved successfully.";
           }
           

@@ -79,6 +79,7 @@
             init : function(){
                 $('.num').keydown(fn_solotrucking.inputnumero); 
                 $('.decimals').keydown(fn_solotrucking.inputdecimals);
+                $('.hora').mask('00:00');
                 //Filtrado con la tecla enter
                 $(fn_endorsement.data_grid + ' #grid-head1 input').keyup(function(event){
                     if (event.keyCode == '13') {
@@ -144,6 +145,8 @@
                $("#frm_endorsement_information .required-field").removeClass("error");
                $("#files_datagrid, #info_policies").hide();//ocultar grid de archivos...
                $("#info_policies tbody").empty();
+               fn_solotrucking.get_date("#dFechaAplicacion.fecha");
+               fn_solotrucking.get_time("#dFechaAplicacionHora");
                fn_popups.resaltar_ventana('endorsements_edit_form'); 
             },
             edit : function (){
@@ -850,6 +853,20 @@
                                     <option value="D">DELETE</option>
                                 </select>
                             </div> 
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="field_item">
+                                <label>Application Date <span style="color:#ff0000;">*</span>:</label> 
+                                <input tabindex="2" id="dFechaAplicacion" name="dFechaAplicacion" class="txt-uppercase fecha required-field" placeholder="mm/dd/yyyy" type="text" style="width: 85%;">
+                            </div>
+                        </td>
+                        <td>
+                        <div class="field_item"> 
+                            <label>Hour <span style="color:#ff0000;">*</span>: <span style="color: #5e8bd4;;">(Please capture the hour in 24/h format)</span></label><br>
+                            <input tabindex="3" id="dFechaAplicacionHora" name="dFechaAplicacionHora" type="text" class="hora required-field" title="Please capture the hour in 24/h format" style="width: 98%;" placeholder="HH:MM">
+                        </div>
                         </td>
                     </tr>
                 </table>
