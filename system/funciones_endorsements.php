@@ -2142,7 +2142,7 @@
       //Variables:
       $error                  = "0";                                                                                                                                                                                                                                    
       $transaccion_exitosa    = true; 
-      $_POST['iConsecutivo'] != "" ? $edit_mode = true : $edit_mode = false;
+      $_POST['iConsecutivo'] != "" ? $edit_mode = true : $edit_mode = false;  
       
       //Revisamos Archivo de que modulo viene:
       if(isset($_FILES['userfile'])){

@@ -638,7 +638,7 @@
                                 array_push($update_unit_array ,"sIP='".$_SERVER['REMOTE_ADDR']."'");
                                 array_push($update_unit_array ,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'");
                                 //array_push($update_unit_array ,"siConsecutivosPolizas='$iConsecutivoPolizas'");
-                                //array_push($update_unit_array ,"inPoliza='1'"); 
+                                array_push($update_unit_array ,"iDeleted='0'"); 
                                 array_push($update_unit_array ,"eModoIngreso='EXCEL'");
                                 $query = "UPDATE ct_unidades SET ".implode(",",$update_unit_array)." WHERE sVIN = '$sVIN' AND iConsecutivoCompania ='".trim($iConsecutivoCompania)."'";
                                 if(!($conexion->query($query))){ $transaccion_exitosa = false;$msj = "The data of unit was not saved properly, please try again.";}
@@ -828,6 +828,7 @@
                                     array_push($update_driver_array ,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
                                     array_push($update_driver_array ,"sIP='".$_SERVER['REMOTE_ADDR']."'");
                                     array_push($update_driver_array ,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'");
+                                    array_push($update_driver_array ,"iDeleted='0'");
                                     array_push($update_driver_array ,"eModoIngreso='EXCEL'");
                                     $query = "UPDATE ct_operadores SET ".implode(",",$update_driver_array)." WHERE iNumLicencia = '$iLicense' AND iConsecutivoCompania = '$iConsecutivoCompania' ";
                                     

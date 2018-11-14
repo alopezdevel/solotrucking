@@ -795,7 +795,7 @@
                 if($_SERVER["HTTP_HOST"]=="stdev.websolutionsac.com"){
                   $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
                   $mail->Password   = "SL09100242";  
-                }else if($_SERVER["HTTP_HOST"] == "solotrucking.laredo2.net"){
+                }else if($_SERVER["HTTP_HOST"] == "solotrucking.laredo2.net" || $_SERVER["HTTP_HOST"] == "st.websolutionsac.com" || $_SERVER["HTTP_HOST"] == "www.solo-trucking.com"){
                   $mail->Username   = "customerservice@solo-trucking.com";  // GMAIL username
                   $mail->Password   = "SL641404tK";   
                 }

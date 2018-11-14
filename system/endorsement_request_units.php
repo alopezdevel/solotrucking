@@ -424,7 +424,7 @@
                 }, 
                add : function(){
                    $("#dialog_upload_files input[name=iConsecutivoEndoso]").val(fn_endorsement.files.iConsecutivoEndoso);
-                   $("#dialog_upload_files input[name=MAX_FILE_SIZE]").val(3000000);
+                   $("#dialog_upload_files input[name=MAX_FILE_SIZE]").val(6000000);
                    $("#dialog_upload_files .file-message").html("");
                    $("#dialog_upload_files #fileselect").removeClass("fileupload");
                    $('#dialog_upload_files').dialog("open"); 
