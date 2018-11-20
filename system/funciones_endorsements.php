@@ -2180,7 +2180,7 @@
                   $error = "1"; $mensaje="Error: The file extension is not valid, please check it.";
               }else {
                   //Verificar Tamaño:
-                  if(($fileSize > 0 && $fileSize <= 3000000) || ($fileSize == 0 && $fileError == 1)){
+                  //if(($fileSize > 0 && $fileSize <= 3000000) || ($fileSize == 0 && $fileError == 1)){
                       
                       $sContenido           = $conexion->real_escape_string($fileContent);
                       $eArchivo             = trim($_POST['eArchivo']); 
@@ -2199,7 +2199,8 @@
                          $sql = "INSERT INTO cb_endoso_files (sNombreArchivo, sTipoArchivo, iTamanioArchivo, hContenidoDocumentoDigitalizado, eArchivo,iConsecutivoEndoso, dFechaIngreso, sIP, sUsuarioIngreso) ".
                                 "VALUES('$fileName','$fileType','$fileSize','$sContenido','$eArchivo','$iConsecutivoEndoso','".date("Y-m-d H:i:s")."', '".$_SERVER['REMOTE_ADDR']."', '".$_SESSION['usuario_actual']."')"; 
                       }
-               
+                      echo $sql;
+                      exit;
                       if($conexion->query($sql)){
                             $id_file = $conexion->insert_id; 
                             $conexion->commit();
@@ -2211,8 +2212,8 @@
                             $mensaje = "A general system error ocurred : internal error";
                             $error = "1";
                       }     
-                  }
-                  else{$error = "1";$mensaje = "Error: The file you are trying to upload exceeds the maximum size (3MB) allowed by the system, please check it and try again.";}
+                  //}
+                  //else{$error = "1";$mensaje = "Error: The file you are trying to upload exceeds the maximum size (3MB) allowed by the system, please check it and try again.";}
               }
               
           }   
