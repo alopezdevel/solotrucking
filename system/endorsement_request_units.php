@@ -442,7 +442,7 @@
                 }, 
                add : function(){
                    $("#dialog_upload_files input[name=iConsecutivoEndoso]").val(fn_endorsement.files.iConsecutivoEndoso);
-                   $("#dialog_upload_files input[name=MAX_FILE_SIZE]").val(6000000);
+                   //$("#dialog_upload_files input[name=MAX_FILE_SIZE]").val(6000000);
                    $("#dialog_upload_files .file-message").html("");
                    $("#dialog_upload_files #fileselect").removeClass("fileupload");
                    $('#dialog_upload_files').dialog("open"); 
@@ -1190,8 +1190,8 @@
         <div class="field_item"> 
             <label class="required-field">File to upload:</label>
             <div class="file-container">
-                <!-- MAX_FILE_SIZE debe preceder al campo de entrada del fichero -->
-                <input type="hidden"   name="MAX_FILE_SIZE" value="" />
+                <!-- MAX_FILE_SIZE debe preceder al campo de entrada del fichero
+                <input type="hidden"   name="MAX_FILE_SIZE" value="" /> -->
                 <input id="fileselect" name="fileselect" type="file"/>
                 <div class="file-message"></div>
             </div>
