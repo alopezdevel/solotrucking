@@ -43,9 +43,9 @@
                 height : 350,
                 resizable : false,
                 buttons : {
-                    /*'SAVE DATA' : function() {
+                    'SAVE DATA' : function() {
                         fn_endorsement.files.save();
-                    },*/
+                    },
                      'CANCEL' : function(){
                         $(this).dialog('close');
                     }
@@ -112,47 +112,6 @@
                     }
                 }); 
                 $("#frm_driver_information #sNombre").autocomplete();
-                
-                /*------ UPLOAD FILES NEW -----*/
-                new AjaxUpload('#btn_save_file',{
-                    action   : 'funciones_endorsements.php',
-                    onSubmit : function(file,ext){
-                        //Validamos los campos obligatorios: 
-                        var eArchivo = $("#dialog_upload_files select[name=eArchivo]").val();
-                        if(eArchivo == ""){
-                            var mensaje = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Please first select an type option.</p>';
-                            $("#dialog_upload_files select[name=eArchivo]").addClass("error");
-                            fn_solotrucking.mensaje(mensaje);
-                            return false;
-                        }else{
-                            this.setData({
-                                'accion'            : 'guarda_pdf_endoso',
-                                'iConsecutivoEndoso': $("#dialog_upload_files input[name=iConsecutivoEndoso]").val(),
-                                'eArchivo'          : $("#dialog_upload_files select[name=eArchivo]").val(),
-                            });
-                            $('#btn_save_file_txt').val('loading...');
-                            this.disable(); 
-                        }
-                    },
-                    onComplete : function(file,response){  
-                        var respuesta = JSON.parse(response);
-                        switch(respuesta.error){
-                            case '0':
-                                $('#btn_save_file_txt').val(respuesta.name_file);
-                                this.enable();
-                                fn_solotrucking.mensaje(respuesta.mensaje);
-                                //Cerrar dialogo:
-                                $("#dialog_upload_files").dialog('close');
-                                fn_endorsement.files.fillgrid();
-                            break;
-                            case '1':
-                               fn_solotrucking.mensaje(respuesta.mensaje);
-                               $('#btn_save_file_txt').val(''); 
-                               this.enable();
-                            break;
-                        }   
-                    }        
-                }); 
             },
             fillgrid: function(){
                    $.ajax({             
@@ -382,11 +341,11 @@
                             fn_endorsement.files.delete_file();
                             
                             //Archivos:
-                            /*if(window.File && window.FileList && window.FileReader) {
+                            if(window.File && window.FileList && window.FileReader) {
                                   fn_solotrucking.files.form      = "#dialog_upload_files";
                                   fn_solotrucking.files.fileinput = "fileselect";
                                   fn_solotrucking.files.add();
-                            }*/
+                            }
                         }
                     }); 
                },
@@ -445,14 +404,13 @@
                     return false;
                 }, 
                add : function(){
-                   
                    $("#dialog_upload_files input[name=iConsecutivoEndoso]").val(fn_endorsement.files.iConsecutivoEndoso);
-                   //$("#dialog_upload_files input[name=MAX_FILE_SIZE]").val(6000000);
-                   /*$("#dialog_upload_files .file-message").html("");
-                   $("#dialog_upload_files #fileselect").removeClass("fileupload");*/
+                   //$("#dialog_upload_files input[name=MAX_FILE_SIZE]").val(3000000);
+                   $("#dialog_upload_files .file-message").html("");
+                   $("#dialog_upload_files #fileselect").removeClass("fileupload");
                    $('#dialog_upload_files').dialog("open"); 
                },
-               /*save : function(){
+               save : function(){
                    var valid   = true;
                    var mensaje = "";
                       
@@ -467,7 +425,7 @@
                       var form       = "#dialog_upload_files form";
                       var dataForm   = new FormData();
                       var other_data = $(form).serializeArray();
-                      dataForm.append('accion','guarda_pdf_endoso');  
+                      dataForm.append('accion','guarda_pdf_endoso');
                       $.each($(form+' input[type=file]')[0].files,function(i, file){dataForm.append('file-'+i, file);});
                       $.each(other_data,function(key,input){dataForm.append(input.name,input.value);});
                           
@@ -491,7 +449,7 @@
                   }else{
                       fn_solotrucking.mensaje('<p>Favor de revisar lo siguiente:</p><ul>'+mensaje+'</ul>'); 
                   } 
-               } */
+               }
             },
             get_company_data : function(){
               $("#frm_driver_information input, #frm_driver_information select").val('');  
@@ -1126,13 +1084,12 @@
     <p>We will be sending a notice to the company about the status of endorsements. Are you sure want to continue?</p> 
 </div> 
 <div id="dialog_upload_files" title="Upload files to endorsement" style="display:none;padding: .5em 1em .5em 0em!important;">
-    <form class="frm_upload_files">
+    <form class="frm_upload_files" action="" method="POST" enctype="multipart/form-data">
         <fieldset>
         <input name="iConsecutivoEndoso" type="hidden" value="">
         <div>
             <label>File Category <span style="color:#ff0000;">*</span>: </label>
-            <select name="eArchivo" style="height: 27px!important;">
-                <option value="">Select an option...</option>
+            <Select name="eArchivo" style="height: 27px!important;">
                 <option value="OTHERS">Other</option>
                 <option value="LICENSE">License</option>
                 <option value="LONGTERM">Longterm</option>   
@@ -1141,15 +1098,13 @@
             </select> 
         </div>
         <div class="field_item"> 
-            <label class="required-field">File to upload:</label><br>
-            <!-- <div class="file-container">
-                MAX_FILE_SIZE debe preceder al campo de entrada del fichero 
-                <input type="hidden"   name="MAX_FILE_SIZE" value="" /> 
+            <label class="required-field">File to upload:</label>
+            <div class="file-container">
+                <!-- MAX_FILE_SIZE debe preceder al campo de entrada del fichero 
+                <input type="hidden"   name="MAX_FILE_SIZE" value="" />-->
                 <input id="fileselect" name="fileselect" type="file"/>
                 <div class="file-message"></div>
-            </div>-->
-            <input  id="btn_save_file_txt" type="text" readonly="readonly" value="" size="40" style="width:75%;" />
-            <button id="btn_save_file" type="button" style="font-size:13px;padding: 5px;">Upload & Save</button>
+            </div>
         </div> 
         </fieldset>
     </form>   

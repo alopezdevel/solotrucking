@@ -1,5 +1,7 @@
 <?php
   session_start();
+  header('content-type: text/html; charset: UTF-8');
+  
   // Generic functions lib 
   include("functiones_genericas.php"); 
   $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accion"],array()) : ""; 
@@ -2142,8 +2144,10 @@
       //Variables:
       $error                  = "0";                                                                                                                                                                                                                                    
       $transaccion_exitosa    = true; 
-      $_POST['iConsecutivo'] != "" ? $edit_mode = true : $edit_mode = false;  
-      
+      $_POST['iConsecutivo'] != "" ? $edit_mode = true : $edit_mode = false; 
+       
+       print_r($_FILES);
+       exit;
       //Revisamos Archivo de que modulo viene:
       if(isset($_FILES['userfile'])){
           $file        = fopen($_FILES['userfile']["tmp_name"], 'r'); 
@@ -2199,8 +2203,7 @@
                          $sql = "INSERT INTO cb_endoso_files (sNombreArchivo, sTipoArchivo, iTamanioArchivo, hContenidoDocumentoDigitalizado, eArchivo,iConsecutivoEndoso, dFechaIngreso, sIP, sUsuarioIngreso) ".
                                 "VALUES('$fileName','$fileType','$fileSize','$sContenido','$eArchivo','$iConsecutivoEndoso','".date("Y-m-d H:i:s")."', '".$_SERVER['REMOTE_ADDR']."', '".$_SESSION['usuario_actual']."')"; 
                       }
-                      echo $sql;
-                      exit;
+                      
                       if($conexion->query($sql)){
                             $id_file = $conexion->insert_id; 
                             $conexion->commit();
