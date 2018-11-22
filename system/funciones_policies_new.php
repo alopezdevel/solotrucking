@@ -19,8 +19,8 @@
       $iConsecutivoCompania = $_POST['iConsecutivoCompania'];
       $iConsecutivoPolizas  = $_POST['iConsecutivoPolizas'];
       $iConsecutivoPolizas  = explode(',',$iConsecutivoPolizas);
-      $error = 0;
-      $mensaje = "";
+      $error     = 0;
+      $mensaje   = "";
       $htmlTabla = ""; 
       //Archivo Data:
       $fileName      = $_FILES['userfile']['name'];
@@ -67,7 +67,7 @@
                     #UNIDADES/VEHICLES
                     if($title == "UNITS" && $error == 0){
                         // Recorrer sheet por RENGLONES:
-                        for($i = 2; $i <= $rows; $i++){
+                        for($row = 2; $row <= $rows; $row++){
                             
                             // Variables:
                             $campos_unit       = array(); //<--- insert
@@ -77,8 +77,8 @@
                             $existe            = 0; 
                             
                             //Recorrer Sheet por COLUMNAS:   
-                            for($z = 1; $z <= $col; $z++){
-                                
+                            for($col = 1; $col <= $cols; $col++){
+                                echo $objWorksheet->getCellByColumnAndRow($col,$row)->getValue();
                             }             
                         }    
                     }
