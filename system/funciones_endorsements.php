@@ -2146,8 +2146,6 @@
       $transaccion_exitosa    = true; 
       $_POST['iConsecutivo'] != "" ? $edit_mode = true : $edit_mode = false; 
        
-       print_r($_FILES);
-       exit;
       //Revisamos Archivo de que modulo viene:
       if(isset($_FILES['userfile'])){
           $file        = fopen($_FILES['userfile']["tmp_name"], 'r'); 
@@ -2184,7 +2182,7 @@
                   $error = "1"; $mensaje="Error: The file extension is not valid, please check it.";
               }else {
                   //Verificar Tamaño:
-                  //if(($fileSize > 0 && $fileSize <= 3000000) || ($fileSize == 0 && $fileError == 1)){
+                  if(($fileSize > 0 && $fileSize <= 3000000) || ($fileSize == 0 && $fileError == 1)){
                       
                       $sContenido           = $conexion->real_escape_string($fileContent);
                       $eArchivo             = trim($_POST['eArchivo']); 
@@ -2215,12 +2213,13 @@
                             $mensaje = "A general system error ocurred : internal error";
                             $error = "1";
                       }     
-                  //}
-                  //else{$error = "1";$mensaje = "Error: The file you are trying to upload exceeds the maximum size (3MB) allowed by the system, please check it and try again.";}
+                  }
+                  else{$error = "1";$mensaje = "Error: The file you are trying to upload exceeds the maximum size (3MB) allowed by the system, please check it and try again.";}
               }
               
           }   
       }
+
         
       $response = array("mensaje"=>"$mensaje","error"=>"$error", "id_file"=>"$id_file","name_file"=>"$name_file"); 
       echo json_encode($response);             

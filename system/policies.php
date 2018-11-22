@@ -290,9 +290,9 @@ var fn_policies = {
             
             /*----- DRIVER UNIT -------*/
             new AjaxUpload('#btnFile', {
-                    action: 'funciones_policies.php',
+                    action   : 'funciones_policies_new.php',
                     onSubmit : function(file , ext){
-                        if (!(ext && (/^(xls)$/i.test(ext))  )){
+                        if (!(ext && (/^(xls)$/i.test(ext) || /^(xlsx)$/i.test(ext)))){
                             var mensaje = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Error: Invalid file format, please a Excel (xls) File.</p>';
                             fn_solotrucking.mensaje(mensaje);
                             return false;
@@ -304,9 +304,9 @@ var fn_policies = {
                             });
                             if(policies_selected != '' && $('#file_edit_form #iConsecutivoCompania').val() != ''){
                                 this.setData({
-                                    'accion':'upload_list_file', 
-                                    'iConsecutivoCompania':$('#file_edit_form #iConsecutivoCompania').val(),
-                                    'iConsecutivoPolizas':policies_selected,
+                                    'accion'              : 'upload_list_file', 
+                                    'iConsecutivoCompania': $('#file_edit_form #iConsecutivoCompania').val(),
+                                    'iConsecutivoPolizas' : policies_selected,
                                 });
                                 $('#txtFile').val('loading...');
                                 this.disable();
