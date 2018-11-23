@@ -66,6 +66,7 @@
                     
                     #UNIDADES/VEHICLES
                     if($title == "UNITS" && $error == 0){
+                        echo "ENTRO AL IF";
                         // Recorrer sheet por RENGLONES:
                         for($row = 2; $row <= $rows; $row++){
                             
@@ -78,7 +79,7 @@
                             
                             //Recorrer Sheet por COLUMNAS:   
                             for($col = 1; $col <= $cols; $col++){
-                                echo $objWorksheet->getCellByColumnAndRow($col,$row)->getValue();
+                                echo "ENTRO AL FOR <td>".$objWorksheet->getCellByColumnAndRow($col,$row)->getValue()."</td>\n";
                             }             
                         }    
                     }
