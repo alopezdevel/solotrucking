@@ -632,6 +632,7 @@ var fn_policies = {
         //FUNCIONES PARA SUBIR TXT DE DRIVER OR UNITS:
         get_company_policies : function(){
             var company = $('#file_edit_form #iConsecutivoCompania').val();
+            $("#file_edit_form .company_policies").empty().append('<div style="width:100%;margin:5px auto;text-align:center;"><img src="images/ajax-loader.gif" border="0" width="16" height="16" alt="ajax-loader.gif (673 bytes)"></div>');
             if(company != ''){
                 $.ajax({             
                     type:"POST", 

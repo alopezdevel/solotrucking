@@ -1084,22 +1084,8 @@
         if ($rows > 0) {    
                 while ($items = $result->fetch_assoc()){ 
                     
-                    //Revisar modo ingreso:
-                    $modoIngreso = $items['eModoIngreso'];
-                    
-                    if($modoIngreso == 'EXCEL'){$textoIngreso = "AMIC";}else
-                    if($modoIngreso == 'ENDORSEMENT'){
-                        #CONSULTAR DATOS DEL ENDOSO:
-                        $query = "SELECT DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, iConsecutivo ".
-                                 "FROM cb_endoso AS A ".
-                                 "WHERE A.iConsecutivoOperador='".$items['iConsecutivo']."' AND eStatus='A' ORDER BY dFechaAplicacion DESC LIMIT 1";
-                        $res   = $conexion->query($query);
-                        $endoso= $res->fetch_assoc();
-                        $textoIngreso = "END - ".$endoso['dFechaAplicacion'];
-                    }
-                    
                     //Revisar polizas:
-                    $query  = "SELECT iConsecutivoPoliza, B.sNumeroPoliza, C.sDescripcion AS sTipoPoliza, C.sAlias ".
+                    $query  = "SELECT iConsecutivoPoliza, B.sNumeroPoliza, C.sDescripcion AS sTipoPoliza, C.sAlias, DATE_FORMAT(A.dFechaIngreso,'%m/%d/%Y') AS dFechaIngreso ".
                                "FROM cb_poliza_operador AS A ".
                                "INNER JOIN ct_polizas   AS B ON A.iConsecutivoPoliza = B.iConsecutivo AND B.iDeleted = '0' AND B.dFechaCaducidad >= CURDATE() ".
                                "LEFT JOIN  ct_tipo_poliza AS C ON B.iTipoPoliza = C.iConsecutivo ".
@@ -1113,15 +1099,24 @@
                         $classpan = "style=\"display:block;width:100%;padding:1px;\""; 
                         while ($poli = $r->fetch_assoc()){
                            $polizas == "" ? $polizas .= "<li><span $classpan>".$poli['sNumeroPoliza']." - ".$poli['sAlias']."</span></li>" : $polizas .= "<li><span $classpan>".$poli['sNumeroPoliza']." - ".$poli['sAlias']."</span></li>"; 
+                           $dFechaIngreso = $poli['dFechaIngreso'];
                         }
                         $polizas .= "</ul>"; 
                     }
-                     
-                     
-                     /*if($items['siConsecutivosPolizas']!= ""){
-                         $polizas = explode(",",$items['siConsecutivosPolizas']);
-                         in_array($iConsecutivoPoliza, $polizas) ? $class = "class=\"green\"" : $class = "";
-                     }*/
+                    
+                    //Revisar modo ingreso:
+                    $modoIngreso = $items['eModoIngreso'];
+                    
+                    if($modoIngreso == 'EXCEL'){$textoIngreso = "AMIC - ".$dFechaIngreso;}else
+                    if($modoIngreso == 'ENDORSEMENT'){
+                        #CONSULTAR DATOS DEL ENDOSO:
+                        $query = "SELECT DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, iConsecutivo ".
+                                 "FROM cb_endoso AS A ".
+                                 "WHERE A.iConsecutivoOperador='".$items['iConsecutivo']."' AND eStatus='A' ORDER BY dFechaAplicacion DESC LIMIT 1";
+                        $res   = $conexion->query($query);
+                        $endoso= $res->fetch_assoc();
+                        $textoIngreso = "END - ".$endoso['dFechaAplicacion'];
+                    } 
                     
                          $htmlTabla .= "<tr>".
                                        "<td id=\"".$items['iConsecutivo']."\" >".$items['sNombre']."</td>".
@@ -1455,22 +1450,8 @@
         if ($rows > 0) {    
                 while ($items = $result->fetch_assoc()){ 
                     
-                    //Revisar modo ingreso:
-                    $modoIngreso = $items['eModoIngreso'];
-                    
-                    if($modoIngreso == 'EXCEL'){$textoIngreso = "AMIC";}else
-                    if($modoIngreso == 'ENDORSEMENT'){
-                        #CONSULTAR DATOS DEL ENDOSO:
-                        $query = "SELECT DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, iConsecutivo ".
-                                 "FROM cb_endoso AS A ".
-                                 "WHERE A.iConsecutivoUnidad='".$items['iConsecutivo']."' AND eStatus='A' ORDER BY dFechaAplicacion DESC LIMIT 1";
-                        $res   = $conexion->query($query);
-                        $endoso= $res->fetch_assoc();
-                        $textoIngreso = "END - ".$endoso['dFechaAplicacion'];
-                    }
-                    
                     //Revisar polizas:
-                    $query  = "SELECT iConsecutivoPoliza, B.sNumeroPoliza, C.sDescripcion AS sTipoPoliza, C.sAlias ".
+                    $query  = "SELECT iConsecutivoPoliza, B.sNumeroPoliza, C.sDescripcion AS sTipoPoliza, C.sAlias, DATE_FORMAT(A.dFechaIngreso,'%m/%d/%Y') AS dFechaIngreso ".
                                "FROM cb_poliza_unidad AS A ".
                                "INNER JOIN ct_polizas   AS B ON A.iConsecutivoPoliza = B.iConsecutivo AND B.iDeleted = '0' AND B.dFechaCaducidad >= CURDATE() ".
                                "LEFT JOIN  ct_tipo_poliza AS C ON B.iTipoPoliza = C.iConsecutivo ".
@@ -1485,8 +1466,23 @@
                         while ($poli = $r->fetch_assoc()){
                            $polizas == "" ? $polizas .= "<li><span $classpan>".$poli['sNumeroPoliza']." - ".$poli['sAlias']."</span></li>" : $polizas .= "<li><span $classpan>".$poli['sNumeroPoliza']." - ".$poli['sAlias']."</span></li>"; 
                            if($poli['sAlias'] == "PD"){$PDApply = true;}
+                           $dFechaIngreso = $poli['dFechaIngreso'];
                         }
                         $polizas .= "</ul>"; 
+                    }
+                    
+                    //Revisar modo ingreso:
+                    $modoIngreso = $items['eModoIngreso'];
+                    
+                    if($modoIngreso == 'EXCEL'){$textoIngreso = "AMIC - ".$dFechaIngreso;}else
+                    if($modoIngreso == 'ENDORSEMENT'){
+                        #CONSULTAR DATOS DEL ENDOSO:
+                        $query = "SELECT DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, iConsecutivo ".
+                                 "FROM cb_endoso AS A ".
+                                 "WHERE A.iConsecutivoUnidad='".$items['iConsecutivo']."' AND eStatus='A' ORDER BY dFechaAplicacion DESC LIMIT 1";
+                        $res   = $conexion->query($query);
+                        $endoso= $res->fetch_assoc();
+                        $textoIngreso = "END - ".$endoso['dFechaAplicacion'];
                     }
                     
                     $PDApply && $items['iTotalPremiumPD'] > 0 ? $value = "\$ ".number_format($items['iTotalPremiumPD'],2,'.',',') : $value = "";           

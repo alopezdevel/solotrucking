@@ -1048,18 +1048,16 @@
                 $mail->SMTPSecure = "TLS";                 // sets the prefix to the servier
                 $mail->Host       = "smtp.gmail.com";      // sets GMAIL as the SMTP server
                 $mail->Port       = 587;                   // set the SMTP port for the GMAIL server
-                /*$mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
-                $mail->Password   = "SL09100242"; */
-                $mail->Username   = "customerservice@solo-trucking.com";  // GMAIL username
-                $mail->Password   = "SL641404tK"; 
                 
                 #VERIFICAR SERVIDOR DONDE SE ENVIAN CORREOS:
-                if($_SERVER["HTTP_HOST"]=="stdev.websolutionsac.com"){
+                if($_SERVER["HTTP_HOST"]=="stdev.websolutionsac.com" || $_SERVER["HTTP_HOST"]=="www.stdev.websolutionsac.com"){
                   $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
                   $mail->Password   = "SL09100242";  
+                  $mail->SetFrom('systemsupport@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');
                 }else if($_SERVER["HTTP_HOST"] == "solotrucking.laredo2.net" || $_SERVER["HTTP_HOST"] == "st.websolutionsac.com" || $_SERVER["HTTP_HOST"] == "www.solo-trucking.com"){
                   $mail->Username   = "customerservice@solo-trucking.com";  // GMAIL username
-                  $mail->Password   = "SL641404tK";   
+                  $mail->Password   = "SL641404tK";
+                  $mail->SetFrom('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');   
                 }
                 
                 $mail->AddReplyTo('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance'); 
