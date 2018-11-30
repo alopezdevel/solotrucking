@@ -1077,7 +1077,7 @@
         $pagina_actual == "0" ? $pagina_actual = 1 : false;
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-        $sql    = "SELECT iConsecutivo, sNombre, DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, iExperienciaYear, iNumLicencia, (CASE eTipoLicencia WHEN  1 THEN 'Federal / B1' WHEN  2 THEN 'Commercial / CDL - A' END) AS TipoLicencia, siConsecutivosPolizas,eModoIngreso ".
+        $sql    = "SELECT iConsecutivo, sNombre, DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, iExperienciaYear, iNumLicencia, (CASE eTipoLicencia WHEN  1 THEN 'Federal / B1' WHEN  2 THEN 'Commercial / CDL - A' END) AS TipoLicencia,eModoIngreso ".
                   "FROM ct_operadores ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
         $result = $conexion->query($sql);
         $rows   = $result->num_rows;   
@@ -1140,6 +1140,7 @@
      echo json_encode($response);
       
   }
+  /*
   function get_drivers_inactive(){
       
       $iConsecutivoPoliza = $_POST['iConsecutivoPoliza'];
@@ -1277,7 +1278,7 @@
      $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
      echo json_encode($response);
       
-  }
+  } */
   function save_driver(){
       include("funciones_genericas.php"); 
       //Conexion:
@@ -1440,7 +1441,7 @@
         $pagina_actual == "0" ? $pagina_actual = 1 : false;
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-        $sql = "SELECT A.iConsecutivo, C.sAlias AS Make, C.sDescripcion AS sMakeDescription, B.sDescripcion AS Radio, iYear, sVIN, sPeso, sTipo, sModelo, siConsecutivosPolizas, eModoIngreso, iTotalPremiumPD ".
+        $sql = "SELECT A.iConsecutivo, C.sAlias AS Make, C.sDescripcion AS sMakeDescription, B.sDescripcion AS Radio, iYear, sVIN, sPeso, sTipo, sModelo, eModoIngreso, iTotalPremiumPD ".
                "FROM ct_unidades A ".
                "LEFT JOIN ct_unidad_radio B ON A.iConsecutivoRadio = B.iConsecutivo ".
                "LEFT JOIN ct_unidad_modelo C ON A.iModelo = C.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
