@@ -723,8 +723,8 @@ var fn_policies = {
                     dataType : "json",
                     success : function(data){                               
                         $(fn_policies.list.domroot_nav+" #drivers_active_table tbody").empty().append(data.tabla);
-                        $(fn_policies.list.domroot_nav+" #drivers_active_table tbody tr:even").addClass('gray');
-                        $(fn_policies.list.domroot_nav+" #drivers_active_table tbody tr:odd").addClass('white');
+                        $(fn_policies.list.domroot_nav+" #drivers_active_table > tbody > tr:even").addClass('gray');
+                        $(fn_policies.list.domroot_nav+" #drivers_active_table > tbody > tr:odd").addClass('white');
                         $(fn_policies.list.domroot_nav+" #drivers_active_table tfoot .paginas_total").val(data.total);
                         $(fn_policies.list.domroot_nav+" #drivers_active_table tfoot .pagina_actual").val(data.pagina);
                         fn_policies.list.drivers_pagina_actual = data.pagina; 
@@ -861,8 +861,8 @@ var fn_policies = {
                     dataType : "json",
                     success : function(data){                               
                         $(fn_policies.list.domroot_nav+" #units_active_table tbody").empty().append(data.tabla);
-                        $(fn_policies.list.domroot_nav+" #units_active_table tbody tr:even").addClass('gray');
-                        $(fn_policies.list.domroot_nav+" #units_active_table tbody tr:odd").addClass('white');
+                        $(fn_policies.list.domroot_nav+" #units_active_table > tbody > tr:even").addClass('gray');
+                        $(fn_policies.list.domroot_nav+" #units_active_table > tbody > tr:odd").addClass('white');
                         $(fn_policies.list.domroot_nav+" #units_active_table tfoot .paginas_total").val(data.total);
                         $(fn_policies.list.domroot_nav+" #units_active_table tfoot .pagina_actual").val(data.pagina);
                         fn_policies.list.units_pagina_actual = data.pagina; 
@@ -1319,11 +1319,10 @@ var fn_policies = {
                         </td> 
                         <td><input class="flt_dExpire flt_fecha" type="text" placeholder="MM-DD-YY"></td> 
                         <td style="width:80px;"><input class="flt_dYears num" type="text" placeholder="Years:"></td> 
-                        <td style='width:130px;' class="txt-c"><!--<input class="flt_dApp flt_fecha" type="text" placeholder="MM-DD-YY">--></td>  
-                        <td style='width:150px;'></td>  
+                        <td style='width:250px;' class="txt-c"></td>  
                         <td style='width:120px;'>
                             <div class="btn-icon-2 btn-left" title="Search" onclick="fn_policies.list.filtraInformacion();"><i class="fa fa-search"></i></div>
-                            <div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_policies.list.drivers_add();"><i class="fa fa-plus"></i></div>
+                            <!--<div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_policies.list.drivers_add();"><i class="fa fa-plus"></i></div>-->
                         </td> 
                     </tr>
                     <tr id="grid-head2">
@@ -1333,8 +1332,15 @@ var fn_policies = {
                         <td class="etiqueta_grid">LICENSE TYPE</td> 
                         <td class="etiqueta_grid">EXPIRE DATE</td> 
                         <td class="etiqueta_grid">EXPERIENCE YEARS</td>
-                        <td class="etiqueta_grid">APPLICATION DATE</td>
-                        <td class="etiqueta_grid">IS IN POLICIES</td>
+                        <td class="etiqueta_grid" style="padding: 3px 0px 0px!important;">
+                            <span style="display: block;padding: 0px 3px;text-align: center;">POLICIES</span>
+                            <table style="width: 100%;text-transform: uppercase;">
+                            <thead><tr>
+                                <td style="width:35%;">No.</td>
+                                <td style="width:15%">Type</td>
+                                <td style="width:50%">Application Date</td>
+                            </tr></thead></table>
+                        </td>
                         <td class="etiqueta_grid"><div class="btn-icon report btn-left" title="Download excel list" onclick="fn_policies.list.download_report(fn_policies.list.id_company,'2','all',fn_policies.list.filtro);" style="width:auto!important;"><i class="fa fa-download"></i><span style="margin-left:5px;font-size: 10px!important;">Download Excel</span></div></td>
                     </tr>
                 </thead>
@@ -1448,8 +1454,7 @@ var fn_policies = {
                         <td><input class="flt_uType" type="text" placeholder="Type:"></td> 
                         <td style="width:80px;"><input class="flt_uWeight" type="text" placeholder="Weigth:"></td>
                         <td style='width:100px;'></td> 
-                        <td style='width:130px;' class="txt-c"><!--<input class="flt_dApp flt_fecha" type="text" placeholder="MM-DD-YY">--></td>  
-                        <td style='width:150px;'></td>    
+                        <td style='width:250px;' class="txt-c"></td>   
                         <td style='width:120px;'>
                             <div class="btn-icon-2 btn-left" title="Search" onclick="fn_policies.list.units_filtraInformacion();"><i class="fa fa-search"></i></div>
                             <!--<div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_policies.list.unit_add();"><i class="fa fa-plus"></i></div>--> 
@@ -1463,8 +1468,14 @@ var fn_policies = {
                         <td class="etiqueta_grid">TYPE</td> 
                         <td class="etiqueta_grid">WEIGHT</td> 
                         <td class="etiqueta_grid">$ VALUE</td> 
-                        <td class="etiqueta_grid">APPLICATION DATE</td>
-                        <td class="etiqueta_grid">IS IN POLICIES</td>
+                        <td class="etiqueta_grid" style="padding: 3px 0px 0px!important;">
+                            <span style="display: block;padding: 0px 3px;text-align: center;">POLICIES</span>
+                            <table style="width: 100%;text-transform: uppercase;"><thead><tr>
+                                <td style="width:35%;">No.</td>
+                                <td style="width:15%">Type</td>
+                                <td style="width:50%">Application Date</td>
+                            </tr></thead></table>
+                        </td>
                         <td class="etiqueta_grid"><div class="btn-icon report btn-left" title="Download excel list" onclick="fn_policies.list.download_report(fn_policies.list.id_company,'1','all',fn_policies.list.filtro);" style="width:auto!important;"><i class="fa fa-download"></i><span style="margin-left:5px;font-size: 10px!important;">Download Excel</span></div></td>
                     </tr>
             </thead>

@@ -20,9 +20,11 @@
       $iConsecutivoPolizas  = trim($_POST['iConsecutivoPolizas']);
       $iConsecutivoPolizas  = explode(',',trim($iConsecutivoPolizas));
       $count                = count($iConsecutivoPolizas);
-      $error     = 0;
-      $mensaje   = "";
-      $htmlTabla = ""; 
+      $error                = 0;
+      $mensaje              = "";
+      $htmlTabla            = ""; 
+      $success_unit         = 0;
+      $success_driv         = 0;
       //Archivo Data:
       $fileName      = $_FILES['userfile']['name'];
       $tmpName       = $_FILES['userfile']['tmp_name'];
@@ -65,7 +67,7 @@
                     $cols  = PHPExcel_Cell::columnIndexFromString($colsL); // Max columna INDEX
                     
                     #UNIDADES/VEHICLES
-                    if($title == "UNITS" && $error == 0){
+                    if($title == "UNITS"){
                         
                         // Transaccion BEGIN:
                         $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
@@ -82,7 +84,6 @@
                         for($row = 2; $row <= $rows; $row++){
                             
                             // Variables:
-                            $success_unit = 0;
                             $existe       = ""; 
                             $campos       = array(); //<--- insert
                             $valores      = array(); //<--- insert
@@ -199,21 +200,9 @@
                                         #ACTUALIZAR TABLA DE POLIZAS/UNIDADES:
                                         $query = "SELECT iConsecutivo FROM ct_unidades WHERE sVIN = '$sVIN' AND iConsecutivoCompania ='$iConsecutivoCompania'";
                                         $result= $conexion->query($query);
-                                        $row   = $result->fetch_assoc();
+                                        $item  = $result->fetch_assoc();
                                         
-                                        for($p=0;$p<$count;$p++){
-                                            $query = "SELECT COUNT(iConsecutivoUnidad) AS total FROM cb_poliza_unidad ".
-                                                     "WHERE iConsecutivoPoliza='".$iConsecutivoPolizas[$p]."' AND iConsecutivoUnidad='".$row['iConsecutivo']."'";
-                                            $result= $conexion->query($query);
-                                            $valid = $result->fetch_assoc();
-                                            
-                                            if($valid['total'] == 0){
-                                                $query  = "INSERT INTO cb_poliza_unidad (iConsecutivoPoliza,iConsecutivoUnidad) VALUES('".$iConsecutivoPolizas[$p]."','".$row['iConsecutivo']."')";
-                                                $conexion->query($query);
-                                                if($conexion->affected_rows < 1){$error = 1; $success = false; $mensaje = "The data of unit in the policy was not saved properly, please try again.";}
-                                                else{$success_unit ++;}
-                                            }
-                                        }
+                                        $iConsecutivoUnidad = $item['iConsecutivo']; 
                                     }  
                                } 
                                else{
@@ -231,25 +220,28 @@
                                     else{
                                         #ACTUALIZAR TABLA DE POLIZAS/UNIDADES:
                                         $iConsecutivoUnidad = $conexion->insert_id;
-                                    
-                                        for($p=0;$p<$count;$p++){
-                                            $query = "INSERT INTO cb_poliza_unidad (iConsecutivoPoliza,iConsecutivoUnidad) VALUES('".$iConsecutivoPolizas[$p]."','$iConsecutivoUnidad')";
-                                            $conexion->query($query);
-                                            
-                                            if($conexion->affected_rows < 1){$error = 1; $success = false; $mensaje = "The data of unit in the policy was not saved properly, please try again.";}
-                                            else{$success_unit ++;}
-                                            
-                                        }
                                     }
+                               }
+                               #ACTUALIZAR TABLA DE POLIZAS/UNIDADES:
+                               if($error == 0){
+                                    for($p=0;$p<$count;$p++){
+                                        
+                                        $query  = "INSERT INTO cb_poliza_unidad (iConsecutivoPoliza,iConsecutivoUnidad,eModoIngreso,dFechaIngreso,sIPIngreso,sUsuarioIngreso) ".
+                                                  "VALUES('".$iConsecutivoPolizas[$p]."','$iConsecutivoUnidad','AMIC','".date("Y-m-d H:i:s")."','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
+                                        $conexion->query($query);
+                                                
+                                        if($conexion->affected_rows < 1){$error = 1; $success = false; $mensaje = "The data of unit in the policy was not saved properly, please try again.";}
+                                        else{$success_unit ++;}
+                                   }    
                                }
                             }           
                         } 
-                        if($success){$conexion->commit(); $mensaje .= "The data of units has been uploaded successfully, please verify the data in the company policies.<br><br>";}
+                        
+                        if($success && $error == 0){$conexion->commit(); $mensaje .= "The data of $success_unit units has been uploaded successfully, please verify the data in the company policies.<br><br>";}
                         else{$conexion->rollback();}   
                     }
-                    
                     #DRIVERS/OPERADORES
-                    if($title == "DRIVERS" && $error == 0){
+                    if($title == "DRIVERS"){
                         // Transaccion BEGIN:
                         $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
                         $success = true;
@@ -265,7 +257,6 @@
                         for($row = 2; $row <= $rows; $row++){
                             
                             // Variables:
-                            $success_driv = 0;
                             $existe       = ""; 
                             $campos       = array(); //<--- insert
                             $valores      = array(); //<--- insert
@@ -362,7 +353,6 @@
                                 
                                 
                             }  
-                            
                             #INSERT / UPDATE EFFECT:
                             if($error != 0){$success = false;}
                             else{
@@ -382,21 +372,10 @@
                                         #ACTUALIZAR TABLA DE POLIZAS/OPERADORES:
                                         $query = "SELECT iConsecutivo FROM ct_operadores WHERE iNumLicencia='$iLicense' AND iConsecutivoCompania='$iConsecutivoCompania'";
                                         $result= $conexion->query($query);
-                                        $row   = $result->fetch_assoc();
+                                        $item  = $result->fetch_assoc();
                                         
-                                        for($p=0;$p<$count;$p++){
-                                            $query = "SELECT COUNT(iConsecutivoOperador) AS total FROM cb_poliza_operador ".
-                                                     "WHERE iConsecutivoPoliza='".$iConsecutivoPolizas[$p]."' AND iConsecutivoOperador='".$row['iConsecutivo']."'";
-                                            $result= $conexion->query($query);
-                                            $valid = $result->fetch_assoc();
-                                            
-                                            if($valid['total'] == 0){
-                                                $query  = "INSERT INTO cb_poliza_operador (iConsecutivoPoliza,iConsecutivoOperador) VALUES('".$iConsecutivoPolizas[$p]."','".$row['iConsecutivo']."')";
-                                                $conexion->query($query);
-                                                if($conexion->affected_rows < 1){$error = 1; $success = false; $mensaje = "The data of driver in the policy was not saved properly, please try again.";}
-                                                else{$success_driv ++;}
-                                            }
-                                        }
+                                        $iConsecutivoOperador = $item['iConsecutivo'];
+                        
                                     }  
                                } 
                                else{
@@ -414,20 +393,25 @@
                                     else{
                                         #ACTUALIZAR TABLA DE POLIZAS/UNIDADES:
                                         $iConsecutivoOperador = $conexion->insert_id;
-                                    
-                                        for($p=0;$p<$count;$p++){
-                                            $query = "INSERT INTO cb_poliza_operador (iConsecutivoPoliza,iConsecutivoOperador) VALUES('".$iConsecutivoPolizas[$p]."','$iConsecutivoOperador')";
-                                            $conexion->query($query);
-                                            
-                                            if($conexion->affected_rows < 1){$error = 1; $success = false; $mensaje = "The data of driver in the policy was not saved properly, please try again.";}
-                                            else{$success_driv ++;}
-                                            
-                                        }
                                     }
+                               }
+                               
+                               #ACTUALIZAR TABLA DE POLIZAS/UNIDADES:
+                               if($error == 0){
+                                   for($p=0;$p<$count;$p++){
+                                        $query = "INSERT INTO cb_poliza_operador (iConsecutivoPoliza,iConsecutivoOperador,eModoIngreso,dFechaIngreso,sIPIngreso,sUsuarioIngreso) ".
+                                                 "VALUES('".$iConsecutivoPolizas[$p]."','$iConsecutivoOperador','AMIC','".date("Y-m-d H:i:s")."','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
+                                        $conexion->query($query);
+                                        
+                                        if($conexion->affected_rows < 1){$error = 1; $success = false; $mensaje = "The data of driver in the policy was not saved properly, please try again.";}
+                                        else{$success_driv ++;}
+                                        
+                                   }
                                }
                             }           
                         } 
-                        if($success){$conexion->commit(); $mensaje .= "The data of driver has been uploaded successfully, please verify the data in the company policies.<br><br>";}
+                        
+                        if($success && $error == 0){$conexion->commit(); $mensaje .= "The data of $success_driv drivers has been uploaded successfully, please verify the data in the company policies.<br><br>";}
                         else{$conexion->rollback();}  
                             
                     }

@@ -727,7 +727,7 @@
                         async : true,
                         dataType : "json",
                         success : function(data){                               
-                            if(data.error == '0'){fn_solotrucking.mensaje(data.msj);}
+                            fn_solotrucking.mensaje(data.msj);
                         }
                      });   
                   }else{fn_solotrucking.mensaje('Please first select a status before you press save.');$('#form_change_estatus #eStatus').addClass('error');} 

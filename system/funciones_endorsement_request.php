@@ -1248,7 +1248,7 @@
                    fclose($file_tmp);     
                    $archivo = "tmp/".$files["name"];  
                    $mail->AddAttachment($archivo);
-                   $delete_files .= "unlink(\"tmp/\".".$files["name"].");"; 
+                   $delete_files .= "unlink('tmp/.".$files["name"]."');"; 
                 }
                 
                 $mail_error = false;
@@ -1460,18 +1460,19 @@
               
               //Revisamos Action:
               if($eAccion == "A"){
-                 $query   = "INSERT INTO cb_poliza_operador (iConsecutivoPoliza,iConsecutivoOperador) VALUES('$iConsecutivoPoliza','$idDetalle')";
+                 //Agregar registro a la tabla de relacion: 
+                 $query   = "INSERT INTO cb_poliza_operador (iConsecutivoPoliza,iConsecutivoOperador,eModoIngreso,dFechaIngreso,sIPIngreso,sUsuarioIngreso) ".
+                            "VALUES('$iConsecutivoPoliza','$idDetalle','ENDORSEMENT','".date("Y-m-d H:i:s")."','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
                  $success = $conexion->query($query); 
-                 
-                 /*if(!($success)){$transaccion_exitosa = false;}
-                 else{ */
+
                  $query   = "UPDATE ct_operadores SET iDeleted='0' WHERE iConsecutivo='$idDetalle'";
                  $success = $conexion->query($query);
                  if(!($success)){$transaccion_exitosa = false;} 
-                 //} 
               }
               else if($eAccion == "D"){
-                  $query   = "DELETE FROM cb_poliza_operador WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoOperador='$idDetalle'";
+                  //Marcar registro como eliminado:
+                  $query   = "UPDATE cb_poliza_operador SET iDeleted='1',dFechaActualizacion='".date("Y-m-d H:i:s")."',sIPActualizacion='".$_SERVER['REMOTE_ADDR']."',sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
+                             "WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoOperador='$idDetalle' AND iDeleted='0'";
                   $success = $conexion->query($query); 
                   if(!($success)){$transaccion_exitosa = false;}
               }

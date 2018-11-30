@@ -1085,51 +1085,40 @@
                 while ($items = $result->fetch_assoc()){ 
                     
                     //Revisar polizas:
-                    $query  = "SELECT iConsecutivoPoliza, B.sNumeroPoliza, C.sDescripcion AS sTipoPoliza, C.sAlias, DATE_FORMAT(A.dFechaIngreso,'%m/%d/%Y') AS dFechaIngreso ".
+                    $query  = "SELECT iConsecutivoPoliza, B.sNumeroPoliza, C.sDescripcion AS sTipoPoliza, C.sAlias, DATE_FORMAT(A.dFechaIngreso,'%m/%d/%Y') AS dFechaIngreso, eModoIngreso ".
                                "FROM cb_poliza_operador AS A ".
                                "INNER JOIN ct_polizas   AS B ON A.iConsecutivoPoliza = B.iConsecutivo AND B.iDeleted = '0' AND B.dFechaCaducidad >= CURDATE() ".
                                "LEFT JOIN  ct_tipo_poliza AS C ON B.iTipoPoliza = C.iConsecutivo ".
-                               "WHERE A.iConsecutivoOperador = '".$items['iConsecutivo']."' ";
+                               "WHERE A.iConsecutivoOperador = '".$items['iConsecutivo']."' AND A.iDeleted='0' ";
                     $r      = $conexion->query($query);
                     $total  = $r->num_rows;
                     $polizas= "";
-                      
+                    
                     if($total > 0){
-                        $polizas  = "<ul style=\"padding-inline-start:0px;margin-block-start: 5px;margin-block-end: 5px;list-style:none;\">";
-                        $classpan = "style=\"display:block;width:100%;padding:1px;\""; 
+                        $polizas  = '<table style="width: 100%;text-transform: uppercase;border-collapse: collapse;">';
+                        //$classpan = "style=\"display:block;width:100%;padding:1px;\""; 
                         while ($poli = $r->fetch_assoc()){
-                           $polizas == "" ? $polizas .= "<li><span $classpan>".$poli['sNumeroPoliza']." - ".$poli['sAlias']."</span></li>" : $polizas .= "<li><span $classpan>".$poli['sNumeroPoliza']." - ".$poli['sAlias']."</span></li>"; 
-                           $dFechaIngreso = $poli['dFechaIngreso'];
+                           
+                            $polizas .= "<tr>";
+                            $polizas .= "<td style=\"width:35%;\">".$poli['sNumeroPoliza']."</td>";
+                            $polizas .= "<td style=\"width:15%;\">".$poli['sAlias']."</td>";
+                            $polizas .= "<td style=\"width:50%;\">".$poli['eModoIngreso']." - ".$poli['dFechaIngreso']."</td>";
+                            $polizas .= "</tr>";
                         }
-                        $polizas .= "</ul>"; 
+                        $polizas .= "</table>"; 
                     }
                     
-                    //Revisar modo ingreso:
-                    $modoIngreso = $items['eModoIngreso'];
-                    
-                    if($modoIngreso == 'EXCEL'){$textoIngreso = "AMIC - ".$dFechaIngreso;}else
-                    if($modoIngreso == 'ENDORSEMENT'){
-                        #CONSULTAR DATOS DEL ENDOSO:
-                        $query = "SELECT DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, iConsecutivo ".
-                                 "FROM cb_endoso AS A ".
-                                 "WHERE A.iConsecutivoOperador='".$items['iConsecutivo']."' AND eStatus='A' ORDER BY dFechaAplicacion DESC LIMIT 1";
-                        $res   = $conexion->query($query);
-                        $endoso= $res->fetch_assoc();
-                        $textoIngreso = "END - ".$endoso['dFechaAplicacion'];
-                    } 
-                    
-                         $htmlTabla .= "<tr>".
-                                       "<td id=\"".$items['iConsecutivo']."\" >".$items['sNombre']."</td>".
-                                       "<td class=\"txt-c\">".$items['dFechaNacimiento']."</td>".
-                                       "<td>".$items['iNumLicencia']."</td>". 
-                                       "<td>".$items['TipoLicencia']."</td>".
-                                       "<td class=\"txt-c\">".$items['dFechaExpiracionLicencia']."</td>".  
-                                       "<td class=\"txt-c\">".$items['iExperienciaYear']."</td>".
-                                       "<td class=\"txt-c\">".$textoIngreso."</td>".  
-                                       "<td>$polizas</td>".                                                                                                                                                                                                                   
-                                       "<td>".
-                                       //"<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i></div>".
-                                       "</td></tr>";   
+                     $htmlTabla .= "<tr>".
+                                   "<td id=\"".$items['iConsecutivo']."\" >".$items['sNombre']."</td>".
+                                   "<td class=\"txt-c\">".$items['dFechaNacimiento']."</td>".
+                                   "<td>".$items['iNumLicencia']."</td>". 
+                                   "<td>".$items['TipoLicencia']."</td>".
+                                   "<td class=\"txt-c\">".$items['dFechaExpiracionLicencia']."</td>".  
+                                   "<td class=\"txt-c\">".$items['iExperienciaYear']."</td>".
+                                   "<td style=\"padding: 0px!important;\">$polizas</td>".                                                                                                                                                                                                                   
+                                   "<td>".
+                                   //"<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i></div>".
+                                   "</td></tr>";   
                 }
                 $conexion->rollback();
                 $conexion->close();                                                                                                                                                                       
@@ -1452,38 +1441,28 @@
                 while ($items = $result->fetch_assoc()){ 
                     
                     //Revisar polizas:
-                    $query  = "SELECT iConsecutivoPoliza, B.sNumeroPoliza, C.sDescripcion AS sTipoPoliza, C.sAlias, DATE_FORMAT(A.dFechaIngreso,'%m/%d/%Y') AS dFechaIngreso ".
+                    $query  = "SELECT iConsecutivoPoliza, B.sNumeroPoliza, C.sDescripcion AS sTipoPoliza, C.sAlias, DATE_FORMAT(A.dFechaIngreso,'%m/%d/%Y') AS dFechaIngreso,eModoIngreso ".
                                "FROM cb_poliza_unidad AS A ".
                                "INNER JOIN ct_polizas   AS B ON A.iConsecutivoPoliza = B.iConsecutivo AND B.iDeleted = '0' AND B.dFechaCaducidad >= CURDATE() ".
                                "LEFT JOIN  ct_tipo_poliza AS C ON B.iTipoPoliza = C.iConsecutivo ".
-                               "WHERE A.iConsecutivoUnidad = '".$items['iConsecutivo']."' ";
+                               "WHERE A.iConsecutivoUnidad = '".$items['iConsecutivo']."' AND A.iDeleted = '0' ";
                     $r      = $conexion->query($query);
                     $total  = $r->num_rows;
                     $polizas= "";
                     $PDApply= false;  
                     if($total > 0){
-                        $polizas  = "<ul style=\"padding-inline-start:0px;margin-block-start: 5px;margin-block-end: 5px;list-style:none;\">";
-                        $classpan = "style=\"display:block;width:100%;padding:1px;\""; 
+                        $polizas  = '<table style="width: 100%;text-transform: uppercase;border-collapse: collapse;">';
+                        //$classpan = "style=\"display:block;width:100%;padding:1px;\""; 
                         while ($poli = $r->fetch_assoc()){
-                           $polizas == "" ? $polizas .= "<li><span $classpan>".$poli['sNumeroPoliza']." - ".$poli['sAlias']."</span></li>" : $polizas .= "<li><span $classpan>".$poli['sNumeroPoliza']." - ".$poli['sAlias']."</span></li>"; 
+                           
+                            $polizas .= "<tr>";
+                            $polizas .= "<td style=\"width:35%;\">".$poli['sNumeroPoliza']."</td>";
+                            $polizas .= "<td style=\"width:15%;\">".$poli['sAlias']."</td>";
+                            $polizas .= "<td style=\"width:50%;\">".$poli['eModoIngreso']." - ".$poli['dFechaIngreso']."</td>";
+                            $polizas .= "</tr>";
                            if($poli['sAlias'] == "PD"){$PDApply = true;}
-                           $dFechaIngreso = $poli['dFechaIngreso'];
                         }
-                        $polizas .= "</ul>"; 
-                    }
-                    
-                    //Revisar modo ingreso:
-                    $modoIngreso = $items['eModoIngreso'];
-                    
-                    if($modoIngreso == 'EXCEL'){$textoIngreso = "AMIC - ".$dFechaIngreso;}else
-                    if($modoIngreso == 'ENDORSEMENT'){
-                        #CONSULTAR DATOS DEL ENDOSO:
-                        $query = "SELECT DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, iConsecutivo ".
-                                 "FROM cb_endoso AS A ".
-                                 "WHERE A.iConsecutivoUnidad='".$items['iConsecutivo']."' AND eStatus='A' ORDER BY dFechaAplicacion DESC LIMIT 1";
-                        $res   = $conexion->query($query);
-                        $endoso= $res->fetch_assoc();
-                        $textoIngreso = "END - ".$endoso['dFechaAplicacion'];
+                        $polizas .= "</table>"; 
                     }
                     
                     $PDApply && $items['iTotalPremiumPD'] > 0 ? $value = "\$ ".number_format($items['iTotalPremiumPD'],2,'.',',') : $value = "";           
@@ -1495,8 +1474,7 @@
                                   "<td>".$items['sTipo']."</td>".  
                                   "<td class=\"txt-c\">".$items['sPeso']."</td>".
                                   "<td class=\"txt-r\">".$value."</td>".
-                                  "<td class=\"txt-c\">".$textoIngreso."</td>". 
-                                  "<td>".$polizas."</td>".                                                                                                                                                                                                                    
+                                  "<td style=\"padding: 0px!important;\">".$polizas."</td>".                                                                                                                                                                                                                    
                                   "<td>".
                                   //"<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i></div>".
                                   "</td></tr>";
