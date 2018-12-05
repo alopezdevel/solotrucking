@@ -282,11 +282,18 @@
                                 if($header == "DOB"){
                                     $DOB = $value; 
                                     if($DOB != ""){
-                                       $unixDate  = ($DOB - 25569) * 86400;
-                                       $ExcelDate = 25569 + ($unixDate / 86400);
-                                       $unixDate  = ($ExcelDate - 25569) * 86400;
-                                       $DOB       = gmdate("Y-m-d", $unixDate); 
                                         
+                                       if(strpos($DOB,'-') || strpos($DOB,'/')){
+                                           
+                                       }else{
+                                           $unixDate  = ($DOB - 25569) * 86400;
+                                           $ExcelDate = 25569 + ($unixDate / 86400);
+                                           $unixDate  = ($ExcelDate - 25569) * 86400;
+                                           $DOB       = gmdate("Y-m-d", $unixDate);
+                                       } 
+                                       
+                                       $DOB       = date("Y-m-d", strtotime($DOB));
+                                       
                                        //UPDATE 
                                        array_push($update,"dFechaNacimiento='$DOB'"); 
                                        //INSERT 

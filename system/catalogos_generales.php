@@ -363,4 +363,33 @@
      $response = array("mensaje"=>"$mensaje","error"=>"$error","select"=>"$htmlTabla","table"=>"$htmlList");   
      echo json_encode($response);  
   }
+  function get_policies(){
+     
+     include("cn_usuarios.php");
+     $conexion->autocommit(FALSE);
+     
+     $iConsecutivoCompania = trim($_POST['iConsecutivoCompania']);
+     $htmlTabla            = "<option value=\"\">Select an option...</option>"; 
+     $error                = 0;
+     $mensaje              = "";
+      
+     $sql    = "SELECT A.iConsecutivo AS clave, A.sNumeroPoliza AS descripcion, B.sName AS sBroker, C.sDescripcion AS sTipoPoliza, C.sAlias ".
+               "FROM      ct_polizas     AS A ".
+               "LEFT JOIN ct_brokers     AS B ON A.iConsecutivoBrokers = B.iConsecutivo ".
+               "LEFT JOIN ct_tipo_poliza AS C ON A.iTipoPoliza = C.iConsecutivo ".
+               "WHERE A.iConsecutivoCompania='$iConsecutivoCompania' AND A.iDeleted = '0' AND A.dFechaCaducidad >= CURDATE() ORDER BY A.iConsecutivo ASC";
+     $result = $conexion->query($sql);
+     $rows   = $result->num_rows;  
+     if($rows > 0){
+        while ($items = $result->fetch_assoc()) {
+            $items['sAlias'] = strlen($items['sAlias']) == 2 ? "(".$items['sAlias'].") " : "(".$items['sAlias'].")";
+            $htmlTabla .= "<option value=\"".$items['clave']."\">".$items['sAlias']." | ".$items['descripcion']." | ".$items['sBroker']."</option>";
+        }                                                                                                                                                                       
+     }else{$error = 1;$mensaje = "The company does not have configured any policy, please verify it.";}
+     $conexion->rollback();
+     $conexion->close();
+     $htmlTabla = utf8_encode($htmlTabla);  
+     $response = array("mensaje"=>"$mensaje","error"=>"$error","select"=>"$htmlTabla");   
+     echo json_encode($response);  
+  }
 ?>

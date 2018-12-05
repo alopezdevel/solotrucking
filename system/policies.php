@@ -79,6 +79,33 @@ function inicio(){
                     $(this).dialog('close');
                 }
             }
+        });  
+        
+        $('#dialog_report_history_list').dialog({
+            modal: true,
+            autoOpen: false,
+            width : 650,
+            height : 510,
+            resizable : false,
+            buttons : {
+                'DOWNLOAD EXCEL FILE' : function() {
+                   //Parametros:
+                   var company = $("#dialog_report_history_list .flt_company").val();
+                   var type    = $("#dialog_report_history_list .flt_type").val(); 
+                   var policy  = $("#dialog_report_history_list .flt_policies").val();    
+                   
+                   if(company != ""){
+                        window.open('xlsx_report_list.php?company='+company+'&reporttype='+type+'&policy='+policy);
+                   }
+                   else{
+                       fn_solotrucking.mensaje("Please select before a company."); 
+                       $("#dialog_report_history_list .flt_company").addClass('error');
+                   }             
+                },
+                 'CANCEL' : function(){
+                    $(this).dialog('close');
+                }
+            }
         });
         
         //DATEPICKERS
@@ -129,6 +156,10 @@ var fn_policies = {
                     //Reportes Select:
                     $("#dialog_report_policies .flt_company").empty().append(data.select);
                     $("#dialog_report_policies .flt_company option:first-child").text('All'); 
+                    
+                    //Reportes Select:
+                    $("#dialog_report_history_list .flt_company").empty().append(data.select);
+                    $("#dialog_report_history_list .flt_company option:first-child").text('All'); 
                     
                     //List de drivers/vehicles dialog:
                     $("#dialog_driver_unit select[name=iConsecutivoCompania]").empty().append(data.select);  
@@ -987,10 +1018,45 @@ var fn_policies = {
                     }); 
               });  
             },
-            download_report : function(company,reporttype,policy,filtro){
-               if(company != ""){
-                    window.open('xlsx_report_list.php?company='+company+'&reporttype='+reporttype+'&policy='+policy+'&filtro='+filtro);
-               }else{fn_solotrucking.mensaje("Please try again later."); }      
+            download_report : function(company,reporttype,filtro){
+                
+                //Autollenar parametros:
+                $("#dialog_report_history_list .flt_company").val(company);
+                $("#dialog_report_history_list .flt_type").val(reporttype); 
+                
+                //Cargar polizas:
+                fn_policies.list.get_policies(company);
+                
+                /*if(reporttype != ""){$("#dialog_report_history_list .flt_type").prop('disabled',true).addClass('readonly'); }
+                else{$("#dialog_report_history_list .flt_type").removeProp('disabled').removeClass('readonly');}*/ 
+                
+                $("#dialog_report_history_list").dialog('open');  
+            },
+            get_policies : function(company){
+                
+                if(company != ""){
+                    $.ajax({             
+                        type:"POST", 
+                        url :"catalogos_generales.php", 
+                        data:{"accion":"get_policies","iConsecutivoCompania":company},
+                        async : true,
+                        dataType : "json",
+                        success : function(data){
+                            //Reportes Select:
+                            if(data.error == '0'){
+                               $("#dialog_report_history_list .flt_policies").empty().append(data.select).removeClass('readonly').removeProp('disabled');
+                               $("#dialog_report_history_list .flt_policies option:first-child").text('All');  
+                            }
+                            else{
+                               fn_solotrucking.mensaje(data.mensaje); 
+                               $("#dialog_report_history_list .flt_policies").empty().append('<option value="">Select an option...</option>').addClass('readonly').prop('disabled','disabled');  
+                            }
+                            
+                        }
+                    });    
+                }
+                else{$("#dialog_report_history_list .flt_policies").empty().append('<option value="">Select an option...</option>').addClass('readonly').prop('disabled','disabled');}
+                
             }
         },
         //FUNCIONES PARA REPORTE DE POLIZAS:
@@ -1272,7 +1338,7 @@ var fn_policies = {
                 </div>
                 <table id="reporte_policy_update"></table>
                 <br> 
-                <a class="btn-text btn-left" title="Download Layout XLS" href="documentos/plantilla_ejemplo.xls" target="_blank"><i class="fa fa-file-excel-o"></i><span>Download Layout XLS</span></a>
+                <a class="btn-text btn-left" title="Download Layout XLS" href="documentos/plantilla_ejemplo_upload_amic.xlsx" target="_blank"><i class="fa fa-file-excel-o"></i><span>Download Layout XLS</span></a>
                 <a class="btn-text btn-left" title="Download PDF Manual" href="documentos/manual_para_subir_y_crear_plantillas.pdf" target="_blank"><i class="fa fa-file-pdf-o"></i><span>Download PDF Manual</span></a>
                 <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('file_edit_form');" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
                 <button id="btnFile" type="button" class="btn-1" style="width:230px;">Upload & Save file</button>
@@ -1341,7 +1407,7 @@ var fn_policies = {
                                 <td style="width:50%">Application Date</td>
                             </tr></thead></table>
                         </td>
-                        <td class="etiqueta_grid"><div class="btn-icon report btn-left" title="Download excel list" onclick="fn_policies.list.download_report(fn_policies.list.id_company,'2','all',fn_policies.list.filtro);" style="width:auto!important;"><i class="fa fa-download"></i><span style="margin-left:5px;font-size: 10px!important;">Download Excel</span></div></td>
+                        <td class="etiqueta_grid"><div class="btn-icon report btn-left" title="Download excel list" onclick="fn_policies.list.download_report(fn_policies.list.id_company,'2',fn_policies.list.filtro);" style="width:auto!important;"><i class="fa fa-download"></i><span style="margin-left:5px;font-size: 10px!important;">Download Excel</span></div></td>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -1476,7 +1542,7 @@ var fn_policies = {
                                 <td style="width:50%">Application Date</td>
                             </tr></thead></table>
                         </td>
-                        <td class="etiqueta_grid"><div class="btn-icon report btn-left" title="Download excel list" onclick="fn_policies.list.download_report(fn_policies.list.id_company,'1','all',fn_policies.list.filtro);" style="width:auto!important;"><i class="fa fa-download"></i><span style="margin-left:5px;font-size: 10px!important;">Download Excel</span></div></td>
+                        <td class="etiqueta_grid"><div class="btn-icon report btn-left" title="Download excel list" onclick="fn_policies.list.download_report(fn_policies.list.id_company,'1',fn_policies.list.filtro);" style="width:auto!important;"><i class="fa fa-download"></i><span style="margin-left:5px;font-size: 10px!important;">Download Excel</span></div></td>
                     </tr>
             </thead>
             <tbody></tbody>
@@ -1612,6 +1678,28 @@ var fn_policies = {
     <p>If you check the policy as canceled this will no longer be visible in the module. Are you sure?</p>
     <form id="elimina" method="post">
            <input type="hidden" name="id_policy" id="id_policy">
+    </form>  
+</div>
+<div id="dialog_report_history_list" title="REPORT OF HISTORY LISTS" style="display:none;" >
+    <p>Please select the parameters to generate the history report:</p>
+    <form id="frm_report_history_list" method="post">
+        <fieldset>
+        <div class="field_item"> 
+            <label>Company: </label>
+            <select class="flt_company" onblur="fn_policies.list.get_policies(this.value);"><option value="">Select an option...</option></select>
+        </div>
+        <div class="field_item"> 
+            <label>Type: </label>
+            <select class="flt_type">
+                <option value="2">Drivers</option>
+                <option value="1">Vehicles</option>
+            </select>
+        </div> 
+        <div class="field_item"> 
+            <label>Policy: </label>
+            <select class="flt_policies"><option value="">All</option></select>
+        </div> 
+        </fieldset>
     </form>  
 </div>
 <!-- FOOTER -->
