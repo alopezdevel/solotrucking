@@ -30,18 +30,18 @@
     error_reporting(E_ALL);
     ini_set('display_errors', TRUE);
     ini_set('display_startup_errors', TRUE);
-    date_default_timezone_set('Europe/London');
+    //date_default_timezone_set('Europe/London');
     
     if (PHP_SAPI == 'cli')
     die('This example should only be run from a Web Browser');
-
-    /** Include PHPExcel */
-    require_once dirname(__FILE__) . '/lib/PHPExcel-1.8/Classes/PHPExcel.php';
     
     session_start();   
     include("cn_usuarios.php");  
     include("functiones_genericas.php"); 
-    
+
+    /** Include PHPExcel */
+    require_once dirname(__FILE__) . '/lib/PHPExcel-1.8/Classes/PHPExcel.php';
+
     $error = 0;
 
     #PARAMETERS:
@@ -57,7 +57,7 @@
     
     #REVISAR POLIZAS SELECCIONADAS:
     $policy == "" || $policy == "ALL"? $flt_policy = "A.iConsecutivoCompania='$iConsecutivoCompania'" : $flt_policy = "A.iConsecutivo='$policy'";
-    //Consultar polzias del cliente:
+    //Consultar polizas del cliente:
     $query  = "SELECT A.iConsecutivo, A.sNumeroPoliza, B.sName AS sBroker, C.sDescripcion AS sTipoPoliza, C.sAlias ".
               "FROM      ct_polizas     AS A ".
               "LEFT JOIN ct_brokers     AS B ON A.iConsecutivoBrokers = B.iConsecutivo ".
@@ -85,7 +85,7 @@
             // Set document properties
             $objPHPExcel->getProperties()->setCreator("Solo-Trucking Insurance System")->setLastModifiedBy("Solo-Trucking Insurance System")
             ->setTitle("Solo-Trucking Insurance On-line Reports")->setSubject("List Drivers/Vehicles")
-            ->setDescription("Report of history list of drivers and/or vehicles of a company.")
+            ->setDescription("Report of history list of drivers or vehicles of a company.")
             ->setKeywords("office 2007 openxml php")
             ->setCategory("result file"); 
             
@@ -95,16 +95,17 @@
             $EstiloEncabezado3 = new PHPExcel_Style();
             $EstiloContenido   = new PHPExcel_Style();
             $EstiloEncabezado->applyFromArray(array(
-                'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID,'color' => array('argb' => 'FF538DD5')),
-                'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN),'color' => array('argb' => 'FF215698')),
+                'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID,'color' => array('argb' => 'FFF2F2F2')),
+                //'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN),'color' => array('argb' => 'FFB8B8B8')),
+                'borders'   => array('right' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('argb' => 'FFB8B8B8'))),
                 'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
-                'font' => array('bold' => true)
+                'font'      => array('bold' => true,'size'=> 14,)
             ));
             $EstiloEncabezado2->applyFromArray(array(
                 'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID,'color' => array('argb' => 'FFF2F2F2')),
                 'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('argb' => 'FFB8B8B8'))),
-                'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT,'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
-                'font' => array('color' => array('argb' => 'FF515151'),'size'=> 10,)
+                'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
+                'font' => array('color' => array('argb' => 'FF515151'),'size'=> 11,)
             ));
             $EstiloEncabezado3->applyFromArray(array(
                 'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID,'color' => array('argb' => 'FF8FB1DB')),
@@ -115,6 +116,22 @@
             $EstiloContenido->applyFromArray(array(
                 'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('argb' => 'FFababab'))),
                 'alignment' => array('vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
+            ));
+            
+            $EstiloAlignR = new PHPExcel_Style();
+            $EstiloAlignR->applyFromArray(array(
+                'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT),
+                'borders'   => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('argb' => 'FFababab'))),
+            ));
+            $EstiloAlignC = new PHPExcel_Style();
+            $EstiloAlignC->applyFromArray(array(
+                'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER),
+                'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('argb' => 'FFababab'))),
+            ));
+            $EstiloAlignL = new PHPExcel_Style();
+            $EstiloAlignL->applyFromArray(array(
+                'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT),
+                'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN,'color' => array('argb' => 'FFababab'))),
             ));
             
             /*$filtro_query  = " WHERE iConsecutivoCompania = '$iConsecutivoCompania' AND iDeleted='0' ";
@@ -146,59 +163,110 @@
                     
                     // Rename worksheet
                     $objPHPExcel->setActiveSheetIndex(0);
-                    $objPHPExcel->getActiveSheet()->setTitle('BIND LIST');
+                    $objPHPExcel->getActiveSheet()->setTitle('Bind List');
                      
                     $items              = mysql_fetch_all($result);
-                    $descripcionReporte = 'Driver bind list from: '.strtoupper($DatosCo['sNombreCompania'])." / $polizaNo / $polizaTy - ".$items[0]['dFechaIngreso'];
-                     //Encabezado del reporte.
-                     $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado, "A1:G1");
-                     $objPHPExcel->getActiveSheet()->setCellValue('A1', 'SOLO-TRUCKING INSURANCE COMPANY');
-                     $objPHPExcel->getActiveSheet()->mergeCells("A1:G1");
-                     $objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(40);
-                     //Subtitulo del Reporte:
-                     /*$objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado2, "A2:G2");
-                     $objPHPExcel->getActiveSheet()->setCellValue('A2', $descripcionReporte);
-                     $objPHPExcel->getActiveSheet()->mergeCells("A2:G2");
-                     $objPHPExcel->getActiveSheet()->getRowDimension('2')->setRowHeight(25); */
+                    $descripcionReporte = "$polizaNo - $polizaTy - ".$items[0]['dFechaIngreso'];
+                    //Encabezado del reporte.
+                    $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado, "A1:H1");
+                    $objPHPExcel->getActiveSheet()->setCellValue('A1', strtoupper($DatosCo['sNombreCompania']).' - BIND LIST');
+                    $objPHPExcel->getActiveSheet()->mergeCells("A1:H1");
+                    $objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(40);
+                    //Subtitulo del Reporte:
+                    $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado2, "A2:H2");
+                    $objPHPExcel->getActiveSheet()->setCellValue('A2', $descripcionReporte);
+                    $objPHPExcel->getActiveSheet()->mergeCells("A2:H2");
+                    $objPHPExcel->getActiveSheet()->getRowDimension('2')->setRowHeight(25); 
                      
-                     //Columnas:
-                    /* $row = 3;
-                     $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado3, "A".$row.":G".$row);
-                     $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(35);
-                     $objPHPExcel->getActiveSheet()
-                            ->setCellValue('A'.$row, 'NAME')
-                            ->setCellValue('B'.$row, 'DOB')
-                            ->setCellValue('C'.$row, 'LICENSE #')
-                            ->setCellValue('D'.$row, 'LICENSE TYPE')
-                            ->setCellValue('E'.$row, 'EXPIRE DATE')
-                            ->setCellValue('F'.$row, 'YOE')
-                            ->setCellValue('G'.$row, 'APPLICATION DATE');
+                    //Columnas:
+                    $row = 3;
+                    $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado3, "A".$row.":H".$row);
+                    $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(35);
+                    $objPHPExcel->getActiveSheet()
+                            ->setCellValue('A'.$row, 'NO.')
+                            ->setCellValue('B'.$row, 'NAME')
+                            ->setCellValue('C'.$row, 'DOB')
+                            ->setCellValue('D'.$row, 'LICENSE #')
+                            ->setCellValue('E'.$row, 'LICENSE TYPE')
+                            ->setCellValue('F'.$row, 'EXPIRE DATE')
+                            ->setCellValue('G'.$row, 'YOE')
+                            ->setCellValue('H'.$row, 'APPLICATION DATE');
                             
-                     $countD = count($items);
-                     for($d=0;$d<$countD;$d++){
+                    $countD = count($items);
+                    $No = 0;
+                    for($d=0;$d<$countD;$d++){
                          
                          $row++;
+                         $No++;
                          $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloContenido, "A".$row.":G".$row); 
                          $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(20);
         
                          //Reporte contenido:
                          $objPHPExcel->getActiveSheet()
-                                     ->setCellValue('A'.$row, $items[$d]['sNombre']); 
-                                     ->setCellValue('B'.$row, $items[$d]['dFechaNacimiento'])
-                                     ->setCellValue('C'.$row, $items[$d]['iNumLicencia'])
-                                     ->setCellValue('D'.$row, $items[$d]['TipoLicencia'])
-                                     ->setCellValue('E'.$row, $items[$d]['dFechaExpiracionLicencia'])
-                                     ->setCellValue('F'.$row, $items[$d]['iExperienciaYear'])
-                                     ->setCellValue('G'.$row, $items[$d]['dFechaIngreso']);
+                                     ->setCellValue('A'.$row, $No)    
+                                     ->setCellValue('B'.$row, $items[$d]['sNombre']) 
+                                     ->setCellValue('C'.$row, $items[$d]['dFechaNacimiento'])
+                                     ->setCellValue('D'.$row, $items[$d]['iNumLicencia'])
+                                     ->setCellValue('E'.$row, $items[$d]['TipoLicencia'])
+                                     ->setCellValue('F'.$row, $items[$d]['dFechaExpiracionLicencia'])
+                                     ->setCellValue('G'.$row, $items[$d]['iExperienciaYear'])
+                                     ->setCellValue('H'.$row, $items[$d]['dFechaIngreso']);
+                                     
+                         // Aplicar formatos/estilos:
+                         $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'A'.$row);
+                         $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignL,'B'.$row);
+                         $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'C'.$row);
+                         $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignL,'D'.$row);
+                         $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'F'.$row);
+                         $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'G'.$row);
+                         $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'H'.$row);
+                         
+                         $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+                         $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true); 
+                         $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth('17');
+                         $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth('19');
+                         $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth('17');
+                         $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth('17');
+                         $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth('9');
+                         $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth('17');
+                         //$objPHPExcel->getActiveSheet()->getStyle('B'.$row)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_DATE_YYYYMMDDSLASH);
                              
-                     }
-                     */
-                     //Ajustar la dimension de las columnas:
-                     foreach(range('A','G') as $columnID) {
-                        $objPHPExcel->getActiveSheet()->getColumnDimension($columnID)->setAutoSize(true);
-                     }
-                            
-                }else{$error = 1; $mensaje = "The data of BIND has not found, please verify if you are uploaded the first list.";}              
+                    }
+                     
+                    #GET ENDORSEMENT SHEET:
+                    $query  = "SELECT E.iConsecutivo AS iConsecutivoEndoso, E.eStatus, S.sNumeroEndosoBroker, DATE_FORMAT(E.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
+                              "iEndosoMultiple, E.iConsecutivoOperador, (CASE WHEN E.eAccion='A' THEN 'ADD' WHEN E.eAccion='D' THEN 'DELETE' END) AS eAccion, D.sNombre AS sNombreOperador, D.iNumLicencia
+                               FROM cb_endoso_estatus AS S
+                               LEFT JOIN cb_endoso    AS E ON S.iConsecutivoEndoso  = E.iConsecutivo
+                               LEFT JOIN ct_polizas   AS P ON S.iConsecutivoPoliza  = P.iConsecutivo
+                               LEFT JOIN ct_operadores AS D ON E.iConsecutivoOperador = D.iConsecutivo
+                              WHERE iConsecutivoPoliza='$polizaId' AND E.iConsecutivoTipoEndoso='2' AND E.iDeleted='0' AND E.iConsecutivoCompania='$iConsecutivoCompania' 
+                              ORDER BY E.dFechaAplicacion ASC"; 
+                    $result = $conexion->query($query);
+                    $rows   = $result->num_rows; 
+                    if($rows > 0){
+                        // Rename worksheet
+                        $objPHPExcel->createSheet(1);
+                        $objPHPExcel->setActiveSheetIndex(1);
+                        $objPHPExcel->getActiveSheet()->setTitle('Endorsements');
+                         
+                        $items              = mysql_fetch_all($result);
+                        $descripcionReporte = "$polizaNo - $polizaTy - $polizaBr"; 
+                        
+                        //Encabezado del reporte.
+                        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado, "A1:H1");
+                        $objPHPExcel->getActiveSheet()->setCellValue('A1', strtoupper($DatosCo['sNombreCompania']).' - ENDORSEMENTS');
+                        $objPHPExcel->getActiveSheet()->mergeCells("A1:G1");
+                        $objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(40);
+                        //Subtitulo del Reporte:
+                        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado2, "A2:G2");
+                        $objPHPExcel->getActiveSheet()->setCellValue('A2', $descripcionReporte);
+                        $objPHPExcel->getActiveSheet()->mergeCells("A2:G2");
+                        $objPHPExcel->getActiveSheet()->getRowDimension('2')->setRowHeight(25);    
+                    }
+                       
+                }
+                else{$error = 1; $mensaje = "The data of BIND has not found, please verify if you are uploaded the first list.";}              
             }
 
             #GENERAR ARCHIVO:
@@ -209,7 +277,7 @@
                      
                 #CREATE A FILE NAME:
                 $info_fecha     = getdate();
-                $nombre_archivo = strtoupper($DatosCo['sNombreCompania'])."_".$polizaAl."-".$polizaNo."_".$info_fecha['year']."_".$info_fecha['month']."_".$info_fecha['mday'];
+                $nombre_archivo = strtoupper($DatosCo['sNombreCompania'])."_".$polizaAl."_".$polizaNo;//"_".$info_fecha['year']."_".$info_fecha['month']."_".$info_fecha['mday'];
                 $nombre_archivo = $nombre_archivo.".xlsx";
                 
                 // Redirect output to a client’s web browser (Excel2007)
@@ -233,7 +301,7 @@
     }
     else{$error = 1; $mensaje = "The company does not have configured any policy, please verify it.";}
     
-    if($errror != 0){
+    if($error != 0){
         echo '<script language="javascript">alert(\''.$mensaje.'\')</script>';
         echo "<script language='javascript'>window.close();</script>"; 
     }

@@ -222,12 +222,18 @@
                                         $iConsecutivoUnidad = $conexion->insert_id;
                                     }
                                }
+                               
                                #ACTUALIZAR TABLA DE POLIZAS/UNIDADES:
                                if($error == 0){
                                     for($p=0;$p<$count;$p++){
                                         
+                                        //CONSULTAR FECHA PARA BIND:
+                                        $q = "SELECT dFechaInicio FROM ct_polizas WHERE iConsecutivo = '".$iConsecutivoPolizas[$p]."'";
+                                        $r = $conexion->query($q);
+                                        $r = $r->fetch_assoc();
+                                        
                                         $query  = "INSERT INTO cb_poliza_unidad (iConsecutivoPoliza,iConsecutivoUnidad,eModoIngreso,dFechaIngreso,sIPIngreso,sUsuarioIngreso) ".
-                                                  "VALUES('".$iConsecutivoPolizas[$p]."','$iConsecutivoUnidad','AMIC','".date("Y-m-d H:i:s")."','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
+                                                  "VALUES('".$iConsecutivoPolizas[$p]."','$iConsecutivoUnidad','AMIC','".$r['dFechaInicio']."','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
                                         $conexion->query($query);
                                                 
                                         if($conexion->affected_rows < 1){$error = 1; $success = false; $mensaje = "The data of unit in the policy was not saved properly, please try again.";}
@@ -406,8 +412,14 @@
                                #ACTUALIZAR TABLA DE POLIZAS/UNIDADES:
                                if($error == 0){
                                    for($p=0;$p<$count;$p++){
+                                       
+                                        //CONSULTAR FECHA PARA BIND:
+                                        $q = "SELECT dFechaInicio FROM ct_polizas WHERE iConsecutivo = '".$iConsecutivoPolizas[$p]."'";
+                                        $r = $conexion->query($q);
+                                        $r = $r->fetch_assoc();
+                                        
                                         $query = "INSERT INTO cb_poliza_operador (iConsecutivoPoliza,iConsecutivoOperador,eModoIngreso,dFechaIngreso,sIPIngreso,sUsuarioIngreso) ".
-                                                 "VALUES('".$iConsecutivoPolizas[$p]."','$iConsecutivoOperador','AMIC','".date("Y-m-d H:i:s")."','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
+                                                 "VALUES('".$iConsecutivoPolizas[$p]."','$iConsecutivoOperador','AMIC','".$r['dFechaInicio']."','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
                                         $conexion->query($query);
                                         
                                         if($conexion->affected_rows < 1){$error = 1; $success = false; $mensaje = "The data of driver in the policy was not saved properly, please try again.";}
@@ -422,6 +434,7 @@
                         else{$conexion->rollback();}  
                             
                     }
+                    
                     // Verificar en caso que suban un sheet con un nombre invalido:
                     if($title != 'UNITS' && $title != 'DRIVERS'){
                         $error = 1; $mensaje = "Error: The title of sheet '$title' is not valid, please upload the file with the layout format and try again.";
