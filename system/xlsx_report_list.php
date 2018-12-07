@@ -310,7 +310,7 @@
                              $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(20);
                              // Obtener nombre/licencia
                              if($items[$d]['iEndosoMultiple'] == '1'){
-                                $query  = "SELECT iConsecutivoOperador, sNombre, iNumLicencia FROM cb_endoso_operador ".
+                                $query  = "SELECT iConsecutivoOperador, sNombre, iNumLicencia,eAccion FROM cb_endoso_operador ".
                                           "WHERE iConsecutivoEndoso='".$items[$d]['iConsecutivoEndoso']."'"; 
                                 $result = $conexion->query($query);
                                 $data   = $result->fetch_assoc(); 
@@ -472,9 +472,9 @@
                     $items = mysql_fetch_all($result);
                     
                     //Encabezado del reporte.
-                    $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado, "A1:H1");
+                    $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado, "A1:I1");
                     $objPHPExcel->getActiveSheet()->setCellValue('A1', strtoupper($DatosCo['sNombreCompania']).' - BIND LIST');
-                    $objPHPExcel->getActiveSheet()->mergeCells("A1:H1");
+                    $objPHPExcel->getActiveSheet()->mergeCells("A1:I1");
                     $objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(40);
                     
                     //Subtitulo del Reporte:
@@ -531,6 +531,7 @@
                          $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignL,'B'.$row);
                          $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'C'.$row);
                          $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'D'.$row);
+                         $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'E'.$row); 
                          $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'F'.$row);
                          $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'G'.$row);
                          $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignR,'H'.$row);
@@ -538,24 +539,27 @@
                          
                          $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
                          $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true); 
-                         $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth('17');
-                         $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth('10');
+                         $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth('9');
+                         $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth('13');
                          $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth('9');
-                         $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth('9');
-                         $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth('9');
-                         $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth('15');
+                         $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth('12');
+                         $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth('15');
+                         $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth('20');
                          $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth('17');
                              
                     }
                      
                     #GET ENDORSEMENT SHEET:
-                    /*$query  = "SELECT E.iConsecutivo AS iConsecutivoEndoso, E.eStatus, S.sNumeroEndosoBroker, DATE_FORMAT(E.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
-                              "iEndosoMultiple, E.iConsecutivoOperador, (CASE WHEN E.eAccion='A' THEN 'ADD' WHEN E.eAccion='D' THEN 'DELETE' END) AS eAccion, D.sNombre AS sNombreOperador, D.iNumLicencia
+                    $query  = "SELECT E.iConsecutivo AS iConsecutivoEndoso, E.eStatus, S.sNumeroEndosoBroker, DATE_FORMAT(E.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
+                              "iEndosoMultiple, E.iConsecutivoUnidad, (CASE WHEN E.eAccion='A' THEN 'ADD' WHEN E.eAccion='D' THEN 'DELETE' END) AS eAccion,
+                               D.sVIN, D.iYear, M.sAlias, R.sDescripcion AS sRadius, D.iTotalPremiumPD
                                FROM cb_endoso_estatus AS S
-                               LEFT JOIN cb_endoso    AS E ON S.iConsecutivoEndoso  = E.iConsecutivo
-                               LEFT JOIN ct_polizas   AS P ON S.iConsecutivoPoliza  = P.iConsecutivo
-                               LEFT JOIN ct_operadores AS D ON E.iConsecutivoOperador = D.iConsecutivo
-                              WHERE iConsecutivoPoliza='$polizaId' AND E.iConsecutivoTipoEndoso='2' AND E.iDeleted='0' AND E.iConsecutivoCompania='$iConsecutivoCompania' 
+                               LEFT JOIN cb_endoso AS E ON S.iConsecutivoEndoso = E.iConsecutivo
+                               LEFT JOIN ct_polizas  AS P ON S.iConsecutivoPoliza = P.iConsecutivo
+                               LEFT JOIN ct_unidades AS D ON E.iConsecutivoUnidad = D.iConsecutivo
+                               LEFT JOIN ct_unidad_modelo AS M ON D.iModelo = M.iConsecutivo
+                               LEFT JOIN ct_unidad_radio  AS R ON D.iConsecutivoRadio = R.iConsecutivo 
+                              WHERE iConsecutivoPoliza='$polizaId' AND E.iConsecutivoTipoEndoso='1' AND E.iDeleted='0' AND E.iConsecutivoCompania='$iConsecutivoCompania' 
                               ORDER BY E.dFechaAplicacion ASC"; 
                     $result = $conexion->query($query);
                     $rows   = $result->num_rows; 
@@ -566,102 +570,158 @@
                         $objPHPExcel->getActiveSheet()->setTitle('Endorsements');
                          
                         $items = mysql_fetch_all($result);
-                        
+
                         //Encabezado del reporte.
-                        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado, "A1:G1");
+                        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado, "A1:J1");
                         $objPHPExcel->getActiveSheet()->setCellValue('A1', strtoupper($DatosCo['sNombreCompania']).' - ENDORSEMENTS');
-                        $objPHPExcel->getActiveSheet()->mergeCells("A1:G1");
+                        $objPHPExcel->getActiveSheet()->mergeCells("A1:J1");
                         $objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(40);
                         
                         //Subtitulo del Reporte:
                         $descripcionReporte = "$polizaNo - $polizaTy - $polizaBr";   
                         $descripcionReporte2= "On-line Report from: ".date("m/d/Y g:i a"); 
-                        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado2, "A2:D2");
+                        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado2, "A2:E2");
                         $objPHPExcel->getActiveSheet()->setCellValue('A2', $descripcionReporte);
-                        $objPHPExcel->getActiveSheet()->mergeCells("A2:D2");
-                        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado22, "E2:G2");
-                        $objPHPExcel->getActiveSheet()->setCellValue('E2', $descripcionReporte2);
-                        $objPHPExcel->getActiveSheet()->mergeCells("E2:G2");
+                        $objPHPExcel->getActiveSheet()->mergeCells("A2:E2");
+                        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado22, "F2:J2");
+                        $objPHPExcel->getActiveSheet()->setCellValue('F2', $descripcionReporte2);
+                        $objPHPExcel->getActiveSheet()->mergeCells("F2:J2");
                         $objPHPExcel->getActiveSheet()->getRowDimension('2')->setRowHeight(25); 
 
                         //Columnas:
                         $row = 3;
-                        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado3, "A".$row.":G".$row);
+                        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado3, "A".$row.":J".$row);
                         $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(35);
                         $objPHPExcel->getActiveSheet()
                         ->setCellValue('A'.$row, 'ID')
                         ->setCellValue('B'.$row, 'ACTION')
-                        ->setCellValue('C'.$row, 'NAME')
-                        ->setCellValue('D'.$row, 'LICENSE #')
-                        ->setCellValue('E'.$row, 'END #')
-                        ->setCellValue('F'.$row, 'APPLICATION DATE')
-                        ->setCellValue('G'.$row, 'STATUS');
+                        ->setCellValue('C'.$row, 'VIN')
+                        ->setCellValue('D'.$row, 'YEAR')
+                        ->setCellValue('E'.$row, 'MAKE') 
+                        ->setCellValue('F'.$row, 'RADIUS') 
+                        ->setCellValue('G'.$row, 'TOTAL PREMIUM') 
+                        ->setCellValue('H'.$row, 'END #')
+                        ->setCellValue('I'.$row, 'APPLICATION DATE')
+                        ->setCellValue('J'.$row, 'STATUS');
                                 
                         $countD = count($items); 
                         for($d=0;$d<$countD;$d++){
                          
                              $row++;
-                             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloContenido, "A".$row.":G".$row); 
+                             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloContenido, "A".$row.":J".$row); 
                              $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(20);
                              // Obtener nombre/licencia
                              if($items[$d]['iEndosoMultiple'] == '1'){
-                                $query  = "SELECT iConsecutivoOperador, sNombre, iNumLicencia FROM cb_endoso_operador ".
+                                $query  = "SELECT A.iConsecutivoUnidad, A.sVIN, (CASE WHEN A.eAccion = 'ADDSWAP' THEN 'ADD SWAP' WHEN A.eAccion = 'DELETESWAP' THEN 'DELETE SWAP' ELSE A.eAccion END) AS eAccion,
+                                            A.iTotalPremiumPD, C.sAlias, D.sDescripcion AS sRadius, B.iYear
+                                            FROM cb_endoso_unidad AS A
+                                            LEFT JOIN ct_unidades AS B ON A.iConsecutivoUnidad = B.iConsecutivo 
+                                            LEFT JOIN ct_unidad_modelo AS C ON B.iModelo = C.iConsecutivo
+                                            LEFT JOIN ct_unidad_radio  AS D ON A.iConsecutivoRadio = D.iConsecutivo ".
                                           "WHERE iConsecutivoEndoso='".$items[$d]['iConsecutivoEndoso']."'"; 
                                 $result = $conexion->query($query);
-                                $data   = $result->fetch_assoc(); 
+                                $data   = mysql_fetch_all($result); 
+                                $datac  = count($data);
+                                for($z=0;$z<$datac;$z++){
+                                     // Definir estatus descripcion:
+                                     $estado = get_estatus($items[$d]["eStatus"]);
+                                     $PDApply && $data[$z]['iTotalPremiumPD'] > 0 ? $value = "\$ ".number_format($data[$z]['iTotalPremiumPD'],2,'.',',') : $value = "";
+                                     
+                                     //Reporte contenido:
+                                     $objPHPExcel->getActiveSheet()
+                                     ->setCellValue('A'.$row, $items[$d]['iConsecutivoEndoso'])    
+                                     ->setCellValue('B'.$row, $data[$z]['eAccion']) 
+                                     ->setCellValue('C'.$row, $data[$z]['sVIN']) 
+                                     ->setCellValue('D'.$row, $data[$z]['iYear'])
+                                     ->setCellValue('E'.$row, $data[$z]['sAlias'])
+                                     ->setCellValue('F'.$row, $data[$z]['sRadius'])
+                                     ->setCellValue('G'.$row, $value)
+                                     ->setCellValue('H'.$row, $items[$d]['sNumeroEndosoBroker'])
+                                     ->setCellValue('I'.$row, $items[$d]['dFechaAplicacion'])
+                                     ->setCellValue('J'.$row, $estado);
+                                                 
+                                     // Aplicar formatos/estilos:
+                                     $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'A'.$row);
+                                     $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'B'.$row);
+                                     $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignL,'C'.$row);
+                                     $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'D'.$row);
+                                     $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'E'.$row);
+                                     $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'F'.$row);
+                                     $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignR,'G'.$row);
+                                     $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'H'.$row);
+                                     $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'I'.$row);
+                                     $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'J'.$row);
+                                     
+                                     $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+                                     $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true); 
+                                     $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
+                                     $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth('10');
+                                     $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth('13');
+                                     $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth('12');
+                                     $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth('15');
+                                     $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth('9');
+                                     $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth('17');
+                                     $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth('25');
+                                     
+                                     ($z+1) < $datac ? $row++ : "";
+                                }
                                 
-                                $nombre   = utf8_decode($data['sNombre']); 
-                                $licencia = $data['iNumLicencia'];
                              }
                              else{
-                                 $nombre   = utf8_decode($items[$d]['sNombreOperador']); 
-                                 $licencia = $items[$d]['iNumLicencia'];
+                                 // Definir estatus descripcion:
+                                 $estado = get_estatus($items[$d]["eStatus"]);
+                                 $PDApply && $items[$d]['iTotalPremiumPD'] > 0 ? $value = "\$ ".number_format($items[$d]['iTotalPremiumPD'],2,'.',',') : $value = "";
+                                 
+                                 //Reporte contenido:
+                                 $objPHPExcel->getActiveSheet()
+                                 ->setCellValue('A'.$row, $items[$d]['iConsecutivoEndoso'])    
+                                 ->setCellValue('B'.$row, $items[$d]['eAccion']) 
+                                 ->setCellValue('C'.$row, $items[$d]['sVIN']) 
+                                 ->setCellValue('D'.$row, $items[$d]['iYear'])
+                                 ->setCellValue('E'.$row, $items[$d]['sAlias'])
+                                 ->setCellValue('F'.$row, $items[$d]['sRadius'])
+                                 ->setCellValue('G'.$row, $value)
+                                 ->setCellValue('H'.$row, $items[$d]['sNumeroEndosoBroker'])
+                                 ->setCellValue('I'.$row, $items[$d]['dFechaAplicacion'])
+                                 ->setCellValue('J'.$row, $estado);
+                                             
+                                 // Aplicar formatos/estilos:
+                                 $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'A'.$row);
+                                 $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'B'.$row);
+                                 $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignL,'C'.$row);
+                                 $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'D'.$row);
+                                 $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'E'.$row);
+                                 $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'F'.$row);
+                                 $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignR,'G'.$row);
+                                 $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'H'.$row);
+                                 $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'I'.$row);
+                                 $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'J'.$row);
+                                 
+                                 $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+                                 $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true); 
+                                 $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
+                                 $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth('10');
+                                 $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth('13');
+                                 $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth('12');
+                                 $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth('15');
+                                 $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth('9');
+                                 $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth('17');
+                                 $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth('25');
                              }
-                             
-                             // Definir estatus descripcion:
-                             switch($items[$d]["eStatus"]){
-                                 case 'S' : $estado = 'SENT TO SOLO-TRUCKING'; break;
-                                 case 'A' : $estado = 'APPLIED TO THE POLICY'; break;
-                                 case 'D' : $estado = 'CANCELED'; break;
-                                 case 'SB': $estado = 'SENT TO BROKERS'; break;
-                                 case 'P' : $estado = 'IN PROCESS'; break;
-                             }
-                             
-                             //Reporte contenido:
-                             $objPHPExcel->getActiveSheet()
-                                         ->setCellValue('A'.$row, $items[$d]['iConsecutivoEndoso'])    
-                                         ->setCellValue('B'.$row, $items[$d]['eAccion']) 
-                                         ->setCellValue('C'.$row, $nombre)
-                                         ->setCellValue('D'.$row, $licencia)
-                                         ->setCellValue('E'.$row, $items[$d]['sNumeroEndosoBroker'])
-                                         ->setCellValue('F'.$row, $items[$d]['dFechaAplicacion'])
-                                         ->setCellValue('G'.$row, $estado);
-                                         
-                             // Aplicar formatos/estilos:
-                             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'A'.$row);
-                             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'B'.$row);
-                             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignL,'C'.$row);
-                             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignL,'D'.$row);
-                             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignL,'E'.$row);
-                             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'F'.$row);
-                             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'G'.$row);
-                             
-                             $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
-                             $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth('10');
-                             $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
-                             $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth('19');
-                             $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth('10');
-                             $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth('17');
-                             $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth('25');
                         }  
-                    }  */
+                    }  
                     
                     #GET ACTUAL LIST IN THE POLICY: 
-                    /*$query  = "SELECT B.iConsecutivo, B.sNombre, DATE_FORMAT(B.dFechaNacimiento, '%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(B.dFechaExpiracionLicencia, '%m/%d/%Y') AS dFechaExpiracionLicencia,iExperienciaYear,iNumLicencia,(CASE eTipoLicencia WHEN 1 THEN 'Federal / B1' WHEN 2 THEN 'Commercial / CDL - A' END) AS TipoLicencia,
-                               DATE_FORMAT(A.dFechaIngreso, '%m/%d/%Y') AS dFechaIngreso, A.eModoIngreso
-                               FROM cb_poliza_operador AS A 
-                               LEFT JOIN ct_operadores AS B ON A.iConsecutivoOperador = B.iConsecutivo
-                               WHERE A.iConsecutivoPoliza = '$polizaId' AND B.iConsecutivoCompania='$iConsecutivoCompania' AND A.iDeleted='0' ORDER BY B.sNombre ASC";
+                    $query  = "SELECT B.iConsecutivo, B.sVIN, B.iYear, sPeso, sTipo, C.sAlias AS Make, D.sDescripcion AS sRadius, B.iTotalPremiumPD, DATE_FORMAT(A.dFechaIngreso, '%m/%d/%Y') AS dFechaIngreso, A.eModoIngreso
+                                FROM      cb_poliza_unidad AS A
+                                LEFT JOIN ct_unidades      AS B ON A.iConsecutivoUnidad = B.iConsecutivo
+                                LEFT JOIN ct_unidad_modelo AS C ON B.iModelo = C.iConsecutivo
+                                LEFT JOIN ct_unidad_radio  AS D ON B.iConsecutivoRadio = D.iConsecutivo
+                                WHERE
+                                    A.iConsecutivoPoliza = '$polizaId'
+                                AND B.iConsecutivoCompania = '$iConsecutivoCompania'
+                                AND A.iDeleted = '0'
+                                ORDER BY B.sVIN ASC";
                     $result = $conexion->query($query);
                     $rows   = $result->num_rows;  
                 
@@ -674,34 +734,36 @@
                          
                         $items = mysql_fetch_all($result);
                         //Encabezado del reporte.
-                        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado, "A1:H1");
+                        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado, "A1:I1");
                         $objPHPExcel->getActiveSheet()->setCellValue('A1', strtoupper($DatosCo['sNombreCompania']).' - ACTUAL LIST');
-                        $objPHPExcel->getActiveSheet()->mergeCells("A1:H1");
+                        $objPHPExcel->getActiveSheet()->mergeCells("A1:I1");
                         $objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(40);
+                        
                         //Subtitulo del Reporte:
                         $descripcionReporte = "$polizaNo - $polizaTy - $polizaBr";   
                         $descripcionReporte2= "On-line Report from: ".date("m/d/Y g:i a"); 
-                        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado2, "A2:D2");
+                        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado2, "A2:E2");
                         $objPHPExcel->getActiveSheet()->setCellValue('A2', $descripcionReporte);
-                        $objPHPExcel->getActiveSheet()->mergeCells("A2:D2");
-                        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado22, "E2:H2"); 
-                        $objPHPExcel->getActiveSheet()->setCellValue('E2', $descripcionReporte2);
-                        $objPHPExcel->getActiveSheet()->mergeCells("E2:H2");
-                        $objPHPExcel->getActiveSheet()->getRowDimension('2')->setRowHeight(25);
+                        $objPHPExcel->getActiveSheet()->mergeCells("A2:E2");
+                        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado22, "F2:I2"); 
+                        $objPHPExcel->getActiveSheet()->setCellValue('F2', $descripcionReporte2);
+                        $objPHPExcel->getActiveSheet()->mergeCells("F2:I2");
+                        $objPHPExcel->getActiveSheet()->getRowDimension('2')->setRowHeight(25); 
                          
                         //Columnas:
                         $row = 3;
-                        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado3, "A".$row.":H".$row);
+                        $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado3, "A".$row.":I".$row);
                         $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(35);
                         $objPHPExcel->getActiveSheet()
                                 ->setCellValue('A'.$row, 'NO.')
-                                ->setCellValue('B'.$row, 'NAME')
-                                ->setCellValue('C'.$row, 'DOB')
-                                ->setCellValue('D'.$row, 'LICENSE #')
-                                ->setCellValue('E'.$row, 'LICENSE TYPE')
-                                ->setCellValue('F'.$row, 'EXPIRE DATE')
-                                ->setCellValue('G'.$row, 'YOE')
-                                ->setCellValue('H'.$row, 'APPLICATION DATE');
+                                ->setCellValue('B'.$row, 'VIN')
+                                ->setCellValue('C'.$row, 'YEAR')
+                                ->setCellValue('D'.$row, 'MAKE')
+                                ->setCellValue('E'.$row, 'RADIUS')
+                                ->setCellValue('F'.$row, 'TYPE')
+                                ->setCellValue('G'.$row, 'CAPACITY')
+                                ->setCellValue('H'.$row, 'TOTAL PREMIUM') 
+                                ->setCellValue('I'.$row, 'APPLICATION DATE');
                                 
                         $countD = count($items);
                         $No = 0;
@@ -709,40 +771,47 @@
                              
                              $row++;
                              $No++;
-                             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloContenido, "A".$row.":G".$row); 
+                             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloContenido, "A".$row.":I".$row); 
                              $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(20);
+                             
+                             $PDApply && $items[$d]['iTotalPremiumPD'] > 0 ? $value = "\$ ".number_format($items[$d]['iTotalPremiumPD'],2,'.',',') : $value = "";  
             
                              //Reporte contenido:
                              $objPHPExcel->getActiveSheet()
                                          ->setCellValue('A'.$row, $No)    
-                                         ->setCellValue('B'.$row, utf8_decode($items[$d]['sNombre'])) 
-                                         ->setCellValue('C'.$row, $items[$d]['dFechaNacimiento'])
-                                         ->setCellValue('D'.$row, $items[$d]['iNumLicencia'])
-                                         ->setCellValue('E'.$row, $items[$d]['TipoLicencia'])
-                                         ->setCellValue('F'.$row, $items[$d]['dFechaExpiracionLicencia'])
-                                         ->setCellValue('G'.$row, $items[$d]['iExperienciaYear'])
-                                         ->setCellValue('H'.$row, $items[$d]['eModoIngreso']." - ".$items[$d]['dFechaIngreso']);
+                                         ->setCellValue('B'.$row, strtoupper($items[$d]['sVIN'])) 
+                                         ->setCellValue('C'.$row, $items[$d]['iYear'])
+                                         ->setCellValue('D'.$row, $items[$d]['Make'])
+                                         ->setCellValue('E'.$row, $items[$d]['sRadius'])
+                                         ->setCellValue('F'.$row, $items[$d]['sTipo'])
+                                         ->setCellValue('G'.$row, $items[$d]['sPeso'])
+                                         ->setCellValue('H'.$row, $value) 
+                                         ->setCellValue('I'.$row, $items[$d]['dFechaIngreso']);
                                          
                              // Aplicar formatos/estilos:
                              $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'A'.$row);
                              $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignL,'B'.$row);
                              $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'C'.$row);
-                             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignL,'D'.$row);
+                             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'D'.$row);
+                             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'E'.$row); 
                              $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'F'.$row);
                              $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'G'.$row);
-                             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'H'.$row);
+                             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignR,'H'.$row);
+                             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloAlignC,'I'.$row); 
                              
                              $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
                              $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true); 
-                             $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth('17');
-                             $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth('19');
-                             $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth('17');
-                             $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth('17');
-                             $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth('9');
-                             $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth('30');
-                        }   
+                             $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth('9');
+                             $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth('13');
+                             $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth('9');
+                             $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth('12');
+                             $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth('15');
+                             $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth('20');
+                             $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth('17');
+                                 
+                        }
                         
-                    }*/
+                    }
                 }
                 else{$error = 1; $mensaje = "The data of BIND has not found, please verify if you are uploaded the first list.";} 
             }
@@ -784,113 +853,16 @@
         echo "<script language='javascript'>window.close();</script>"; 
     }
 
-    #REPORTE UNIDADES
-    /*else if($reporttype == "" || $reporttype == 'all' || $reporttype == '1'){
-        if($policy == 'all'){
-             $query  = "SELECT A.iConsecutivo, C.sAlias AS Make, C.sDescripcion AS sMakeDescription, B.sDescripcion AS Radio, iYear, sVIN, sPeso, ".
-                       "sTipo, sModelo, siConsecutivosPolizas, eModoIngreso, iTotalPremiumPD ".
-                       "FROM ct_unidades A ".
-                       "LEFT JOIN ct_unidad_radio B ON A.iConsecutivoRadio = B.iConsecutivo ".
-                       "LEFT JOIN ct_unidad_modelo C ON A.iModelo = C.iConsecutivo ".$filtro_query.$orden_query;
-         }else{
-             
-         }
-         $result = $conexion->query($query);
-         $rows   = $result->num_rows;
-         if($rows > 0){
-             
-             $descripcionReporte = 'Vehicles list from '.strtoupper($DatosCo['sNombreCompania']);
-             //Encabezado del reporte.
-             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado, "A1:I1");
-             $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', 'SOLO-TRUCKING INSURANCE COMPANY');
-             $objPHPExcel->setActiveSheetIndex(0)->mergeCells("A1:I1");
-             $objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(40);
-            
-             //Subtitulo del Reporte:
-             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado2, "A2:I2");
-             $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A2', 'Results of the On-line Report: '.$descripcionReporte);
-             $objPHPExcel->setActiveSheetIndex(0)->mergeCells("A2:I2");
-             $objPHPExcel->getActiveSheet()->getRowDimension('2')->setRowHeight(25);
-             
-             //Columnas:
-             $row = 3;
-             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado3, "A".$row.":I".$row);
-             $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(35);
-             $objPHPExcel->setActiveSheetIndex(0)
-                    ->setCellValue('A'.$row, 'YEAR')
-                    ->setCellValue('B'.$row, 'MAKE')
-                    ->setCellValue('C'.$row, 'VIN')
-                    ->setCellValue('D'.$row, 'RADIUS')
-                    ->setCellValue('E'.$row, 'CAPACITY')
-                    ->setCellValue('F'.$row, 'TYPE')
-                    ->setCellValue('G'.$row, 'TOTAL PREMIUM')
-                    ->setCellValue('H'.$row, 'APPLICATION DATE')
-                    ->setCellValue('I'.$row, 'IS IN POLICIES');   
-
-             while ($items = $result->fetch_assoc()){
-                 $row++;
-                 $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloContenido, "A".$row.":I".$row); 
-                 $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(20);
-                 
-                 //Revisar modo ingreso:
-                 $modoIngreso = $items['eModoIngreso'];
-                
-                 if($modoIngreso == 'EXCEL'){$textoIngreso = "AMIC";}else
-                 if($modoIngreso == 'ENDORSEMENT'){
-                    #CONSULTAR DATOS DEL ENDOSO:
-                    $query = "SELECT DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, iConsecutivo ".
-                             "FROM cb_endoso AS A ".
-                             "WHERE A.iConsecutivoUnidad='".$items['iConsecutivo']."' AND eStatus='A' ORDER BY dFechaAplicacion DESC LIMIT 1";
-                    $res   = $conexion->query($query);
-                    $endoso= $res->fetch_assoc();
-                    $textoIngreso = "END - ".$endoso['dFechaAplicacion'];
-                 }
-                 
-                 //Revisar polizas:
-                 $query  = "SELECT iConsecutivoPoliza, B.sNumeroPoliza, C.sDescripcion AS sTipoPoliza, C.sAlias ".
-                           "FROM cb_poliza_unidad AS A ".
-                           "INNER JOIN ct_polizas   AS B ON A.iConsecutivoPoliza = B.iConsecutivo AND B.iDeleted = '0' AND B.dFechaCaducidad >= CURDATE() ".
-                           "LEFT JOIN  ct_tipo_poliza AS C ON B.iTipoPoliza = C.iConsecutivo ".
-                           "WHERE A.iConsecutivoUnidad = '".$items['iConsecutivo']."' ";
-                 $r      = $conexion->query($query);
-                 $total  = $r->num_rows;
-                 $polizas= "";
-                 $PDApply= false; 
-                  
-                 if($total > 0){
-                    while ($poli = $r->fetch_assoc()){
-                       $polizas == "" ? $polizas .= $poli['sNumeroPoliza']." - ".$poli['sAlias'] : $polizas .= " 
-                       ".$poli['sNumeroPoliza']." - ".$poli['sAlias']; 
-                       if($poli['sAlias'] == "PD"){$PDApply = true;}
-                    }
-                 }
-                 
-                 $PDApply && $items['iTotalPremiumPD'] > 0 ? $value = "\$ ".number_format($items['iTotalPremiumPD'],2,'.',',') : $value = "";
-                    
-                 //Reporte contenido:
-                 $objPHPExcel->setActiveSheetIndex(0)
-                             ->setCellValue('A'.$row, $items['iYear'])
-                             ->setCellValue('B'.$row, $items['Make'])
-                             ->setCellValue('C'.$row, $items['sVIN'])
-                             ->setCellValue('D'.$row, $items['Radio'])
-                             ->setCellValue('E'.$row, $items['sPeso'])
-                             ->setCellValue('F'.$row, $items['sTipo'])
-                             ->setCellValue('G'.$row, $value)
-                             ->setCellValue('H'.$row, $textoIngreso)
-                             ->setCellValue('I'.$row, $polizas); 
-                 
-             }
-             
-             //Ajustar la dimension de las columnas:
-             foreach(range('A','I') as $columnID) {
-                $objPHPExcel->getActiveSheet()->getColumnDimension($columnID)->setAutoSize(true);
-             }
-             // Rename worksheet
-             $objPHPExcel->getActiveSheet()->setTitle('DRIVERS');
-             // Set active sheet index to the first sheet, so Excel opens this as the first sheet
-             $objPHPExcel->setActiveSheetIndex(0);
-        
-         }    
-    } */
+    #FUNCIONES EXTRAS:
+    function get_estatus($status){
+        switch($status){
+             case 'S' : $estado = 'SENT TO SOLO-TRUCKING'; break;
+             case 'A' : $estado = 'APPLIED TO THE POLICY'; break;
+             case 'D' : $estado = 'CANCELED'; break;
+             case 'SB': $estado = 'SENT TO BROKERS'; break;
+             case 'P' : $estado = 'IN PROCESS'; break;
+        }
+        return $estado;
+    }
 
 ?>

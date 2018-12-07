@@ -738,12 +738,12 @@
               
               //Revisamos si el endoso aplica para envio mensual... (no debe aparecer aqui.)
               $endosoFields = "";
-              if($data['bEndosoMensual'] == '1'){
+             /* if($data['bEndosoMensual'] == '1'){
                   $endosoFields = "<td style=\"width: 50%;border:0px!important;\"><p>This endorsement has not been sent to its broker, because it's submission is by month. ".
                                   "<a href=\"endorsement_month\" target=\"_blank\" style=\"color:#2a95e8;display: inline-block;padding: 1px;text-decoration: underline;\">Click here</a></p></td>";
                   $fechaActualizacion = "";
-              }
-              else{
+              } */
+             // else{
                   $fechaActualizacion = "<span>Last updated: ".$data['dFechaActualizacion']."</span>";
                   $label  = "style=\"display: block;float: left;width: 18%;margin: 2px 0px;padding:5px 0px;\"";
                   $input  = "style=\"float: right;width: 80%;clear: none;margin: 2px!important;height: 20px!important;resize: none;\"";
@@ -771,7 +771,7 @@
                                    "</div>";
                   $endosoFields .= "</td>";
                     
-              }
+             // }
               
               $htmlTabla .= "<tr>".
                             "<td colspan=\"100%\">".
