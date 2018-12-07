@@ -1,6 +1,6 @@
 <?php
   session_start();
-  header('content-type: text/html; charset: UTF-8');
+  header('content-type: text/html; charset: UTF-8');  
   
   // Generic functions lib 
   include("functiones_genericas.php"); 

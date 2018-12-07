@@ -1552,7 +1552,8 @@
       $rows   = $result->num_rows; 
       
       if($rows > 0){
-          $data = $result->fetch_assoc();
+          $data         = $result->fetch_assoc();
+          $dFechaEndoso = $data['dFechaAplicacion'];
           #ENDOSOS NO MULTIPLES:
           if($data['iEndosoMultiple']==0){
               //Tomamos variables:
@@ -1563,7 +1564,7 @@
               if($eAccion == "A"){
                  //Agregar registro a la tabla de relacion: 
                  $query   = "INSERT INTO cb_poliza_unidad (iConsecutivoPoliza,iConsecutivoUnidad,eModoIngreso,dFechaIngreso,sIPIngreso,sUsuarioIngreso) ".
-                            "VALUES('$iConsecutivoPoliza','$idDetalle','ENDORSEMENT','".date("Y-m-d H:i:s")."','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
+                            "VALUES('$iConsecutivoPoliza','$idDetalle','ENDORSEMENT','$dFechaEndoso','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
                  $success = $conexion->query($query); 
               
                  $query   = "UPDATE ct_unidades SET iDeleted='0' WHERE iConsecutivo='$idDetalle'";
@@ -1572,7 +1573,7 @@
                 
               }
               else if($eAccion == "D"){
-                  $query   = "UPDATE cb_poliza_unidad SET iDeleted='1',dFechaActualizacion='".date("Y-m-d H:i:s")."',sIPActualizacion='".$_SERVER['REMOTE_ADDR']."',sUsuarioActualizacion='".$_SESSION['usuario_actual']."'".
+                  $query   = "UPDATE cb_poliza_unidad SET iDeleted='1',dFechaActualizacion='$dFechaEndoso',sIPActualizacion='".$_SERVER['REMOTE_ADDR']."',sUsuarioActualizacion='".$_SESSION['usuario_actual']."'".
                              "WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoUnidad='$idDetalle' AND iDeleted='0'";
                   $success = $conexion->query($query); 
                   if(!($success)){$transaccion_exitosa = false;}
@@ -1598,7 +1599,7 @@
                        
                          //Agregamos a la poliza la unidad: 
                          $query   = "INSERT INTO cb_poliza_unidad (iConsecutivoPoliza,iConsecutivoUnidad,eModoIngreso,dFechaIngreso,sIPIngreso,sUsuarioIngreso) ".
-                                    "VALUES('$iConsecutivoPoliza','$idDetalle','ENDORSEMENT','".date("Y-m-d H:i:s")."','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
+                                    "VALUES('$iConsecutivoPoliza','$idDetalle','ENDORSEMENT','$dFechaEndoso','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
                          $success = $conexion->query($query); 
                          
                          //Se actualizan los datos de la unidad en base al endoso:
@@ -1609,7 +1610,7 @@
                       }
                       if($eAccion == "DELETE" || $eAccion == "DELETESWAP"){
                           //Marcar como eliminado de la poliza la unidad:
-                          $query   = "UPDATE cb_poliza_unidad SET iDeleted='1',dFechaActualizacion='".date("Y-m-d H:i:s")."',sIPActualizacion='".$_SERVER['REMOTE_ADDR']."',sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
+                          $query   = "UPDATE cb_poliza_unidad SET iDeleted='1',dFechaActualizacion='$dFechaEndoso',sIPActualizacion='".$_SERVER['REMOTE_ADDR']."',sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
                                      "WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoUnidad='$idDetalle' AND iDeleted='0'";
                           $success = $conexion->query($query); 
                           if(!($success)){$transaccion_exitosa = false;}

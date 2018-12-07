@@ -94,12 +94,12 @@ function inicio(){
                    var type    = $("#dialog_report_history_list .flt_type").val(); 
                    var policy  = $("#dialog_report_history_list .flt_policies").val();    
                    
-                   if(company != ""){
+                   if(company != "" && policy != ""){
                         window.open('xlsx_report_list.php?company='+company+'&reporttype='+type+'&policy='+policy);
                    }
                    else{
-                       fn_solotrucking.mensaje("Please select before a company."); 
-                       $("#dialog_report_history_list .flt_company").addClass('error');
+                       fn_solotrucking.mensaje("Please select before a valid data."); 
+                       //$("#dialog_report_history_list .flt_company").addClass('error');
                    }             
                 },
                  'CANCEL' : function(){
@@ -1045,7 +1045,7 @@ var fn_policies = {
                             //Reportes Select:
                             if(data.error == '0'){
                                $("#dialog_report_history_list .flt_policies").empty().append(data.select).removeClass('readonly').removeProp('disabled');
-                               $("#dialog_report_history_list .flt_policies option:first-child").text('All');  
+                               //$("#dialog_report_history_list .flt_policies option:first-child").text('All');  
                             }
                             else{
                                fn_solotrucking.mensaje(data.mensaje); 
@@ -1528,11 +1528,11 @@ var fn_policies = {
                     </tr>
                     <tr id="grid-head2">
                         <td class="etiqueta_grid">VIN</td>
-                        <td class="etiqueta_grid">RADIO</td>
+                        <td class="etiqueta_grid">RADIUS</td>
                         <td class="etiqueta_grid">YEAR</td>
                         <td class="etiqueta_grid">MAKE</td> 
                         <td class="etiqueta_grid">TYPE</td> 
-                        <td class="etiqueta_grid">WEIGHT</td> 
+                        <td class="etiqueta_grid">CAPACITY</td> 
                         <td class="etiqueta_grid">$ VALUE</td> 
                         <td class="etiqueta_grid" style="padding: 3px 0px 0px!important;">
                             <span style="display: block;padding: 0px 3px;text-align: center;">POLICIES</span>
