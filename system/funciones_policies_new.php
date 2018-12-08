@@ -163,6 +163,16 @@
                                       array_push($valores,$sType);
                                     }
                                 }else
+                                if($header == "YEAR"){
+                                    $iYear = intval(trim($value)); 
+                                    if($iYear > 0){
+                                      //UPDATE 
+                                      array_push($update,"iYear='$iYear'");
+                                      //INSERT 
+                                      array_push($campos,"iYear");
+                                      array_push($valores,$iYear);
+                                    }
+                                }else
                                 if($header == "TOTALPREMIUM" || $header == "PD" || $header == "TOTALPREMIUMPD"){
                                     $totalP = trim($value);
                                     $totalP = str_replace(" ","",$totalP);
