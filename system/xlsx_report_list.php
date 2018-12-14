@@ -254,7 +254,7 @@
                     }
                      
                     #GET ENDORSEMENT SHEET:
-                    $query  = "SELECT E.iConsecutivo AS iConsecutivoEndoso, E.eStatus, S.sNumeroEndosoBroker, DATE_FORMAT(E.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
+                    $query  = "SELECT E.iConsecutivo AS iConsecutivoEndoso, S.eStatus, S.sNumeroEndosoBroker, DATE_FORMAT(E.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
                               "iEndosoMultiple, E.iConsecutivoOperador, (CASE WHEN E.eAccion='A' THEN 'ADD' WHEN E.eAccion='D' THEN 'DELETE' END) AS eAccion, D.sNombre AS sNombreOperador, D.iNumLicencia
                                FROM cb_endoso_estatus AS S
                                LEFT JOIN cb_endoso    AS E ON S.iConsecutivoEndoso  = E.iConsecutivo
@@ -550,7 +550,7 @@
                     }
                      
                     #GET ENDORSEMENT SHEET:
-                    $query  = "SELECT E.iConsecutivo AS iConsecutivoEndoso, E.eStatus, S.sNumeroEndosoBroker, DATE_FORMAT(E.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
+                    $query  = "SELECT E.iConsecutivo AS iConsecutivoEndoso, S.eStatus, S.sNumeroEndosoBroker, DATE_FORMAT(E.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
                               "iEndosoMultiple, E.iConsecutivoUnidad, (CASE WHEN E.eAccion='A' THEN 'ADD' WHEN E.eAccion='D' THEN 'DELETE' END) AS eAccion,
                                D.sVIN, D.iYear, M.sAlias, R.sDescripcion AS sRadius, D.iTotalPremiumPD
                                FROM cb_endoso_estatus AS S

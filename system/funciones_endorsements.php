@@ -2182,7 +2182,7 @@
                   $error = "1"; $mensaje="Error: The file extension is not valid, please check it.";
               }else {
                   //Verificar Tamaño:
-                  if(($fileSize > 0 && $fileSize <= 3000000) || ($fileSize == 0 && $fileError == 1)){
+                  if($fileSize > 0  && $fileError == 0){
                       
                       $sContenido           = $conexion->real_escape_string($fileContent);
                       $eArchivo             = trim($_POST['eArchivo']); 
@@ -2214,7 +2214,9 @@
                             $error = "1";
                       }     
                   }
-                  else{$error = "1";$mensaje = "Error: The file you are trying to upload exceeds the maximum size (3MB) allowed by the system, please check it and try again.";}
+                  else{
+                      $error   = "1";
+                      $mensaje = "Error: The file you are trying to upload is empty or corrupt, please check it and try again.";}
               }
               
           }   
