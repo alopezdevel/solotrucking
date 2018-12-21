@@ -720,6 +720,7 @@ var fn_policies = {
                     success : function(data){                               
                         if(data.error == '0'){
                             $(domroot + " .company_policies").empty().append(data.checkboxes); 
+                            $(domroot + " .company_policies input[type=checkbox]").prop('disabled','disabled'); 
                         }
                     }
                 });
@@ -819,13 +820,13 @@ var fn_policies = {
                        }
                          
                 });
-                //if(policies_selected == ''){valid = false;}else{$("#data_driver_form #siConsecutivosPolizas").val(policies_selected); }
+                if(policies_selected == ''){valid = false;}else{$("#data_driver_form #siConsecutivosPolizas").val(policies_selected);}
                 
                 
                 if(valid){
                     
                     if($('#drivers_edit_form #iConsecutivo').val() != ''){struct_data_post.edit_mode = "true";}else{struct_data_post.edit_mode = "false";} 
-                    struct_data_post.action="save_driver";
+                    struct_data_post.action = "save_driver";
                     struct_data_post.domroot= "#data_driver_form";  
                     $.post("funciones_policies.php",struct_data_post.parse(),
                     function(data){
@@ -1438,8 +1439,9 @@ var fn_policies = {
            <form style="padding:10px;" action="" method="post">
            <fieldset>
                <legend>DRIVER DATA</legend>
+               <p>In this form you can only update the driver general data, not its policies.</p>
                <div class="field_item" style="font-size: 12px;">
-                    <label style="font-size: 12px;">Select policies: <span style="color:#ff0000;">*</span>:</label>  
+                    <label style="font-size: 12px;">Actual Policies: <span style="color:#ff0000;">*</span>:</label>  
                     <div class="company_policies" style="padding:10px;"></div>
                     <br>
                 </div> 
@@ -1483,8 +1485,8 @@ var fn_policies = {
                           <label>Licence Type: </label>
                           <Select tabindex="5" id="eTipoLicencia" style="width: 99%!important;height: 25px!important;">
                             <option value="">Select an option...</option>
-                            <option value="1">FEDERAL / B1</option>
-                            <option value="2">COMMERCIAL / CDL-1</option>
+                            <option value="FEDERAL/B1">FEDERAL / B1</option>
+                            <option value="COMMERCIAL/CDL-A">COMMERCIAL / CDL-1</option>
                           </select>
                     </div>
                     </td>
@@ -1573,8 +1575,9 @@ var fn_policies = {
            <form style="padding:10px;">
            <fieldset>
                 <legend>VEHICLE DATA</legend>
+                <p>In this form you can only update the vehicle general data, not its policies.</p>
                 <div class="field_item">
-                    <label>Select policies: <span style="color:#ff0000;">*</span>:</label>  
+                    <label>Actual Policies: <span style="color:#ff0000;">*</span>:</label>  
                     <div class="company_policies" style="padding:10px;"></div>
                     <br>
                 </div> 

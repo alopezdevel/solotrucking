@@ -40,12 +40,17 @@
                         <li><a href="certificate_request_pdf_upload">Company Certificates (upload)</a></li>   
                     </ul>
                 </li>
-                <li><a href="policies">POLICIES</a></li>
+                <li class="submenu"><a href="#">POLICIES</a>
+                    <ul>
+                        <li><a href="policies">Policies</a></li>
+                        <li><a href="list_admin">Administrator drivers/vehicles</a></li>
+                    </ul>
+                </li>
                 <li class="submenu"><a href="#">Endorsements</a>
                    <ul>
                         <li><a href="endorsements">New Endorsement</a></li> 
                         <li><a href="endorsement_request">Applications for Drivers</a></li>
-                        <li><a href="endorsement_request_units">Applications for Units</a></li> 
+                        <li><a href="endorsement_request_units">Applications for Units</a></li>
                         <li><a href="endorsement_month">Monthly Report to CRC</a></li>
                         <li><a href="endorsement_files">Upload Files</a></li>  
                         <li><a href="brokers">Brokers to send email</a></li>
@@ -85,12 +90,13 @@
                   <li class="submenu"><a href="#">Endorsements</a>
                    <ul>
                         <li><a href="endorsement_request">New for Drivers</a></li>
-                        <li><a href="endorsement_request_units">New for Units</a></li> 
-                        <li><a href="endorsement_month">Monthly Report to CRC</a></li>
-                        <li><a href="endorsement_files">Upload files to endorsements</a></li> 
+                        <li><a href="endorsement_request_units">New for Units</a></li>
+                        <li><a href="endorsement_admin">Administrator</a></li> 
+                        <li style="display: none;"><a href="endorsement_month">Monthly Report to CRC</a></li>
+                        <li style="display: none;"><a href="endorsement_files">Upload files to endorsements</a></li> 
                         <li><a href="brokers">Configure e-mails for Brokers</a></li>
                         <li style="display: none;"><a href="endorsements">New Endorsement like a company</a></li> 
-                    </ul>
+                   </ul>
                 </li>
                 <li class="submenu"><a href="#">CLAIMS</a>
                     <ul>
@@ -122,20 +128,23 @@
                   </li>
                   <li><a href="policies">POLICIES</a></li>
                   <li class="submenu"><a href="#">Endorsements</a>
-                   <ul>
-                        <li><a href="endorsements"><i class="fa fa-plus-circle"></i>New Endorsement</a></li>
-                        <li><a href="endorsement_request"><i class="fa fa-users"></i>Applications to Drivers</a></li>
-                        <li><a href="endorsement_request_units"> <i class="fa fa-truck"></i> Applications to Units</a></li> 
-                        <li><a href="endorsement_files"> <i class="fa fa-file-text"></i> UPLOAD FILES</a></li> 
-                    </ul>
-                </li>
-                <li class="submenu"><a href="#">CLAIMS</a>
+                    <ul>
+                        <li><a href="endorsement_request">New for Drivers</a></li>
+                        <li><a href="endorsement_request_units">New for Units</a></li>
+                        <li><a href="endorsement_admin">Administrator</a></li> 
+                        <li style="display: none;"><a href="endorsement_month">Monthly Report to CRC</a></li>
+                        <li style="display: none;"><a href="endorsement_files">Upload files to endorsements</a></li> 
+                        <li><a href="brokers">Configure e-mails for Brokers</a></li>
+                        <li style="display: none;"><a href="endorsements">New Endorsement like a company</a></li> 
+                   </ul> 
+                  </li>
+                  <li class="submenu"><a href="#">CLAIMS</a>
                     <ul>
                         <li><a href="claims"><i class="fa fa-plus-circle"></i>New Claim</a></li>
                         <li><a href="claims_requests"><i class="fa fa-envelope"></i>Applications for Claims</a></li>
                     </ul>
-                </li> 
-                <li class="submenu"><a href="#">QUOTES</a>
+                  </li> 
+                  <li class="submenu"><a href="#">QUOTES</a>
                    <ul>
                         <li><a href="quote_formats"><i class="fa fa-file-text"></i> QUOTE FORMATS</a></li>  
                     </ul>

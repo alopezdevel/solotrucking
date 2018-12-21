@@ -1077,7 +1077,7 @@
         $pagina_actual == "0" ? $pagina_actual = 1 : false;
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-        $sql    = "SELECT iConsecutivo, sNombre, DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, iExperienciaYear, iNumLicencia, (CASE eTipoLicencia WHEN  1 THEN 'Federal / B1' WHEN  2 THEN 'Commercial / CDL - A' END) AS TipoLicencia,eModoIngreso ".
+        $sql    = "SELECT iConsecutivo, sNombre, DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, iExperienciaYear, iNumLicencia, (CASE eTipoLicencia WHEN  'Federal/B1' THEN 'Federal / B1' WHEN  'Commercial/CDL-A' THEN 'Commercial / CDL - A' END) AS TipoLicencia,eModoIngreso ".
                   "FROM ct_operadores ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
         $result = $conexion->query($sql);
         $rows   = $result->num_rows;   
@@ -1117,7 +1117,7 @@
                                    "<td class=\"txt-c\">".$items['iExperienciaYear']."</td>".
                                    "<td style=\"padding: 0px!important;\">$polizas</td>".                                                                                                                                                                                                                   
                                    "<td>".
-                                   //"<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i></div>".
+                                   "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i></div>".
                                    "</td></tr>";   
                 }
                 $conexion->rollback();
@@ -1295,33 +1295,30 @@
               $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
                       Error: The Driver that you trying to add already exists in this list. Please you verify the data.</p>';
               $error = '1';
-          }else{
+          }else{   
              foreach($_POST as $campo => $valor){
-                if($campo != "accion" and $campo != "edit_mode"  and $campo != "iConsecutivo" and $campo != "iNumLicencia"){ //Estos campos no se insertan a la tabla
-                    if($campo == "siConsecutivosPolizas" || $valor != ""){array_push($valores,"$campo='".trim($valor)."'");}
+                if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivo" && $campo != "iNumLicencia" && $campo != "siConsecutivosPolizas"){ //Estos campos no se insertan a la tabla
+                    if($valor != ""){array_push($valores,"$campo='".trim($valor)."'");}
                 }
              }   
           }
       }else if($_POST["edit_mode"] != 'true'){
          foreach($_POST as $campo => $valor){
-            if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo"){ //Estos campos no se insertan a la tabla
-                if($campo == "siConsecutivosPolizas" || $valor != ""){ 
+            if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo" && $campo != "siConsecutivosPolizas"){ //Estos campos no se insertan a la tabla
+                if($valor != ""){ 
                     array_push($campos ,$campo); 
                     array_push($valores, trim($valor)); 
                 }
             }
          }  
       }
-      ////////
+      
       if($error == '0'){
-          
-          $_POST['siConsecutivosPolizas'] != "" ? $inPoliza = "1" : $inPoliza = "0";
           
           if($_POST["edit_mode"] == 'true'){
             array_push($valores ,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
             array_push($valores ,"sIP='".$_SERVER['REMOTE_ADDR']."'");
             array_push($valores ,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'"); 
-            array_push($valores,"inPoliza = '$inPoliza'");
             $sql = "UPDATE ct_operadores SET ".implode(",",$valores)." WHERE iConsecutivo ='".$_POST['iConsecutivo']."' AND iConsecutivoCompania ='".$_POST['iConsecutivoCompania']."'";
             $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data have been updated successfully.</p>'; 
           }else{
@@ -1331,12 +1328,10 @@
             array_push($valores ,$_SERVER['REMOTE_ADDR']);
             array_push($campos ,"sUsuarioIngreso");
             array_push($valores ,$_SESSION['usuario_actual']);
-            array_push($campos ,"inPoliza");
-            array_push($valores ,"'$inPoliza'");
             $sql = "INSERT INTO ct_operadores (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
             $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data have been added successfully.</p>';
           }
-          
+     
           $success = $conexion->query($sql);
           if(!($success)){$transaccion_exitosa = false;$msj = "A general system error ocurred : internal error";}
           
@@ -1353,40 +1348,49 @@
       echo json_encode($response);
   }
   function get_driver(){
-      $error = '0';
-      $msj = "";
-      $fields = "";
-      $clave = trim($_POST['clave']);
+      $error   = '0';
+      $msj     = "";
+      $fields  = "";
+      $clave   = trim($_POST['clave']);
       $company = trim($_POST['company']);  
       $domroot = $_POST['domroot'];
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                 
-      $sql = "SELECT iConsecutivo, sNombre, DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, ".
-             "iExperienciaYear, iNumLicencia, eTipoLicencia,inPoliza, siConsecutivosPolizas  FROM ct_operadores WHERE iConsecutivo = '$clave' AND iConsecutivoCompania = '$company'";  
+      $sql    = "SELECT iConsecutivo,iConsecutivoCompania, sNombre, DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, ".
+                "iExperienciaYear, iNumLicencia, eTipoLicencia  FROM ct_operadores WHERE iConsecutivo = '$clave' AND iConsecutivoCompania = '$company'";  
       $result = $conexion->query($sql);
-      $items = $result->num_rows;   
+      $items  = $result->num_rows;   
       if ($items > 0) {     
         $data = $result->fetch_assoc();
         $llaves  = array_keys($data);
         $datos   = $data;
         foreach($datos as $i => $b){
-            if($i == 'siConsecutivosPolizas'){
-                $poliza = explode(',',$datos[$i]); 
-                for ($i = 0; $i < count($poliza); $i++) {
-                   $fields .= "\$('#drivers_edit_form  :input[value=\"".$poliza[$i]."\"]').prop(\"checked\",\"true\");";  
-                }
-            }else{
+            if($i != 'siConsecutivosPolizas'){
                $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');"; 
             }
              
         }  
+        
+        $query  = "SELECT iConsecutivoPoliza, B.sNumeroPoliza, C.sDescripcion AS sTipoPoliza, C.sAlias, DATE_FORMAT(A.dFechaIngreso,'%m/%d/%Y') AS dFechaIngreso, eModoIngreso ".
+                   "FROM cb_poliza_operador AS A ".
+                   "INNER JOIN ct_polizas   AS B ON A.iConsecutivoPoliza = B.iConsecutivo AND B.iDeleted = '0' AND B.dFechaCaducidad >= CURDATE() ".
+                   "LEFT JOIN  ct_tipo_poliza AS C ON B.iTipoPoliza = C.iConsecutivo ".
+                   "WHERE A.iConsecutivoOperador = '".$data['iConsecutivo']."' AND A.iDeleted='0' ";
+        $r      = $conexion->query($query);
+        $total  = $r->num_rows;
+        
+        if($total > 0){
+            while ($poli = $r->fetch_assoc()){
+               $fields .= "\$('#drivers_edit_form  :input[value=\"".$poli['iConsecutivoPoliza']."\"]').prop(\"checked\",\"true\");"; 
+            }
+        }
+         
       }
       $conexion->rollback();
       $conexion->close(); 
       $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields");   
       echo json_encode($response);
   }
-  function delete_driver_of_policy(){}
   
   #units
   function get_units_active(){
@@ -1476,7 +1480,7 @@
                                   "<td class=\"txt-r\">".$value."</td>".
                                   "<td style=\"padding: 0px!important;\">".$polizas."</td>".                                                                                                                                                                                                                    
                                   "<td>".
-                                  //"<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i></div>".
+                                  "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i></div>".
                                   "</td></tr>";
                       
                 }
@@ -1571,36 +1575,49 @@
       echo json_encode($response); 
   }
   function get_unit(){
-      $error = '0';
-      $msj = "";
-      $fields = "";
-      $clave = trim($_POST['clave']);
+      //Variables:
+      $error   = '0';
+      $msj     = "";
+      $fields  = "";
+      $clave   = trim($_POST['clave']);
       $company = trim($_POST['company']);  
       $domroot = $_POST['domroot'];
+      
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                 
-      $sql = "SELECT * FROM ct_unidades WHERE iConsecutivo = '$clave' AND iConsecutivoCompania = '$company'";  
+      $sql    = "SELECT * FROM ct_unidades WHERE iConsecutivo = '$clave' AND iConsecutivoCompania = '$company'";  
       $result = $conexion->query($sql);
-      $items = $result->num_rows;   
-      if ($items > 0) {     
+      $items  = $result->num_rows;   
+      if($items > 0){     
         $data = $result->fetch_assoc();
         $llaves  = array_keys($data);
         $datos   = $data;
         foreach($datos as $i => $b){
-            if($i == 'siConsecutivosPolizas'){
-                $poliza = explode(',',$datos[$i]); 
-                for ($i = 0; $i < count($poliza); $i++) {
-                   $fields .= "\$('#unit_edit_form  :input[value=\"".$poliza[$i]."\"]').prop(\"checked\",\"true\");";  
-                }
-            }else{
+            if($i != 'siConsecutivosPolizas'){
                $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');"; 
             }
              
-        }  
+        } 
+        
+        //CONSULTAR POLIZAS:
+        $query  = "SELECT iConsecutivoPoliza, B.sNumeroPoliza, C.sDescripcion AS sTipoPoliza, C.sAlias, DATE_FORMAT(A.dFechaIngreso,'%m/%d/%Y') AS dFechaIngreso,eModoIngreso ".
+                   "FROM cb_poliza_unidad AS A ".
+                   "INNER JOIN ct_polizas   AS B ON A.iConsecutivoPoliza = B.iConsecutivo AND B.iDeleted = '0' AND B.dFechaCaducidad >= CURDATE() ".
+                   "LEFT JOIN  ct_tipo_poliza AS C ON B.iTipoPoliza = C.iConsecutivo ".
+                   "WHERE A.iConsecutivoUnidad = '".$data['iConsecutivo']."' AND A.iDeleted = '0' ";
+        $r      = $conexion->query($query);
+        $total  = $r->num_rows;
+        $PDApply= 'false';  
+        if($total > 0){
+           while ($poli = $r->fetch_assoc()){ 
+                if($poli['sAlias'] == "PD"){$PDApply = 'true';} 
+                $fields .= "\$('#unit_edit_form  :input[value=\"".$poli['iConsecutivoPoliza']."\"]').prop(\"checked\",\"true\");";
+           }
+        }
       }
       $conexion->rollback();
       $conexion->close(); 
-      $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields");   
+      $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields","PDApply"=>"$PDApply");   
       echo json_encode($response);
   }   
   
