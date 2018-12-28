@@ -5,7 +5,7 @@
   $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accion"],array()) : ""; 
   define('USER',$_SESSION['usuario_actual']); // Constante UserId 
   
-  function get_endorsements(){
+  function get_datagrit(){
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
       $transaccion_exitosa = true;
@@ -49,26 +49,46 @@
       $pagina_actual == "0" ? $pagina_actual = 1 : false;
       $limite_superior = $registros_por_pagina;
       $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-      $sql    = "SELECT A.iConsecutivo, A.sNombreCompania, A.iOnRedList, (SELECT COUNT(B.iConsecutivo) FROM cb_endoso AS B WHERE B.iConsecutivoCompania = A.iConsecutivo) AS total_endosos ".
-                "FROM ct_companias AS A ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
+      $sql    = "SELECT A.iConsecutivo, A.sNombreCompania, A.iOnRedList FROM ct_companias AS A ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
       $result = $conexion->query($sql);
       $rows   = $result->num_rows; 
          
         if ($rows > 0) {    
-            while ($items = $result->fetch_assoc()) { 
+            while ($items = $result->fetch_assoc()){ 
+                
+                // Contar total de endosos a polizas vigentes:
+                $query  = "SELECT COUNT(B.iConsecutivo) ".
+                          "FROM       cb_endoso         AS B ".
+                          "INNER JOIN cb_endoso_estatus AS C ON B.iConsecutivo       = C.iConsecutivoEndoso ".
+                          "LEFT JOIN  ct_polizas        AS P ON C.iConsecutivoPoliza = P.iConsecutivo AND P.iDeleted = '0' AND P.dFechaCaducidad >= CURDATE() ".
+                          "WHERE B.iConsecutivoCompania = '".$items['iConsecutivo']."' GROUP BY B.iConsecutivo";
+                $r      = $conexion->query($query);  
+                $endosos= mysql_fetch_all($r);
+                $total_endosos = count($endosos);
+                
+                // Contar unidades:
+                $query  = "SELECT COUNT(A.iConsecutivo) AS total FROM  ct_unidades AS A WHERE A.iConsecutivoCompania = '".$items['iConsecutivo']."' AND A.iDeleted='0'";
+                $r      = $conexion->query($query);  
+                $unidad = $r->fetch_assoc();
+                
+                // Contar operadores:
+                $query  = "SELECT COUNT(A.iConsecutivo) AS total FROM  ct_operadores AS A WHERE A.iConsecutivoCompania = '".$items['iConsecutivo']."' AND A.iDeleted='0'";
+                $r      = $conexion->query($query);  
+                $driver = $r->fetch_assoc();
               
-                 $btn_confirm = "";
-                 $descripcion = ""; 
+                $btn_confirm = "";
+                $descripcion = ""; 
                  
-                 
-                  //Redlist:
-                 $items['iOnRedList'] == '1' ? $redlist_icon = "<i class=\"fa fa-star\" style=\"color:#e8051b;margin-right:4px;\"></i>" : $redlist_icon = ""; 
+                //Redlist:
+                $items['iOnRedList'] == '1' ? $redlist_icon = "<i class=\"fa fa-star\" style=\"color:#e8051b;margin-right:4px;\"></i>" : $redlist_icon = ""; 
                  $htmlTabla .= "<tr>
                                     <td>".$items['iConsecutivo']."</td>".
                                    "<td>".$redlist_icon.$items['sNombreCompania']."</td>".
-                                   "<td>".$items['total_endosos']."</td>". 
+                                   "<td class=\"txt-c\">".$driver['total']."</td>".
+                                   "<td class=\"txt-c\">".$unidad['total']."</td>".
+                                   "<td class=\"txt-c\">".$total_endosos."</td>". 
                                    "<td>".
-                                   "<div class=\"btn_endorsement_list btn-icon edit btn-left\" title=\"View Endorsements\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>".
+                                   "<div class=\"btn_units_list btn-icon edit btn-left\" title=\"View Endorsements\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>".
                                         //"<div class=\"btn_open_files btn-icon edit btn-left\" title=\"View Files of Endorsement - ".$items['iConsecutivo']."\"><i class=\"fa fa-file-text\"></i> <span></span></div> ".
                                    "</td>".
                                    "</tr>";
