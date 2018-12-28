@@ -421,7 +421,8 @@
             <tr id="grid-head2">
                 <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('A.iConsecutivo',this.cellIndex);">ID</td> 
                 <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('A.sNombreCompania',this.cellIndex);">COMPANY</td>
-                <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('',this.cellIndex);">Endosements Total</td>
+                <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('',this.cellIndex);">Drivers Total</td>
+                <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('',this.cellIndex);">Vehicles Total</td> 
                 <td class="etiqueta_grid"></td>
             </tr>
         </thead>

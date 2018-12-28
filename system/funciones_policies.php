@@ -1331,7 +1331,7 @@
             $sql = "INSERT INTO ct_operadores (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
             $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data have been added successfully.</p>';
           }
-     
+
           $success = $conexion->query($sql);
           if(!($success)){$transaccion_exitosa = false;$msj = "A general system error ocurred : internal error";}
           
@@ -1356,6 +1356,7 @@
       $domroot = $_POST['domroot'];
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                 
+
       $sql    = "SELECT iConsecutivo,iConsecutivoCompania, sNombre, DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, ".
                 "iExperienciaYear, iNumLicencia, eTipoLicencia  FROM ct_operadores WHERE iConsecutivo = '$clave' AND iConsecutivoCompania = '$company'";  
       $result = $conexion->query($sql);
