@@ -88,7 +88,8 @@
                                    "<td class=\"txt-c\">".$unidad['total']."</td>".
                                    "<td class=\"txt-c\">".$total_endosos."</td>". 
                                    "<td>".
-                                   "<div class=\"btn_units_list btn-icon edit btn-left\" title=\"View Endorsements\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>".
+                                   "<div class=\"btn_units_list btn-icon edit btn-left\" title=\"Open vehicles list\"><i class=\"fa fa-truck\"></i></div>".
+                                   "<div class=\"btn_drivers_list btn-icon edit btn-left\" title=\"Open drivers list\"><i class=\"fa fa-users\"></i></div>".
                                         //"<div class=\"btn_open_files btn-icon edit btn-left\" title=\"View Files of Endorsement - ".$items['iConsecutivo']."\"><i class=\"fa fa-file-text\"></i> <span></span></div> ".
                                    "</td>".
                                    "</tr>";
@@ -105,6 +106,279 @@
       $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
       echo json_encode($response); 
   }
+  
+  #OPERADORES:
+  function get_drivers_active(){
+      
+      $iConsecutivoPoliza   = trim($_POST['iConsecutivoPoliza']);
+      $iConsecutivoCompania = trim($_POST['iConsecutivoCompania']);
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+    
+      $registros_por_pagina  = $_POST["registros_por_pagina"];
+      $pagina_actual         = (isset($_POST["pagina_actual"]) && $_POST["pagina_actual"] != '' ? $_POST["pagina_actual"] : 1);
+      $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
+        
+      //Filtros de informacion //
+      $filtroQuery   = " WHERE  iConsecutivoCompania = '$iConsecutivoCompania' AND iDeleted='0' ";
+      $array_filtros = explode(",",$_POST["filtroInformacion"]);
+      foreach($array_filtros as $key => $valor){
+        if($array_filtros[$key] != ""){
+            $campo_valor     = explode("|",$array_filtros[$key]);
+            $campo_valor[0] == 'iConsecutivo' ? $filtroQuery.= " AND  ".$campo_valor[0]."='".$campo_valor[1]."' " : $filtroQuery == "" ? $filtroQuery.= " AND  ".$campo_valor[0]." LIKE '%".$campo_valor[1]."%'": $filtroQuery.= " AND ".$campo_valor[0]." LIKE '%".$campo_valor[1]."%'";
+        }
+      }
+    // ordenamiento//
+    $ordenQuery = " ORDER BY ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"];
+    
+    //contando registros // 
+    $query_rows = "SELECT COUNT(iConsecutivo) AS total FROM ct_operadores ".$filtroQuery;
+    $Result     = $conexion->query($query_rows);
+    $items      = $Result->fetch_assoc();
+    $registros  = $items["total"];
+    
+    if($registros == "0"){$pagina_actual = 0;}
+    $paginas_total = ceil($registros / $registros_por_pagina);
+    if($registros == "0"){
+        $limite_superior = 0;
+        $limite_inferior = 0;
+        $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";
+    }
+    else{
+        $pagina_actual == "0" ? $pagina_actual = 1 : false;
+        $limite_superior = $registros_por_pagina;
+        $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
+        $sql    = "SELECT iConsecutivo, sNombre, DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, iExperienciaYear, iNumLicencia, (CASE eTipoLicencia WHEN  'Federal/B1' THEN 'Federal / B1' WHEN  'Commercial/CDL-A' THEN 'Commercial / CDL - A' END) AS TipoLicencia,eModoIngreso ".
+                  "FROM ct_operadores ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
+        $result = $conexion->query($sql);
+        $rows   = $result->num_rows;   
+        if ($rows > 0){    
+                while ($items = $result->fetch_assoc()){ 
+                    
+                    $action  = "";
+                    $dateApp = ""; 
+                    $endALNo = "";
+                    $endAL   = "";
+                    $endMTCNo= "";
+                    $endMTC  = "";
+                    $endPDNo = "";
+                    $endPD   = "";
+                    
+                    //Revisar polizas:
+                    $query  = "SELECT iConsecutivoPoliza, B.sNumeroPoliza, C.sDescripcion AS sTipoPoliza, C.sAlias, DATE_FORMAT(A.dFechaIngreso,'%m/%d/%Y') AS dFechaIngreso,eModoIngreso ".
+                               "FROM cb_poliza_operador   AS A ".
+                               "INNER JOIN ct_polizas     AS B ON A.iConsecutivoPoliza = B.iConsecutivo AND B.iDeleted = '0' AND B.dFechaCaducidad >= CURDATE() ".
+                               "LEFT JOIN  ct_tipo_poliza AS C ON B.iTipoPoliza = C.iConsecutivo ".
+                               "WHERE A.iConsecutivoOperador = '".$items['iConsecutivo']."' AND A.iDeleted = '0' ORDER BY dFechaIngreso DESC";
+                    $r      = $conexion->query($query);
+                    $total  = $r->num_rows;
+                    $PDApply= false;  
+                    if($total > 0){
+                        while ($row = $r->fetch_assoc()){
+                            
+                            //REVISAMO MODO DE INGRESO:
+                            if($row['eModoIngreso'] != 'ENDORSEMENT'){
+                                
+                                $dateApp = $row['eModoIngreso']; //DATE OF APPLICATION
+                                
+                                switch($row['sAlias']){
+                                    case 'AL'  : $endAL  = "BIND"; break;
+                                    case 'PD'  : $endPD  = "BIND"; break;
+                                    case 'MTC' : $endMTC = "BIND"; break;
+                                }
+                            }
+                            else{
+                                
+                               $dateApp = $row['dFechaIngreso']; 
+                               $query = "SELECT C.iConsecutivoEndoso, C.sNumeroEndosoBroker, C.rImporteEndosoBroker, IF(A.iEndosoMultiple='1',B.eAccion, A.eAccion) AS eAccion ".
+                                        "FROM cb_endoso AS A ".
+                                        "INNER JOIN cb_endoso_estatus  AS C ON A.iConsecutivo = C.iConsecutivoEndoso ".
+                                        "LEFT  JOIN cb_endoso_operador AS B ON A.iConsecutivo = B.iConsecutivoEndoso ".
+                                        "WHERE A.iDeleted = '0' AND C.iConsecutivoPoliza = '".$row['iConsecutivoPoliza']."' AND (A.iConsecutivoOperador='".$items['iConsecutivo']."' OR B.iConsecutivoOperador ='".$items['iConsecutivo']."') ".
+                                        "ORDER BY C.iConsecutivoEndoso DESC LIMIT 1";
+                               $r2    = $conexion->query($query);
+                               $endo  = $r2->fetch_assoc();
+                               switch($row['sAlias']){
+                                    case 'AL'  : $endALNo = $endo['sNumeroEndosoBroker']; $endAl = $endo['rImporteEndosoBroker'] > 0 ? "\$ ".number_format($endo['rImporteEndosoBroker'],2,'.', ',') : ""; $action = $endo['eAccion']; break;
+                                    case 'PD'  : $endPDNo = $endo['sNumeroEndosoBroker']; $endPD = $endo['rImporteEndosoBroker'] > 0 ? "\$ ".number_format($endo['rImporteEndosoBroker'],2,'.', ',') : ""; $action = $endo['eAccion']; break;
+                                    case 'MTC' : $endMTCNo= $endo['sNumeroEndosoBroker']; $endMTC= $endo['rImporteEndosoBroker'] > 0 ? "\$ ".number_format($endo['rImporteEndosoBroker'],2,'.', ',') : ""; $action = $endo['eAccion']; break;
+                               }
+                            } 
+                            
+                            if($row['sAlias'] == "PD"){$PDApply = true;}
+                        }
+                        $polizas .= "</table>"; 
+                    }
+                    
+                    
+                    $htmlTabla .= "<tr>".
+                                  "<td id=\"".$items['iConsecutivo']."\">".$items['sNombre']."</td>".
+                                  "<td class=\"txt-c\">".$items['dFechaNacimiento']."</td>".
+                                  "<td>".$items['iNumLicencia']."</td>". 
+                                  "<td class=\"txt-c\">".$items['dFechaExpiracionLicencia']."</td>".  
+                                  "<td class=\"txt-c\">$action</td>".
+                                  "<td class=\"txt-c\">$dateApp</td>".  
+                                  "<td class=\"txt-c\">$endALNo</td>".
+                                  "<td class=\"txt-c\">$endAL</td>".
+                                  "<td class=\"txt-c\">$endMTCNo</td>".
+                                  "<td class=\"txt-c\">$endMTC</td>".
+                                  "<td class=\"txt-c\">$endPDNo</td>".
+                                  "<td class=\"txt-c\">$endPD</td>".
+                                  //"<td style=\"padding: 0px!important;\">".$polizas."</td>".                                                                                                                                                                                                                    
+                                  "<td>".
+                                  //"<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i></div>".
+                                  "</td>".
+                                  "</tr>";  
+                }
+                $conexion->rollback();
+                $conexion->close();                                                                                                                                                                       
+        }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;    }  
+    }
+    $htmlTabla = utf8_decode($htmlTabla);
+    $response  = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error");   
+    echo json_encode($response);  
+  }
+  
+  #UNIDADES:
+  function get_units_active(){
+      
+      $iConsecutivoPoliza   = trim($_POST['iConsecutivoPoliza']);
+      $iConsecutivoCompania = trim($_POST['iConsecutivoCompania']); 
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+    
+      $registros_por_pagina = $_POST["registros_por_pagina"];
+      $pagina_actual = (isset($_POST["pagina_actual"]) && $_POST["pagina_actual"] != '' ? $_POST["pagina_actual"] : 1);
+      $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
+        
+      //Filtros de informacion //
+      $filtroQuery = " WHERE iConsecutivoCompania = '$iConsecutivoCompania' AND iDeleted='0' ";
+      $array_filtros = explode(",",$_POST["filtroInformacion"]);
+      foreach($array_filtros as $key => $valor){
+        if($array_filtros[$key] != ""){
+            $campo_valor = explode("|",$array_filtros[$key]);
+            $campo_valor[0] == 'A.iConsecutivo' ? $filtroQuery.= " AND  ".$campo_valor[0]."='".$campo_valor[1]."' " : $filtroQuery == "" ? $filtroQuery.= " AND  ".$campo_valor[0]." LIKE '%".$campo_valor[1]."%'": $filtroQuery.= " AND ".$campo_valor[0]." LIKE '%".$campo_valor[1]."%'";
+        }
+      }
+    // ordenamiento//
+    $ordenQuery = " ORDER BY ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"];
+    
+    //contando registros // 
+    $query_rows = "SELECT COUNT(A.iConsecutivo) AS total FROM ct_unidades A ".
+                  "LEFT JOIN ct_unidad_radio B ON A.iConsecutivoRadio = B.iConsecutivo ".
+                  "LEFT JOIN ct_unidad_modelo C ON A.iModelo = C.iConsecutivo ".$filtroQuery;
+    $Result = $conexion->query($query_rows);
+    $items = $Result->fetch_assoc();
+    $registros = $items["total"];
+    if($registros == "0"){$pagina_actual = 0;}
+    $paginas_total = ceil($registros / $registros_por_pagina);
+    if($registros == "0"){
+        $limite_superior = 0;
+        $limite_inferior = 0;
+        $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";
+    }else{
+        $pagina_actual == "0" ? $pagina_actual = 1 : false;
+        $limite_superior = $registros_por_pagina;
+        $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
+        $sql = "SELECT A.iConsecutivo, C.sAlias AS Make, C.sDescripcion AS sMakeDescription, B.sDescripcion AS Radio, iYear, sVIN, sPeso, sTipo, sModelo, eModoIngreso, iTotalPremiumPD ".
+               "FROM ct_unidades A ".
+               "LEFT JOIN ct_unidad_radio B ON A.iConsecutivoRadio = B.iConsecutivo ".
+               "LEFT JOIN ct_unidad_modelo C ON A.iModelo = C.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
+        $result = $conexion->query($sql);
+        $rows = $result->num_rows;   
+        if ($rows > 0) {    
+                while ($items = $result->fetch_assoc()){
+                
+                    $action  = "";
+                    $dateApp = ""; 
+                    $endALNo = "";
+                    $endAL   = "";
+                    $endMTCNo= "";
+                    $endMTC  = "";
+                    $endPDNo = "";
+                    $endPD   = "";
+                    
+                    //Revisar polizas:
+                    $query  = "SELECT iConsecutivoPoliza, B.sNumeroPoliza, C.sDescripcion AS sTipoPoliza, C.sAlias, DATE_FORMAT(A.dFechaIngreso,'%m/%d/%Y') AS dFechaIngreso,eModoIngreso ".
+                               "FROM cb_poliza_unidad     AS A ".
+                               "INNER JOIN ct_polizas     AS B ON A.iConsecutivoPoliza = B.iConsecutivo AND B.iDeleted = '0' AND B.dFechaCaducidad >= CURDATE() ".
+                               "LEFT JOIN  ct_tipo_poliza AS C ON B.iTipoPoliza = C.iConsecutivo ".
+                               "WHERE A.iConsecutivoUnidad = '".$items['iConsecutivo']."' AND A.iDeleted = '0' ORDER BY dFechaIngreso DESC";
+                    $r      = $conexion->query($query);
+                    $total  = $r->num_rows;
+                    $PDApply= false;  
+                    if($total > 0){
+                        while ($row = $r->fetch_assoc()){
+                            
+                            //REVISAMO MODO DE INGRESO:
+                            if($row['eModoIngreso'] != 'ENDORSEMENT'){
+                                
+                                $dateApp = $row['eModoIngreso']; //DATE OF APPLICATION
+                                
+                                switch($row['sAlias']){
+                                    case 'AL'  : $endAL  = "BIND"; break;
+                                    case 'PD'  : $endPD  = "BIND"; break;
+                                    case 'MTC' : $endMTC = "BIND"; break;
+                                }
+                            }
+                            else{
+                                
+                               $dateApp = $row['dFechaIngreso']; 
+                               $query = "SELECT C.iConsecutivoEndoso, C.sNumeroEndosoBroker, C.rImporteEndosoBroker, IF(A.iEndosoMultiple='1',B.eAccion, A.eAccion) AS eAccion ".
+                                        "FROM cb_endoso AS A ".
+                                        "INNER JOIN cb_endoso_estatus AS C ON A.iConsecutivo = C.iConsecutivoEndoso ".
+                                        "LEFT JOIN cb_endoso_unidad   AS B ON A.iConsecutivo = B.iConsecutivoEndoso ".
+                                        "WHERE A.iDeleted = '0' AND C.iConsecutivoPoliza = '".$row['iConsecutivoPoliza']."' AND (A.iConsecutivoUnidad='".$items['iConsecutivo']."' OR B.iConsecutivoUnidad ='".$items['iConsecutivo']."') ".
+                                        "ORDER BY C.iConsecutivoEndoso DESC LIMIT 1";
+                               $r2    = $conexion->query($query);
+                               $endo  = $r2->fetch_assoc();
+                               
+                               switch($row['sAlias']){
+                                    case 'AL'  : $endALNo = $endo['sNumeroEndosoBroker']; $endAl = $endo['rImporteEndosoBroker'] > 0 ? "\$ ".number_format($endo['rImporteEndosoBroker'],2,'.', ',') : ""; $action = $endo['eAccion']; break;
+                                    case 'PD'  : $endPDNo = $endo['sNumeroEndosoBroker']; $endPD = $endo['rImporteEndosoBroker'] > 0 ? "\$ ".number_format($endo['rImporteEndosoBroker'],2,'.', ',') : ""; $action = $endo['eAccion']; break;
+                                    case 'MTC' : $endMTCNo= $endo['sNumeroEndosoBroker']; $endMTC= $endo['rImporteEndosoBroker'] > 0 ? "\$ ".number_format($endo['rImporteEndosoBroker'],2,'.', ',') : ""; $action = $endo['eAccion']; break;
+                               }
+                            } 
+                            
+                            if($row['sAlias'] == "PD"){$PDApply = true;}
+                        }
+                        $polizas .= "</table>"; 
+                    }
+                    
+                    $PDApply && $items['iTotalPremiumPD'] > 0 ? $value = "\$ ".number_format($items['iTotalPremiumPD'],2,'.',',') : $value = "";           
+                    $htmlTabla .= "<tr>".
+                                  "<td id=\"".$items['iConsecutivo']."\" class=\"txt-c\">".$items['iYear']."</td>".
+                                  "<td>".$items['Make']."</td>".
+                                  "<td>".$items['sVIN']."</td>".
+                                  "<td class=\"txt-r\">".$value."</td>".
+                                  "<td class=\"txt-c\">$action</td>".
+                                  "<td class=\"txt-c\">$dateApp</td>".  
+                                  "<td class=\"txt-c\">$endALNo</td>".
+                                  "<td class=\"txt-c\">$endAL</td>".
+                                  "<td class=\"txt-c\">$endMTCNo</td>".
+                                  "<td class=\"txt-c\">$endMTC</td>".
+                                  "<td class=\"txt-c\">$endPDNo</td>".
+                                  "<td class=\"txt-c\">$endPD</td>".
+                                  //"<td style=\"padding: 0px!important;\">".$polizas."</td>".                                                                                                                                                                                                                    
+                                  "<td>".
+                                    //"<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i></div>".
+                                  "</td>".
+                                  "</tr>";
+                      
+                }
+                $conexion->rollback();
+                $conexion->close();                                                                                                                                                                       
+        }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;    }  
+    }
+
+     $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
+     echo json_encode($response);
+  }
+  
+  
+  /*************/
   function get_endorsement_files(){
       
       include("cn_usuarios.php");

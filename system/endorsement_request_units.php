@@ -677,7 +677,8 @@
                                       $('#form_change_estatus input,#form_change_estatus textarea ').val('');
                                       $("#form_change_estatus fieldset legend").empty().append(name); 
                                       $("#form_change_estatus .company_policies tbody").empty().append(data.html);
-                                      eval(data.fields);                   
+                                      eval(data.fields); 
+                                      $('.decimals').keydown(fn_solotrucking.inputdecimals);                  
                                       fn_popups.resaltar_ventana('form_change_estatus'); 
                                 }
                                 
@@ -696,10 +697,11 @@
                       var comments = $(this).find("textarea[name=sComentarios]").val();
                       var NoEndoso = $(this).find("input[name=sNumeroEndosoBroker]").val();
                       var idPoliza = $(this).prop("id");
+                      var ValEndoso= $(this).find("input[name=rImporteEndosoBroker]").val();
                       
                           idPoliza = idPoliza.split("dataPolicy_");
-                          if(polizas == ""){polizas = idPoliza[1]+"|"+estatus+"|"+comments+"|"+NoEndoso;}
-                          else{polizas += ";"+idPoliza[1]+"|"+estatus+"|"+comments+"|"+NoEndoso;}
+                          if(polizas == ""){polizas = idPoliza[1]+"|"+estatus+"|"+comments+"|"+NoEndoso+"|"+ValEndoso;}
+                          else{polizas += ";"+idPoliza[1]+"|"+estatus+"|"+comments+"|"+NoEndoso+"|"+ValEndoso;}
                   });
                   
                   if(valid){

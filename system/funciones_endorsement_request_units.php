@@ -712,7 +712,7 @@
       
       #CONSULTAR DATOS DEL ENDOSO Y COMPANIA
       $sql    = "SELECT iConsecutivoEndoso,iConsecutivoPoliza,A.eStatus, B.sNumeroPoliza,B.iTipoPoliza,D.sDescripcion AS sTipoPoliza,C.iConsecutivo AS iConsecutivoBroker,C.sName AS sBrokerName,".
-                "C.bEndosoMensual,A.sComentarios,A.sNumeroEndosoBroker,DATE_FORMAT(A.dFechaActualizacion,'%m/%d/%Y %H:%i') AS dFechaActualizacion, ".
+                "C.bEndosoMensual,A.sComentarios,A.sNumeroEndosoBroker,A.rImporteEndosoBroker,DATE_FORMAT(A.dFechaActualizacion,'%m/%d/%Y %H:%i') AS dFechaActualizacion, ".
                 "DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y %H:%i') AS dFechaAplicacion ".
                 "FROM cb_endoso_estatus AS A ".
                 "LEFT JOIN ct_polizas AS B ON A.iConsecutivoPoliza = B.iConsecutivo ".
@@ -758,6 +758,10 @@
                                     "<input $input type=\"text\" maxlength=\"15\" name=\"sNumeroEndosoBroker\" title=\"This number is the one granted by the broker for the endorsement.\" placeholder=\"Endorsement No:\">".
                                    "</div>".
                                    "<div $div>".
+                                    "<label $label>Amount \$:</label>".
+                                    "<input $input type=\"text\" name=\"rImporteEndosoBroker\" title=\"Endorsement Amount \$\" placeholder=\"\$ 0000.00\" class=\"decimals\">".
+                                   "</div>".
+                                   "<div $div>".
                                     "<label $label>Status:</label>".
                                     "<select $select id=\"eStatus_".$data['iConsecutivoPoliza']."\"  name=\"eStatus\">".
                                     "<option value=\"SB\">SENT TO BROKERS</option>".
@@ -797,7 +801,7 @@
               $datos   = $data;
                       
               foreach($datos as $i => $b){
-                    if($i == "sComentarios" || $i == "eStatus" || $i == "sNumeroEndosoBroker"){
+                    if($i == "sComentarios" || $i == "eStatus" || $i == "sNumeroEndosoBroker" || $i == "rImporteEndosoBroker"){
                       if($i == 'sComentarios'){$value = utf8_decode(utf8_encode($datos[$i]));}else{$value = $datos[$i];}
                       $fields .= "\$('#$domroot #dataPolicy_".$data['iConsecutivoPoliza']." :input[name=".$i."]').val('$value');\n";  
                     }
@@ -846,9 +850,10 @@
               $polizaID  = $poliza[0];
               $eStatus == "A" ? $eStatusP = 'A' : $eStatusP  = trim($poliza[1]);
               
-              $actualiza .= " eStatus ='$eStatusP' "; 
-              $actualiza != "" ? $actualiza .= ", sComentarios ='".utf8_encode(trim($poliza[2]))."'"        : $actualiza = "sComentarios ='".utf8_encode(trim($poliza[2]))."'";
-              $actualiza != "" ? $actualiza .= ", sNumeroEndosoBroker ='".trim($poliza[3])."'" : $actualiza = "sNumeroEndosoBroker ='".trim($poliza[3])."'"; 
+              $actualiza .= " eStatus='$eStatusP' "; 
+              $actualiza != "" ? $actualiza .= ", sComentarios='".utf8_encode(trim($poliza[2]))."'" : $actualiza = "sComentarios='".utf8_encode(trim($poliza[2]))."'";
+              $actualiza != "" ? $actualiza .= ", sNumeroEndosoBroker='".trim($poliza[3])."'"       : $actualiza = "sNumeroEndosoBroker='".trim($poliza[3])."'"; 
+              $actualiza != "" ? $actualiza .= ", rImporteEndosoBroker='".trim($poliza[4])."'"      : $actualiza = "rImporteEndosoBroker='".trim($poliza[4])."'"; 
               
               if($actualiza != "" && $polizaID != ""){
                  $query   = "UPDATE cb_endoso_estatus SET $actualiza WHERE iConsecutivoPoliza ='$polizaID' AND iConsecutivoEndoso = '$iConsecutivo'";
@@ -869,7 +874,8 @@
                  if($eStatusP == "D"){$iDenegado++;}
               }
               
-          }  
+          } 
+          
           //VERIFICAMOS SI TODOS LOS ESTATUS ESTAN APROBADOS, MARCAMOS EL ENDOSO TAMBIEN:
           if($iAprobacion == $count){$eStatus = 'A';}else
           if($iDenegado == $count){$eStatus = 'D';}
@@ -890,7 +896,8 @@
             $conexion->commit();
             $conexion->close();
             if($mensaje == ""){$mensaje = "The data has been saved successfully, Thank you!";}
-      }else{
+      }
+      else{
             $conexion->rollback();
             $conexion->close(); 
             $error = "1";
