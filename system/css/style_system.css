@@ -338,7 +338,7 @@ img {max-width:100%;}
    	    margin:0;
     	width:100%;
         border:0px;
-        height:35px!important;
+        min-height:35px!important;
     }
 	.submenu ul li:hover{background:#ffffff;padding:0!important;}
 	.submenu ul li a{color:#848484!important;padding:5px 5px 4px 5px!important;margin:5px 0;text-transform: none!important;}

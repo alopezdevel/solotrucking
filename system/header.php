@@ -48,12 +48,13 @@
                 </li>
                 <li class="submenu"><a href="#">Endorsements</a>
                    <ul>
-                        <li><a href="endorsements">New Endorsement</a></li> 
-                        <li><a href="endorsement_request">Applications for Drivers</a></li>
-                        <li><a href="endorsement_request_units">Applications for Units</a></li>
-                        <li><a href="endorsement_month">Monthly Report to CRC</a></li>
-                        <li><a href="endorsement_files">Upload Files</a></li>  
-                        <li><a href="brokers">Brokers to send email</a></li>
+                        <li><a href="endorsements">New Endorsement (like company)</a></li> 
+                        <li><a href="endorsement_request">Drivers</a></li>
+                        <li><a href="endorsement_request_units">Vehicles</a></li>
+                        <li><a href="endorsement_request_adds">Loss Payee or Additional Insured</a></li>
+                        <li style="display: none;"><a href="endorsement_month">Monthly Report to CRC</a></li>
+                        <li style="display: none;"><a href="endorsement_files">Upload Files</a></li>  
+                        <li><a href="brokers">Brokers to send endorsements</a></li>
                     </ul>
                 </li>
                 <li class="submenu"><a href="#">CLAIMS</a>
@@ -86,12 +87,17 @@
                         <li><a href="certificate_request_pdf_upload"> <i class="fa fa-cloud-upload"></i> Company Certificates (upload)</a></li>   
                     </ul>
                   </li>
-                  <li><a href="policies">POLICIES</a></li>
+                  <li class="submenu"><a href="#">POLICIES</a>
+                    <ul>
+                        <li><a href="policies">Policies</a></li>
+                        <li><a href="list_admin">Administrator drivers/vehicles</a></li>
+                    </ul>
+                  </li>
                   <li class="submenu"><a href="#">Endorsements</a>
                    <ul>
-                        <li><a href="endorsement_request">New for Drivers</a></li>
-                        <li><a href="endorsement_request_units">New for Units</a></li>
-                        <li><a href="endorsement_admin">Administrator</a></li> 
+                        <li><a  href="endorsement_request">New for Drivers</a></li>
+                        <li><a  href="endorsement_request_units">New for Units</a></li>
+                        <li style="display: none;"><a href="endorsement_request_adds">New for Loss Payee / Additional Insured</a></li>
                         <li style="display: none;"><a href="endorsement_month">Monthly Report to CRC</a></li>
                         <li style="display: none;"><a href="endorsement_files">Upload files to endorsements</a></li> 
                         <li><a href="brokers">Configure e-mails for Brokers</a></li>
@@ -131,7 +137,6 @@
                     <ul>
                         <li><a href="endorsement_request">New for Drivers</a></li>
                         <li><a href="endorsement_request_units">New for Units</a></li>
-                        <li><a href="endorsement_admin">Administrator</a></li> 
                         <li style="display: none;"><a href="endorsement_month">Monthly Report to CRC</a></li>
                         <li style="display: none;"><a href="endorsement_files">Upload files to endorsements</a></li> 
                         <li><a href="brokers">Configure e-mails for Brokers</a></li>

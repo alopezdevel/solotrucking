@@ -254,7 +254,7 @@ button:hover, .btn-1:hover{background-color:#61b1df;}
   border: 2px dashed #a9a9a9;
   border-radius: 4px;
   cursor: pointer;
-  width: 100%;
+  width: 99%;
   clear: both;
 }  
 .file-container input[type="file"].error:before{

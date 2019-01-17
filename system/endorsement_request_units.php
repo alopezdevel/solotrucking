@@ -667,7 +667,7 @@
                             url:"funciones_endorsement_request_units.php", 
                             data:{
                                 "accion"             : "get_estatus_info",
-                                "iConsecutivoEndoso"  : clave,
+                                "iConsecutivoEndoso" : clave,
                                 "domroot"            : "form_change_estatus",
                             },
                             async : true,
@@ -678,7 +678,18 @@
                                       $("#form_change_estatus fieldset legend").empty().append(name); 
                                       $("#form_change_estatus .company_policies tbody").empty().append(data.html);
                                       eval(data.fields); 
-                                      $('.decimals').keydown(fn_solotrucking.inputdecimals);                  
+                                      $('.decimals').keydown(fn_solotrucking.inputdecimals);  
+                                      
+                                      //inicializar archivo:
+                                      if(window.File && window.FileList && window.FileReader) {
+                                          fn_solotrucking.files.form      = "#form_change_estatus";
+                                          fn_solotrucking.files.fileinput = "fileselect2";
+                                          fn_solotrucking.files.add();
+                                      }
+                                      
+                                      fn_endorsement.files.iConsecutivoEndoso = clave;
+                                      fn_endorsement.files.fillgrid();
+                                                      
                                       fn_popups.resaltar_ventana('form_change_estatus'); 
                                 }
                                 
@@ -704,21 +715,28 @@
                           else{polizas += ";"+idPoliza[1]+"|"+estatus+"|"+comments+"|"+NoEndoso+"|"+ValEndoso;}
                   });
                   
+                  $('#form_change_estatus input[name=polizas]').val(polizas);
+                  
                   if(valid){
+                     
+                     var form       = "#form_change_estatus .forma";
+                     var dataForm   = new FormData();
+                     var other_data = $(form).serializeArray();
+                     dataForm.append('accion','save_estatus_info');
+                     $.each($(form+' input[type=file]')[0].files,function(i, file){dataForm.append('file-'+i, file);});
+                     $.each(other_data,function(key,input){dataForm.append(input.name,input.value);}); 
+                       
                      $.ajax({             
                         type:"POST", 
                         url:"funciones_endorsement_request_units.php", 
-                        data:{
-                            'accion'             :"save_estatus_info",
-                            'iConsecutivoEndoso' : $('#form_change_estatus input[name=iConsecutivoEndoso]').val(),
-                            'sMensaje'           : $('#form_change_estatus textarea[name=sComentariosEndoso]').val(),
-                            'eStatusEndoso'      : $('#form_change_estatus select[name=eStatusEndoso]').val(),
-                            'polizas'            : polizas,
-                        },
-                        async : true,
+                        data: dataForm,
+                        cache: false,
+                        contentType: false,
+                        processData: false,
                         dataType : "json",
                         success : function(data){                               
                             fn_solotrucking.mensaje(data.msj);
+                            fn_endorsement.files.fillgrid();
                         }
                      });   
                   }else{fn_solotrucking.mensaje('Please first select a status before you press save.');$('#form_change_estatus #eStatus').addClass('error');} 
@@ -1253,43 +1271,99 @@
         <h2>ENDORSEMENTS / Change the status of endorsement</h2>
         <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('form_change_estatus');fn_endorsement.filtraInformacion();"><i class="fa fa-times"></i></div>
     </div>
-    <div class="p-container"> 
+    <div class="p-container">
     <form>
-    <fieldset>
-    <legend></legend>
-    <input name="iConsecutivoEndoso" type="hidden" value=""> 
-    <table style="width: 100%;">
-    <tr class="claim_estatus">
-        <td colspan="2">
-        <div class="field_item">
-            <label style="margin-left:5px;margin-bottom:3px;">You can manage each endorsement status for each individual policy and add comment about it into the system:</label>
-            <table class="company_policies popup-datagrid" style="width: 100%;margin-top: 5px;">
-                <tbody></tbody>
-            </table>  
-        </div>
-        <br>
-        <div class="field_item">
-            <label>General Comments for this Endorsement: <span style="color: #5e8bd4;;">(These comments are those that will be shown to the client.)</span></label>
-            <textarea id="sComentariosEndoso" name ="sComentariosEndoso" style="resize:none;height:50px;"></textarea> 
-        </div> 
-        <div class="field_item">
-            <label>General Status for this Endorsement: <span style="color: #5e8bd4;;">(This Status is that will be shown in the data grid.)</span></label>
-            <select id="eStatusEndoso" name ="eStatusEndoso">
-                <option value="SB">Sent to Brokers - The endorsement has been sent to the brokers.</option>
-                <option value="P">In Process - The endorsement is being in process by the brokers.</option>
-                <option value="D">Canceled - The endorsement has been canceled.</option>
-                <option value="A">Approved - The endorsement has been approved.</option>
-            </select> 
-        </div> 
-        </td>
-    </tr>
-    </table>
-    </fieldset> 
+        <fieldset>
+        <legend></legend> 
+        <table style="width: 100%;">
+        <tr class="claim_estatus">
+            <td colspan="2">
+            <div class="field_item">
+                <label style="margin-left:5px;margin-bottom:3px;">You can manage each endorsement status for each individual policy and add comment about it into the system:</label>
+                <table class="company_policies popup-datagrid" style="width: 100%;margin-top: 5px;">
+                    <tbody></tbody>
+                </table>  
+            </div>
+            </td>
+        </tr>
+        </table>
+        </fieldset>
+    </form> 
+    <form class="forma">
+        <fieldset>
+        <input name="iConsecutivoEndoso" type="hidden" value=""> 
+            <table style="width: 100%;">
+            <tr class="claim_estatus">
+                <td colspan="2">
+                <div class="field_item"> 
+                    <label class="required-field">File to upload the endorsement broker file:</label>
+                    <div class="file-container">
+                        <input id="fileselect2" name="fileselect" type="file"/>
+                        <div class="file-message"></div>
+                    </div>
+                </div> 
+                <div class="field_item">
+                    <label>General Comments for this Endorsement: <span style="color: #5e8bd4;;">(These comments are those that will be shown to the client.)</span></label>
+                    <textarea id="sComentariosEndoso" name ="sComentariosEndoso" style="resize:none;height:50px;"></textarea> 
+                </div> 
+                <div class="field_item">
+                    <label>General Status for this Endorsement: <span style="color: #5e8bd4;;">(This Status is that will be shown in the data grid.)</span></label>
+                    <select id="eStatusEndoso" name ="eStatusEndoso">
+                        <option value="SB">Sent to Brokers - The endorsement has been sent to the brokers.</option>
+                        <option value="P">In Process - The endorsement is being in process by the brokers.</option>
+                        <option value="D">Canceled - The endorsement has been canceled.</option>
+                        <option value="A">Approved - The endorsement has been approved.</option>
+                    </select> 
+                </div> 
+                </td>
+            </tr>
+            </table>
+        </fieldset> 
     </form>   
     <div>
         <button type="button" class="btn-1" onclick="fn_endorsement.save_estatus();">SAVE</button> 
         <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_change_estatus');fn_endorsement.filtraInformacion();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
     </div>
+    <table style="width: 100%;" cellpadding="0" cellspacing="0">
+        <tr>
+            <td colspan="2">
+            <table id="files_datagrid" class="popup-datagrid" style="width: 100%;margin-top: 10px;margin-bottom: 10px;" cellpadding="0" cellspacing="0">
+                <thead>
+                    <tr id="grid-head2">
+                        <td class="etiqueta_grid">File Name</td>
+                        <td class="etiqueta_grid">Type</td>
+                        <td class="etiqueta_grid">Size</td>
+                        <td class="etiqueta_grid" style="width: 100px;text-align: center;">
+                            <div class="btn-icon edit btn-left" title="Upload files" onclick="fn_endorsement.files.add();" style="width: auto!important;"><i class="fa fa-upload"></i><span style="    padding-left: 5px;font-size: 0.8em;text-transform: uppercase;">upload</span></div>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No uploaded files.</td></tr></tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="100%">
+                            <div class="datagrid-pages" style="display: none;">
+                                <input class="pagina_actual" type="text" readonly="readonly" size="3">
+                                <label> / </label>
+                                <input class="paginas_total" type="text" readonly="readonly" size="3">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="100%">
+                            <div class="datagrid-menu-pages" style="display: none;">
+                                <button class="pgn-inicio"    onclick="fn_endorsement.files.firstPage();" title="First page"><span></span></button>
+                                <button class="pgn-anterior"  onclick="fn_endorsement.files.previousPage();" title="Previous"><span></span></button>
+                                <button class="pgn-siguiente" onclick="fn_endorsement.files.nextPage();" title="Next"><span></span></button>
+                                <button class="pgn-final"     onclick="fn_endorsement.files.lastPage();" title="Last Page"><span></span></button>
+                            </div>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+            </td>
+        </tr>
+    </table> 
     </div>
 </div>
 <!-- preview email -->
