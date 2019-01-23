@@ -905,7 +905,7 @@
       }
       
       //Subir archivo
-      if($transaccion_exitosa){
+      if($transaccion_exitosa && $fileError = 0 && $fileName != ""){
           if(count($fileExten) != 2){$transaccion_exitosa = false;$mensaje = "Error: Please check that the name of the file should not contain points.";}
           else{
             //Extension Valida:

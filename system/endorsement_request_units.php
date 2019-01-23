@@ -378,11 +378,11 @@
                             fn_endorsement.files.delete_file();
                             
                             //Archivos:
-                            if(window.File && window.FileList && window.FileReader) {
+                            /*if(window.File && window.FileList && window.FileReader) {
                                   fn_solotrucking.files.form      = "#dialog_upload_files";
                                   fn_solotrucking.files.fileinput = "fileselect";
                                   fn_solotrucking.files.add();
-                            }
+                            }*/
                         }
                     }); 
                },
@@ -442,9 +442,9 @@
                 }, 
                add : function(){
                    $("#dialog_upload_files input[name=iConsecutivoEndoso]").val(fn_endorsement.files.iConsecutivoEndoso);
-                   //$("#dialog_upload_files input[name=MAX_FILE_SIZE]").val(6000000);
                    $("#dialog_upload_files .file-message").html("");
                    $("#dialog_upload_files #fileselect").removeClass("fileupload");
+                   fn_endorsement.files.active_file_form('#dialog_upload_files','fileselect');
                    $('#dialog_upload_files').dialog("open"); 
                },
                save : function(){
@@ -486,7 +486,15 @@
                   }else{
                       fn_solotrucking.mensaje('<p>Favor de revisar lo siguiente:</p><ul>'+mensaje+'</ul>'); 
                   } 
-               }
+               },
+               active_file_form : function(datagrid,fileinput){
+                  //inicializar archivo:
+                  if(window.File && window.FileList && window.FileReader) {
+                      fn_solotrucking.files.form      = datagrid;
+                      fn_solotrucking.files.fileinput = fileinput;
+                      fn_solotrucking.files.add(); 
+                  }
+               },
             },
             get_company_data : function(){
               $("#frm_unit_information input, #frm_unit_information select").val(''); 
@@ -681,11 +689,11 @@
                                       $('.decimals').keydown(fn_solotrucking.inputdecimals);  
                                       
                                       //inicializar archivo:
-                                      if(window.File && window.FileList && window.FileReader) {
+                                      /*if(window.File && window.FileList && window.FileReader) {
                                           fn_solotrucking.files.form      = "#form_change_estatus";
                                           fn_solotrucking.files.fileinput = "fileselect2";
                                           fn_solotrucking.files.add();
-                                      }
+                                      }*/
                                       
                                       fn_endorsement.files.iConsecutivoEndoso = clave;
                                       fn_endorsement.files.fillgrid();
@@ -1297,7 +1305,7 @@
                 <td colspan="2">
                 <div class="field_item"> 
                     <label class="required-field">File to upload the endorsement broker file:</label>
-                    <div class="file-container">
+                    <div class="file-container" onclick="fn_endorsement.files.active_file_form('#form_change_estatus','fileselect2');">
                         <input id="fileselect2" name="fileselect" type="file"/>
                         <div class="file-message"></div>
                     </div>

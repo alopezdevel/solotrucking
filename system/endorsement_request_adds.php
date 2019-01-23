@@ -134,9 +134,9 @@
                     async : true,
                     dataType : "json",
                     success : function(data){                               
-                        $(fn_endorsement.data_grid+" tbody").empty().append(data.tabla);
-                        $(fn_endorsement.data_grid+" tbody tr:even").addClass('gray');
-                        $(fn_endorsement.data_grid+" tbody tr:odd").addClass('white');
+                        $(fn_endorsement.data_grid+" > tbody").empty().append(data.tabla);
+                        $(fn_endorsement.data_grid+" > tbody > tr:even").addClass('gray');
+                        $(fn_endorsement.data_grid+" > tbody > tr:odd").addClass('white');
                         $(fn_endorsement.data_grid + " tfoot #paginas_total").val(data.total);
                         $(fn_endorsement.data_grid + " tfoot #pagina_actual").val(data.pagina);
                         fn_endorsement.pagina_actual = data.pagina;
@@ -149,7 +149,7 @@
             add : function(){
                $('#endorsements_edit_form input, #endorsements_edit_form select, #endorsements_edit_form textarea').val('');
                $("#frm_endorsement_information .required-field").removeClass("error");
-               $("#files_datagrid, #info_policies").hide();//ocultar grid de archivos...
+               $("#info_policies").hide();//ocultar grid de archivos...
                $("#info_policies tbody").empty();
                fn_solotrucking.get_date("#dFechaAplicacion.fecha");
                //fn_solotrucking.get_time("#dFechaAplicacionHora");
@@ -213,8 +213,8 @@
                     fn_endorsement.filtro = "";
                     if($(fn_endorsement.data_grid+" .flt_id").val() != ""){ fn_endorsement.filtro += "A.iConsecutivo|"+$(fn_endorsement.data_grid+" .flt_id").val()+","}
                     if($(fn_endorsement.data_grid+" .flt_company").val() != ""){ fn_endorsement.filtro += "D.sNombreCompania|"+$(fn_endorsement.data_grid+" .flt_company").val()+","} 
-                    if($(fn_endorsement.data_grid+" .flt_description").val() != ""){ fn_endorsement.filtro += "sNombre|"+$(fn_endorsement.data_grid+" .flt_description").val()+","} 
-                    if($(fn_endorsement.data_grid+" .flt_action").val() != ""){ fn_endorsement.filtro += "eAccion|"+$(fn_endorsement.data_grid+" .flt_action").val()+","}
+                    //if($(fn_endorsement.data_grid+" .flt_description").val() != ""){ fn_endorsement.filtro += "sNombre|"+$(fn_endorsement.data_grid+" .flt_description").val()+","} 
+                    //f($(fn_endorsement.data_grid+" .flt_action").val() != ""){ fn_endorsement.filtro += "eAccion|"+$(fn_endorsement.data_grid+" .flt_action").val()+","}
                     if($(fn_endorsement.data_grid+" .flt_date").val() != ""){ fn_endorsement.filtro += "A.dFechaAplicacion|"+$(fn_endorsement.data_grid+" .flt_date").val()+","}
                     if($(fn_endorsement.data_grid+" .flt_status").val() != ""){ fn_endorsement.filtro += "A.eStatus|"+$(fn_endorsement.data_grid+" .flt_status").val()+","}
                     fn_endorsement.fillgrid();
@@ -228,7 +228,7 @@
                },
                function(data){
                     if(data.error == '0'){
-                       $("#files_datagrid, #info_policies").show();//mostrar grid de archivos... 
+                       $("#info_policies").show();//mostrar grid de archivos... 
                        $('#endorsements_edit_form .general_information input, #endorsements_edit_form .general_information select, #endorsements_edit_form .general_information textarea').val('');
                        $("#frm_endorsement_information .required-field").removeClass("error");
                        $("#endorsements_edit_form #info_policies table tbody").empty().append(data.policies);   
@@ -249,7 +249,7 @@
                        //CAMPOS SOLO INHABILITADOS:
                        $("#endorsements_edit_form #iConsecutivoCompania").addClass('readonly').prop('disabled','disabled');
                        
-                       if(ghost_mode){fn_endorsement.detalle.save();}
+                       if(ghost_mode || (!(ghost_mode) && $(fn_endorsement.detalle.form+" input[name=sNombreCompania]").val() != "")){fn_endorsement.detalle.save();}
                        
                        fn_popups.resaltar_ventana('endorsements_edit_form');
                         
@@ -295,7 +295,7 @@
                          case '0':
                             if(!(ghost_mode)){fn_solotrucking.mensaje(data.msj);}
                             fn_endorsement.fillgrid();
-                            //fn_endorsement.get_data(data.iConsecutivo,ghost_mode);
+                            fn_endorsement.get_data(data.iConsecutivo,ghost_mode);
                          break;
                          case '1': fn_solotrucking.mensaje(data.msj); break;
                         }
@@ -303,146 +303,6 @@
                   }); 
                }
                else{fn_solotrucking.mensaje('<p>Please check the following::</p><ul>'+msj+'</ul>');}
-            },
-            //new functions:
-            files : {
-               pagina_actual : "",
-               sort : "ASC",
-               orden : "iConsecutivo",
-               iConsecutivoEndoso : "",
-               fillgrid: function(){
-                    $.ajax({             
-                        type:"POST", 
-                        url:"endorsement_request_adds_server.php", 
-                        data:{
-                            accion               : "get_files",
-                            iConsecutivo         : fn_endorsement.files.iConsecutivoEndoso,
-                            registros_por_pagina : "10", 
-                            pagina_actual        : fn_endorsement.files.pagina_actual,   
-                            ordenInformacion     : fn_endorsement.files.orden,
-                            sortInformacion      : fn_endorsement.files.sort,
-                        },
-                        async : true,
-                        dataType : "json",
-                        success : function(data){                               
-                            $("#files_datagrid tbody").empty().append(data.tabla);
-                            $("#files_datagrid tbody tr:even").addClass('gray');
-                            $("#files_datagrid tbody tr:odd").addClass('white');
-                            $("#files_datagrid tfoot .paginas_total").val(data.total);
-                            $("#files_datagrid tfoot .pagina_actual").val(data.pagina);
-                            fn_endorsement.files.pagina_actual = data.pagina;
-                            fn_endorsement.files.delete_file();
-                            
-                            //Archivos:
-                            if(window.File && window.FileList && window.FileReader) {
-                                  fn_solotrucking.files.form      = "#dialog_upload_files";
-                                  fn_solotrucking.files.fileinput = "fileselect";
-                                  fn_solotrucking.files.add();
-                            }
-                        }
-                    }); 
-               },
-               delete_file : function(){
-                  $("#files_datagrid tbody td .trash").bind("click",function(){
-                        var clave = $(this).parent().parent().find("td:eq(0)").attr('id');
-                            clave = clave.split("idFile_");
-                            clave = clave[1];
-                        $.post("funciones_endorsements.php",{accion:"elimina_archivo_endoso", "iConsecutivo": clave},
-                        function(data){
-                            fn_solotrucking.mensaje(data.msj);
-                            if(data.error == '0'){fn_endorsement.files.fillgrid();}      
-                  },"json");
-                  });  
-                },
-               firstPage : function(){
-                    if($("#files_datagrid .pagina_actual").val() != "1"){
-                        fn_endorsement.files.pagina_actual = "";
-                        fn_endorsement.files.fillgrid();
-                    }
-                },
-               previousPage : function(){
-                    if($("#files_datagrid .pagina_actual").val() != "1"){
-                        fn_endorsement.files.pagina_actual = (parseInt($("#files_datagrid .pagina_actual").val()) - 1) + "";
-                        fn_endorsement.files.fillgrid();
-                    }
-                },
-               nextPage : function(){
-                    if($("#files_datagrid .pagina_actual").val() != $("#files_datagrid .paginas_total").val()){
-                        fn_endorsement.files.pagina_actual = (parseInt($("#files_datagrid .pagina_actual").val()) + 1) + "";
-                        fn_endorsement.files.fillgrid();
-                    }
-                },
-               lastPage : function(){
-                    if($("#files_datagrid .pagina_actual").val() != $("#files_datagrid .paginas_total").val()){
-                        fn_endorsement.files.pagina_actual = $("#files_datagrid .paginas_total").val();
-                        fn_endorsement.files.fillgrid();
-                    }
-                }, 
-               ordenamiento : function(campo,objeto){
-                    $("#files_datagrid #grid-head2 td").removeClass('down').removeClass('up');
-                    if(campo == fn_endorsement.files.orden){
-                        if(fn_endorsement.files.sort == "ASC"){
-                            fn_endorsement.files.sort = "DESC";
-                            $("#files_datagrid #grid-head2 td:eq("+objeto+")").addClass('up');
-                        }else{
-                            fn_endorsement.files.sort = "ASC";
-                            $("#files_datagrid #grid-head2 td:eq("+objeto+")").addClass('down');
-                        }
-                    }else{
-                        fn_endorsement.files.sort = "ASC";
-                        fn_endorsement.files.orden = campo;
-                        $("#files_datagrid #grid-head2 td:eq("+objeto+")").addClass('down');
-                    }
-                    fn_endorsement.files.fillgrid();
-                    return false;
-                }, 
-               add : function(){
-                   $("#dialog_upload_files input[name=iConsecutivoEndoso]").val(fn_endorsement.files.iConsecutivoEndoso);
-                   //$("#dialog_upload_files input[name=MAX_FILE_SIZE]").val(3000000);
-                   $("#dialog_upload_files .file-message").html("");
-                   $("#dialog_upload_files #fileselect").removeClass("fileupload");
-                   $('#dialog_upload_files').dialog("open"); 
-               },
-               save : function(){
-                   var valid   = true;
-                   var mensaje = "";
-                      
-                  //Validar campo para archivo:
-                   if($("#dialog_upload_files #fileselect").val() == ""){
-                      mensaje += '<li>No file has been loaded.</li>';
-                      valid    = false;
-                      $("#dialog_upload_files #fileselect").addClass('error'); 
-                   }
-                      
-                  if(valid){
-                      var form       = "#dialog_upload_files form";
-                      var dataForm   = new FormData();
-                      var other_data = $(form).serializeArray();
-                      dataForm.append('accion','guarda_pdf_endoso');
-                      $.each($(form+' input[type=file]')[0].files,function(i, file){dataForm.append('file-'+i, file);});
-                      $.each(other_data,function(key,input){dataForm.append(input.name,input.value);});
-                          
-                      $.ajax({
-                          type: "POST",
-                          url : "funciones_endorsements.php",
-                          data: dataForm,
-                          cache: false,
-                          contentType: false,
-                          processData: false,
-                          type: 'POST',
-                          dataType : "json",
-                          success : function(data){ 
-                              fn_solotrucking.mensaje(data.mensaje);
-                              if(data.error == "0"){
-                                  $("#dialog_upload_files").dialog('close');
-                                  fn_endorsement.files.fillgrid();
-                              }
-                          }
-                      });        
-                  }else{
-                      fn_solotrucking.mensaje('<p>Favor de revisar lo siguiente:</p><ul>'+mensaje+'</ul>'); 
-                  } 
-               }
             },
             get_company_data : function(){
               $("#frm_driver_information input, #frm_driver_information select").val('');  
@@ -648,13 +508,15 @@
                                       $("#form_change_estatus .company_policies tbody").empty().append(data.html);
                                       eval(data.fields); 
                                       $('.decimals').keydown(fn_solotrucking.inputdecimals);
+                                      $("#form_change_estatus .file-message").html("");
+                                      $("#form_change_estatus #fileselect2").removeClass("fileupload");
                                       
                                       //inicializar archivo:
-                                      if(window.File && window.FileList && window.FileReader) {
-                                          fn_solotrucking.files.form      = "#form_change_estatus";
+                                      /*if(window.File && window.FileList && window.FileReader) {
+                                          fn_solotrucking.files.datagrid  = "#form_change_estatus";
                                           fn_solotrucking.files.fileinput = "fileselect2";
-                                          fn_solotrucking.files.add();
-                                      }
+                                          fn_solotrucking.files.add(); 
+                                      }*/
                                       
                                       fn_endorsement.files.iConsecutivoEndoso = clave;
                                       fn_endorsement.files.fillgrid();
@@ -705,11 +567,13 @@
                         dataType : "json",
                         success : function(data){                               
                             fn_solotrucking.mensaje(data.msj);
+                            $("#form_change_estatus .file-message").html("");
+                            $("#form_change_estatus #fileselect2").removeClass("fileupload");
                             fn_endorsement.files.fillgrid();
                         }
                      });   
                   }else{fn_solotrucking.mensaje('Please first select a status before you press save.');$('#form_change_estatus #eStatus').addClass('error');} 
-            },
+            }, 
             detalle : {
                 form : "#frm_additional_data",
                 data_grid : "#additional_datagrid",
@@ -802,25 +666,26 @@
                         dataType : "json",
                         success : function(data){                               
                             $(fn_endorsement.detalle.data_grid+" tbody").empty().append(data.tabla);
-                            //fn_endorsement.detalle.edit(); 
-                            //fn_endorsement.detalle.borrar(); 
+                            fn_endorsement.detalle.edit(); 
+                            fn_endorsement.detalle.borrar(); 
                         }
                     });     
                 },
                 edit : function (){
                     $(fn_endorsement.detalle.data_grid + " tbody td .btn_edit_detalle").bind("click",function(){
                         var clave = $(this).parent().parent().find("td:eq(0)").prop('id');
-                            clave = clave.split('idUnit_');
+                            clave = clave.split('idDet_');
                             clave = clave[1];
                         
                         $.ajax({             
                             type:"POST", 
-                            url:"funciones_endorsement_request_units.php", 
+                            url:"endorsement_request_adds_server.php", 
                             data:{
-                                accion              : "unit_get",
-                                "iConsecutivoEndoso": fn_endorsement.detalle.iConsecutivoEndoso,
-                                "iConsecutivoUnidad": clave,
-                                "domroot"           : fn_endorsement.detalle.form},
+                                accion               : "detalle_get",
+                                "iConsecutivoEndoso" : fn_endorsement.detalle.iConsecutivoEndoso,
+                                "iConsecutivoDetalle": clave,
+                                "domroot"            : fn_endorsement.detalle.form
+                            },
                             async : true,
                             dataType : "json",
                             success : function(data){ 
@@ -837,16 +702,16 @@
                 borrar : function (){
                     $(fn_endorsement.detalle.data_grid + " tbody td .btn_delete_detalle").bind("click",function(){
                         var clave = $(this).parent().parent().find("td:eq(0)").prop('id');
-                            clave = clave.split('idUnit_');
+                            clave = clave.split('idDet_');
                             clave = clave[1];
                         
                         $.ajax({             
                             type:"POST", 
-                            url:"funciones_endorsement_request_units.php", 
+                            url:"endorsement_request_adds_server.php", 
                             data:{
-                                accion              : "unit_delete",
-                                "iConsecutivoEndoso": fn_endorsement.detalle.iConsecutivoEndoso,
-                                "iConsecutivoUnidad": clave,
+                                accion               : "detalle_delete",
+                                "iConsecutivoEndoso" : fn_endorsement.detalle.iConsecutivoEndoso,
+                                "iConsecutivoDetalle": clave,
                             },
                             async : true,
                             dataType : "json",
@@ -860,7 +725,158 @@
                         });        
                   });  
                 },
-            }
+            },
+            files : {
+               pagina_actual : "",
+               sort : "ASC",
+               orden : "iConsecutivo",
+               iConsecutivoEndoso : "",
+               datagrid : "#files_datagrid",
+               form     : "#dialog_upload_files",
+               fillgrid: function(){
+                    $.ajax({             
+                        type:"POST", 
+                        url:"endorsement_request_adds_server.php", 
+                        data:{
+                            accion               : "get_files",
+                            iConsecutivo         : fn_endorsement.files.iConsecutivoEndoso,
+                            registros_por_pagina : "10", 
+                            pagina_actual        : fn_endorsement.files.pagina_actual,   
+                            ordenInformacion     : fn_endorsement.files.orden,
+                            sortInformacion      : fn_endorsement.files.sort,
+                        },
+                        async : true,
+                        dataType : "json",
+                        success : function(data){                               
+                            $(fn_endorsement.files.datagrid+" tbody").empty().append(data.tabla);
+                            $(fn_endorsement.files.datagrid+" tbody tr:even").addClass('gray');
+                            $(fn_endorsement.files.datagrid+" tbody tr:odd").addClass('white');
+                            $(fn_endorsement.files.datagrid+" tfoot .paginas_total").val(data.total);
+                            $(fn_endorsement.files.datagrid+" tfoot .pagina_actual").val(data.pagina);
+                            fn_endorsement.files.pagina_actual = data.pagina;
+                            fn_endorsement.files.delete_file();
+               
+                        }
+                    }); 
+               },
+               delete_file : function(){
+                  $(fn_endorsement.files.datagrid+" tbody td .trash").bind("click",function(){
+                        var clave = $(this).parent().parent().find("td:eq(0)").attr('id');
+                            clave = clave.split("idFile_");
+                            clave = clave[1];
+                        $.post("endorsement_request_adds_server.php",{"accion":"elimina_archivo_endoso", "iConsecutivo": clave},
+                        function(data){
+                            fn_solotrucking.mensaje(data.msj);
+                            if(data.error == '0'){fn_endorsement.files.fillgrid();}      
+                  },"json");
+                  });  
+                },
+               firstPage : function(){
+                    if($(fn_endorsement.files.datagrid+" .pagina_actual").val() != "1"){
+                        fn_endorsement.files.pagina_actual = "";
+                        fn_endorsement.files.fillgrid();
+                    }
+                },
+               previousPage : function(){
+                    if($(fn_endorsement.files.datagrid+" .pagina_actual").val() != "1"){
+                        fn_endorsement.files.pagina_actual = (parseInt($(fn_endorsement.files.datagrid+" .pagina_actual").val()) - 1) + "";
+                        fn_endorsement.files.fillgrid();
+                    }
+                },
+               nextPage : function(){
+                    if($(fn_endorsement.files.datagrid+" .pagina_actual").val() != $(fn_endorsement.files.datagrid+" .paginas_total").val()){
+                        fn_endorsement.files.pagina_actual = (parseInt($(fn_endorsement.files.datagrid+" .pagina_actual").val()) + 1) + "";
+                        fn_endorsement.files.fillgrid();
+                    }
+                },
+               lastPage : function(){
+                    if($(fn_endorsement.files.datagrid+" .pagina_actual").val() != $(fn_endorsement.files.datagrid+" .paginas_total").val()){
+                        fn_endorsement.files.pagina_actual = $(fn_endorsement.files.datagrid+" .paginas_total").val();
+                        fn_endorsement.files.fillgrid();
+                    }
+                }, 
+               ordenamiento : function(campo,objeto){
+                    $(fn_endorsement.files.datagrid+" #grid-head2 td").removeClass('down').removeClass('up');
+                    if(campo == fn_endorsement.files.orden){
+                        if(fn_endorsement.files.sort == "ASC"){
+                            fn_endorsement.files.sort = "DESC";
+                            $(fn_endorsement.files.datagrid+" #grid-head2 td:eq("+objeto+")").addClass('up');
+                        }else{
+                            fn_endorsement.files.sort = "ASC";
+                            $(fn_endorsement.files.datagrid+" #grid-head2 td:eq("+objeto+")").addClass('down');
+                        }
+                    }else{
+                        fn_endorsement.files.sort = "ASC";
+                        fn_endorsement.files.orden = campo;
+                        $(fn_endorsement.files.datagrid+" #grid-head2 td:eq("+objeto+")").addClass('down');
+                    }
+                    fn_endorsement.files.fillgrid();
+                    return false;
+                }, 
+               add : function(){
+                   $(fn_endorsement.files.form+" input[name=iConsecutivoEndoso]").val(fn_endorsement.files.iConsecutivoEndoso);
+                   $(fn_endorsement.files.form+" .file-message").html("");
+                   $(fn_endorsement.files.form+" #fileselect").removeClass("fileupload");
+                   $(fn_endorsement.files.form).dialog("open");
+                   
+                   fn_endorsement.files.active_file_form('#dialog_upload_files','fileselect');
+                   
+                   //Archivos:
+                   /*if(window.File && window.FileList && window.FileReader) {
+                      fn_solotrucking.files.form      = "#dialog_upload_files";
+                      fn_solotrucking.files.fileinput = "fileselect";
+                      fn_solotrucking.files.add();
+                   }*/ 
+               },
+               save : function(){
+                   var valid   = true;
+                   var mensaje = "";
+                      
+                  //Validar campo para archivo:
+                  if($(fn_endorsement.files.form+" #fileselect").val() == ""){
+                      mensaje += '<li>No file has been loaded.</li>';
+                      valid    = false;
+                      $(fn_endorsement.files.form+" #fileselect").addClass('error'); 
+                  }
+                      
+                  if(valid){
+                      var form       = "#dialog_upload_files form";
+                      var dataForm   = new FormData();
+                      var other_data = $(form).serializeArray();
+                      dataForm.append('accion','guarda_pdf_endoso');
+                      $.each($(form+' input[type=file]')[0].files,function(i, file){dataForm.append('file-'+i, file);});
+                      $.each(other_data,function(key,input){dataForm.append(input.name,input.value);});
+                          
+                      $.ajax({
+                          type: "POST",
+                          url : "endorsement_request_adds_server.php",
+                          data: dataForm,
+                          cache: false,
+                          contentType: false,
+                          processData: false,
+                          type: 'POST',
+                          dataType : "json",
+                          success : function(data){ 
+                              fn_solotrucking.mensaje(data.mensaje);
+                              if(data.error == "0"){  
+                                  $(fn_endorsement.files.form).dialog('close');
+                                  fn_endorsement.files.fillgrid();
+                              }
+                          }
+                      });        
+                  }else{
+                      fn_solotrucking.mensaje('<p>Favor de revisar lo siguiente:</p><ul>'+mensaje+'</ul>'); 
+                  } 
+               },
+               active_file_form : function(datagrid,fileinput){
+                  //inicializar archivo:
+                  if(window.File && window.FileList && window.FileReader) {
+                      fn_solotrucking.files.form      = datagrid;
+                      fn_solotrucking.files.fileinput = fileinput;
+                      fn_solotrucking.files.add(); 
+                  }
+               },
+            },
                 
     }    
 </script> 
@@ -876,23 +892,7 @@
                 <td style='width:45px;'>
                     <input class="flt_id" class="numeros" type="text" placeholder="ID:"></td>
                 <td><input class="flt_company" type="text" placeholder="Company:"></td>
-                <td><input class="flt_description" type="text" placeholder="Descripcion:"></td>
-                <td style="width:110px">
-                    <select class="flt_action" onblur="fn_endorsement.filtraInformacion();">
-                        <option value="">Select an action ..</option>
-                        <option value="ADDITIONAL INSURED">ADDITIONAL INSURED</option>
-                        <option value="LOSS PAYEE">LOSS PAYEE</option>
-                    </select>
-                </td> 
-                <td style="width:110px">
-                    <select class="flt_action" onblur="fn_endorsement.filtraInformacion();">
-                        <option value="">Select an action ..</option>
-                        <option value="A">ADD</option>
-                        <option value="D">DELETE</option>
-                        <option value="ADDSWAP">ADD SWAP</option>
-                        <option value="DELETESWAP">DELETE SWAP</option>
-                    </select>
-                </td>  
+                <td></td>
                 <td><input class="flt_date" type="text" placeholder="Application Date:"></td> 
                 <td>
                     <select class="flt_status" onblur="fn_endorsement.filtraInformacion();">
@@ -911,9 +911,9 @@
             <tr id="grid-head2">
                 <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('A.iConsecutivo',this.cellIndex);">ID</td> 
                 <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('D.sNombreCompania',this.cellIndex);">COMPANY</td>
-                <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('sNombre',this.cellIndex);">Description</td>
-                <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('sNombre',this.cellIndex);">TYPE</td>
-                <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('eAccion',this.cellIndex);">ACTION</td>
+                <td class="etiqueta_grid">Description</td>
+                <!--<td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('sNombre',this.cellIndex);">TYPE</td>
+                <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('eAccion',this.cellIndex);">ACTION</td>-->
                 <td class="etiqueta_grid up"   onclick="fn_endorsement.ordenamiento('A.dFechaAplicacion',this.cellIndex);">APPLICATION DATE</td> 
                 <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('A.eStatus',this.cellIndex);">Status</td>
                 <td class="etiqueta_grid"></td>
@@ -945,7 +945,7 @@
     </div>
 </div>
 <!-- FORMULARIOS -->
-<div id="endorsements_edit_form" class="popup-form">
+<div id="endorsements_edit_form" class="popup-form" style="width: 1000px;">
     <div class="p-header">
         <h2>ENDORSEMENTS</h2>
         <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('endorsements_edit_form');fn_endorsement.filtraInformacion();"><i class="fa fa-times"></i></div>
@@ -1012,7 +1012,7 @@
                         <td>
                         <div class="field_item">
                             <label>Type <span style="color:#ff0000;">*</span>:</label> 
-                            <select tabindex="4" id="eAccion" name="eAccion" class="required-field-add required-field-delete" style="height: 25px!important;width: 99%!important;">
+                            <select tabindex="4" id="eTipoEndoso" name="eTipoEndoso" class="required-field-add required-field-delete" style="height: 25px!important;width: 99%!important;">
                                 <option value="">Select an option...</option> 
                                 <option value="ADDITIONAL INSURED">ADDITIONAL INSURED</option>
                                 <option value="LOSS PAYEE">LOSS PAYEE</option>
@@ -1043,7 +1043,7 @@
                                     <td>
                                     <div class="field_item">
                                         <label>City <span class="add_field" style="color:#ff0000;">*</span>:</label>  
-                                        <input tabindex="6" id="sCiudad" name="sCiudad" type="text" class="required-field-add" placeholder="" maxlength="200" style="width: 95%;"> 
+                                        <input tabindex="6" id="sCiudad" name="sCiudad" type="text" class="required-field-add txt-uppercase" placeholder="" maxlength="200" style="width: 95%;"> 
                                     </div>
                                     </td>
                                     <td>
@@ -1090,46 +1090,6 @@
                     </tr>
                 </table>
             </fieldset>
-            <table style="width: 100%;" cellpadding="0" cellspacing="0">
-                <tr>
-                    <td colspan="2">
-                    <table id="files_datagrid" class="popup-datagrid" style="width: 100%;margin-top: 10px;margin-bottom: 10px;" cellpadding="0" cellspacing="0">
-                        <thead>
-                            <tr id="grid-head2">
-                                <td class="etiqueta_grid">File Name</td>
-                                <td class="etiqueta_grid">Type</td>
-                                <td class="etiqueta_grid">Size</td>
-                                <td class="etiqueta_grid" style="width: 100px;text-align: center;">
-                                    <div class="btn-icon edit btn-left" title="Upload files" onclick="fn_endorsement.files.add();" style="width: auto!important;"><i class="fa fa-upload"></i><span style="    padding-left: 5px;font-size: 0.8em;text-transform: uppercase;">upload</span></div>
-                                </td>
-                            </tr>
-                        </thead>
-                        <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No uploaded files.</td></tr></tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="100%">
-                                    <div class="datagrid-pages" style="display: none;">
-                                        <input class="pagina_actual" type="text" readonly="readonly" size="3">
-                                        <label> / </label>
-                                        <input class="paginas_total" type="text" readonly="readonly" size="3">
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="100%">
-                                    <div class="datagrid-menu-pages" style="display: none;">
-                                        <button class="pgn-inicio"    onclick="fn_endorsement.files.firstPage();" title="First page"><span></span></button>
-                                        <button class="pgn-anterior"  onclick="fn_endorsement.files.previousPage();" title="Previous"><span></span></button>
-                                        <button class="pgn-siguiente" onclick="fn_endorsement.files.nextPage();" title="Next"><span></span></button>
-                                        <button class="pgn-final"     onclick="fn_endorsement.files.lastPage();" title="Last Page"><span></span></button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                    </td>
-                </tr>
-            </table> 
             <button type="button" class="btn-1" onclick="fn_endorsement.save();">SAVE</button>
             <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('endorsements_edit_form');fn_endorsement.filtraInformacion();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
         </form> 
@@ -1189,99 +1149,99 @@
         <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('form_change_estatus');fn_endorsement.filtraInformacion();"><i class="fa fa-times"></i></div>
     </div>
     <div class="p-container">
-    <form>
-        <fieldset>
-        <legend></legend> 
-        <table style="width: 100%;">
-        <tr class="claim_estatus">
-            <td colspan="2">
-            <div class="field_item">
-                <label style="margin-left:5px;margin-bottom:3px;">You can manage each endorsement status for each individual policy and add comment about it into the system:</label>
-                <table class="company_policies popup-datagrid" style="width: 100%;margin-top: 5px;">
-                    <tbody></tbody>
-                </table>  
-            </div>
-            </td>
-        </tr>
-        </table>
-        </fieldset>
-    </form>
-    <form class="forma">
-        <fieldset>
-            <input name="iConsecutivoEndoso" type="hidden" value=""> 
-            <input name="polizas" type="hidden" value=""> 
+        <form>
+            <fieldset>
+            <legend></legend> 
             <table style="width: 100%;">
             <tr class="claim_estatus">
                 <td colspan="2">
-                <div class="field_item"> 
-                    <label class="required-field">File to upload the endorsement broker file:</label>
-                    <div class="file-container">
-                        <input id="fileselect2" name="fileselect" type="file"/>
-                        <div class="file-message"></div>
-                    </div>
-                </div> 
                 <div class="field_item">
-                    <label>General Comments for this Endorsement: <span style="color: #5e8bd4;;">(These comments are those that will be shown to the client.)</span></label>
-                    <textarea id="sComentariosEndoso" name ="sComentariosEndoso" style="resize:none;height:50px!important;"></textarea> 
-                </div> 
-                <div class="field_item">
-                    <label>General Status for this Endorsement: <span style="color: #5e8bd4;;">(This Status is that will be shown in the data grid.)</span></label>
-                    <select id="eStatusEndoso" name ="eStatusEndoso">
-                        <option value="SB">Sent to Brokers - The endorsement has been sent to the brokers.</option>
-                        <option value="P">In Process - The endorsement is being in process by the brokers.</option>
-                        <option value="D">Canceled - The endorsement has been canceled.</option>
-                        <option value="A">Approved - The endorsement has been approved.</option>
-                    </select> 
-                </div> 
+                    <label style="margin-left:5px;margin-bottom:3px;">You can manage each endorsement status for each individual policy and add comment about it into the system:</label>
+                    <table class="company_policies popup-datagrid" style="width: 100%;margin-top: 5px;">
+                        <tbody></tbody>
+                    </table>  
+                </div>
                 </td>
             </tr>
             </table>
-        </fieldset> 
-    </form>   
-    <div>
-        <button type="button" class="btn-1" onclick="fn_endorsement.save_estatus();">SAVE</button> 
-        <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_change_estatus');fn_endorsement.filtraInformacion();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
-    </div>
-    <table style="width: 100%;" cellpadding="0" cellspacing="0">
-                <tr>
+            </fieldset>
+        </form>
+        <form class="forma">
+            <fieldset>
+                <input name="iConsecutivoEndoso" type="hidden" value=""> 
+                <input name="polizas" type="hidden" value=""> 
+                <table style="width: 100%;">
+                <tr class="claim_estatus">
                     <td colspan="2">
-                    <table id="files_datagrid" class="popup-datagrid" style="width: 100%;margin-top: 10px;margin-bottom: 10px;" cellpadding="0" cellspacing="0">
-                        <thead>
-                            <tr id="grid-head2">
-                                <td class="etiqueta_grid">File Name</td>
-                                <td class="etiqueta_grid">Type</td>
-                                <td class="etiqueta_grid">Size</td>
-                                <td class="etiqueta_grid" style="width: 100px;text-align: center;">
-                                    <div class="btn-icon edit btn-left" title="Upload files" onclick="fn_endorsement.files.add();" style="width: auto!important;"><i class="fa fa-upload"></i><span style="    padding-left: 5px;font-size: 0.8em;text-transform: uppercase;">upload</span></div>
-                                </td>
-                            </tr>
-                        </thead>
-                        <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No uploaded files.</td></tr></tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="100%">
-                                    <div class="datagrid-pages" style="display: none;">
-                                        <input class="pagina_actual" type="text" readonly="readonly" size="3">
-                                        <label> / </label>
-                                        <input class="paginas_total" type="text" readonly="readonly" size="3">
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="100%">
-                                    <div class="datagrid-menu-pages" style="display: none;">
-                                        <button class="pgn-inicio"    onclick="fn_endorsement.files.firstPage();" title="First page"><span></span></button>
-                                        <button class="pgn-anterior"  onclick="fn_endorsement.files.previousPage();" title="Previous"><span></span></button>
-                                        <button class="pgn-siguiente" onclick="fn_endorsement.files.nextPage();" title="Next"><span></span></button>
-                                        <button class="pgn-final"     onclick="fn_endorsement.files.lastPage();" title="Last Page"><span></span></button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tfoot>
-                    </table>
+                    <div class="field_item"> 
+                        <label class="required-field">File to upload the endorsement broker file:</label>
+                        <div class="file-container" onclick="fn_endorsement.files.active_file_form('#form_change_estatus','fileselect2');">
+                            <input id="fileselect2" name="fileselect2" type="file"/>
+                            <div class="file-message"></div>
+                        </div>
+                    </div> 
+                    <div class="field_item">
+                        <label>General Comments for this Endorsement: <span style="color: #5e8bd4;;">(These comments are those that will be shown to the client.)</span></label>
+                        <textarea id="sComentariosEndoso" name ="sComentariosEndoso" style="resize:none;height:50px!important;"></textarea> 
+                    </div> 
+                    <div class="field_item">
+                        <label>General Status for this Endorsement: <span style="color: #5e8bd4;;">(This Status is that will be shown in the data grid.)</span></label>
+                        <select id="eStatusEndoso" name ="eStatusEndoso">
+                            <option value="SB">Sent to Brokers - The endorsement has been sent to the brokers.</option>
+                            <option value="P">In Process - The endorsement is being in process by the brokers.</option>
+                            <option value="D">Canceled - The endorsement has been canceled.</option>
+                            <option value="A">Approved - The endorsement has been approved.</option>
+                        </select> 
+                    </div> 
                     </td>
                 </tr>
-            </table> 
+                </table>
+            </fieldset> 
+        </form>   
+        <div>
+            <button type="button" class="btn-1" onclick="fn_endorsement.save_estatus();">SAVE</button> 
+            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_change_estatus');fn_endorsement.filtraInformacion();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
+        </div>
+        <table style="width: 100%;" cellpadding="0" cellspacing="0">
+        <tr>
+            <td colspan="2">
+            <table id="files_datagrid" class="popup-datagrid" style="width: 100%;margin-top: 10px;margin-bottom: 10px;" cellpadding="0" cellspacing="0">
+                <thead>
+                    <tr id="grid-head2">
+                        <td class="etiqueta_grid">File Name</td>
+                        <td class="etiqueta_grid">Type</td>
+                        <td class="etiqueta_grid">Size</td>
+                        <td class="etiqueta_grid" style="width: 100px;text-align: center;">
+                            <div class="btn-icon edit btn-left" title="Upload files" onclick="fn_endorsement.files.add();" style="width: auto!important;"><i class="fa fa-upload"></i><span style="    padding-left: 5px;font-size: 0.8em;text-transform: uppercase;">upload</span></div>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No uploaded files.</td></tr></tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="100%">
+                            <div class="datagrid-pages" style="display: none;">
+                                <input class="pagina_actual" type="text" readonly="readonly" size="3">
+                                <label> / </label>
+                                <input class="paginas_total" type="text" readonly="readonly" size="3">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="100%">
+                            <div class="datagrid-menu-pages" style="display: none;">
+                                <button class="pgn-inicio"    onclick="fn_endorsement.files.firstPage();" title="First page"><span></span></button>
+                                <button class="pgn-anterior"  onclick="fn_endorsement.files.previousPage();" title="Previous"><span></span></button>
+                                <button class="pgn-siguiente" onclick="fn_endorsement.files.nextPage();" title="Next"><span></span></button>
+                                <button class="pgn-final"     onclick="fn_endorsement.files.lastPage();" title="Last Page"><span></span></button>
+                            </div>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+            </td>
+        </tr>
+        </table> 
     </div>
 </div>
 <!-- preview email -->
@@ -1310,17 +1270,12 @@
             <label>File Category <span style="color:#ff0000;">*</span>: </label>
             <Select name="eArchivo" style="height: 27px!important;">
                 <option value="OTHERS">Other</option>
-                <option value="LICENSE">License</option>
-                <option value="LONGTERM">Longterm</option>   
-                <option value="PSP">PSP</option>   
-                <option value="MVR">MVR</option>   
+                <option value="ENDORSEMENT">Endorsement</option>
             </select> 
         </div>
         <div class="field_item"> 
             <label class="required-field">File to upload:</label>
             <div class="file-container">
-                <!-- MAX_FILE_SIZE debe preceder al campo de entrada del fichero 
-                <input type="hidden"   name="MAX_FILE_SIZE" value="" />-->
                 <input id="fileselect" name="fileselect" type="file"/>
                 <div class="file-message"></div>
             </div>
