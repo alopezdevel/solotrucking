@@ -90,33 +90,38 @@
                   <li class="submenu"><a href="#">POLICIES</a>
                     <ul>
                         <li><a href="policies">Policies</a></li>
-                        <li><a href="list_admin">Administrator drivers/vehicles</a></li>
+                        <?php if($_SESSION["usuario_actual"] == "customerservice@solo-trucking.com"){?> 
+                            <li><a href="list_admin">Administrator drivers/vehicles</a></li>
+                        <?php }?>
+                        
                     </ul>
                   </li>
+                  <?php if($_SESSION["usuario_actual"] == "customerservice@solo-trucking.com"){?>
                   <li class="submenu"><a href="#">Endorsements</a>
                    <ul>
                         <li><a  href="endorsement_request">New for Drivers</a></li>
                         <li><a  href="endorsement_request_units">New for Units</a></li>
-                        <li style="display: none;"><a href="endorsement_request_adds">New for Loss Payee / Additional Insured</a></li>
+                        <li><a href="endorsement_request_adds" title="New for Loss Payee or Additional Insured">Loss Payee or Additional Insured</a></li>
                         <li style="display: none;"><a href="endorsement_month">Monthly Report to CRC</a></li>
                         <li style="display: none;"><a href="endorsement_files">Upload files to endorsements</a></li> 
                         <li><a href="brokers">Configure e-mails for Brokers</a></li>
                         <li style="display: none;"><a href="endorsements">New Endorsement like a company</a></li> 
                    </ul>
-                </li>
-                <li class="submenu"><a href="#">CLAIMS</a>
+                 </li>
+                 <?php }?>
+                 <li class="submenu"><a href="#">CLAIMS</a>
                     <ul>
                         <li><a href="claims">New Claim</a></li>
                         <li><a href="claims_requests">Applications for Claims</a></li>
                         <li><a href="insurances">Configure e-mails for Insurances</a></li> 
                     </ul>
-                </li>  
-                <li class="submenu"><a href="#">QUOTES</a>
+                 </li>  
+                 <li class="submenu"><a href="#">QUOTES</a>
                    <ul style="width: 100px;">
                         <li><a href="quote_formats">Formats</a></li>  
                     </ul>
-                </li>
-            <?php } if($_SESSION['acceso'] == "3"){ //SOLO TRUCKING ADMIN?>
+                 </li>
+              <?php } if($_SESSION['acceso'] == "3"){ //SOLO TRUCKING ADMIN?>
               <!-- Admin MASTER navigation -->
                   <li><a href="inicio">Home</a></li>
                   <li class="submenu"><a href="#">ADMINISTRATOR</a>
@@ -137,6 +142,7 @@
                     <ul>
                         <li><a href="endorsement_request">New for Drivers</a></li>
                         <li><a href="endorsement_request_units">New for Units</a></li>
+                        <li><a href="endorsement_request_adds" title="New for Loss Payee or Additional Insured">Loss Payee or Additional Insured</a></li>
                         <li style="display: none;"><a href="endorsement_month">Monthly Report to CRC</a></li>
                         <li style="display: none;"><a href="endorsement_files">Upload files to endorsements</a></li> 
                         <li><a href="brokers">Configure e-mails for Brokers</a></li>

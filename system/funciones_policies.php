@@ -119,7 +119,7 @@
     $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
         
     //Filtros de informacion //
-    $filtroQuery = " WHERE (A.iDeleted = '1' OR dFechaCaducidad < CURDATE()) ";
+    $filtroQuery = " WHERE A.iDeleted = '1' OR A.dFechaCaducidad < CURDATE() ";
     $array_filtros = explode(",",$_POST["filtroInformacion"]);
     foreach($array_filtros as $key => $valor){
         if($array_filtros[$key] != ""){
@@ -131,10 +131,11 @@
     $ordenQuery = " ORDER BY ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"];
     
     //contando registros // 
-    $query_rows = "SELECT COUNT(A.iConsecutivo) AS total FROM ct_polizas A ".
-                  "LEFT JOIN ct_companias B ON A.iConsecutivoCompania = B.iConsecutivo ".
-                  "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
-                  "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo".$filtroQuery;
+    $query_rows = "SELECT COUNT(A.iConsecutivo) AS total ".
+                  "FROM      ct_polizas     AS A ".
+                  "LEFT JOIN ct_companias   AS B ON A.iConsecutivoCompania = B.iConsecutivo ".
+                  "LEFT JOIN ct_brokers     AS C ON A.iConsecutivoBrokers = C.iConsecutivo ".
+                  "LEFT JOIN ct_tipo_poliza AS D ON A.iTipoPoliza = D.iConsecutivo".$filtroQuery;
     $Result = $conexion->query($query_rows);
     $items = $Result->fetch_assoc();
     $registros = $items["total"];
@@ -148,45 +149,46 @@
         $pagina_actual == "0" ? $pagina_actual = 1 : false;
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-        $sql = "SELECT A.iConsecutivo AS clave, sNumeroPoliza, sNombreCompania, sName, sDescripcion, iOnRedList, DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio, DATE_FORMAT(dFechaCaducidad,'%m/%d/%Y') AS dFechaCaducidad, iConsecutivoArchivo,A.iConsecutivoCompania, iTipoPoliza, iConsecutivoArchivoPFA,IF(iDeleted = '1','CANCELED','EXPIRED') AS Estatus ".
-               "FROM ct_polizas A ".
-               "LEFT JOIN ct_companias B ON A.iConsecutivoCompania = B.iConsecutivo ".
-               "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
-               "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
+        $sql = "SELECT A.iConsecutivo AS clave, sNumeroPoliza, sNombreCompania, sName, sDescripcion, iOnRedList, DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio, DATE_FORMAT(dFechaCaducidad,'%m/%d/%Y') AS dFechaCaducidad, iConsecutivoArchivo,A.iConsecutivoCompania, iTipoPoliza, iConsecutivoArchivoPFA,IF(A.iDeleted = '1','DELETED','EXPIRED') AS Estatus, A.iDeleted ".
+               "FROM      ct_polizas     AS A ".
+               "LEFT JOIN ct_companias   AS B ON A.iConsecutivoCompania = B.iConsecutivo ".
+               "LEFT JOIN ct_brokers     AS C ON A.iConsecutivoBrokers = C.iConsecutivo ".
+               "LEFT JOIN ct_tipo_poliza AS D ON A.iTipoPoliza = D.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
         $result = $conexion->query($sql);
         $rows = $result->num_rows;   
         if ($rows > 0) {    
                 while ($items = $result->fetch_assoc()){ 
-                   if($items["sNumeroPoliza"] != ""){
-                           
-                         //Redlist:
-                         $items['iOnRedList'] == '1' ? $redlist_icon = "<i class=\"fa fa-star\" style=\"color:#e8051b;margin-right:4px;\"></i>" : $redlist_icon = "";
-                         
-                         $items['iConsecutivoArchivo'] == '' ? $btn_pdf = "" : $btn_pdf = "<div class=\"btn_view_pdf btn-icon pdf btn-left\" title=\"view Policy Jacker\" onclick=\"window.open('open_pdf.php?idfile=".$items['iConsecutivoArchivo']."&type=company');\"><i class=\"fa fa-file-pdf-o\"></i> <span></span></div>" ;  
-                         if($items['iConsecutivoArchivoPFA'] != '') $btn_pdf .= "<div class=\"btn_view_pdf btn-icon pdf btn-left\" title=\"view Policy PFA\" onclick=\"window.open('open_pdf.php?idfile=".$items['iConsecutivoArchivoPFA']."&type=company');\"><i class=\"fa fa-file-pdf-o\"></i> <span></span></div>" ;  
-                
-                
-                         if($items['dFechaCaducidad'] != ''){
-                            
-                            $fechaCaducidad = format_date($items['dFechaCaducidad']);
-                            $fechaHoy = date("Y-m-d"); 
-                            $EstatusPoliza = "";
-                            $dias = (strtotime($fechaCaducidad)-strtotime($fechaHoy))/86400; 
-                            $dias = floor($dias);     
-                            if($dias <= 0 ){$EstatusPoliza = "class=\"red\"";}
-                         }
-                         
-                         $iConsecutivoPoliza = $items['clave'];
-                         $htmlTabla .= "<tr>
-                                            <td>".$items['clave']."</td>".
-                                           "<td>".$redlist_icon.$items['sNombreCompania']."</td>".
-                                           "<td>".$items['sNumeroPoliza']."</td>".
-                                           //"<td>".$items['sName']."</td>". 
-                                           "<td>".$items['sDescripcion']."</td>".  
-                                           "<td>".$items['dFechaInicio']."</td>".
-                                           "<td>".$items['dFechaCaducidad']."</td>".                                                                                                                                                                                                                     
-                                           "<td style=\"text-align:center;\">".$items['Estatus']."</td></tr>";  
-                     }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}    
+                  
+                     //Redlist:
+                     $items['iOnRedList'] == '1' ? $redlist_icon = "<i class=\"fa fa-star\" style=\"color:#e8051b;margin-right:4px;\"></i>" : $redlist_icon = "";
+                     
+                     $items['iConsecutivoArchivo'] == '' ? $btn_pdf = "" : $btn_pdf = "<div class=\"btn_view_pdf btn-icon pdf btn-left\" title=\"view Policy Jacker\" onclick=\"window.open('open_pdf.php?idfile=".$items['iConsecutivoArchivo']."&type=company');\"><i class=\"fa fa-file-pdf-o\"></i> <span></span></div>" ;  
+                     if($items['iConsecutivoArchivoPFA'] != '') $btn_pdf .= "<div class=\"btn_view_pdf btn-icon pdf btn-left\" title=\"view Policy PFA\" onclick=\"window.open('open_pdf.php?idfile=".$items['iConsecutivoArchivoPFA']."&type=company');\"><i class=\"fa fa-file-pdf-o\"></i> <span></span></div>" ;  
+            
+            
+                     /*if($items['dFechaCaducidad'] != ''){
+                        
+                        $fechaCaducidad = format_date($items['dFechaCaducidad']);
+                        $fechaHoy = date("Y-m-d"); 
+                        $EstatusPoliza = "";
+                        $dias = (strtotime($fechaCaducidad)-strtotime($fechaHoy))/86400; 
+                        $dias = floor($dias);     
+                        if($dias <= 0 ){$EstatusPoliza = "class=\"red\"";}
+                     }*/
+                     
+                     $items['iDeleted'] == 0 ? $EstatusPoliza = "class=\"red\"" : $EstatusPoliza = "";
+                     
+                     $iConsecutivoPoliza = $items['clave'];
+                     $htmlTabla .= "<tr $EstatusPoliza>
+                                        <td>".$items['clave']."</td>".
+                                       "<td>".$redlist_icon.$items['sNombreCompania']."</td>".
+                                       "<td>".$items['sNumeroPoliza']."</td>".
+                                       //"<td>".$items['sName']."</td>". 
+                                       "<td>".$items['sDescripcion']."</td>".  
+                                       "<td>".$items['dFechaInicio']."</td>".
+                                       "<td>".$items['dFechaCaducidad']."</td>".                                                                                                                                                                                                                     
+                                       "<td style=\"text-align:center;\">".$items['Estatus']."</td></tr>";  
+                        
                 }
                 $conexion->rollback();
                 $conexion->close();                                                                                                                                                                       

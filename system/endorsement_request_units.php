@@ -684,7 +684,7 @@
                                 if(data.error == '0'){
                                       $('#form_change_estatus input,#form_change_estatus textarea ').val('');
                                       $("#form_change_estatus fieldset legend").empty().append(name); 
-                                      $("#form_change_estatus .company_policies tbody").empty().append(data.html);
+                                      $("#form_change_estatus .company_policies").empty().append(data.html);
                                       eval(data.fields); 
                                       $('.decimals').keydown(fn_solotrucking.inputdecimals);  
                                       
@@ -694,6 +694,9 @@
                                           fn_solotrucking.files.fileinput = "fileselect2";
                                           fn_solotrucking.files.add();
                                       }*/
+                                      $("#form_change_estatus .company_policies").accordion({
+                                           heightStyle: "content",
+                                      });
                                       
                                       fn_endorsement.files.iConsecutivoEndoso = clave;
                                       fn_endorsement.files.fillgrid();
@@ -711,7 +714,7 @@
                   var msj     = "";
                   var polizas = "";
                   
-                  $("#form_change_estatus .company_policies tbody .data_policy").each(function(){
+                  $("#form_change_estatus .company_policies .data_policy").each(function(){
                       var estatus  = $(this).find("select[name=eStatus]").val();
                       var comments = $(this).find("textarea[name=sComentarios]").val();
                       var NoEndoso = $(this).find("input[name=sNumeroEndosoBroker]").val();
@@ -1153,6 +1156,7 @@
                         <thead>
                             <tr id="grid-head2">
                                 <td class="etiqueta_grid">File Name</td>
+                                <td class="etiqueta_grid">Category</td>
                                 <td class="etiqueta_grid">Type</td>
                                 <td class="etiqueta_grid">Size</td>
                                 <td class="etiqueta_grid" style="width: 100px;text-align: center;">
@@ -1277,13 +1281,15 @@
 <div id="form_change_estatus" class="popup-form" style="width:95%;">
     <div class="p-header">
         <h2>ENDORSEMENTS / Change the status of endorsement</h2>
-        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('form_change_estatus');fn_endorsement.filtraInformacion();"><i class="fa fa-times"></i></div>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('form_change_estatus');fn_endorsement.filtraInformacion();$('#form_change_estatus .company_policies').accordion('destroy');"><i class="fa fa-times"></i></div>
     </div>
     <div class="p-container">
     <form>
         <fieldset>
-        <legend></legend> 
-        <table style="width: 100%;">
+        <legend></legend>
+        <label style="margin-left:5px;margin-bottom:3px;font-weight: normal;">You can manage each endorsement status for each individual policy and add comment about it into the system:</label>
+        <div class="company_policies"></div> 
+        <!--<table style="width: 100%;">
         <tr class="claim_estatus">
             <td colspan="2">
             <div class="field_item">
@@ -1294,7 +1300,7 @@
             </div>
             </td>
         </tr>
-        </table>
+        </table>-->
         </fieldset>
     </form> 
     <form class="forma">
@@ -1330,7 +1336,7 @@
     </form>   
     <div>
         <button type="button" class="btn-1" onclick="fn_endorsement.save_estatus();">SAVE</button> 
-        <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_change_estatus');fn_endorsement.filtraInformacion();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
+        <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_change_estatus');fn_endorsement.filtraInformacion();$('#form_change_estatus .company_policies').accordion('destroy');" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
     </div>
     <table style="width: 100%;" cellpadding="0" cellspacing="0">
         <tr>
@@ -1339,6 +1345,7 @@
                 <thead>
                     <tr id="grid-head2">
                         <td class="etiqueta_grid">File Name</td>
+                        <td class="etiqueta_grid">Category</td>
                         <td class="etiqueta_grid">Type</td>
                         <td class="etiqueta_grid">Size</td>
                         <td class="etiqueta_grid" style="width: 100px;text-align: center;">

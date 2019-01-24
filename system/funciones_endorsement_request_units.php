@@ -731,37 +731,38 @@
               $sBroker    = $data['sBrokerName'];
               
               //encabezado2:
-              $encabezado2 = "style=\"color: #fff;text-align: center;font-weight:bold;text-transform:uppercase;\"";     
+              /*$encabezado2 = "style=\"color: #fff;text-align: center;font-weight:bold;text-transform:uppercase;\"";     
                    
               #HTML TABLA:
-              $htmlTabla .= "<tr class=\"grid-head1\"><td $encabezado2 colspan=\"100%\">ENDORSEMENT TO $sBroker</td></tr>";
+              $htmlTabla .= "<tr class=\"grid-head1\"><td $encabezado2 colspan=\"100%\">ENDORSEMENT TO $sBroker</td></tr>"; */
               
               //Revisamos si el endoso aplica para envio mensual... (no debe aparecer aqui.)
               $endosoFields = "";
-             /* if($data['bEndosoMensual'] == '1'){
-                  $endosoFields = "<td style=\"width: 50%;border:0px!important;\"><p>This endorsement has not been sent to its broker, because it's submission is by month. ".
-                                  "<a href=\"endorsement_month\" target=\"_blank\" style=\"color:#2a95e8;display: inline-block;padding: 1px;text-decoration: underline;\">Click here</a></p></td>";
-                  $fechaActualizacion = "";
-              } */
-             // else{
-                  $fechaActualizacion = "<span>Last updated: ".$data['dFechaActualizacion']."</span>";
-                  $label  = "style=\"display: block;float: left;width: 18%;margin: 2px 0px;padding:5px 0px;\"";
-                  $input  = "style=\"float: right;width: 80%;clear: none;margin: 2px!important;height: 20px!important;resize: none;\"";
-                  $textar = "style=\"float: right;width: 80%;clear: none;margin: 2px!important;height:43px!important;resize: none;padding-top: 0px!important;\"";
-                  $select = "style=\"float: right;width: 81%!important;clear: none;margin: 2px!important;height:25px!important;\"";
-                  $div    = "style=\"clear:both;\""; 
-                       
-                  $endosoFields .= "<td style=\"width: 50%;border:0px!important;\" id=\"dataPolicy_".$data['iConsecutivoPoliza']."\" class=\"data_policy\">"; 
-                  //Claim Data:
-                  $endosoFields .= "<div $div>".
+              
+              $label  = "style=\"display: block;float: left;width: 18%;margin: 2px 0px;padding:5px 0px;\"";
+              $input  = "style=\"float: right;width: 99%;clear: none;margin: 2px!important;height: 20px!important;resize: none;\"";
+              $textar = "style=\"float: right;width: 99%;clear: none;margin: 2px!important;height:22px!important;resize: none;padding-top: 0px!important;\"";
+              $select = "style=\"float: right;width: 100%!important;clear: none;margin: 2px!important;height:25px!important;\"";
+              $div    = "style=\"clear:both;\"";
+              
+              $endosoFields .= "<table style=\"width:100%;\">";
+              $endosoFields .= "<tr>";
+              
+              //COLUMNA 1
+              $endosoFields .= "<td style=\"vertical-align:top;\">";
+              $endosoFields .= "<div $div>".
                                     "<label $label>Endorsement No:</label>".
                                     "<input $input type=\"text\" maxlength=\"15\" name=\"sNumeroEndosoBroker\" title=\"This number is the one granted by the broker for the endorsement.\" placeholder=\"Endorsement No:\">".
-                                   "</div>".
-                                   "<div $div>".
+                               "</div>";
+              $endosoFields .= "<div $div>".
                                     "<label $label>Amount \$:</label>".
                                     "<input $input type=\"text\" name=\"rImporteEndosoBroker\" title=\"Endorsement Amount \$\" placeholder=\"\$ 0000.00\" class=\"decimals\">".
-                                   "</div>".
-                                   "<div $div>".
+                               "</div>";
+              $endosoFields .= "</td>";
+              
+              //COLUMNA 2
+              $endosoFields .= "<td style=\"vertical-align:top;\">";
+              $endosoFields .= "<div $div>".
                                     "<label $label>Status:</label>".
                                     "<select $select id=\"eStatus_".$data['iConsecutivoPoliza']."\"  name=\"eStatus\">".
                                     "<option value=\"SB\">SENT TO BROKERS</option>".
@@ -769,15 +770,47 @@
                                     "<option value=\"A\">APPROVED</option>".
                                     "<option value=\"D\">CANCELED/DENIED</option>".
                                     "</select>".
-                                   "</div>";
-                  $endosoFields .= "<div $div>".
-                                    "<label $label>Comments:</label><textarea $textar id=\"sComentarios_".$data['iConsecutivoPoliza']."\" name=\"sComentarios\" maxlength=\"1000\" title=\"Max. 1000 characters.\"></textarea>".
-                                   "</div>";
-                  $endosoFields .= "</td>";
-                    
-             // }
+                               "</div>";
+              $endosoFields .= "<div $div>".
+                                    "<label $label>Comments:</label>".
+                                    "<textarea $textar id=\"sComentarios_".$data['iConsecutivoPoliza']."\" name=\"sComentarios\" maxlength=\"1000\" title=\"Max. 1000 characters.\"></textarea>".
+                               "</div>";
+              $endosoFields .= "</td>";
+              $endosoFields .= "</tr>";
+              $endosoFields .= "</table>"; 
               
-              $htmlTabla .= "<tr>".
+              /*$fechaActualizacion = "<span>Last updated: ".$data['dFechaActualizacion']."</span>";
+              $label  = "style=\"display: block;float: left;width: 18%;margin: 2px 0px;padding:5px 0px;\"";
+              $input  = "style=\"float: right;width: 80%;clear: none;margin: 2px!important;height: 20px!important;resize: none;\"";
+              $textar = "style=\"float: right;width: 80%;clear: none;margin: 2px!important;height:43px!important;resize: none;padding-top: 0px!important;\"";
+              $select = "style=\"float: right;width: 81%!important;clear: none;margin: 2px!important;height:25px!important;\"";
+              $div    = "style=\"clear:both;\""; 
+                   
+              $endosoFields .= "<td style=\"width: 50%;border:0px!important;\" id=\"dataPolicy_".$data['iConsecutivoPoliza']."\" class=\"data_policy\">"; 
+              //Claim Data:
+              $endosoFields .= "<div $div>".
+                                "<label $label>Endorsement No:</label>".
+                                "<input $input type=\"text\" maxlength=\"15\" name=\"sNumeroEndosoBroker\" title=\"This number is the one granted by the broker for the endorsement.\" placeholder=\"Endorsement No:\">".
+                               "</div>".
+                               "<div $div>".
+                                "<label $label>Amount \$:</label>".
+                                "<input $input type=\"text\" name=\"rImporteEndosoBroker\" title=\"Endorsement Amount \$\" placeholder=\"\$ 0000.00\" class=\"decimals\">".
+                               "</div>".
+                               "<div $div>".
+                                "<label $label>Status:</label>".
+                                "<select $select id=\"eStatus_".$data['iConsecutivoPoliza']."\"  name=\"eStatus\">".
+                                "<option value=\"SB\">SENT TO BROKERS</option>".
+                                "<option value=\"P\">IN PROCESS</option>".
+                                "<option value=\"A\">APPROVED</option>".
+                                "<option value=\"D\">CANCELED/DENIED</option>".
+                                "</select>".
+                               "</div>";
+              $endosoFields .= "<div $div>".
+                                "<label $label>Comments:</label><textarea $textar id=\"sComentarios_".$data['iConsecutivoPoliza']."\" name=\"sComentarios\" maxlength=\"1000\" title=\"Max. 1000 characters.\"></textarea>".
+                               "</div>";
+              $endosoFields .= "</td>"; */
+                    
+              /*$htmlTabla .= "<tr>".
                             "<td colspan=\"100%\">".
                             "<table style=\"width:100%\">".
                             "<tr>".
@@ -791,10 +824,10 @@
                             "</tr>".
                             "</table>".
                             "</td>".
-                            "</tr>"; 
+                            "</tr>"; */
+              $html .= '<h3>'.$sNumPoliza.' / '.$sDescPoliza.' / '.$sBroker.'</h3>';
+              $html .= '<div id="dataPolicy_'.$data['iConsecutivoPoliza'].'" class="data_policy" style="height:150px!important;">'.$endosoFields.'</div>'; 
                                  
-              //Salto de linea:              
-              $htmlTabla .= "<tr><td colspan=\"100%\" style=\"height: 10px;text-align:center;font-size:11px;\"></td></tr>";                          
 
               #FIELDS:
               $llaves  = array_keys($data);
@@ -821,7 +854,7 @@
       }
       else{$error = '1';} 
 
-      $response = array("fields"=>"$fields","error"=>"$error","html"=>"$htmlTabla");   
+      $response = array("fields"=>"$fields","error"=>"$error","html"=>"$html");   
       echo json_encode($response); 
   }
   function save_estatus_info(){
@@ -1537,7 +1570,7 @@
         #VERIFICAMOS, SI ES UN ADD, VERIFICAMOS TABLA DE ARCHIVOS X UNIDAD:
         if($endoso['eAccion'] == 'A' && $endoso['iConsecutivoUnidad'] != ""){
           $query_union = " UNION ".
-                         "(SELECT iConsecutivo, sTipoArchivo, sNombreArchivo, iTamanioArchivo FROM cb_unidad_files WHERE iConsecutivoUnidad = '".$endoso['iConsecutivoUnidad']."' $ordenQuery)";    
+                         "(SELECT iConsecutivo, sTipoArchivo, sNombreArchivo, iTamanioArchivo,eArchivo FROM cb_unidad_files WHERE iConsecutivoUnidad = '".$endoso['iConsecutivoUnidad']."' $ordenQuery)";    
         }
 
         //contando registros // 
@@ -1559,7 +1592,7 @@
           $limite_superior = $registros_por_pagina;
           $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
           
-          $sql    = "(SELECT iConsecutivo, sTipoArchivo,sNombreArchivo,iTamanioArchivo FROM cb_endoso_files ".$filtroQuery.$ordenQuery.")".$query_union;
+          $sql    = "(SELECT iConsecutivo, sTipoArchivo,sNombreArchivo,iTamanioArchivo,eArchivo FROM cb_endoso_files ".$filtroQuery.$ordenQuery.")".$query_union;
           $result = $conexion->query($sql);
           $rows   = $result->num_rows; 
              
@@ -1569,6 +1602,7 @@
 
                          $htmlTabla .= "<tr>".
                                        "<td id=\"idFile_".$items['iConsecutivo']."\">".$items['sNombreArchivo']."</td>".
+                                       "<td>".$items['eArchivo']."</td>".
                                        "<td>".$items['sTipoArchivo']."</td>".
                                        "<td>".$items['iTamanioArchivo']."</td>". 
                                        "<td>".

@@ -8,11 +8,12 @@
     $type  = $_GET['type'];
     
     switch($type){
-       case 'driver' : $ct = 'cb_operador_files'; break; 
-       case 'unit'   : $ct = 'cb_unidad_files'; break;
-       case 'company': $ct = 'cb_company_files'; break;
-       case 'claims' : $ct = 'cb_claims_files'; break;
-       case 'endoso' : $ct = 'cb_endoso_files'; break;
+       case 'driver'     : $ct = 'cb_operador_files'; break; 
+       case 'unit'       : $ct = 'cb_unidad_files'; break;
+       case 'company'    : $ct = 'cb_company_files'; break;
+       case 'claims'     : $ct = 'cb_claims_files'; break;
+       case 'endoso'     : $ct = 'cb_endoso_files'; break;
+       case 'endoso_add' : $ct = 'cb_endoso_adicional_files'; break;
     } 
     $sql   = "SELECT iConsecutivo, hContenidoDocumentoDigitalizado, sNombreArchivo, sTipoArchivo, iTamanioArchivo ".
              "FROM ".$ct." WHERE iConsecutivo = '".$folio."'";

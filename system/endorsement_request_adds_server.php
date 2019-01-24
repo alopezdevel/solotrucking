@@ -879,28 +879,54 @@
               $sDescPoliza= $data['sTipoPoliza']; 
               $sBroker    = $data['sBrokerName'];
               
-              //encabezado2:
-              $encabezado2 = "style=\"color: #fff;text-align: center;font-weight:bold;text-transform:uppercase;\"";     
-                   
-              #HTML TABLA:
-              $htmlTabla .= "<tr class=\"grid-head1\"><td $encabezado2 colspan=\"100%\">ENDORSEMENT TO $sBroker</td></tr>";
-              
               //Revisamos si el endoso aplica para envio mensual... (no debe aparecer aqui.)
               $endosoFields = "";
              
-              $fechaActualizacion = "<span>Last updated: ".$data['dFechaActualizacion']."</span>";
+              //$fechaActualizacion = "<span>Last updated: ".$data['dFechaActualizacion']."</span>";
               $label  = "style=\"display: block;float: left;width: 18%;margin: 2px 0px;padding:5px 0px;\"";
-              $input  = "style=\"float: right;width: 80%;clear: none;margin: 2px!important;height: 20px!important;resize: none;\"";
-              $textar = "style=\"float: right;width: 80%;clear: none;margin: 2px!important;height:43px!important;resize: none;padding-top: 0px!important;\"";
-              $select = "style=\"float: right;width: 81%!important;clear: none;margin: 2px!important;height:25px!important;\"";
+              $input  = "style=\"float: right;width: 99%;clear: none;margin: 2px!important;height: 20px!important;resize: none;\"";
+              $textar = "style=\"float: right;width: 99%;clear: none;margin: 2px!important;height:22px!important;resize: none;padding-top: 0px!important;\"";
+              $select = "style=\"float: right;width: 100%!important;clear: none;margin: 2px!important;height:25px!important;\"";
               $div    = "style=\"clear:both;\""; 
                        
-              $endosoFields .= "<td style=\"width: 50%;border:0px!important;\" id=\"dataPolicy_".$data['iConsecutivoPoliza']."\" class=\"data_policy\">"; 
+              $endosoFields .= "<table style=\"width:100%;\">";
+              $endosoFields .= "<tr>";
               
+              //COLUMNA 1
+              $endosoFields .= "<td style=\"vertical-align:top;\">";
               $endosoFields .= "<div $div>".
                                     "<label $label>Endorsement No:</label>".
                                     "<input $input type=\"text\" maxlength=\"15\" name=\"sNumeroEndosoBroker\" title=\"This number is the one granted by the broker for the endorsement.\" placeholder=\"Endorsement No:\">".
-                                   "</div>".
+                               "</div>";
+              $endosoFields .= "<div $div>".
+                                    "<label $label>Amount \$:</label>".
+                                    "<input $input type=\"text\" name=\"rImporteEndosoBroker\" title=\"Endorsement Amount \$\" placeholder=\"\$ 0000.00\" class=\"decimals\">".
+                               "</div>";
+              $endosoFields .= "</td>";
+              
+              //COLUMNA 2
+              $endosoFields .= "<td style=\"vertical-align:top;\">";
+              $endosoFields .= "<div $div>".
+                                    "<label $label>Status:</label>".
+                                    "<select $select id=\"eStatus_".$data['iConsecutivoPoliza']."\"  name=\"eStatus\">".
+                                    "<option value=\"SB\">SENT TO BROKERS</option>".
+                                    "<option value=\"P\">IN PROCESS</option>".
+                                    "<option value=\"A\">APPROVED</option>".
+                                    "<option value=\"D\">CANCELED/DENIED</option>".
+                                    "</select>".
+                               "</div>";
+              $endosoFields .= "<div $div>".
+                                    "<label $label>Comments:</label>".
+                                    "<textarea $textar id=\"sComentarios_".$data['iConsecutivoPoliza']."\" name=\"sComentarios\" maxlength=\"1000\" title=\"Max. 1000 characters.\"></textarea>".
+                               "</div>";
+              $endosoFields .= "</td>";
+              $endosoFields .= "</tr>";
+              $endosoFields .= "</table>"; 
+              
+              /*$endosoFields .= "<div $div>".
+                               "<label $label>Endorsement No:</label>".
+                               "<input $input type=\"text\" maxlength=\"15\" name=\"sNumeroEndosoBroker\" title=\"This number is the one granted by the broker for the endorsement.\" placeholder=\"Endorsement No:\">".
+                               "</div>".
                                    "<div $div>".
                                     "<label $label>Amount \$:</label>".
                                     "<input $input type=\"text\" name=\"rImporteEndosoBroker\" title=\"Endorsement Amount \$\" placeholder=\"\$ 0000.00\" class=\"decimals\">".
@@ -915,28 +941,11 @@
                                     "</select>".
                                    "</div>";
               $endosoFields .= "<div $div>".
-                                    "<label $label>Comments:</label><textarea $textar id=\"sComentarios_".$data['iConsecutivoPoliza']."\" name=\"sComentarios\" maxlength=\"1000\" title=\"Max. 1000 characters.\"></textarea>".
-                                   "</div>";
-              $endosoFields .= "</td>";
-                    
-              $htmlTabla .= "<tr>".
-                            "<td colspan=\"100%\">".
-                            "<table style=\"width:100%\">".
-                            "<tr>".
-                            "<td style=\"width: 50%;border:0px!important;vertical-align:top;\">".
-                                "<h4 style=\"margin: 12px 0px 5px;font-size: 12px;padding:0;text-transform: uppercase;\">Policy Data</h4>".
-                                "<label style=\"display: inline-block;width: 30%;\">No:</label><span style=\"$style\">$sNumPoliza</span><br>".
-                                "<label style=\"display: inline-block;width: 30%;\">Type:</label><span style=\"$style\">$sDescPoliza</span><br>".
-                                "<label style=\"display: inline-block;width: 30%;\">Broker:</label><span style=\"$style\">$sBroker</span>".
-                            "</td>".
-                            "$endosoFields".  
-                            "</tr>".
-                            "</table>".
-                            "</td>".
-                            "</tr>"; 
-                                 
-              //Salto de linea:              
-              $htmlTabla .= "<tr><td colspan=\"100%\" style=\"height: 10px;text-align:center;font-size:11px;\"></td></tr>";                          
+                               "<label $label>Comments:</label><textarea $textar id=\"sComentarios_".$data['iConsecutivoPoliza']."\" name=\"sComentarios\" maxlength=\"1000\" title=\"Max. 1000 characters.\"></textarea>".
+                               "</div>";*/
+              
+              $html .= '<h3>'.$sNumPoliza.' / '.$sDescPoliza.' / '.$sBroker.'</h3>';
+              $html .= '<div id="dataPolicy_'.$data['iConsecutivoPoliza'].'" class="data_policy" style="height:150px!important;">'.$endosoFields.'</div>';                        
 
               #FIELDS:
               $llaves  = array_keys($data);
@@ -963,7 +972,7 @@
       }
       else{$error = '1';} 
 
-      $response = array("fields"=>"$fields","error"=>"$error","html"=>"$htmlTabla");   
+      $response = array("fields"=>"$fields","error"=>"$error","html"=>"$html");   
       echo json_encode($response); 
   }
   function save_estatus_info(){
@@ -1019,12 +1028,11 @@
                  if($eStatusP == "A"){
                      
                      $iAprobacion++;
-                     $validaAccion  = true;
-                     //$validaAccion = set_endoso_poliza($iConsecutivo,$polizaID,$conexion);
+                     $validaAccion = set_endoso_poliza($iConsecutivo,$polizaID,$conexion);
                     
                      if(!($validaAccion)){$transaccion_exitosa=false;$mensaje="The policy data was not updated properly, please try again.";}
                      else{
-                        $mensaje = "The data has been saved successfully and the driver has been updated in the company policy. <br>Thank you!"; 
+                        $mensaje = "The data has been saved successfully and updated in the company policy. <br>Thank you!"; 
                      }
                  }else
                  if($eStatusP == "D"){$iDenegado++;}
@@ -1108,7 +1116,7 @@
       $limite_superior = $registros_por_pagina;
       $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
           
-      $sql    = "SELECT iConsecutivo, sTipoArchivo,sNombreArchivo,iTamanioArchivo FROM cb_endoso_adicional_files ".$filtroQuery.$ordenQuery;
+      $sql    = "SELECT iConsecutivo, sTipoArchivo,sNombreArchivo,iTamanioArchivo,eArchivo FROM cb_endoso_adicional_files ".$filtroQuery.$ordenQuery;
       $result = $conexion->query($sql);
       $rows   = $result->num_rows; 
              
@@ -1116,10 +1124,11 @@
             while ($items = $result->fetch_assoc()) { 
                 $htmlTabla .= "<tr>".
                               "<td id=\"idFile_".$items['iConsecutivo']."\">".$items['sNombreArchivo']."</td>".
+                              "<td>".$items['eArchivo']."</td>".
                               "<td>".$items['sTipoArchivo']."</td>".
                               "<td>".$items['iTamanioArchivo']."</td>". 
                               "<td>".
-                                   "<div class=\"btn-icon edit btn-left\" title=\"Open file in a new window\" onclick=\"window.open('open_pdf.php?idfile=".$items['iConsecutivo']."&type=endoso');\"><i class=\"fa fa-external-link\"></i><span></span></div>". 
+                                   "<div class=\"btn-icon edit btn-left\" title=\"Open file in a new window\" onclick=\"window.open('open_pdf.php?idfile=".$items['iConsecutivo']."&type=endoso_add');\"><i class=\"fa fa-external-link\"></i><span></span></div>". 
                                    "<div class=\"btn_delete_file btn-icon trash btn-left\" title=\"Delete file\"><i class=\"fa fa-trash\"></i><span></span></div>".
                               "</td></tr>";  
             }
@@ -1207,184 +1216,35 @@
       echo json_encode($response);             
       
   } 
-  
-  ///////
-  function update_endorsement_status(){
-      #paremeters
+  function elimina_archivo_endoso(){
+      
       $iConsecutivo = trim($_POST['iConsecutivo']);
-      $idPoliza     = trim($_POST['idPoliza']);
-      $eStatus      = trim($_POST['eStatus']);
-      $_POST['sComentarios'] != '' ? $sComentarios = utf8_encode(trim($_POST['sComentarios'])) : $sComentarios = '';
-      #variables
-      $error = '0';  
-      $msj = "";
-      
+      $error        = '0';   
       //Conexion:
-      include("cn_usuarios.php");
+      include("cn_usuarios.php"); 
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
-      $transaccion_exitosa = true; 
+      $transaccion_exitosa = true;
       
-      if($iConsecutivo != ''){  
-        $sql = "UPDATE cb_endoso_adicional_estatus SET eStatus='$eStatus', dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."',sUsuarioActualizacion='".$_SESSION['usuario_actual']."'".
-               "WHERE iConsecutivoEndoso = '$iConsecutivo' AND iConsecutivoPoliza = '$idPoliza'";     
-        if($conexion->query($sql)){
-                 $eStatusGeneral = "";  
-                 $query = "SELECT eStatus FROM cb_endoso_adicional_estatus WHERE iConsecutivoEndoso = '$iConsecutivo' GROUP BY eStatus ORDER BY eStatus DESC";
-                 $result = $conexion->query($query);
-                 $rows = $result->num_rows;
-                  if($rows > 0){
-                      $cadena = array();
-                      while ($items = $result->fetch_assoc()) {array_push($cadena, trim($items['eStatus']));}
-                      //Revisando cadena:
-                           if(in_array('D',$cadena)) {$eStatusGeneral = 'D';}
-                      else if(in_array('P',$cadena)) {$eStatusGeneral = 'P';}
-                      else if(in_array('SB',$cadena)){$eStatusGeneral = 'SB';}
-                      else if(in_array('A',$cadena)) {$eStatusGeneral = 'A';}
-                  }
-                 
-                 if($eStatusGeneral != ''){
-                     $sql = "UPDATE cb_endoso_adicional SET eStatus ='$eStatusGeneral', sComentarios='$sComentarios', dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."',sUsuarioActualizacion='".$_SESSION['usuario_actual']."'".
-                            "WHERE iConsecutivo = '$iConsecutivo'";
-                     if(!($conexion->query($sql))){
-                        $error = '1';                                         
-                        $msj = "Error: The Endorsement data was not found, please try again.";
-                     }else{
-                      //Revisamos si el Estatus es "APPROVED"  para actualizar la unidad o driver y agregarlo a las polizas.
-                      if($eStatusGeneral == 'A'){
-                         #1. saber que tipo de endoso es: 
-                         $query_endoso = "SELECT iConsecutivoTipoEndoso, sNumPolizas, iConsecutivoCompania, iConsecutivoOperador, iConsecutivoUnidad, eAccion ".
-                                         "FROM cb_endoso_adicional WHERE iConsecutivo = '$iConsecutivo'";
-                         $result = $conexion->query($query_endoso);
-                         $items = $result->num_rows; 
-                         
-                         if($items > 0){     
-                            $data = $result->fetch_assoc();
-                            #2. Revisamos la accion del endoso y sea una unit o un driver:
-                            $endoAccion = trim($data['eAccion']);
-                            $endoTipo   = trim($data['iConsecutivoTipoEndoso']);
-                            $CompaniaID = trim($data['iConsecutivoCompania']);
-                            $ct_actualiza = "";
-                            $Consecutivo_actualiza = "";
-                                 if($endoTipo == '1' && $data['iConsecutivoUnidad'] != '') {$ct_actualiza = "ct_unidades"; $Consecutivo_actualiza = trim($data['iConsecutivoUnidad']);}
-                            else if($endoTipo == '2' && $data['iConsecutivoOperador'] != ''){$ct_actualiza = "ct_operadores";$Consecutivo_actualiza = trim($data['iConsecutivoOperador']);}
-                            
-                            //policies of endorsement:
-                            $PolizasEndoso = explode('|',$data['sNumPolizas']);
-                            #1 - Obtener las polizas que se actualizaron. 
-                            $id_polizas = ""; 
-                            $count = count($PolizasEndoso); 
-                            for ($i = 0; $i < $count; $i++) {
-                                 $poliza = explode('/',$PolizasEndoso[$i]);
-                                 $policy_query = "SELECT iConsecutivo FROM ct_polizas ".
-                                                 "WHERE sNumeroPoliza = '".$poliza[0]."' AND iTipoPoliza = '".$poliza[1]."' ".
-                                                 "AND iConsecutivoCompania = '$CompaniaID' AND iDeleted = '0'";
-                                 $result = $conexion->query($policy_query);
-                                 $items  = $result->num_rows; 
-                                 if($items > 0 ){
-                                    $iConsecutivoPoliza = $result->fetch_assoc();  
-                                    $id_polizas == '' ?  $id_polizas = $iConsecutivoPoliza['iConsecutivo'] : $id_polizas .= ','.$iConsecutivoPoliza['iConsecutivo']; 
-                                 }else{$error = '1';$mensaje = "Error: Policy data not found.";}
-                            }
-                            
-                            #Revisamos si es un ADD o un DELETE:
-                            if($endoAccion == 'A'){
-                                #2. Actualizamos la tabla correspondiente:
-                                $polizas_actualiza = $id_polizas;
-                                $inpolizas = "1";
-                                   
-                            }else if($endoAccion == 'D'){
+      #borrar archivos de unidades si un id de unidad asignado
+      $query = "DELETE FROM cb_endoso_adicional_files WHERE iConsecutivo = '$iConsecutivo'"; 
+      if($conexion->query($query)){$transaccion_exitosa = true;}else{$transaccion_exitosa = false;}
 
-                                #2 - En caso que sea Delete, consultamos la tabla de la unidad o driver para saber a que polizas pertenece actualmente:
-                                $query = "SELECT siConsecutivosPolizas FROM $ct_actualiza WHERE iConsecutivo = '$Consecutivo_actualiza' AND iConsecutivoCompania = '$CompaniaID'";
-                                $result = $conexion->query($query);
-                                $items = $result->num_rows; 
-                                $items > 0 ? $polizas_actuales = $result->fetch_assoc() : $polizas_actuales = "";
-                                
-                                if($polizas_actuales != ''){
-                                    $polizas_actuales  = explode(',',$polizas_actuales);
-                                    $polizas_endoso    = explode(',',$id_polizas); 
-                                    $array_nuevo       = array_diff($polizas_endoso, $polizas_endoso);
-                                    $polizas_actualiza = implode(',',$array_nuevo);
-                                    $polizas_actualiza != "" ? $inpolizas = "1" : $inpolizas = "0";
-                                }else{
-                                    $polizas_actualiza = "";
-                                    $inpolizas = "0";
-                                }
-   
-                            }
-                         
-                            $update_list = "UPDATE $ct_actualiza SET inPoliza = '$inpolizas', siConsecutivosPolizas = '$polizas_actualiza' ".
-                                           "WHERE iConsecutivo = '$Consecutivo_actualiza' AND iConsecutivoCompania = '$CompaniaID'";
-                                       
-                            if(!($conexion->query($update_list))){
-                                    $error = '1';
-                                    $transaccion_exitosa = false;
-                                    $msj = "Error: The Unit or driver data was not found, please try again.";
-                                    
-                            }else{$msj = "The data has been update successfully.";}
-
-                         }else{
-                             $error = '1';
-                             $mensaje = "Error: Policy ids not found.";
-                         }
-                           
-                      }else{
-                         $msj = "The data has been update successfully."; 
-                      }
-                      
-                     }
-                         
-                 }else{
-                     $msj = "The data has been update successfully.";
-                 }
-                
-          }else{
-              $error = '1';
-              $msj = "Error: The Endorsement data was not found, please try again.";
-          }
-      }
-      if($error == '0'){
-         $conexion->commit();
-         $conexion->close();
-         //$msj = "The data has been update successfully.";  
+      if($transaccion_exitosa){
+        $conexion->commit();
+        $conexion->close();
+        $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The files has been deleted succesfully!</p>';
       }else{
-         $conexion->rollback();
-         $conexion->close(); 
+        $conexion->rollback();
+        $conexion->close();
+        $msj   = "A general system error ocurred : internal error";
+        $error = "1";
       }
-      
-      $response = array("error"=>"$error","msj"=>"$msj");
+        
+      $response = array("msj"=>"$msj","error"=>"$error");   
       echo json_encode($response);
+      
   } 
-  function evalua_estatus_general($idEndoso){
-      include("cn_usuarios.php");
-      $query = "SELECT eStatus FROM cb_endoso_adicional_estatus WHERE iConsecutivoEndoso = '$idEndoso' GROUP BY eStatus ORDER BY eStatus DESC";
-      $result = $conexion->query($query);
-      $rows = $result->num_rows;
-      
-      if($rows > 0){
-          $cadena = array();
-          while ($items = $result->fetch_assoc()) {                                           
-             
-             array_push($cadena, trim($items['eStatus']));
-          }
-          
-          //Revisando cadena:
-          if(in_array('D',$cadena)){
-              $Status = 'D';  
-          }else if(in_array('P',$cadena)){
-              $Status = 'P';
-          }else if(in_array('SB',$cadena)){
-                $Status = 'SB';
-          }else if(in_array('A',$cadena)){
-                $Status = 'A';
-          }
-      }
- 
-      return $Status;
-      
-  }
   
-
   #FUNCION PARA APLICAR ACCION DEL ENDOSO EN UNIDAD/POLIZA:
   function set_endoso_poliza($iConsecutivoEndoso,$iConsecutivoPoliza,$conexion){
     
@@ -1396,81 +1256,96 @@
       $rows   = $result->num_rows; 
       
       if($rows > 0){
-          $data         = $result->fetch_assoc();
-          $dFechaEndoso = $data['dFechaAplicacion'];
-          #ENDOSOS NO MULTIPLES:
-          if($data['iEndosoMultiple']==0){
-              //Tomamos variables:
-              $eAccion   = $data['eAccion'];
-              $idDetalle = $data['iConsecutivoOperador']; 
-              
-              //Revisamos Action:
-              if($eAccion == "A"){
-                 //Agregar registro a la tabla de relacion: 
-                 $query   = "INSERT INTO cb_poliza_operador (iConsecutivoPoliza,iConsecutivoOperador,eModoIngreso,dFechaIngreso,sIPIngreso,sUsuarioIngreso) ".
-                            "VALUES('$iConsecutivoPoliza','$idDetalle','ENDORSEMENT','$dFechaEndoso','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
-                 $success = $conexion->query($query); 
-
-                 $query   = "UPDATE ct_operadores SET iDeleted='0' WHERE iConsecutivo='$idDetalle'";
-                 $success = $conexion->query($query);
-                 if(!($success)){$transaccion_exitosa = false;} 
-              }
-              else if($eAccion == "D"){
-                  //Marcar registro como eliminado:
-                  $query   = "UPDATE cb_poliza_operador SET iDeleted='1',dFechaActualizacion='$dFechaEndoso',sIPActualizacion='".$_SERVER['REMOTE_ADDR']."',sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
-                             "WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoOperador='$idDetalle' AND iDeleted='0'";
-                  $success = $conexion->query($query); 
-                  if(!($success)){$transaccion_exitosa = false;}
-              }
-              
-          }
-          else if($data['iEndosoMultiple']==1){
-              //Consultamos las unidades relacionadas al endoso:
-              $query  = "SELECT * FROM cb_endoso_operador WHERE iConsecutivoEndoso = '$iConsecutivoEndoso' "; 
-              $result = $conexion->query($query); 
-              $rows   = $result->num_rows; 
-              if($rows > 0){
-                  //Recorremos resultado:
-                  while ($item = $result->fetch_assoc()) { 
-                      //Tomamos variables:
-                      $eAccion   = $item['eAccion'];
-                      $idDetalle = $item['iConsecutivoOperador']; 
-                      //Revisamos Action:
-                      if($eAccion == "ADD" || $eAccion == "ADDSWAP"){
-                          
-                         //Agregamos a la poliza la unidad: 
-                         $query   = "INSERT INTO cb_poliza_operador (iConsecutivoPoliza,iConsecutivoOperador,eModoIngreso,dFechaIngreso,sIPIngreso,sUsuarioIngreso) ".
-                                    "VALUES('$iConsecutivoPoliza','$idDetalle','ENDORSEMENT','$dFechaEndoso','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
-                         $success = $conexion->query($query); 
-                        
-                      }
-                      if($eAccion == "DELETE" || $eAccion == "DELETESWAP"){
-                          //Marcar como eliminado de la poliza la unidad:
-                          $query   = "UPDATE cb_poliza_operador SET iDeleted='1',dFechaActualizacion='$dFechaEndoso',sIPActualizacion='".$_SERVER['REMOTE_ADDR']."',sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
-                                     "WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoOperador='$idDetalle' AND iDeleted='0'";
-                          $success = $conexion->query($query); 
-                          if(!($success)){$transaccion_exitosa = false;}
-                          else{
-                              //CONSULTAMOS, SI EL OPERADOR NO ESTA ACTUALMENTE EN NINGUNA POLIZA, LO MARCAREMOS COMO ELIMINADA EN EL CATALOGO:
-                              $query = "SELECT COUNT(A.iConsecutivo) AS total ".
-                                       "FROM ct_operadores AS A INNER JOIN cb_poliza_operador AS B ON A.iConsecutivo = B.iConsecutivoOperador ".
-                                       "WHERE A.iConsecutivo = '$idDetalle'";
-                              $r     = $conexion->query($query);
-                              $valid = $r->fetch_assoc();
-                              $valid['total'] > 0 ? $iElimina = false : $iElimina = true;
-                              
-                              if($iElimina){
-                                $query   = "UPDATE ct_operadores SET iDeleted = '1' WHERE iConsecutivo='$idDetalle'";
-                                $success = $conexion->query($query); 
-                                if(!($success)){$error = '1'; $mensaje = "Error to try update data, please try again later.";}
-                              }
-                          }
-                      }
-                       
+          
+          $data                 = $result->fetch_assoc();
+          $dFechaEndoso         = $data['dFechaAplicacion'];
+          $iConsecutivoCompania = $data['iConsecutivoCompania'];
+          
+          //Consultamos las unidades relacionadas al endoso:
+          $query  = "SELECT * FROM cb_endoso_adicional_detalle WHERE iConsecutivoEndoso='$iConsecutivoEndoso'"; 
+          $result = $conexion->query($query); 
+          $rows   = $result->num_rows; 
+          
+          if($rows > 0){
+              //Recorremos resultado:
+              while ($item = $result->fetch_assoc()){ 
+                  
+                  //Tomamos variables:
+                  $eAccion   = $item['eAccion'];
+                  $sNombreCo = $item['sNombreCompania'];
+                  $sTipoCo   = $item['eTipoEndoso'];
+                  $sDireccion= $item['sDireccion'];
+                  $sEstado   = $item['sEstado'];
+                  $sCiudad   = $item['sCiudad'];
+                  $sCodigoP  = $item['sCodigoPostal'];
+                  $sIP       = $_SERVER['REMOTE_ADDR'];
+                  $sUsuario  = $_SESSION['usuario_actual'];
+                  
+                  //Buscamos si ya existe una compania con el mismo nombre y categoria:
+                  $query = "SELECT iConsecutivo FROM ct_companias_adicionales WHERE sNombreCompania='$sNombreCo' AND eTipo='$sTipoCo'";
+                  $row   = $conexion->query($query);
+                  $row   = $row->fetch_assoc();
+                 
+                  //UPDATE REGISTRO
+                  if($row['iConsecutivo'] != ""){
+                     $query   = "UPDATE ct_companias_adicionales SET sNombreCompania='$sNombreCo',sDireccion='$sDireccion',sEstado='$sEstado',sCiudad='$sCiudad', ".
+                                "sCodigoPostal='$sCodigoP',iActiva='1',eTipo='$sTipoCo',sIPIngreso='$sIP',sUsuarioIngreso='$sUsuario' WHERE iConsecutivo='$iConsecutivo'";
+                     $success = $conexion->query($query);
+                     $idDetalle= $row['iConsecutivo']; 
                   }
+                  //INSERT REGISTRO
+                  else{
+                     $query   = "INSERT INTO ct_companias_adicionales (iConsecutivoCompania,sNombreCompania,sDireccion,sEstado,sCiudad,sCodigoPostal,iActiva,eTipo,sIPIngreso,sUsuarioIngreso) ".
+                                "VALUES('$iConsecutivoCompania','$sNombreCo','$sDireccion','$sEstado','$sCiudad','$sCodigoP','1','$sTipoCo','$sIP','$sUsuario')";
+                     $success = $conexion->query($query); 
+                     $idDetalle= $conexion->insert_id;
+                  }
+                  
+                  if($success){
+                     //Revisamos si ya existe en el catalogo con relacion a poliza:
+                     $query = "SELECT COUNT(iConsecutivoPoliza) AS total FROM cb_poliza_companias_adicionales WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoAdicional='$idDetalle'";
+                     $row   = $conexion->query($query);
+                     $row   = $row->fetch_assoc();
+                     
+                     if($eAccion == "ADD" || $eAccion == "ADDSWAP"){$iDeleted = 0;}else
+                     if($eAccion == "DELETE" || $eAccion == "DELETESWAP"){$iDeleted = 1;}
+                     
+                     //UPDATE POLIZA/COMPANIA
+                     if($row['total'] != 0){
+                        $query   = "UPDATE cb_poliza_companias_adicionales SET iDeleted='$iDeleted',dFechaActualizacion='$dFechaEndoso',sIPActualizacion='".$_SERVER['REMOTE_ADDR']."',sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
+                                   "WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoAdicional='$idDetalle'";
+                        $success = $conexion->query($query);     
+                     }
+                     //INSERT POLIZA/COMPANIA
+                     else{
+                        $query   = "INSERT INTO cb_poliza_companias_adicionales (iConsecutivoPoliza,iConsecutivoAdicional,eModoIngreso,dFechaIngreso,sIPIngreso,sUsuarioIngreso,iDeleted) ".
+                                   "VALUES('$iConsecutivoPoliza','$idDetalle','ENDORSEMENT','$dFechaEndoso','$sIP','$sUsuario','$iDeleted')";
+                        $success = $conexion->query($query);     
+                     } 
+                  
+                  } 
+                  
+                  //CONSULTAMOS, SI EL REGISTRO NO ESTA ACTUALMENTE EN NINGUNA POLIZA, LO MARCAREMOS COMO ELIMINADO EN EL CATALOGO:
+                  if(($eAccion == "DELETE" || $eAccion == "DELETESWAP") && $success){
+          
+                      $query = "SELECT COUNT(A.iConsecutivo) AS total ".
+                               "FROM ct_companias_adicionales AS A INNER JOIN cb_poliza_companias_adicionales AS B ON A.iConsecutivo = B.iConsecutivoAdicional ".
+                               "WHERE A.iConsecutivo = '$idDetalle'";
+                      $r     = $conexion->query($query);
+                      $valid = $r->fetch_assoc();
+                      $valid['total'] > 0 ? $iElimina = false : $iElimina = true;
+                      
+                      if($iElimina){
+                        $query   = "UPDATE ct_companias_adicionales SET iActiva='0' WHERE iConsecutivo='$idDetalle'";
+                        $success = $conexion->query($query); 
+                        if(!($success)){$error = '1'; $mensaje = "Error to try update data, please try again later.";}
+                      }
+                      
+                  }
+                   
               }
-              else{$transaccion_exitosa = false;}
           }
+          else{$transaccion_exitosa = false;}
       }
       else{$transaccion_exitosa = false;}
    
