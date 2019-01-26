@@ -44,9 +44,10 @@ if ( !($_SESSION["acceso"] != '')  && ($_SESSION["usuario_actual"] != "" && $_SE
         <div class="col_3 left">
             <div class="bann">
                 <img src="images/home/img_faqs_homepage.png" border="0" width="262" height="46" alt="img_faqs_homepage.png">  
-                <h3>Frequently asked questions</h3>
+                <h3><a href="support.php" target="_blank">Frequently asked questions</a></h3>
                 <br>
                 <ul>
+                    <li><a href="documentos/support/CREAR%20Y%20ENVIAR%20ENDOSOS%20TIPO%20LOSS%20PAYEE%20OR%20ADDITIONAL%20INSURED.pdf" target="_blank">How can I add a new Endosement to LOSS PAYEE or ADDITIONAL INSURED?</a></li>
                     <li><a href="documentos/support/how_can_add_a_new_company(ESP).pdf" target="_blank">How can I add a new company?</a></li>
                     <li><a href="documentos/support/how_can_add_a_new_user(ESP).pdf">How can I add a new user?</a></li> 
                     <li><a href="#">How are endorsements managed in the system?</a></li> 

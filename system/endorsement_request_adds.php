@@ -1079,7 +1079,7 @@
                     <tr>
                     <td colspan="100%">
                     <div class="field_item general_information">
-                        <label>General Comments:</label> 
+                        <label>General Comments for this Endorsement: <span style="color: #5e8bd4;;">(These comments are those that will be shown to the client.)</span></label>
                         <textarea tabindex="9" id="sComentarios" name ="sComentarios" style="resize:none;height:30px!important;"></textarea>
                     </div>
                     </td>
