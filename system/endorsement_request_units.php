@@ -195,7 +195,7 @@
                fn_popups.resaltar_ventana('endorsements_edit_form'); 
             },
             edit : function (){
-                $(fn_endorsement.data_grid + " tbody td .btn_edit").bind("click",function(){
+              $(fn_endorsement.data_grid + " tbody td .btn_edit").bind("click",function(){
                     var clave    = $(this).parent().parent().find("td:eq(0)").html();
                     var company  = $(this).parent().parent().find("td:eq(1)").text(); 
                     $('#endorsements_edit_form .p-header h2').empty().text('Endorsement / ' + company + ': ID# ' + clave);
@@ -1062,7 +1062,7 @@
                         </td>
                     </tr>
                 </table>
-                <legend>Unit Information</legend>
+                <legend>Vehicle Data</legend>
                 <table id="frm_unit_information" style="width:100%" cellpadding="0" cellspacing="0">
                       <tr>
                         <td colspan="2">
@@ -1192,7 +1192,7 @@
                 <tr>
                     <td colspan="100%" class="general_information">
                     <div class="field_item">
-                        <label>General Comments:</label> 
+                        <label>General Comments for this Endorsement: <span style="color: #5e8bd4;;">(These comments are those that will be shown to the client.)</span></label> 
                         <textarea tabindex="9" id="sComentarios" name ="sComentarios" style="resize:none;height:30px!important;"></textarea>
                     </div>
                     </td>

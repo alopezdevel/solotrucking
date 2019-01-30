@@ -541,7 +541,7 @@
                                "<td class=\"txt-r\">".$value."</td>".
                                "<td>".
                                     "<div class=\"btn_edit_detalle btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i></div>".
-                                    "<div class=\"btn_delete_detalle btn-icon trash btn-left\" title=\"Delete file\"><i class=\"fa fa-trash\"></i><span></span></div>".
+                                    "<div class=\"btn_delete_detalle btn-icon trash btn-left\" title=\"Delete data\"><i class=\"fa fa-trash\"></i><span></span></div>".
                                "</td></tr>";  
             }
             $conexion->rollback();

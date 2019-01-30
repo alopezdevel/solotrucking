@@ -156,7 +156,8 @@
       #Function Begin
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                 
-      $sql    = "SELECT A.iConsecutivo, iConsecutivoCompania, iConsecutivoTipoEndoso, sDescripcion, A.eStatus, sComentarios, iConsecutivoOperador, eAccion, DATE_FORMAT(dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, DATE_FORMAT(dFechaAplicacion,'%H:%i') AS dFechaAplicacionHora   ".  
+      $sql    = "SELECT A.iConsecutivo, iConsecutivoCompania, sComentarios, DATE_FORMAT(dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
+                "iConsecutivoOperador, eAccion,iEndosoMultiple, iConsecutivoTipoEndoso   ".  
                 "FROM      cb_endoso      AS A ".
                 "LEFT JOIN ct_tipo_endoso AS B ON A.iConsecutivoTipoEndoso = B.iConsecutivo ". 
                 "WHERE A.iConsecutivo = '$clave'";
@@ -170,7 +171,7 @@
             $datos   = $data; 
             
             foreach($datos as $i => $b){ 
-                if($i != 'eStatus' && $i != 'sComentarios' && $i != 'iConsecutivoTipoEndoso'){
+                if($i != 'eStatus' && $i != 'sComentarios' && $i != 'iConsecutivoTipoEndoso' && $i != 'iEndosoMultiple' && $i != 'iConsecutivoOperador' && $i != 'eAccion'){
                   $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');";  
                 }else if($i == 'sComentarios'){
                   $comentarios = utf8_decode($datos[$i]);  
@@ -190,8 +191,8 @@
                        
             }  
                 
-            //SI LA UNIDAD EXISTE EN EL CATALOGO:
-            if($data['iConsecutivoOperador'] != '' && $data['iConsecutivoTipoEndoso']== '2'){
+            //SI EL OPERADOR EXISTE EN EL CATALOGO SIEMPRE Y CUANDO EL ENDOSO AUN SEA NO MULTIPLE:
+            if($data['iEndosoMultiple'] == '0' && $data['iConsecutivoOperador'] != '' && $data['iConsecutivoTipoEndoso']== '2'){
                 $sql2   = "SELECT iConsecutivo AS iConsecutivoOperador, sNombre, DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento,iExperienciaYear,eTipoLicencia,iNumLicencia,DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia ".    
                           "FROM  ct_operadores A ".
                           "WHERE A.iConsecutivo = '".$data['iConsecutivoOperador']."'";
@@ -206,19 +207,16 @@
                      foreach($datos2 as $i => $b){     
                         $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos2[$i]."');";
                      }
+                     
+                     $data['eAccion'] == 'A' ? $data['eAccion'] = 'ADD' : $data['eAccion'] = 'DELETE';
+                     $fields .= "\$('#$domroot :input[id=eAccion]').val('".$data['eAccion']."');";
                 }
             }
             $eStatus    = $data['eStatus']; 
       }
       $conexion->rollback();
       $conexion->close(); 
-      $response = array(
-                    "msj"=>"$msj",
-                    "error"=>"$error",
-                    "fields"=>"$fields",
-                    "policies"=>"$policies_checkbox",
-                    "sComentarios" => "$comentarios"
-                  );   
+      $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields","policies"=>"$policies_checkbox","sComentarios" => "$comentarios");   
       echo json_encode($response);  
       
   }
@@ -236,91 +234,81 @@
       $edit_mode = trim($_POST['edit_mode']); 
       
       //VARIABLES POST:
-      $iConsecutivo         = trim($_POST['iConsecutivo']); 
-      $eAccion              = trim($_POST['eAccion']);
+      $iConsecutivo         = trim($_POST['iConsecutivo']);
+      $iConsecutivoCompania = trim($_POST['iConsecutivoCompania']); 
       $sComentarios         = $_POST['sComentarios'] != "" ? "'".utf8_decode(trim($_POST['sComentarios']))."'" : "''";
-      $iConsecutivoOperador = trim($_POST['iConsecutivoOperador']);
-      $iConsecutivoCompania = trim($_POST['iConsecutivoCompania']);
-      $sNombre              = trim($_POST['sNombre']);
-      $dFechaNacimiento     = date('Y-m-d',strtotime(trim($_POST['dFechaNacimiento'])));
-      $iExperienciaYear     = trim($_POST['iExperienciaYear']);
-      $eTipoLicencia        = trim($_POST['eTipoLicencia']);
-      $iNumLicencia         = trim($_POST['iNumLicencia']);
-      $dFechaExpLicencia    = $_POST['dFechaExpiracionLicencia'] != "" ? "'".date('Y-m-d',strtotime(trim($_POST['dFechaExpiracionLicencia'])))."'" : $_POST['dFechaExpiracionLicencia'] = 'NULL';
       $sIP                  = $_SERVER['REMOTE_ADDR'];
       $sUsuario             = $_SESSION['usuario_actual'];
       $dFecha               = date("Y-m-d H:i:s");
-      $dFechaApp            = trim($_POST['dFechaAplicacion']) != "" ? date('Y-m-d',strtotime(trim($_POST['dFechaAplicacion']))) : date("Y-m-d");
-      $dFechaAppHora        = trim($_POST['dFechaAplicacionHora']) != "" ? date('H:i:s',strtotime(trim($_POST['dFechaAplicacionHora']))) : date("H:m:s");
-      $dFechaApp            = $dFechaApp." ".$dFechaAppHora;
+      $valores              = array();
+      $campos               = array();
       
-      //REVISAMOS DATOS DE LA UNIDAD:
-      if($iConsecutivoOperador == ""){
-         //Verificamos si la unidad ya existe: 
-         $query  = "SELECT iConsecutivo FROM ct_operadores WHERE iNumLicencia='$iNumLicencia' AND iConsecutivoCompania = '$iConsecutivoCompania'";
-         $result = $conexion->query($query);
-         $items  = $result->fetch_assoc();
-         if($items['iConsecutivo']!= ""){$iConsecutivoOperador = trim($items['iConsecutivo']);}
-      }
-      
-      if($iConsecutivoOperador!= ""){
+      //GUARDAMOS EL ENDOSO
+      if($edit_mode == 'true'){
           
-         $eAccion == "A" ? $flt_modo = ",eModoIngreso='ENDORSEMENT'" : $flt_modo = ""; 
-         
-         $query   = "UPDATE ct_operadores SET sNombre='$sNombre',dFechaNacimiento='$dFechaNacimiento',iExperienciaYear=$iExperienciaYear,eTipoLicencia='$eTipoLicencia',".
-                    "iNumLicencia='$iNumLicencia',dFechaExpiracionLicencia=$dFechaExpLicencia, ".
-                    "sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha' $flt_modo ".
-                    "WHERE iConsecutivo ='$iConsecutivoOperador' AND iConsecutivoCompania = '$iConsecutivoCompania'"; 
-         $success = $conexion->query($query);
-                  
-      }else{
-         $query   = "INSERT INTO ct_operadores (iConsecutivoCompania,sNombre,dFechaNacimiento,iExperienciaYear,eTipoLicencia,iNumLicencia,dFechaExpiracionLicencia,sIP,sUsuarioIngreso,dFechaIngreso,eModoIngreso) ".
-                    "VALUES('$iConsecutivoCompania','$sNombre','$dFechaNacimiento',$iExperienciaYear,'$eTipoLicencia','$iNumLicencia',$dFechaExpLicencia,'$sIP','$sUsuario','$dFecha','ENDORSEMENT')";
-         $success = $conexion->query($query);
-         if($success){$iConsecutivoOperador = $conexion->insert_id;}
+            foreach($_POST as $campo => $valor){
+                if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivo" && strpos($campo,"chk_policies_") === false && $campo != "dFechaAplicacionHora"){ // Estos campos no se insertan a la tabla
+                    if($campo == 'dFechaAplicacion'){$valor = date('Y-m-d',strtotime(trim($valor)));}else
+                    if($campo == 'sComentarios' && $valos != ""){$valor = utf8_encode($valor);}
+                    array_push($valores,"$campo='".$valor."'");
+                }
+            }
+          
+            //Campos adicionales:
+            array_push($valores,"sUsuarioActualizacion='$sUsuario'");
+            array_push($valores,"sIP='$sIP'");
+            array_push($valores,"dFechaActualizacion='$dFecha'");
+            array_push($valores,"iEndosoMultiple='1'");
+                
+            $query   = "UPDATE cb_endoso SET ".implode(",",$valores)." WHERE iConsecutivo='$iConsecutivo' AND iConsecutivoCompania='$iConsecutivoCompania'";
+            $mensaje = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The data has been updated successfully!</p>';
+          
       }
-      if(!($success)){$error = '1';$mensaje = "Error to save the driver data, please try again later.";}
       else{
-          //GUARDAMOS EL ENDOSO
-          if($edit_mode == 'true'){
-              //UPDATE
-              $query   = "UPDATE cb_endoso SET iConsecutivoOperador='$iConsecutivoOperador',sComentarios=$sComentarios, ".
-                         "sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha', eAccion='$eAccion', dFechaAplicacion='$dFechaApp' ".
-                         "WHERE iConsecutivo='$iConsecutivo' AND iConsecutivoCompania='$iConsecutivoCompania'";
-              $mensaje = "The data was updated successfully.";
-          
-          }else if($edit_mode == 'false'){
-              //INSERT
-              $query   = "INSERT cb_endoso (iConsecutivoCompania,iConsecutivoTipoEndoso,eStatus,iConsecutivoOperador,eAccion,dFechaAplicacion,sComentarios,sIP,sUsuarioIngreso,dFechaIngreso,iEndosoMultiple) ".
-                         "VALUES('$iConsecutivoCompania','2','S','$iConsecutivoOperador','$eAccion','$dFechaApp',$sComentarios,'$sIP','$sUsuario','$dFecha','0') ";
-              $mensaje = "The data was saved successfully.";
+          foreach($_POST as $campo => $valor){ 
+            if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivo" && strpos($campo,"chk_policies_") === false && $campo != "dFechaAplicacionHora"){ // Estos campos no se insertan a la tabla
+                if($campo == 'dFechaAplicacion'){$valor = date('Y-m-d',strtotime(trim($valor)));}else
+                if($campo == 'sComentarios'){$valor = utf8_encode($valor);}
+                array_push($campos, $campo);
+                array_push($valores,date_to_server($valor));
+            }
           }
+         
+          // Campos Adicionales:
+          array_push($campos,"sUsuarioIngreso");        array_push($valores,$sUsuario);
+          array_push($campos,"sIP");                    array_push($valores,$sIP);
+          array_push($campos,"eStatus");                array_push($valores,'S');
+          array_push($campos,"iConsecutivoTipoEndoso"); array_push($valores,'2');
+          array_push($campos,"iEndosoMultiple");        array_push($valores,'1');
           
-          $success = $conexion->query($query);
-          if(!($success)){$error = '1';$mensaje = "Error to save the endorsement data, please try again later.";}
-          else{
-              if($edit_mode == 'false'){$iConsecutivo = $conexion->insert_id;} 
-              //ELIMINAMOS POLIZAS GUARDADAS ANTERIORMENTE:
-              $query   = "DELETE FROM cb_endoso_estatus WHERE iConsecutivoEndoso='$iConsecutivo'";
-              $success = $conexion->query($query); 
-              if(!($success)){$error = '1';$mensaje = "Error to update the endorsement status data, please try again later.";}
-              else{
-                  foreach($_POST as $campo => $valor){
-                      if(!(strpos($campo,"chk_policies_") === false) && $valor == 1){
-                          $poliza  = str_replace("chk_policies_","",$campo);
-                          $query   = "INSERT INTO cb_endoso_estatus (iConsecutivoEndoso,iConsecutivoPoliza,eStatus,sIP,sUsuarioIngreso,dFechaIngreso) ".
-                                     "VALUES('$iConsecutivo','$poliza','S','$sIP','$sUsuario','$dFecha')";
-                          $success = $conexion->query($query);
-                          if(!($success)){$error = '1';$mensaje = "Error to save the endorsement status data, please try again later.";} 
-                      }
-                  }   
-              }
-          } 
+          $query   = "INSERT INTO cb_endoso (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
+          $mensaje = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The data has been saved successfully!</p>';
       }
       
+      $success = $conexion->query($query);
+      if(!($success)){$error = '1';$mensaje = "Error to save the endorsement data, please try again later.";}
+      else{
+          if($edit_mode == 'false'){$iConsecutivo = $conexion->insert_id;} 
+          //ELIMINAMOS POLIZAS GUARDADAS ANTERIORMENTE:
+          $query   = "DELETE FROM cb_endoso_estatus WHERE iConsecutivoEndoso='$iConsecutivo'";  
+          $success = $conexion->query($query); 
+          if(!($success)){$error = '1';$mensaje = "Error to update the endorsement status data, please try again later.";}
+          else{
+              foreach($_POST as $campo => $valor){
+                  if(!(strpos($campo,"chk_policies_") === false) && $valor == 1){
+                      $poliza  = str_replace("chk_policies_","",$campo);
+                      $query   = "INSERT INTO cb_endoso_estatus (iConsecutivoEndoso,iConsecutivoPoliza,eStatus,sIP,sUsuarioIngreso,dFechaIngreso) ".
+                                 "VALUES('$iConsecutivo','$poliza','S','$sIP','$sUsuario','$dFecha')";
+                      $success = $conexion->query($query);
+                      if(!($success)){$error = '1';$mensaje = "Error to save the endorsement status data, please try again later.";} 
+                  }
+              }   
+          }
+      } 
+
       $success && $error == '0' ? $conexion->commit() : $conexion->rollback();
       $conexion->close();
-      $response = array("error"=>"$error","msj"=>"$mensaje");
+      $response = array("error"=>"$error","msj"=>"$mensaje","iConsecutivo"=>"$iConsecutivo");
       echo json_encode($response);
   }
   function get_drivers_autocomplete(){
@@ -347,6 +335,272 @@
        
       $respuesta = "[".$respuesta."]";
       echo $respuesta;    
+  }
+  
+  #DETALLE 
+  function detalle_save(){
+      include("cn_usuarios.php");  
+      $conexion->autocommit(FALSE); 
+      
+      #VARIABLES:
+      $success              = true;
+      $edit_mode            = trim($_POST['edit_mode']);
+      $iConsecutivoOperador = trim($_POST['iConsecutivoOperador']);
+      $iConsecutivoCompania = trim($_POST['iConsecutivoCompania']);
+      $iConsecutivoEndoso   = trim($_POST['iConsecutivoEndoso']);
+      $campoCatalogo        = array();
+      $valorCatalogo        = array();
+      $campoDetalle         = array();
+      $valorDetalle         = array();
+      $edit_detalle         = false;
+      $error                = "0";
+      $sIP                  = $_SERVER['REMOTE_ADDR'];
+      $sUsuario             = $_SESSION['usuario_actual'];
+      $dFecha               = date("Y-m-d H:i:s");
+      
+      //REVISAMOS DATOS DEL OPERADOR:
+      if($iConsecutivoOperador == ""){
+         //Verificamos si la unidad ya existe: 
+         $query  = "SELECT iConsecutivo FROM ct_operadores WHERE iNumLicencia='".trim($_POST['iNumLicencia'])."' AND iConsecutivoCompania='$iConsecutivoCompania'";
+         $result = $conexion->query($query);
+         $items  = $result->fetch_assoc();
+         //Tomamos el consecutivo de la unidad ya existente:
+         $iConsecutivoOperador           = trim($items['iConsecutivo']);
+         $_POST['$iConsecutivoOperador'] = $iConsecutivoOperador; 
+      }
+  
+      if($iConsecutivoOperador!= ""){
+         
+          //Verificamos si se va a editar en el DETALLE:
+          $query = "SELECT COUNT(iConsecutivoOperador) AS total FROM cb_endoso_operador ".
+                   "WHERE iConsecutivoOperador='$iConsecutivoOperador' AND iConsecutivoEndoso='$iConsecutivoEndoso'";
+          $result= $conexion->query($query);
+          $valid = $result->fetch_assoc();
+          $valid['total'] > 0 ? $edit_detalle = true : $edit_detalle = false;
+          
+          foreach($_POST as $campo => $valor){
+            if($campo != "accion" && $campo != "edit_mode"){ //Estos campos no se insertan a la tabla
+                #CAMPOS QUE SE GUARDAN A NIVEL CATALOGO
+                if($campo != "iConsecutivoOperador" && $campo != "iConsecutivoCompania" && $campo != "iNumLicencia" && $campo != "eAccion" && $campo != "iConsecutivoEndoso" && $campo != "sNombre"){
+                   array_push($valorCatalogo,"$campo='". strtoupper($valor)."'"); 
+                }
+                #CAMPOS QUE DE GUARDAN A NIVEL DETALLE ENDOSO:
+                if($campo == "sNombre" || $campo == "iConsecutivoEndoso" || $campo == "iNumLicencia" || $campo == "eAccion" || $campo == "iConsecutivoOperador"){
+                   if($valid['total'] == 0){
+                        if($valor != ""){
+                            array_push($campoDetalle ,$campo);
+                            array_push($valorDetalle, strtoupper($valor));    
+                        }
+                   }
+                   else{
+                       if($valor != ""){
+                            array_push($valorDetalle,"$campo='". strtoupper($valor)."'");
+                       }
+                   } 
+                }
+            }
+          }
+          
+          #EDITAR LA UNIDAD:
+          array_push($valorCatalogo,"sUsuarioActualizacion='".$sUsuario."'");
+          array_push($valorCatalogo,"sIP='".$sIP."'");
+          array_push($valorCatalogo ,"dFechaActualizacion='".$dFecha."'");
+         
+          $query   = "UPDATE ct_operadores SET ".implode(",",$valorCatalogo)." WHERE iConsecutivo='$iConsecutivoOperador' AND iConsecutivoCompania = '$iConsecutivoCompania'"; 
+          $success = $conexion->query($query);
+          if(!($success)){$mensaje = "Error: The data of driver has not been saved successfully, please try again.";$error = "1";} 
+                  
+      }
+      else{
+         
+         //GUARDAR DATOS A NIVEL DETALLE ENDOSO:
+         foreach($_POST as $campo => $valor){
+            if($campo != "accion" && $campo != "edit_mode"){
+                
+                #CAMPOS QUE SE GUARDAN PARA UNA UNIDAD NUEVA
+                if($campo != "iConsecutivoOperador" && $campo != "eAccion" && $campo != "iConsecutivoEndoso"){
+                   if($valor != ""){
+                       array_push($campoCatalogo ,$campo);
+                       array_push($valorCatalogo, strtoupper($valor));
+                   }
+                }
+                
+                #CAMPOS QUE DE GUARDAN A NIVEL DETALLE ENDOSO:
+                if($campo == "sNombre" || $campo == "iConsecutivoEndoso" || $campo == "iNumLicencia" || $campo == "eAccion" || $campo == "iConsecutivoOperador"){
+                    if($valor != ""){
+                        array_push($campoDetalle ,$campo);
+                        array_push($valorDetalle, strtoupper($valor));
+                    }    
+                }
+            }
+         } 
+         
+         //Se inicializan campos adicionales de control
+         array_push($campoCatalogo ,"sUsuarioIngreso"); array_push($valorCatalogo,$sUsuario);
+         array_push($campoCatalogo ,"sIP"); array_push($valorCatalogo,$sIP); 
+         array_push($campoCatalogo ,"eModoIngreso"); array_push($valorCatalogo,"ENDORSEMENT"); 
+         
+         $query   = "INSERT INTO ct_operadores (".implode(",",$campoCatalogo).") VALUES ('".implode("','",$valorCatalogo)."')";
+         $success = $conexion->query($query);
+         if($success){
+             $iConsecutivoUnidad = $conexion->insert_id;
+             array_push($campoDetalle ,"iConsecutivoUnidad");
+             array_push($valorDetalle, $iConsecutivoUnidad);
+         }
+         else{$mensaje = "Error: The data of unit has not been saved successfully, please try again.";$error = "1";}
+      
+      }
+      
+      if($success){
+         if($edit_detalle){
+            $query   = "UPDATE cb_endoso_operador SET ".implode(",",$valorDetalle)." WHERE iConsecutivoOperador='$iConsecutivoOperador' AND iConsecutivoEndoso='$iConsecutivoEndoso'"; 
+            $mensaje = "The data was updated successfully.";
+         }
+         else{
+            $query   = "INSERT INTO cb_endoso_operador (".implode(",",$campoDetalle).") VALUES ('".implode("','",$valorDetalle)."')";
+            $mensaje = "The data was saved successfully.";
+         }
+      
+         $success = $conexion->query($query);
+         if(!($success)){$mensaje = "Error: The data of unit/endorsement has not been saved successfully, please try again.";$error = "1";}
+         
+      }
+      
+      $success && $error == '0' ? $conexion->commit() : $conexion->rollback();
+      $conexion->close();
+      $response = array("error"=>"$error","msj"=>"$mensaje");
+      echo json_encode($response);
+  }
+  function detalle_datagrid(){
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      $iConsecutivo        = trim($_POST['iConsecutivoEndoso']);
+      
+      if($iConsecutivo != ""){
+          
+           //Filtros de informacion //
+           $filtroQuery = " WHERE iConsecutivoEndoso = '".$iConsecutivo."' AND B.iDeleted='0'";
+            
+          #CONTAR REGISTROS                                                                                                              
+          $sql    = "SELECT COUNT(iConsecutivoEndoso) AS total ".
+                    "FROM cb_endoso_operador AS A ".
+                    "LEFT JOIN ct_operadores AS B ON A.iConsecutivoOperador = B.iConsecutivo ".$filtroQuery;
+          $result = $conexion->query($sql);
+          $rows   = $result->fetch_assoc();
+          
+          if($rows['total'] > 0){
+             
+            // ordenamiento//
+            $ordenQuery = " ORDER BY sNombre ASC";
+            
+            #CONSULTA:
+            $sql    = "SELECT iConsecutivoOperador, B.iNumLicencia, A.sNombre, A.eAccion, DATE_FORMAT(B.dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(B.dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, B.iExperienciaYear, B.eTipoLicencia  ".
+                      "FROM      cb_endoso_unidad   AS A ".
+                      "LEFT JOIN ct_operadores      AS B ON A.iConsecutivoOperador = B.iConsecutivo ".$filtroQuery.$ordenQuery;
+            $result = $conexion->query($sql);
+            
+            while ($items = $result->fetch_assoc()) { 
+                
+                 if($items['eAccion'] == "ADDSWAP"){$action = "ADD SWAP";}else
+                 if($items['eAccion'] == "DELETESWAP"){$action = "DELETE SWAP";}
+                 else{$action = $items['eAccion'];}
+               
+                 $htmlTabla .= "<tr>".
+                               "<td id=\"idDet_".$items['iConsecutivoUnidad']."\">".$action."</td>".
+                               "<td>".$items['sNombre']."</td>".
+                               "<td class=\"txt-c\">".$items['dFechaNacimiento']."</td>".
+                               "<td>".$items['iNumLicencia']."</td>". 
+                               "<td class=\"txt-c\">".$items['eTipoLicencia']."</td>".
+                               "<td class=\"txt-c\">".$items['dFechaExpiracionLicencia']."</td>".
+                               "<td class=\"txt-c\">".$items['iExperienciaYear']."</td>".
+                               "<td>".
+                                    "<div class=\"btn_edit_detalle btn-icon edit btn-left\" title=\"Edit data\"><i class=\"fa fa-pencil-square-o\"></i></div>".
+                                    "<div class=\"btn_delete_detalle btn-icon trash btn-left\" title=\"Delete data\"><i class=\"fa fa-trash\"></i><span></span></div>".
+                               "</td></tr>";  
+            }
+            $conexion->rollback();
+            $conexion->close(); 
+          }
+          else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"; }    
+      }
+      else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";} 
+      $response = array("mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
+      echo json_encode($response);
+  }
+  function detalle_get(){
+      #Err flags:
+      $error = '0';
+      $msj   = "";
+      #Variables
+      $fields   = "";
+      $clave    = trim($_POST['iConsecutivoOperador']);
+      $idEndoso = trim($_POST['iConsecutivoEndoso']);
+      $domroot  = $_POST['domroot']; 
+      
+      #Function Begin
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);
+      $sql    = "SELECT A.iConsecutivoOperador, A.eAccion, A.sNombre, A.iNumLicencia, DATE_FORMAT(B.dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(B.dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, B.iExperienciaYear, B.eTipoLicencia ".  
+                "FROM      cb_endoso_unidad AS A ".
+                "LEFT JOIN ct_operadores    AS B ON A.iConsecutivoOperador = B.iConsecutivo ". 
+                "WHERE A.iConsecutivoEndoso = '$idEndoso' AND A.iConsecutivoOperador='$clave'";
+      $result = $conexion->query($sql);
+      $items  = $result->num_rows; 
+      if ($items > 0) {
+            
+          $data    = $result->fetch_assoc();
+          $llaves  = array_keys($data);
+          $datos   = $data; 
+            
+          foreach($datos as $i => $b){ 
+            $fields .= "\$('$domroot [name=".$i."]').val('".$datos[$i]."');";   
+          }  
+            
+      }else{$error = "1"; $msj = "Error to data query, please try again later.";}
+      $conexion->rollback();
+      $conexion->close(); 
+      
+      $response = array("msj"=>"$msj", "error"=>"$error", "fields"=>"$fields",);   
+      echo json_encode($response); 
+  }
+  function detalle_delete(){
+      #VARIABLES
+      $error    = '0';
+      $mensaje  = "";
+      $fields   = "";
+      $clave    = trim($_POST['iConsecutivoOperador']);
+      $idEndoso = trim($_POST['iConsecutivoEndoso']);
+      
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE); 
+      
+      //CONSULTAMOS, SI EL OPERADOR NO ESTA ACTUALMENTE EN NINGUNA POLIZA, LA MARCAREMOS COMO ELIMINADA EN EL CATALOGO:
+      $query = "SELECT COUNT(A.iConsecutivo) AS total ".
+               "FROM ct_operadores AS A INNER JOIN cb_poliza_operador AS B ON A.iConsecutivo = B.iConsecutivoOperador ".
+               "WHERE A.iConsecutivo = '$clave'";
+      $result= $conexion->query($query);
+      $valid = $result->fetch_assoc();
+      $valid['total'] > 0 ? $iElimina = false : $iElimina = true;
+      
+      $query   = "DELETE FROM cb_endoso_operador WHERE iConsecutivoOperador='$clave' AND iConsecutivoEndoso='$idEndoso'";
+      $success = $conexion->query($query);
+      
+      if(!($success)){$error = '1'; $mensaje = "Error to try delete data, please try again later.";}
+      else{
+         if($iElimina){
+            $query   = "UPDATE ct_operadores SET iDeleted = '1' WHERE iConsecutivo='$clave'";
+            $success = $conexion->query($query); 
+            if(!($success)){$error = '1'; $mensaje = "Error to try update data, please try again later.";}
+         }
+         if($error == "0"){$mensaje = "The data has been deleted successfully!";} 
+      }
+      
+      $error == "0" ? $conexion->commit() : $conexion->rollback();
+      $conexion->close();
+      
+      $response = array("msj"=>"$mensaje","error"=>"$error",);   
+      echo json_encode($response); 
   }
   
   /*------FUNCIONES GENERALES DEL MODULO DE SOLICITUD DE ENDOSOS -----------------------*/
