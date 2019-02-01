@@ -506,6 +506,7 @@
                                       $('#form_change_estatus input,#form_change_estatus textarea ').val('');
                                       $("#form_change_estatus fieldset legend").empty().append(name); 
                                       $("#form_change_estatus .company_policies").empty().append(data.html);
+                                      $("#form_change_estatus .detalle_data tbody").empty().append(data.detalle);
                                       eval(data.fields); 
                                       $('.decimals').keydown(fn_solotrucking.inputdecimals);
                                       $("#form_change_estatus .file-message").html("");
@@ -1147,7 +1148,18 @@
     <div class="p-container">
         <form>
             <fieldset>
-            <legend></legend> 
+            <legend></legend>
+            <table class="detalle_data popup-datagrid" style="width: 100%;margin-top:0px;margin-bottom: 20px;" cellpadding="0" cellspacing="0">
+                <thead>
+                    <tr id="grid-head2">
+                        <td class="etiqueta_grid" style="width:80px;">Action</td>
+                        <td class="etiqueta_grid" style="width:130px;">Type</td>
+                        <td class="etiqueta_grid" style="width:200px;">Company Name</td>
+                        <td class="etiqueta_grid">Address</td> 
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table> 
             <label style="margin-left:5px;margin-bottom:3px;font-weight: normal;">You can manage each endorsement status for each individual policy and add comment about it into the system:</label>
             <div class="company_policies"></div>
             </fieldset>

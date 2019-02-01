@@ -841,7 +841,7 @@
               }
           }
           #consultar comentarios del claim:
-          $query  = "SELECT iConsecutivo AS iConsecutivoEndoso, eStatus, sComentarios FROM cb_endoso WHERE iConsecutivo = '$clave'";
+          $query  = "SELECT iConsecutivo AS iConsecutivoEndoso, eStatus, sComentarios,iEndosoMultiple FROM cb_endoso WHERE iConsecutivo = '$clave'";
           $result = $conexion->query($query);
           $rows   = $result->num_rows;
           if($rows > 0){
@@ -849,12 +849,94 @@
             $fields .= "\$('#$domroot :input[name=sComentariosEndoso]').val('".utf8_decode($data['sComentarios'])."');\n"; 
             $fields .= "\$('#$domroot :input[name=iConsecutivoEndoso]').val('".$data['iConsecutivoEndoso']."');\n";  
             $fields .= "\$('#$domroot :input[name=eStatusEndoso]').val('".utf8_decode($data['eStatus'])."');\n"; 
+            
+            if($data['iEndosoMultiple'] == 0){
+                  #CONSULTAR DESCRIPCION DEL ENDOSO: 
+                  $query  = "SELECT A.iConsecutivoUnidad, B.sVIN, A.eAccion,B.iYear, B.iTotalPremiumPD, C.sDescripcion AS sRadio, D.sDescripcion AS sModelo, D.sAlias AS sAliasModelo, B.sPeso, B.sTipo ".
+                            "FROM cb_endoso             AS A ".
+                            "LEFT JOIN ct_unidades      AS B ON A.iConsecutivoUnidad = B.iConsecutivo ".
+                            "LEFT JOIN ct_unidad_radio  AS C ON B.iConsecutivoRadio  = C.iConsecutivo ".
+                            "LEFT JOIN ct_unidad_modelo AS D ON B.iModelo            = D.iConsecutivo ".
+                            "WHERE A.iConsecutivo='$clave'";
+                  $result = $conexion->query($query) or die($conexion->error);
+                  $rows   = $result->num_rows; 
+                  if($rows > 0){
+                      #DECLARAR ARRAY DE DETALLE:
+                      $Detalle = $result->fetch_assoc();
+                      
+                      if($Detalle['eAccion'] == "A"){$Detalle[$x]['eAccion'] = "ADD";}
+                      if($Detalle['eAccion'] == "D"){$Detalle[$x]['eAccion'] = "DELETE";}
+                         
+                      $Acti = $Detalle['eAccion'];
+                      $Year = $Detalle['iYear'];
+                      $Peso = $Detalle['sPeso'];
+                      $VIN  = $Detalle['sVIN'];
+                      $type = $Detalle['sTipo'];
+                      $Detalle['sAliasModelo']  != '' ? $Make     = $Detalle['sAliasModelo'] : $Make   = $Detalle['sModelo']; 
+                      $Detalle['sRadio']        != '' ? $Radius   = $Detalle['sRadio']       : $Radius = "";
+                      $Detalle["iTotalPremiumPD"] > 0 ? $PDAmount = "\$ ".number_format($Detalle["iTotalPremiumPD"],2,'.',',') : $PDAmount = "";
+                         
+                         $detalle .= "<tr>";
+                         $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$Acti</td>";
+                         $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$Year</td>";
+                         $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$Make</td>";
+                         $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$VIN</td>";
+                         $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$Radius</td>";
+                         $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$Peso</td>";
+                         $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$type</td>";
+                         $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\" class=\"txt-r\">$PDAmount</td>";
+                         $detalle .= "</tr>";
+                      
+                  }    
+            }
+            else{
+                  #CONSULTAR DESCRIPCION DEL ENDOSO: 
+                  $query  = "SELECT A.sVIN, A.eAccion,B.iYear, A.iTotalPremiumPD, C.sDescripcion AS sRadio, D.sDescripcion AS sModelo, D.sAlias AS sAliasModelo, B.sPeso, B.sTipo ".
+                            "FROM cb_endoso_unidad      AS A ".
+                            "LEFT JOIN ct_unidades      AS B ON A.iConsecutivoUnidad = B.iConsecutivo ".
+                            "LEFT JOIN ct_unidad_radio  AS C ON A.iConsecutivoRadio = C.iConsecutivo ".
+                            "LEFT JOIN ct_unidad_modelo AS D ON B.iModelo = D.iConsecutivo ".
+                            "WHERE A.iConsecutivoEndoso = '$clave'";
+                  $result = $conexion->query($query) or die($conexion->error);
+                  $rows   = $result->num_rows; 
+                  if($rows > 0){
+                      #DECLARAR ARRAY DE DETALLE:
+                      $Detalle = mysql_fetch_all($result);
+                      $countD  = count($Detalle);
+                      //Recorremos array de DETALLE:
+                      for($x=0;$x<$countD;$x++){
+                 
+                         if($Detalle[$x]['eAccion'] == "ADDSWAP"){$Detalle[$x]['eAccion'] = "ADD SWAP";}
+                         if($Detalle[$x]['eAccion'] == "DELETESWAP"){$Detalle[$x]['eAccion'] = "DELETE SWAP";}
+                         
+                         $Acti = $Detalle[$x]['eAccion'];
+                         $Year = $Detalle[$x]['iYear'];
+                         $type = $Detalle[$x]['sTipo'];
+                         $VIN  = $Detalle[$x]['sVIN'];
+                         $Peso = $Detalle[$x]['sPeso'];
+                         $Detalle[$x]['sAliasModelo'] != ''  ? $Make     = $Detalle[$x]['sAliasModelo'] : $Make = $Detalle[$x]['sModelo']; 
+                         $Detalle[$x]['sRadio']       != ''  ? $Radius   = $Detalle[$x]['sRadio'] : $Radius = "";
+                         $Detalle[$x]["iTotalPremiumPD"] > 0 ? $PDAmount = "\$ ".number_format($Detalle[$x]["iTotalPremiumPD"],2,'.',',') : $PDAmount = "";
+                         
+                         $detalle .= "<tr>";
+                         $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$Acti</td>";
+                         $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$Year</td>";
+                         $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$Make</td>";
+                         $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$VIN</td>";
+                         $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$Radius</td>";
+                         $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$Peso</td>";
+                         $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$type</td>";
+                         $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\" class=\"txt-r\">$PDAmount</td>";
+                         $detalle .= "</tr>";
+                      }
+                  }    
+            }
         
           }
       }
       else{$error = '1';} 
 
-      $response = array("fields"=>"$fields","error"=>"$error","html"=>"$html");   
+      $response = array("fields"=>"$fields","error"=>"$error","html"=>"$html","detalle"=>$detalle);   
       echo json_encode($response); 
   }
   function save_estatus_info(){
@@ -1094,6 +1176,7 @@
       $Emails    = get_email_data($iConsecutivo);  
       $count     = count($Emails);
       $htmlTabla = "";
+      $msjCRC    = "";
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);
       
@@ -1117,72 +1200,77 @@
                 $query = "UPDATE cb_endoso_estatus SET eStatus = 'SB', dFechaAplicacion='".date("Y-m-d H:i:s")."', dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
                          "WHERE iConsecutivoEndoso = '$iConsecutivo' AND iConsecutivoPoliza = '".$Emails[$x]['idPoliza']."'"; 
                 $conexion->query($query);
-                if($conexion->affected_rows < 1){$success = false;$mensaje="Error to update the endorsement status, please check with de system admin.";}    
-                  
-                #HTML:
-                $htmlEmail  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"\"http://www.w3.org/TR/html4/strict.dtd\"><html>".
-                                "<head><meta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\">".
-                                "<title>Endorsement from Solo-Trucking Insurance</title></head>"; 
-                $htmlEmail .= "<body>".$Emails[$x]['html']."</body>";   
-                $htmlEmail .= "</html>";
+                if($conexion->affected_rows < 1){$success = false;$mensaje="Error to update the endorsement status, please check with de system admin.";}   
                 
-                #TERMINA CUERPO DEL MENSAJE
-                $mail = new PHPMailer();   
-                $mail->IsSMTP(); // telling the class to use SMTP
-                $mail->Host       = "mail.solo-trucking.com"; // SMTP server
-                //$mail->SMTPDebug  = 2; // enables SMTP debug information (for testing) 1 = errors and messages 2 = messages only
-                $mail->SMTPAuth   = true;                  // enable SMTP authentication
-                $mail->SMTPSecure = "TLS";                 // sets the prefix to the servier
-                $mail->Host       = "smtp.gmail.com";      // sets GMAIL as the SMTP server
-                $mail->Port       = 587;                   // set the SMTP port for the GMAIL server
-                
-                #VERIFICAR SERVIDOR DONDE SE ENVIAN CORREOS:
-                if($_SERVER["HTTP_HOST"]=="stdev.websolutionsac.com" || $_SERVER["HTTP_HOST"]=="www.stdev.websolutionsac.com"){
-                  $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
-                  $mail->Password   = "SL09100242";  
-                  $mail->SetFrom('systemsupport@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');
-                }else if($_SERVER["HTTP_HOST"] == "solotrucking.laredo2.net" || $_SERVER["HTTP_HOST"] == "st.websolutionsac.com" || $_SERVER["HTTP_HOST"] == "www.solo-trucking.com"){
-                  $mail->Username   = "customerservice@solo-trucking.com";  // GMAIL username
-                  $mail->Password   = "SL641404tK";
-                  $mail->SetFrom('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');   
+                //ANTES DE ENVIAR CORREO, VERIFICAMOS QUE EXISTAN CORREOS PARA LOS BROKERS REGISTRADOS:
+                if($Emails[$x]['emails'] != ""){
+                    #HTML:
+                    $htmlEmail  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"\"http://www.w3.org/TR/html4/strict.dtd\"><html>".
+                                    "<head><meta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\">".
+                                    "<title>Endorsement from Solo-Trucking Insurance</title></head>"; 
+                    $htmlEmail .= "<body>".$Emails[$x]['html']."</body>";   
+                    $htmlEmail .= "</html>";
+                    
+                    #TERMINA CUERPO DEL MENSAJE
+                    $mail = new PHPMailer();   
+                    $mail->IsSMTP(); // telling the class to use SMTP
+                    $mail->Host       = "mail.solo-trucking.com"; // SMTP server
+                    //$mail->SMTPDebug  = 2; // enables SMTP debug information (for testing) 1 = errors and messages 2 = messages only
+                    $mail->SMTPAuth   = true;                  // enable SMTP authentication
+                    $mail->SMTPSecure = "TLS";                 // sets the prefix to the servier
+                    $mail->Host       = "smtp.gmail.com";      // sets GMAIL as the SMTP server
+                    $mail->Port       = 587;                   // set the SMTP port for the GMAIL server
+                    
+                    #VERIFICAR SERVIDOR DONDE SE ENVIAN CORREOS:
+                    if($_SERVER["HTTP_HOST"]=="stdev.websolutionsac.com" || $_SERVER["HTTP_HOST"]=="www.stdev.websolutionsac.com"){
+                      $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
+                      $mail->Password   = "SL09100242";  
+                      $mail->SetFrom('systemsupport@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');
+                    }else if($_SERVER["HTTP_HOST"] == "solotrucking.laredo2.net" || $_SERVER["HTTP_HOST"] == "st.websolutionsac.com" || $_SERVER["HTTP_HOST"] == "www.solo-trucking.com"){
+                      $mail->Username   = "customerservice@solo-trucking.com";  // GMAIL username
+                      $mail->Password   = "SL641404tK";
+                      $mail->SetFrom('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');   
+                    }
+                    
+                    $mail->AddReplyTo('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance'); 
+                    $mail->AddCC('systemsupport@solo-trucking.com','System Support Solo-Trucking Insurance');
+                    
+                    $mail->Subject    = $Emails[$x]['subject'];
+                    $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
+                    $mail->MsgHTML($htmlEmail);
+                    $mail->IsHTML(true); 
+                     
+                    //Receptores:
+                    $direcciones         = explode(",",trim($Emails[$x]['emails']));
+                    $nombre_destinatario = trim($Emails[$x]['broker']);
+                    foreach($direcciones as $direccion){
+                        $mail->AddAddress(trim($direccion),$nombre_destinatario);
+                    }
+                      
+                    //Atachments:
+                    $files        = $Emails[$x]['files'];
+                    $delete_files = "";
+                    if($files != ""){
+                       include("./lib/fpdf153/fpdf.php");//libreria fpdf
+                       $file_tmp = fopen('tmp/'.$files["name"],"w") or die("Error when creating the file. Please check."); 
+                       fwrite($file_tmp,$files["content"]); 
+                       fclose($file_tmp);     
+                       $archivo = "tmp/".$files["name"];  
+                       $mail->AddAttachment($archivo);
+                       $delete_files .= "unlink('tmp/.".$files["name"]."');"; 
+                    }
+                    
+                    $mail_error = false;
+                    if(!$mail->Send()){$mail_error = true; $mail->ClearAddresses();}
+                    if(!($mail_error)){$msj = "The mail has been sent to the brokers";}
+                    else{$msj = "Error: The e-mail cannot be sent.";$error = "1";}
+                    
+                    $mail->ClearAttachments();
+                    eval($delete_files);    
                 }
-                
-                $mail->AddReplyTo('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance'); 
-                $mail->AddCC('systemsupport@solo-trucking.com','System Support Solo-Trucking Insurance');
-                
-                $mail->Subject    = $Emails[$x]['subject'];
-                $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
-                $mail->MsgHTML($htmlEmail);
-                $mail->IsHTML(true); 
-                 
-                //Receptores:
-                $direcciones         = explode(",",trim($Emails[$x]['emails']));
-                $nombre_destinatario = trim($Emails[$x]['broker']);
-                foreach($direcciones as $direccion){
-                    $mail->AddAddress(trim($direccion),$nombre_destinatario);
+                else{
+                    $msjCRC = "<br> If the broker is CRC, the email has not been sent but the status in the system is been updated to \"SENT TO BROKERS\".";
                 }
-                  
-                //Atachments:
-                $files        = $Emails[$x]['files'];
-                $delete_files = "";
-                if($files != ""){
-                   include("./lib/fpdf153/fpdf.php");//libreria fpdf
-                   $file_tmp = fopen('tmp/'.$files["name"],"w") or die("Error when creating the file. Please check."); 
-                   fwrite($file_tmp,$files["content"]); 
-                   fclose($file_tmp);     
-                   $archivo = "tmp/".$files["name"];  
-                   $mail->AddAttachment($archivo);
-                   $delete_files .= "unlink('tmp/.".$files["name"]."');"; 
-                }
-                
-                $mail_error = false;
-                if(!$mail->Send()){$mail_error = true; $mail->ClearAddresses();}
-                if(!($mail_error)){$msj = "The mail has been sent to the brokers";}
-                else{$msj = "Error: The e-mail cannot be sent.";$error = "1";}
-                
-                $mail->ClearAttachments();
-                eval($delete_files);
-
               } 
           } 
       }
@@ -1190,7 +1278,7 @@
       $success && $error == '0' ? $conexion->commit() : $conexion->rollback();
       $conexion->close();
       
-      $response = array("msj"=>"$msj","error"=>"$error","tabla" => "$htmlTabla");   
+      $response = array("msj"=>$msj.$msjCRC,"error"=>"$error","tabla" => "$htmlTabla");   
       echo json_encode($response);    
   }
   function get_email_data($iConsecutivo){
@@ -1285,7 +1373,7 @@
                            "LEFT JOIN ct_polizas     AS B ON A.iConsecutivoPoliza  = B.iConsecutivo ".
                            "LEFT JOIN ct_tipo_poliza AS D ON B.iTipoPoliza = D.iConsecutivo ".
                            "LEFT JOIN ct_brokers     AS C ON B.iConsecutivoBrokers = C.iConsecutivo ".
-                           "WHERE A.iConsecutivoEndoso = '$iConsecutivo' AND C.bEndosoMensual='0'"; 
+                           "WHERE A.iConsecutivoEndoso = '$iConsecutivo' "; //"AND C.bEndosoMensual='0'"; 
                  $result = $conexion->query($query) or die($conexion->error);
                  $rows   = $result->num_rows;
                  
@@ -1410,8 +1498,7 @@
                            "LEFT JOIN ct_polizas     AS B ON A.iConsecutivoPoliza  = B.iConsecutivo ".
                            "LEFT JOIN ct_tipo_poliza AS D ON B.iTipoPoliza = D.iConsecutivo ".
                            "LEFT JOIN ct_brokers     AS C ON B.iConsecutivoBrokers = C.iConsecutivo ".
-                           "WHERE A.iConsecutivoEndoso = '$iConsecutivo' AND C.bEndosoMensual='0'"; 
-                           
+                           "WHERE A.iConsecutivoEndoso = '$iConsecutivo'";//" AND C.bEndosoMensual='0'"; 
                  $result = $conexion->query($query) or die($conexion->error);
                  $rows   = $result->num_rows;
                  if($rows <= 0){$error = '1';$mensaje = "The emails can not be generated.Please check that the endorsement has brokers to send email from this module.";}

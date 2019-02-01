@@ -643,7 +643,7 @@
                        "LEFT JOIN ct_polizas     AS B ON A.iConsecutivoPoliza  = B.iConsecutivo ".
                        "LEFT JOIN ct_tipo_poliza AS D ON B.iTipoPoliza = D.iConsecutivo ".
                        "LEFT JOIN ct_brokers     AS C ON B.iConsecutivoBrokers = C.iConsecutivo ".
-                       "WHERE A.iConsecutivoEndoso = '$iConsecutivo' AND C.bEndosoMensual='0'"; 
+                       "WHERE A.iConsecutivoEndoso = '$iConsecutivo' ";//" AND C.bEndosoMensual='0'"; 
                        
               $result = $conexion->query($query) or die($conexion->error);
               $rows   = $result->num_rows;
@@ -969,10 +969,42 @@
             $fields .= "\$('#$domroot :input[name=eStatusEndoso]').val('".utf8_decode($data['eStatus'])."');\n"; 
         
           }
+          
+          #CONSULTAR DESCRIPCION DEL ENDOSO: 
+          $query  = "SELECT * FROM cb_endoso_adicional_detalle AS A WHERE A.iConsecutivoEndoso = '$clave'";
+          $result = $conexion->query($query) or die($conexion->error);
+          $rows   = $result->num_rows;
+          if($rows > 0){
+              #DECLARAR ARRAY DE DETALLE:
+              $Detalle = mysql_fetch_all($result);
+              $countD  = count($Detalle);
+              
+              //Recorremos array de DETALLE:
+              for($x=0;$x<$countD;$x++){
+             
+                     if($Detalle[$x]['eAccion'] == "ADDSWAP")   {$Detalle[$x]['eAccion'] = "ADD SWAP";}
+                     if($Detalle[$x]['eAccion'] == "DELETESWAP"){$Detalle[$x]['eAccion'] = "DELETE SWAP";}
+                     
+                     $eAccion     = $Detalle[$x]['eAccion'];
+                     $eTipoEndoso = $Detalle[$x]['eTipoEndoso'];
+                     $sCompania   = $Detalle[$x]['sNombreCompania'];
+                     $sDireccion  = $Detalle[$x]['sDireccion'];
+                     $sEstado     = $Detalle[$x]['sEstado'];
+                     $sCiudad     = $Detalle[$x]['sCiudad'];
+                     $sCodigoP    = $Detalle[$x]['sCodigoPostal'];
+                     
+                     $detalle .= "<tr>";
+                     $detalle .= "<td style=\"padding:1px 3px;\">$eAccion</td>";
+                     $detalle .= "<td style=\"padding:1px 3px;\">$eTipoEndoso</td>";
+                     $detalle .= "<td style=\"padding:1px 3px;\">$sCompania</td>";
+                     $detalle .= "<td style=\"padding:1px 3px;\">$sDireccion, $sCiudad, $sEstado. $sCodigoP</td>";
+                     $detalle .= "</tr>";
+              }
+          }
       }
       else{$error = '1';} 
 
-      $response = array("fields"=>"$fields","error"=>"$error","html"=>"$html");   
+      $response = array("fields"=>"$fields","error"=>"$error","html"=>"$html","detalle"=>$detalle);   
       echo json_encode($response); 
   }
   function save_estatus_info(){

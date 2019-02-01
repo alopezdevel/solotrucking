@@ -292,9 +292,9 @@
                     success  : function(data){                               
                         switch(data.error){ 
                          case '0':
+                            if($(fn_endorsement.detalle.form+" input[name=sNombre]").val()){ghost_mode = true;}
                             if(!(ghost_mode)){fn_solotrucking.mensaje(data.msj);}
                             fn_endorsement.fillgrid();
-                            if($(fn_endorsement.detalle.form+" input[name=sNombre]").val()){ghost_mode = true;}
                             fn_endorsement.get_data(data.iConsecutivo,ghost_mode);
                          break;
                          case '1': fn_solotrucking.mensaje(data.msj); break;
@@ -667,6 +667,7 @@
                                       $('#form_change_estatus input,#form_change_estatus textarea ').val('');
                                       $("#form_change_estatus fieldset legend").empty().append(name); 
                                       $("#form_change_estatus .company_policies").empty().append(data.html);
+                                      $("#form_change_estatus .detalle_data tbody").empty().append(data.detalle);
                                       eval(data.fields); 
                                       $('.decimals').keydown(fn_solotrucking.inputdecimals);
                                       
@@ -854,7 +855,7 @@
                 edit : function (){
                     $(fn_endorsement.detalle.data_grid + " tbody td .btn_edit_detalle").bind("click",function(){
                         var clave = $(this).parent().parent().find("td:eq(0)").prop('id');
-                            clave = clave.split('idUnit_');
+                            clave = clave.split('idDet_');
                             clave = clave[1];
                         
                         $.ajax({             
@@ -881,14 +882,14 @@
                 borrar : function (){
                     $(fn_endorsement.detalle.data_grid + " tbody td .btn_delete_detalle").bind("click",function(){
                         var clave = $(this).parent().parent().find("td:eq(0)").prop('id');
-                            clave = clave.split('idUnit_');
+                            clave = clave.split('idDet_');
                             clave = clave[1];
                         
                         $.ajax({             
                             type:"POST", 
                             url:"funciones_endorsement_request.php", 
                             data:{
-                                "accion"              : "unit_delete",
+                                "accion"              : "detalle_delete",
                                 "iConsecutivoEndoso"  : fn_endorsement.detalle.iConsecutivoEndoso,
                                 "iConsecutivoOperador": clave,
                             },
@@ -1034,7 +1035,7 @@
                          <input name="iConsecutivoEndoso"   type="hidden" value="">
                         <div class="field_item">
                             <label>Name <span style="color:#ff0000;">*</span>:</label> 
-                            <input id="sNombre" name="sNombre"  type="text" class="required-field-add required-field-delete" style="width: 97%;" autocomplete="off" placeholder="Write the name or system id of your driver" onblur="fn_endorsement.detalle.set_driver();">
+                            <input id="sNombre" name="sNombre"  type="text" class="required-field-add required-field-delete txt-uppercase" style="width: 97%;" autocomplete="off" placeholder="Write the name or system id of your driver" onblur="fn_endorsement.detalle.set_driver();">
                         </div>
                         </td>
                     </tr>
@@ -1078,7 +1079,7 @@
                         <td>
                         <div class="field_item">
                             <label>License Number <span style="color:#ff0000;">*</span>:</label>
-                            <input id="iNumLicencia" name="iNumLicencia" type="text" class="required-field-add required-field-delete txt-mayus"  style="width: 95%;" placeholder="No. ">
+                            <input id="iNumLicencia" name="iNumLicencia" type="text" class="required-field-add required-field-delete txt-uppercase"  style="width: 95%;" placeholder="No. ">
                         </div>
                         </td>
                         <td>
@@ -1222,6 +1223,20 @@
     <form>
         <fieldset>
         <legend></legend> 
+        <table class="detalle_data popup-datagrid" style="width: 100%;margin-top:0px;margin-bottom: 20px;" cellpadding="0" cellspacing="0">
+            <thead>
+                <tr id="grid-head2">
+                    <td class="etiqueta_grid" style="width:90px;">Action</td>
+                    <td class="etiqueta_grid" style="width:250px;">Name</td>
+                    <td class="etiqueta_grid">DOB</td>
+                    <td class="etiqueta_grid">License Number</td>
+                    <td class="etiqueta_grid">License Type</td> 
+                    <td class="etiqueta_grid">Expire Date</td> 
+                    <td class="etiqueta_grid">Experience Years</td> 
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
         <label style="margin-left:5px;margin-bottom:3px;font-weight: normal;">You can manage each endorsement status for each individual policy and add comment about it into the system:</label>
         <div class="company_policies"></div>
         <!--<table style="width: 100%;">

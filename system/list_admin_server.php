@@ -134,7 +134,7 @@
     
     //contando registros // 
     $query_rows = "SELECT COUNT(iConsecutivo) AS total FROM ct_operadores ".$filtroQuery;
-    $Result     = $conexion->query($query_rows);
+    $Result     = $conexion->query($query_rows) or die($conexion->error);
     $items      = $Result->fetch_assoc();
     $registros  = $items["total"];
     
@@ -151,7 +151,7 @@
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
         $sql    = "SELECT iConsecutivo, sNombre, DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, iExperienciaYear, iNumLicencia, (CASE eTipoLicencia WHEN  'Federal/B1' THEN 'Federal / B1' WHEN  'Commercial/CDL-A' THEN 'Commercial / CDL - A' END) AS TipoLicencia,eModoIngreso ".
                   "FROM ct_operadores ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
-        $result = $conexion->query($sql);
+        $result = $conexion->query($sql) or die($conexion->error);
         $rows   = $result->num_rows;   
         if ($rows > 0){    
                 while ($items = $result->fetch_assoc()){ 
@@ -171,7 +171,7 @@
                                "INNER JOIN ct_polizas     AS B ON A.iConsecutivoPoliza = B.iConsecutivo AND B.iDeleted = '0' AND B.dFechaCaducidad >= CURDATE() ".
                                "LEFT JOIN  ct_tipo_poliza AS C ON B.iTipoPoliza = C.iConsecutivo ".
                                "WHERE A.iConsecutivoOperador = '".$items['iConsecutivo']."' AND A.iDeleted = '0' ORDER BY dFechaIngreso DESC";
-                    $r      = $conexion->query($query);
+                    $r      = $conexion->query($query) or die($conexion->error);
                     $total  = $r->num_rows;
                     $PDApply= false;  
                     if($total > 0){
@@ -191,18 +191,31 @@
                             else{
                                 
                                $dateApp = $row['dFechaIngreso']; 
-                               $query = "SELECT C.iConsecutivoEndoso, C.sNumeroEndosoBroker, C.rImporteEndosoBroker, IF(A.iEndosoMultiple='1',B.eAccion, A.eAccion) AS eAccion ".
+                               $query = "SELECT C.iConsecutivoEndoso, C.sNumeroEndosoBroker, C.rImporteEndosoBroker, IF (A.iEndosoMultiple = '1', B.eAccion, IF(A.eAccion = 'A', 'ADD','DELETE') ) AS eAccion ".
                                         "FROM cb_endoso AS A ".
                                         "INNER JOIN cb_endoso_estatus  AS C ON A.iConsecutivo = C.iConsecutivoEndoso ".
                                         "LEFT  JOIN cb_endoso_operador AS B ON A.iConsecutivo = B.iConsecutivoEndoso ".
-                                        "WHERE A.iDeleted = '0' AND C.iConsecutivoPoliza = '".$row['iConsecutivoPoliza']."' AND (A.iConsecutivoOperador='".$items['iConsecutivo']."' OR B.iConsecutivoOperador ='".$items['iConsecutivo']."') ".
+                                        "WHERE A.iDeleted = '0' AND C.iConsecutivoPoliza = '".$row['iConsecutivoPoliza']."' ".
+                                        "AND IF(A.iEndosoMultiple = '0', A.iConsecutivoOperador = '".$items['iConsecutivo']."', B.iConsecutivoOperador = '".$items['iConsecutivo']."') ".
                                         "ORDER BY C.iConsecutivoEndoso DESC LIMIT 1";
-                               $r2    = $conexion->query($query);
+                               $r2    = $conexion->query($query) or die($conexion->error);
                                $endo  = $r2->fetch_assoc();
                                switch($row['sAlias']){
-                                    case 'AL'  : $endALNo = $endo['sNumeroEndosoBroker']; $endAl = $endo['rImporteEndosoBroker'] > 0 ? "\$ ".number_format($endo['rImporteEndosoBroker'],2,'.', ',') : ""; $action = $endo['eAccion']; break;
-                                    case 'PD'  : $endPDNo = $endo['sNumeroEndosoBroker']; $endPD = $endo['rImporteEndosoBroker'] > 0 ? "\$ ".number_format($endo['rImporteEndosoBroker'],2,'.', ',') : ""; $action = $endo['eAccion']; break;
-                                    case 'MTC' : $endMTCNo= $endo['sNumeroEndosoBroker']; $endMTC= $endo['rImporteEndosoBroker'] > 0 ? "\$ ".number_format($endo['rImporteEndosoBroker'],2,'.', ',') : ""; $action = $endo['eAccion']; break;
+                                    case 'AL'  : 
+                                        $endALNo = $endo['sNumeroEndosoBroker']; 
+                                        $endAl   = $endo['rImporteEndosoBroker'] > 0 ? "\$ ".number_format($endo['rImporteEndosoBroker'],2,'.', ',') : ""; 
+                                        $action  = $endo['eAccion']; 
+                                    break;
+                                    case 'PD'  : 
+                                        $endPDNo = $endo['sNumeroEndosoBroker']; 
+                                        $endPD   = $endo['rImporteEndosoBroker'] > 0 ? "\$ ".number_format($endo['rImporteEndosoBroker'],2,'.', ',') : "";
+                                        $action  = $endo['eAccion']; 
+                                    break;
+                                    case 'MTC' : 
+                                        $endMTCNo= $endo['sNumeroEndosoBroker']; 
+                                        $endMTC  = $endo['rImporteEndosoBroker'] > 0 ? "\$ ".number_format($endo['rImporteEndosoBroker'],2,'.', ',') : ""; 
+                                        $action  = $endo['eAccion']; 
+                                    break;
                                }
                             } 
                             
