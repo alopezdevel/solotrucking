@@ -1321,7 +1321,8 @@
     </form> 
     <form class="forma">
         <fieldset>
-        <input name="iConsecutivoEndoso" type="hidden" value=""> 
+            <input name="iConsecutivoEndoso" type="hidden" value=""> 
+            <input name="polizas" type="hidden" value=""> 
             <table style="width: 100%;">
             <tr class="claim_estatus">
                 <td colspan="2">

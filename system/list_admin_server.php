@@ -203,7 +203,7 @@
                                switch($row['sAlias']){
                                     case 'AL'  : 
                                         $endALNo = $endo['sNumeroEndosoBroker']; 
-                                        $endAl   = $endo['rImporteEndosoBroker'] > 0 ? "\$ ".number_format($endo['rImporteEndosoBroker'],2,'.', ',') : ""; 
+                                        $endAL   = $endo['rImporteEndosoBroker'] > 0 ? "\$ ".number_format($endo['rImporteEndosoBroker'],2,'.', ',') : ""; 
                                         $action  = $endo['eAccion']; 
                                     break;
                                     case 'PD'  : 
@@ -226,7 +226,7 @@
                     
                     
                     $htmlTabla .= "<tr>".
-                                  "<td id=\"".$items['iConsecutivo']."\">".$items['sNombre']."</td>".
+                                  "<td id=\"id_".$items['iConsecutivo']."\">".$items['sNombre']."</td>".
                                   "<td class=\"txt-c\">".$items['dFechaNacimiento']."</td>".
                                   "<td>".$items['iNumLicencia']."</td>". 
                                   "<td class=\"txt-c\">".$items['dFechaExpiracionLicencia']."</td>".  
@@ -339,19 +339,32 @@
                             else{
                                 
                                $dateApp = $row['dFechaIngreso']; 
-                               $query = "SELECT C.iConsecutivoEndoso, C.sNumeroEndosoBroker, C.rImporteEndosoBroker, IF(A.iEndosoMultiple='1',B.eAccion, A.eAccion) AS eAccion ".
-                                        "FROM cb_endoso AS A ".
+                               $query = "SELECT C.iConsecutivoEndoso, C.sNumeroEndosoBroker, C.rImporteEndosoBroker, IF (A.iEndosoMultiple = '1', B.eAccion, IF(A.eAccion = 'A', 'ADD','DELETE') ) AS eAccion  ".
+                                        "FROM       cb_endoso         AS A ".
                                         "INNER JOIN cb_endoso_estatus AS C ON A.iConsecutivo = C.iConsecutivoEndoso ".
-                                        "LEFT JOIN cb_endoso_unidad   AS B ON A.iConsecutivo = B.iConsecutivoEndoso ".
-                                        "WHERE A.iDeleted = '0' AND C.iConsecutivoPoliza = '".$row['iConsecutivoPoliza']."' AND (A.iConsecutivoUnidad='".$items['iConsecutivo']."' OR B.iConsecutivoUnidad ='".$items['iConsecutivo']."') ".
+                                        "LEFT  JOIN cb_endoso_unidad  AS B ON A.iConsecutivo = B.iConsecutivoEndoso ".
+                                        "WHERE A.iDeleted = '0' AND C.iConsecutivoPoliza = '".$row['iConsecutivoPoliza']."' ".
+                                        "AND IF(A.iEndosoMultiple = '0', A.iConsecutivoUnidad = '".$items['iConsecutivo']."', B.iConsecutivoUnidad = '".$items['iConsecutivo']."') ".
                                         "ORDER BY C.iConsecutivoEndoso DESC LIMIT 1";
                                $r2    = $conexion->query($query);
                                $endo  = $r2->fetch_assoc();
                                
                                switch($row['sAlias']){
-                                    case 'AL'  : $endALNo = $endo['sNumeroEndosoBroker']; $endAl = $endo['rImporteEndosoBroker'] > 0 ? "\$ ".number_format($endo['rImporteEndosoBroker'],2,'.', ',') : ""; $action = $endo['eAccion']; break;
-                                    case 'PD'  : $endPDNo = $endo['sNumeroEndosoBroker']; $endPD = $endo['rImporteEndosoBroker'] > 0 ? "\$ ".number_format($endo['rImporteEndosoBroker'],2,'.', ',') : ""; $action = $endo['eAccion']; break;
-                                    case 'MTC' : $endMTCNo= $endo['sNumeroEndosoBroker']; $endMTC= $endo['rImporteEndosoBroker'] > 0 ? "\$ ".number_format($endo['rImporteEndosoBroker'],2,'.', ',') : ""; $action = $endo['eAccion']; break;
+                                    case 'AL'  : 
+                                        $endALNo = $endo['sNumeroEndosoBroker']; 
+                                        $endAL   = $endo['rImporteEndosoBroker'] > 0 ? "\$ ".number_format($endo['rImporteEndosoBroker'],2,'.', ',') : ""; 
+                                        $action  = $endo['eAccion']; 
+                                    break;
+                                    case 'PD'  : 
+                                        $endPDNo = $endo['sNumeroEndosoBroker']; 
+                                        $endPD   = $endo['rImporteEndosoBroker'] > 0 ? "\$ ".number_format($endo['rImporteEndosoBroker'],2,'.', ',') : ""; 
+                                        $action  = $endo['eAccion']; 
+                                    break;
+                                    case 'MTC' : 
+                                        $endMTCNo= $endo['sNumeroEndosoBroker']; 
+                                        $endMTC  = $endo['rImporteEndosoBroker'] > 0 ? "\$ ".number_format($endo['rImporteEndosoBroker'],2,'.', ',') : ""; 
+                                        $action  = $endo['eAccion']; 
+                                    break;
                                }
                             } 
                             
@@ -362,7 +375,7 @@
                     
                     $PDApply && $items['iTotalPremiumPD'] > 0 ? $value = "\$ ".number_format($items['iTotalPremiumPD'],2,'.',',') : $value = "";           
                     $htmlTabla .= "<tr>".
-                                  "<td id=\"".$items['iConsecutivo']."\" class=\"txt-c\">".$items['iYear']."</td>".
+                                  "<td id=\"id_".$items['iConsecutivo']."\" class=\"txt-c\">".$items['iYear']."</td>".
                                   "<td>".$items['Make']."</td>".
                                   "<td>".$items['sVIN']."</td>".
                                   "<td class=\"txt-r\">".$value."</td>".
