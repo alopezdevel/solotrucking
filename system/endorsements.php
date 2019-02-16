@@ -310,7 +310,7 @@
                 new AjaxUpload('#btnsDAPDF', {
                     action: 'funciones_endorsements.php',
                     onSubmit : function(file , ext){
-                        if (!(ext && (/^(pdf)$/i.test(ext) || /^(jpg)$/i.test(ext))  )){ 
+                        if (!(ext && (/^(pdf)$/i.test(ext) || /^(jpg)$/i.test(ext) || /^(jpeg)$/i.test(ext) || /^(png)$/i.test(ext) || /^(doc)$/i.test(ext) || /^(docx)$/i.test(ext)))){ 
                             var mensaje = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Error: The file format is not valid.</p>';
                             fn_solotrucking.mensaje(mensaje);
                             return false;

@@ -1,4 +1,4 @@
-﻿<?php session_start();    
+<?php session_start();    
 if ( !($_SESSION["acceso"] != '2'  && $_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  )  ){ //No ha iniciado session, redirecciona a la pagina de login
     header("Location: login.php");
     exit;
@@ -76,9 +76,9 @@ var fn_endorsement = {
                 async : true,
                 dataType : "json",
                 success : function(data){                               
-                    $(fn_endorsement.data_grid+" tbody").empty().append(data.tabla);
-                    $(fn_endorsement.data_grid+" tbody tr:even").addClass('gray');
-                    $(fn_endorsement.data_grid+" tbody tr:odd").addClass('white');
+                    $(fn_endorsement.data_grid+" > tbody").empty().append(data.tabla);
+                    $(fn_endorsement.data_grid+" > tbody > tr:even").addClass('gray');
+                    $(fn_endorsement.data_grid+" > tbody > tr:odd").addClass('white');
                     $(fn_endorsement.data_grid + " tfoot #paginas_total").val(data.total);
                     $(fn_endorsement.data_grid + " tfoot #pagina_actual").val(data.pagina);
                     fn_endorsement.pagina_actual = data.pagina;
@@ -89,16 +89,20 @@ var fn_endorsement = {
         },
         edit : function (){
             $(fn_endorsement.data_grid + " tbody td .btn_open_files").bind("click",function(){
-                var clave = $(this).parent().parent().find("td:eq(0)").html();
-                var type = $(this).parent().parent().find("td:eq(3)").html(); 
-                var decr = $(this).parent().parent().find("td:eq(2)").html();
-                var company = $(this).parent().parent().find("td:eq(1)").text();
-                var category = $(this).parent().parent().find("td:eq(3)").attr('class');
-                 
-                $('#endorsements_edit_form .p-header h2').empty().text('FILES OF ENDORSEMENT: ' + clave + ' FROM COMPANY ' + company);
-                $('#endorsements_edit_form .popup-gridtit').empty().text('FILES OF ' + type + ' ENDORSEMENT (' + decr + ')'); 
+                var clave    = $(this).parent().parent().find(" > td:eq(0)").html();
+                var type     = $(this).parent().parent().find(" > td:eq(0)").prop('class'); 
+                var decr     = $(this).parent().parent().find(" > td:eq(2)").html();
+                var company  = $(this).parent().parent().find(" > td:eq(1)").text();
+                
+                if(type.trim() == 'DRIVER'){var category = '2'}else{var category = '1';}
+                
+                $('#endorsements_edit_form .p-header h2').empty().text('FILES OF ENDORSEMENT ID# ' + clave + ' FROM COMPANY ' + company);
+                $('#endorsements_edit_form .info-endoso > legend').empty().html('ENDORSEMENT ID# ' + clave + ' FROM COMPANY ' + company);
+                $('#endorsements_edit_form .info-endoso > div').empty().html(decr);
+                $('#endorsements_edit_form .info-endoso > div table').css({"width": "98%","margin": "0 auto"});
+                
                 fn_endorsement.files.id_endorsement = clave;
-                fn_endorsement.files.tipo = category;
+                fn_endorsement.files.tipo           = category;
                 fn_endorsement.files.init();
                 fn_popups.resaltar_ventana('endorsements_edit_form'); 
           });  
@@ -152,12 +156,12 @@ var fn_endorsement = {
                 fn_endorsement.filtro = "";
                 if($(fn_endorsement.data_grid+" .flt_id").val() != ""){ fn_endorsement.filtro += "A.iConsecutivo|"+$(fn_endorsement.data_grid+" .flt_id").val()+","}
                 if($(fn_endorsement.data_grid+" .flt_company").val() != ""){ fn_endorsement.filtro += "E.sNombreCompania|"+$(fn_endorsement.data_grid+" .flt_company").val()+","} 
-                if($(fn_endorsement.data_grid+" .flt_description").val() != ""){ fn_endorsement.filtro += "sNombre|"+$(fn_endorsement.data_grid+" .flt_description").val()+","} 
-                if($(fn_endorsement.data_grid+" .flt_descunit").val() != ""){ fn_endorsement.filtro += "sVIN|"+$(fn_endorsement.data_grid+" .flt_descunit").val()+","}
+                //if($(fn_endorsement.data_grid+" .flt_description").val() != ""){ fn_endorsement.filtro += "sNombre|"+$(fn_endorsement.data_grid+" .flt_description").val()+","} 
+                //if($(fn_endorsement.data_grid+" .flt_descunit").val() != ""){ fn_endorsement.filtro += "sVIN|"+$(fn_endorsement.data_grid+" .flt_descunit").val()+","}
                 if($(fn_endorsement.data_grid+" .flt_type").val() != ""){ fn_endorsement.filtro += "B.sDescripcion|"+$(fn_endorsement.data_grid+" .flt_type").val()+","} 
                 fn_endorsement.fillgrid();
        },
-       files : {
+        files : {
             id_endorsement : "",
             tipo : "",
             filtro : "",
@@ -167,9 +171,9 @@ var fn_endorsement = {
             init : function(){
                 fn_endorsement.files.fillgrid();
                 new AjaxUpload('#btn_upload_file_driver', {
-                    action: 'funciones_endorsement_files.php',
+                    action   : 'funciones_endorsements.php',
                     onSubmit : function(file , ext){
-                        if (!(ext && (/^(pdf)$/i.test(ext) || /^(jpg)$/i.test(ext))  )){ 
+                        if (!(ext && (/^(pdf)$/i.test(ext) || /^(jpg)$/i.test(ext) || /^(jpeg)$/i.test(ext) || /^(png)$/i.test(ext) || /^(doc)$/i.test(ext) || /^(docx)$/i.test(ext)))){  
                             var mensaje = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Error: The file format is not valid.</p>';
                             fn_solotrucking.mensaje(mensaje);
                             return false;
@@ -184,15 +188,16 @@ var fn_endorsement = {
                                 }
                                 if (valid){
                                     //verificar si es edicion o insert:
-                                    if($('#iConsecutivo_driver').val() == ''){var edit_mode = 'false';}else{var edit_mode = 'true'; }
+                                    //if($('#iConsecutivo_driver').val() == ''){var edit_mode = 'false';}else{var edit_mode = 'true'; }
                                     this.setData({
-                                        'accion': 'save_file',
-                                        'edit_mode' : edit_mode,
-                                        'eArchivo' : $('#eArchivo_driver').val(),
-                                        'sNombreArchivo':$('#sNombreArchivo_driver').val(),
-                                        'iConsecutivo':$('#iConsecutivo_driver').val(),
-                                        'Categoria' : fn_endorsement.files.tipo,
+                                        'accion'             : 'guarda_pdf_endoso',
+                                        'eArchivo'           : $('#drivers_files #eArchivo_driver').val(),
                                         'iConsecutivoEndoso' : fn_endorsement.files.id_endorsement,
+                                        'iConsecutivo'       : '',
+                                        /*'edit_mode'     : edit_mode,
+                                        'sNombreArchivo': $('#sNombreArchivo_driver').val(),
+                                        'iConsecutivo'  : $('#iConsecutivo_driver').val(),
+                                        'Categoria'     : fn_endorsement.files.tipo,*/
                                     });
                                     this.disable();  
                                 }
@@ -222,14 +227,13 @@ var fn_endorsement = {
                 });
                 //UNIT:
                 new AjaxUpload('#btn_upload_file_unit', {
-                    action: 'funciones_endorsement_files.php',
+                    action   : 'funciones_endorsements.php',
                     onSubmit : function(file , ext){
-                        if (!(ext && (/^(pdf)$/i.test(ext) || /^(jpg)$/i.test(ext))  )){ 
+                        if (!(ext && (/^(pdf)$/i.test(ext) || /^(jpg)$/i.test(ext) || /^(jpeg)$/i.test(ext) || /^(png)$/i.test(ext) || /^(doc)$/i.test(ext) || /^(docx)$/i.test(ext)))){  
                             var mensaje = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Error: The file format is not valid.</p>';
                             fn_solotrucking.mensaje(mensaje);
                             return false;
                         }else{
-                            
                             var valid = true; 
                              //validar name file
                             if($('#eArchivo_unit').val() != ''){
@@ -240,21 +244,24 @@ var fn_endorsement = {
                                 }
                                 if (valid){
                                     //verificar si es edicion o insert:
-                                    if($('#iConsecutivo_unit').val() == ''){var edit_mode = 'false';}else{var edit_mode = 'true'; }
+                                    //if($('#iConsecutivo_unit').val() == ''){var edit_mode = 'false';}else{var edit_mode = 'true'; }
                                     this.setData({
-                                        'accion': 'save_file',
-                                        'edit_mode' : edit_mode,
-                                        'eArchivo' : $('#eArchivo_unit').val(),
+                                        'accion'             : 'guarda_pdf_endoso',
+                                        'eArchivo'           : $('#units_files #eArchivo_unit').val(),
+                                        'iConsecutivoEndoso' : fn_endorsement.files.id_endorsement,
+                                        'iConsecutivo'       : '',
+                                        /*'edit_mode'     : edit_mode,
                                         'sNombreArchivo':$('#sNombreArchivo_unit').val(),
                                         'iConsecutivo':$('#iConsecutivo_unit').val(),
-                                        'Categoria' : fn_endorsement.files.tipo, 
-                                        'iConsecutivoEndoso' : fn_endorsement.files.id_endorsement,
+                                        'Categoria' : fn_endorsement.files.tipo, */
                                     });
-                                    this.disable();
+                                    this.disable();  
                                 }
+                                
+                                
                             }else{
                                fn_solotrucking.mensaje('Error: Please Select a file category.'); 
-                               $('#eArchivo_unit').addClass('error');
+                               $('#eArchivo_driver').addClass('error');
                             } 
                         }
                     },
@@ -273,7 +280,7 @@ var fn_endorsement = {
                             break;
                         }   
                     }        
-                });     
+                });
             },
             fillgrid: function(){
                $.ajax({             
@@ -366,7 +373,7 @@ var fn_endorsement = {
                });  
             },
             delete_file : function(id){
-              $.post("funciones_endorsement_files.php",{accion:"delete_file", 'iConsecutivoFile': id, 'Categoria' : fn_endorsement.files.tipo },
+              $.post("funciones_endorsements.php",{accion:"elimina_archivo_endoso", 'iConsecutivo': id },
                function(data){
                     fn_solotrucking.mensaje(data.msj);
                     fn_endorsement.files.fillgrid();
@@ -420,9 +427,9 @@ var fn_endorsement = {
                 <td style='width:45px;'>
                     <input class="flt_id" class="numeros" type="text" placeholder="ID:"></td>
                 <td><input class="flt_company" type="text" placeholder="Company:"></td>
-                <td style="width:220px">
-                    <input class="flt_description" type="text" placeholder="Driver Name:" style="width:46%;float:left;">
-                    <input class="flt_descunit" type="text" placeholder="VIN#:" style="float:right;width: 46%;">
+                <td style="width:330px">
+                    <!--<input class="flt_description" type="text" placeholder="Driver Name:" style="width:46%;float:left;">
+                    <input class="flt_descunit" type="text" placeholder="VIN#:" style="float:right;width: 46%;">-->
                 </td>  
                 <td><input class="flt_type" type="text" placeholder="Type:"></td> 
                 <td style='width:160px;'>
@@ -470,7 +477,11 @@ var fn_endorsement = {
     </div>
     <div class="p-container">
     <div>
-        <h3 class="popup-gridtit"></h3>
+    <fieldset class="info-endoso">
+    <legend></legend>
+        <div></div>
+        <br>
+        <h3 class="popup-gridtit">FILES OF ENDORSEMENT</h3>
         <table id="data_files_grid" class="popup-datagrid">
             <thead>
                 <tr id="grid-head1">
@@ -511,6 +522,7 @@ var fn_endorsement = {
             </tfoot>
         </table>
         <br>
+    </fieldset>
     </div>
     </div>
 </div>
@@ -526,8 +538,9 @@ var fn_endorsement = {
         <div class="field_item">
             <input id="iConsecutivo_driver"  name="iConsecutivo"  type="hidden">
             <label>Category <span style="color:#ff0000;">*</span>:</label>  
-            <select tabindex="1" id="eArchivo_driver"  name="eArchivo_driver" onblur="fn_endorsement.files.validate_file(this.value);">
+            <select tabindex="1" id="eArchivo_driver"  name="eArchivo_driver" onblur="//fn_endorsement.files.validate_file(this.value);">
                 <option value="">Select an option...</option>
+                <option value="ENDORSEMENT">Endorsement</option> 
                 <option value="LICENSE">License</option>
                 <option value="LONGTERM">Long Term</option> 
                 <option value="PSP">PSP</option> 
@@ -549,8 +562,9 @@ var fn_endorsement = {
         <div class="field_item">
             <input id="iConsecutivo_unit"  name="iConsecutivo_unit"  type="hidden">
             <label>Category <span style="color:#ff0000;">*</span>:</label>  
-            <select tabindex="1" id="eArchivo_unit"  name="eArchivo_unit" onblur="fn_endorsement.files.validate_file(this.value);">
+            <select tabindex="1" id="eArchivo_unit"  name="eArchivo_unit" onblur="//fn_endorsement.files.validate_file(this.value);">
                 <option value="">Select an option...</option>
+                <option value="ENDORSEMENT">Endorsement</option>
                 <option value="TITLE">Title</option>
                 <option value="PTL">Proof of Total Loss</option> 
                 <option value="DA">Delease Agreement</option> 
