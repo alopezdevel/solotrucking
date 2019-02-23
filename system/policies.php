@@ -640,17 +640,25 @@ var fn_policies = {
         }, 
         valida_tipo_poliza : function(){
             var iTipoPoliza = $("#policies_edit_form #iTipoPoliza").val();
+            // ocultar todos los campos primero:
+            $("#policies_edit_form .premium_amounts_additional, #policies_edit_form .premium_amounts_GL, #policies_edit_form .cargo_policie_type").hide();
+            $("#policies_edit_form .premium_amounts_additional input, #policies_edit_form .premium_amounts_GL input").val('');
+            
+            //MTC-TI
             if(iTipoPoliza == "5"){
                 $("#policies_edit_form .premium_amounts_additional").show();
-                $("#policies_edit_form .premium_amounts_GL").hide();
-                $("#policies_edit_form .premium_amounts_GL input").val(''); 
-            }else if(iTipoPoliza == "6"){
+                $("#policies_edit_form .cargo_policie_type").show();
+            }
+            //MTC
+            else if(iTipoPoliza == "2"){
+                $("#policies_edit_form .cargo_policie_type").show();
+                $("#policies_edit_form .premium_amounts").show();
+            }
+            //CGL
+            else if(iTipoPoliza == "6"){
                 $("#policies_edit_form .premium_amounts").hide();
-                $("#policies_edit_form .premium_amounts input").val('');
                 $("#policies_edit_form .premium_amounts_GL").show(); 
             }else{
-                $("#policies_edit_form .premium_amounts_additional, #policies_edit_form .premium_amounts_GL").hide();
-                $("#policies_edit_form .premium_amounts_additional input, #policies_edit_form .premium_amounts_GL input").val('');
                 $("#policies_edit_form .premium_amounts").show(); 
             }
         },
@@ -1185,6 +1193,31 @@ var fn_policies = {
                         <div class="field_item"> 
                             <label>Expiration Date <span style="color:#ff0000;">*</span>: </label>
                             <input tabindex="5" id="dFechaCaducidad" type="text" class="txt-uppercase fecha" style="width: 92%;">
+                        </div>
+                        </td>
+                    </tr>
+                    <tr class="cargo_policie_type">
+                        <td>
+                            <div class="field_item"> 
+                                <label>Cargo Policy Type: </label>
+                                <select tabindex="6" id="eTipoCategoria" style="width: 99%!important;height: 27px!important;">
+                                    <option value="">Select an option...</option>
+                                    <option value="GROSS">Gross</option>
+                                    <option value="SCHEDULE">Schedule</option>
+                                    <option value="DRIVERS">Drivers</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td>
+                        <div class="field_item"> 
+                            <label>Data Submission Plan: </label>
+                            <select tabindex="6" id="eTipoEnvio" style="width: 99%!important;height: 27px!important;">
+                                <option value="">Select an option...</option>
+                                <option value="CHANGE">Change</option>
+                                <option value="MONTHLY">Monthly</option>
+                                <option value="TRIMONTHS">Trimonths</option>
+                                <option value="YEAR">Year</option>
+                            </select>
                         </div>
                         </td>
                     </tr>

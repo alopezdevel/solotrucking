@@ -584,6 +584,9 @@
                         }); 
                   });  
                 },
+                driver_get_excel : function(){
+                   fn_admin.download_excel(fn_admin.list.id_company,'D');    
+                },
                 //UNITS
                 units_init : function(){
                     //limpiar filtros:
@@ -734,6 +737,9 @@
                         }); 
                   });  
                 },
+                unit_get_excel : function(){
+                   fn_admin.download_excel(fn_admin.list.id_company,'U');    
+                },
                 download_report : function(company,reporttype,filtro){
                     
                     //Autollenar parametros:
@@ -774,7 +780,12 @@
                     else{$("#dialog_report_history_list .flt_policies").empty().append('<option value="">Select an option...</option>').addClass('readonly').prop('disabled','disabled');}
                     
                 }
-            },          
+            },
+            download_excel : function(iConsecutivoCompania,iTipoReporte){
+                if(iConsecutivoCompania != "" && iTipoReporte != ""){
+                    window.open('xlsx_list_admin_report.php?company='+iConsecutivoCompania+'&reportType='+iTipoReporte);
+                }else{fn_solotrucking.mensaje("Please select before a valid company and report type."); }        
+            }          
     }    
 </script> 
 <div id="layer_content" class="main-section">
@@ -855,6 +866,13 @@
                         <td style='width:120px;'>
                             <div class="btn-icon-2 btn-left" title="Search" onclick="fn_admin.list.units_filtraInformacion();"><i class="fa fa-search"></i></div>
                         </td> 
+                </tr>
+                <tr id="grid-head-tools">
+                    <td colspan="100%">
+                        <ul>
+                            <li><div class="btn-icon report btn-left" title="Excel Report List" onclick="fn_admin.list.driver_get_excel();" style="width:auto!important;"><i class="fa fa-folder-open"></i><span style="margin-left:5px;font-size: 10px!important;">Download Excel</span></div></li>  
+                        </ul>
+                    </td>
                 </tr>
                 <tr class="grid-head2">
                     <td class="etiqueta_grid">YEAR</td>

@@ -206,7 +206,7 @@
       $domroot = $_POST['domroot'];
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                 
-      $sql = "SELECT A.iConsecutivo, sNumeroPoliza, A.iConsecutivoCompania, iConsecutivoBrokers, iTipoPoliza,iConsecutivoAseguranza, ". 
+      $sql = "SELECT A.iConsecutivo, sNumeroPoliza, A.iConsecutivoCompania, iConsecutivoBrokers, iTipoPoliza,iConsecutivoAseguranza, A.eTipoCategoria, A.eTipoEnvio, ". 
              "DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio, DATE_FORMAT(dFechaCaducidad,'%m/%d/%Y') AS dFechaCaducidad, ".
              "B.sNombreArchivo AS txtPolicyJacker, iConsecutivoArchivo, iConsecutivoArchivoPFA, C.sNombreArchivo AS txtPolicyPFA, iConsecutivoInsurancePremiumFinancing, ".
              "iPremiumAmount, iDeductible, iDeductibleAdditional, iPremiumAmountAdditional,iCGL_EachOccurrence,iCGL_DamageRented,iCGL_MedExp,iCGL_PersonalAdvInjury, ".
