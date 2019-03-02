@@ -19,7 +19,8 @@
       $transaccion_exitosa = true;
       
       $limpiar = array('rgb(', ')');
-      $_POST['sColorPdf'] =  str_replace($limpiar, "", $_POST['sColorPdf']);
+      $_POST['sColorPdf']       = str_replace($limpiar, "", $_POST['sColorPdf']);
+      $_POST['sCorreoEmpresa']  = strtolower(trim($_POST['sCorreoEmpresa']));
       
 
       if($_POST["edit_mode"] == 'true'){

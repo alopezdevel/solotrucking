@@ -870,7 +870,7 @@
                 <tr id="grid-head-tools">
                     <td colspan="100%">
                         <ul>
-                            <li><div class="btn-icon report btn-left" title="Excel Report List" onclick="fn_admin.list.driver_get_excel();" style="width:auto!important;"><i class="fa fa-folder-open"></i><span style="margin-left:5px;font-size: 10px!important;">Download Excel</span></div></li>  
+                            <li><div class="btn-icon report btn-left" title="Excel Report List" onclick="fn_admin.list.unit_get_excel();" style="width:auto!important;"><i class="fa fa-folder-open"></i><span style="margin-left:5px;font-size: 10px!important;">Download Excel</span></div></li>  
                         </ul>
                     </td>
                 </tr>
@@ -944,6 +944,13 @@
                         <td style='width:120px;'>
                             <div class="btn-icon-2 btn-left" title="Search" onclick="fn_admin.list.drivers_filtraInformacion();"><i class="fa fa-search"></i></div>
                         </td> 
+                </tr>
+                <tr id="grid-head-tools">
+                    <td colspan="100%">
+                        <ul>
+                            <li><div class="btn-icon report btn-left" title="Excel Report List" onclick="fn_admin.list.driver_get_excel();" style="width:auto!important;"><i class="fa fa-folder-open"></i><span style="margin-left:5px;font-size: 10px!important;">Download Excel</span></div></li>  
+                        </ul>
+                    </td>
                 </tr>
                 <tr class="grid-head2">
                     <td class="etiqueta_grid">NAME</td>

@@ -126,15 +126,16 @@
                   <li><a href="inicio">Home</a></li>
                   <li class="submenu"><a href="#">ADMINISTRATOR</a>
                     <ul>
-                        <li><a href="brokers"><i class="fa fa-usd"></i> Brokers to endorsements</a></li>
-                        <li><a href="insurances"><i class="fa fa-building"></i> Insurances to claims</a></li>  
+                        <li><a href="ourcompany">Our Company</a></li> 
+                        <li><a href="brokers">Brokers</a></li>
+                        <li><a href="insurances">Insurances</a></li>  
                     </ul>
                   </li>
                   <li class="submenu"><a href="#">COMPANIES</a>
                     <ul> 
-                        <li><a href="companies"><i class="fa fa-briefcase"></i>Companies</a></li>  
-                        <li><a href="users"> <i class="fa fa-users"></i> Company Users</a></li> 
-                        <li><a href="certificate_request_pdf_upload"> <i class="fa fa-cloud-upload"></i> Company Certificates (upload)</a></li>   
+                        <li><a href="companies">Companies</a></li>  
+                        <li><a href="users">Company Users</a></li> 
+                        <li><a href="certificate_request_pdf_upload">Company Certificates (upload)</a></li>   
                     </ul>
                   </li>
                   <li><a href="policies">POLICIES</a></li>
@@ -151,18 +152,18 @@
                   </li>
                   <li class="submenu"><a href="#">CLAIMS</a>
                     <ul>
-                        <li><a href="claims"><i class="fa fa-plus-circle"></i>New Claim</a></li>
-                        <li><a href="claims_requests"><i class="fa fa-envelope"></i>Applications for Claims</a></li>
+                        <li><a href="claims">New Claim</a></li>
+                        <li><a href="claims_requests">Applications for Claims</a></li>
                     </ul>
                   </li> 
                   <li class="submenu"><a href="#">QUOTES</a>
                    <ul>
-                        <li><a href="quote_formats"><i class="fa fa-file-text"></i> QUOTE FORMATS</a></li>  
+                        <li><a href="quote_formats">QUOTE FORMATS</a></li>  
                     </ul>
                 </li> 
                 <li style="display:none;" class="submenu"><a href="#">SYSTEM SUPPORT</a>
                     <ul>
-                        <li><a href="bitacora_actividades"><i class="fa fa-list-alt"></i> SYSTEM DEVELOPMENT ACTIVITIES</a></li>
+                        <li><a href="bitacora_actividades">SYSTEM DEVELOPMENT ACTIVITIES</a></li>
                     </ul>
                 </li>
             <!-- COMPANY NAVIGATION -->	
@@ -171,8 +172,8 @@
                 <li style="display: none;"><a href="#">MY COMPANY</a></li>
                 <li class="submenu"><a href="#">Catalogs</a>
                     <ul>
-                        <li><a href="mydrivers"><i class="fa fa-users"></i> My Drivers' List</a></li>
-                        <li><a href="myvehicles"><i class="fa fa-truck"></i> My Vehicles' List</a></li>
+                        <li><a href="mydrivers">My Drivers' List</a></li>
+                        <li><a href="myvehicles">My Vehicles' List</a></li>
                     </ul>
                 </li> 
                 <li><a href="mypolicies">Policies</a></li> 

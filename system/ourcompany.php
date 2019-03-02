@@ -32,6 +32,7 @@
             init : function(){
                 
                 $('.num').keydown(fn_solotrucking.inputnumero()); 
+                $(".phone").mask("(999) 999-9999");
                 //INICIALIZA COLOR PICKER :
                 $('.color_picker').minicolors({
                         control: $(this).attr('data-control') || 'hue',
@@ -102,137 +103,165 @@
             },
     }     
     </script> 
-<div id="layer_content" class="main-section">
-    <div id="our_company" class="container">
-        <div class="page-title">
-            <h1>Administrator</h1>
-            <h2>Our Company</h2>
-        </div>
-        <div id="company_information">
-            <form class="fedicion">
-                <table style="width:100%;">
-                    <tr>
-                        <td style="vertical-align: top;padding: 0px 10px;">
-                        <fieldset>
-                        <legend style="padding-bottom: 10px;margin-bottom:5px;"><span style="font-size: 14px;font-weight: 700;text-transform: uppercase;">General Data</span> - <span class="mensaje_valido" style="font-size: 13px;">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</span></legend>
-                        <input id="iConsecutivo" name="iConsecutivo" type="hidden"> 
-                        <table style="width:100%;margin:5px auto;" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td colspan="100%">
-                                <div class="field_item">
-                                    <label>Company Name <span style="color:#ff0000;">*</span>:</label> 
-                                    <input id="sNombreCompleto" tabindex="1" class="txt-uppercase required-field" name="sNombreCompleto" type="text" placeholder="" maxlength="255">
-                                </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="100%">
-                                <div class="field_item">
-                                    <label>Alias <span style="color:#ff0000;">*</span>:</label> 
-                                    <input id="sAlias" tabindex="2" class="txt-uppercase required-field" name="sAlias" type="text" placeholder="" maxlength="50">
-                                </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="width:75%;">
-                                <div class="field_item">
-                                    <label>Street Address <span style="color:#ff0000;">*</span>:</label> 
-                                    <input id="sCalle" class="txt-uppercase required-field" tabindex="3" name="sCalle" type="text" placeholder="" maxlength="50" style="width: 97%;">
-                                </div>
-                                </td>
-                                <td style="width:25%;">
-                                <div class="field_item">
-                                    <label>Suite # <span style="color:#ff0000;">*</span>:</label> 
-                                    <input id="sNumExterior" class="txt-uppercase required-field" tabindex="4" name="sNumExterior" type="text" placeholder="" maxlength="50">
-                                </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="100%">
-                                    <table style="width: 100%;" cellpadding="0" cellspacing="0">
-                                        <tr>
-                                            <td style="width:33%;">
-                                            <div class="field_item">
-                                                <label>City <span style="color:#ff0000;">*</span>:</label> 
-                                                <input id="sCiudad" class="txt-uppercase required-field" tabindex="5" name="sCiudad" type="text" placeholder="" maxlength="120" style="width: 93%;">
-                                            </div>
-                                            </td>
-                                            <td style="width:33%;">
-                                            <div class="field_item">
-                                                <label>State <span style="color:#ff0000;">*</span>:</label> 
-                                                <select id="sCveEntidad" tabindex="6" class="required-field" name="sCveEntidad" style="height: 25px!important;width: 98%!important;"></select> 
-                                            </div>
-                                            </td>
-                                            <td style="width:33%;">
-                                            <div class="field_item">
-                                                <label>Zip Code <span style="color:#ff0000;">*</span>:</label> 
-                                                <input id="sCodigoPostal" class="txt-uppercase required-field" tabindex="7" name="sCodigoPostal" type="text" placeholder="" maxlength="10" >
-                                            </div>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                        </table>
-                        </fieldset>  
-                        </td>
-                        <td style="vertical-align: top;padding: 0px 10px;">
-                        <fieldset>
-                        <legend style="padding-bottom: 10px;margin-bottom:5px;"><span style="font-size: 14px;font-weight: 700;text-transform: uppercase;">CONFIGURATION TO ELECTRONIC INVOICES</span> - <span class="mensaje_valido" style="font-size: 13px;">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</span></legend>  
-                        <table style="width:100%;margin:5px auto;" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td colspan="100%">
-                                <div class="field_item">
-                                    <label>Include Alias or Company Name? <span style="color:#ff0000;">*</span>:</label> 
-                                    <select id="eIncluirNombreAlias" tabindex="8" class="required-field" name="eIncluirNombreAlias" style="height:25px!important;">
-                                        <option value="NONE">None</option>
-                                        <option value="COMP">Company Name</option>   
-                                        <option value="ALIAS">Alias</option>
-                                    </select>
-                                </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="100%">
-                                <div class="field_item">
-                                    <label>Include Address? <span style="color:#ff0000;">*</span>:</label> 
-                                    <select id="eLugarExpedicion" tabindex="9" class="required-field" name="eLugarExpedicion" style="height:25px!important;"><option value="NO">No</option><option value="SI">Yes</option></select>
-                                </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="100%">
-                                <div class="field_item">
-                                    <label>Include exchange rate in invoices with currency other than USD?:</label> 
-                                    <select id="eIncluirTipoCambio" tabindex="10" name="eIncluirTipoCambio" style="height:25px!important;"><option value="NO">No</option><option value="SI">Yes</option></select>
-                                </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                <div class="field_item">
-                                    <label>Border color of the invoice:</label><br> 
-                                    <input id="sColorPdf" tabindex="11" readonly="readonly" type="text" class="color_picker" data-format="rgb" data-position="top right" style="height:20px!important;">
-                                </div>
-                                </td>
-                                <td style="width: 75%;">
-                                <div class="field_item">
-                                    <label>E-mail & Password to send invoices:</label><br> 
-                                    <input id="sCorreoEmpresa" tabindex="12" type="text" class="txt-lowercase" style="width: 56%;float: left;clear: none;">
-                                    <input id="sCorreoContrasena" tabindex="13" type="password" maxlength="8" title="max length 8 characters." style="float: right;width: 40%;clear: none;">  
-                                </div>
-                                </td>
-                            </tr>
-                        </table>
-                        </fieldset> 
-                        </td>
-                    </tr>
-                </table>               
-                <button type="button" class="btn-1" onclick="fn_company.save();">Save</button> 
-            </form>
+    <div id="layer_content" class="main-section">
+        <div id="our_company" class="container">
+            <div class="page-title">
+                <h1>Administrator</h1>
+                <h2>Our Company</h2>
+            </div>
+            <div id="company_information">
+                <form class="fedicion">
+                    <table style="width:100%;">
+                        <tr>
+                            <td style="vertical-align: top;padding: 0px 10px;">
+                            <fieldset>
+                            <legend style="padding-bottom: 10px;margin-bottom:5px;"><span style="font-size: 14px;font-weight: 700;text-transform: uppercase;">General Data</span> - <span class="mensaje_valido" style="font-size: 13px;">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</span></legend>
+                            <input id="iConsecutivo" name="iConsecutivo" type="hidden"> 
+                            <table style="width:100%;margin:5px auto;" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td colspan="100%">
+                                    <div class="field_item">
+                                        <label>Company Name <span style="color:#ff0000;">*</span>:</label> 
+                                        <input id="sNombreCompleto" tabindex="1" class="txt-uppercase required-field" name="sNombreCompleto" type="text" placeholder="" maxlength="255">
+                                    </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="100%">
+                                    <div class="field_item">
+                                        <label>Alias <span style="color:#ff0000;">*</span>:</label> 
+                                        <input id="sAlias" tabindex="2" class="txt-uppercase required-field" name="sAlias" type="text" placeholder="" maxlength="50">
+                                    </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="width:75%;">
+                                    <div class="field_item">
+                                        <label>Street Address <span style="color:#ff0000;">*</span>:</label> 
+                                        <input id="sCalle" class="txt-uppercase required-field" tabindex="3" name="sCalle" type="text" placeholder="" maxlength="50" style="width: 97%;">
+                                    </div>
+                                    </td>
+                                    <td style="width:25%;">
+                                    <div class="field_item">
+                                        <label>Suite # <span style="color:#ff0000;">*</span>:</label> 
+                                        <input id="sNumExterior" class="txt-uppercase required-field" tabindex="4" name="sNumExterior" type="text" placeholder="" maxlength="50">
+                                    </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="100%">
+                                        <table style="width: 100%;" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="width:33%;">
+                                                <div class="field_item">
+                                                    <label>City <span style="color:#ff0000;">*</span>:</label> 
+                                                    <input id="sCiudad" class="txt-uppercase required-field" tabindex="5" name="sCiudad" type="text" placeholder="" maxlength="120" style="width: 93%;">
+                                                </div>
+                                                </td>
+                                                <td style="width:33%;">
+                                                <div class="field_item">
+                                                    <label>State <span style="color:#ff0000;">*</span>:</label> 
+                                                    <select id="sCveEntidad" tabindex="6" class="required-field" name="sCveEntidad" style="height: 25px!important;width: 98%!important;"></select> 
+                                                </div>
+                                                </td>
+                                                <td style="width:33%;">
+                                                <div class="field_item">
+                                                    <label>Zip Code <span style="color:#ff0000;">*</span>:</label> 
+                                                    <input id="sCodigoPostal" class="txt-uppercase required-field" tabindex="7" name="sCodigoPostal" type="text" placeholder="" maxlength="10" >
+                                                </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="100%">
+                                    <div class="field_item">
+                                        <label>E-mail Address<span style="color:#ff0000;">*</span>:</label> 
+                                        <input id="sCorreoEmpresa" tabindex="8" class="txt-lowercase required-field" name="sCorreoEmpresa" type="text" placeholder="" maxlength="75">
+                                    </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="100%">
+                                        <table style="width: 100%;" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="width:50%;">
+                                                <div class="field_item">
+                                                    <label>Phone <span style="color:#ff0000;">*</span>:</label> 
+                                                    <input id="sTelefono1" class="txt-uppercase required-field phone" tabindex="9" name="sTelefono1" type="text" placeholder="" maxlength="25" style="width: 93%;">
+                                                </div>
+                                                </td>
+                                                <td style="width:50%;">
+                                                <div class="field_item">
+                                                    <label>Fax <span style="color:#ff0000;">*</span>:</label> 
+                                                    <input id="sTelefono2" tabindex="10" class="txt-uppercase required-field phone" name="sTelefono2" type="text" placeholder="" maxlength="25" style="width: 93%;">
+                                                </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            </fieldset>  
+                            </td>
+                            <td style="vertical-align: top;padding: 0px 10px;">
+                            <fieldset>
+                            <legend style="padding-bottom: 10px;margin-bottom:5px;"><span style="font-size: 14px;font-weight: 700;text-transform: uppercase;">CONFIGURATION TO ELECTRONIC INVOICES</span> - <span class="mensaje_valido" style="font-size: 13px;">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</span></legend>  
+                            <table style="width:100%;margin:5px auto;" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td colspan="100%">
+                                    <div class="field_item">
+                                        <label>Include Alias or Company Name? <span style="color:#ff0000;">*</span>:</label> 
+                                        <select id="eIncluirNombreAlias" tabindex="11" class="required-field" name="eIncluirNombreAlias" style="height:25px!important;">
+                                            <option value="NONE">None</option>
+                                            <option value="COMP">Company Name</option>   
+                                            <option value="ALIAS">Alias</option>
+                                        </select>
+                                    </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="100%">
+                                    <div class="field_item">
+                                        <label>Include Address? <span style="color:#ff0000;">*</span>:</label> 
+                                        <select id="eLugarExpedicion" tabindex="12" class="required-field" name="eLugarExpedicion" style="height:25px!important;"><option value="NO">No</option><option value="SI">Yes</option></select>
+                                    </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="100%">
+                                    <div class="field_item">
+                                        <label>Include exchange rate in invoices with currency other than USD?:</label> 
+                                        <select id="eIncluirTipoCambio" tabindex="13" name="eIncluirTipoCambio" style="height:25px!important;"><option value="NO">No</option><option value="SI">Yes</option></select>
+                                    </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                    <div class="field_item">
+                                        <label>Border color of the invoice:</label><br> 
+                                        <input id="sColorPdf" tabindex="14" readonly="readonly" type="text" class="color_picker" data-format="rgb" data-position="top right" style="height:20px!important;">
+                                    </div>
+                                    </td>
+                                    <td style="width: 75%;">
+                                    <div class="field_item">
+                                        <label>E-mail & Password to send invoices:</label><br> 
+                                        <input id="sCorreoEmpresa" tabindex="15" type="text" class="txt-lowercase" style="width: 56%;float: left;clear: none;">
+                                        <input id="sCorreoContrasena" tabindex="16" type="password" maxlength="8" title="max length 8 characters." style="float: right;width: 40%;clear: none;">  
+                                    </div>
+                                    </td>
+                                </tr>
+                            </table>
+                            </fieldset> 
+                            </td>
+                        </tr>
+                    </table>               
+                    <button type="button" class="btn-1" onclick="fn_company.save();">Save</button> 
+                </form>
+            </div>
         </div>
     </div>
-</div>
 <!-- FOOTER -->
 <?php include("footer.php"); ?> 
 </body>

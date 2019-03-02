@@ -41,7 +41,7 @@
         $pagina_actual == "0" ? $pagina_actual = 1 : false;
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-        $sql = "SELECT iConsecutivo, sName, sTelefono, sNombreContacto, sEmailClaims FROM ct_aseguranzas ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
+        $sql = "SELECT iConsecutivo, sName, sTelefono, sNombreContacto, sNAICNumber, sEmailClaims FROM ct_aseguranzas ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
         $result = $conexion->query($sql);
         $rows = $result->num_rows;   
         if ($rows > 0) {    
@@ -50,6 +50,7 @@
                          $htmlTabla .= "<tr>
                                             <td>".$items['iConsecutivo']."</td>".
                                            "<td>".$items['sName']."</td>".
+                                           "<td>".$items['sNAICNumber']."</td>".
                                            "<td>".$items['sEmailClaims']."</td>".
                                            "<td>".$items['sTelefono']."</td>". 
                                            "<td>".$items['sNombreContacto']."</td>".                                                                                                                                                                                                                       
@@ -75,7 +76,7 @@
       $domroot = $_POST['domroot'];
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                 
-      $sql = "SELECT iConsecutivo, sName, sTelefono, sNombreContacto, sEmailClaims FROM ct_aseguranzas WHERE iConsecutivo = '".$clave."'";
+      $sql = "SELECT iConsecutivo, sName, sTelefono, sNombreContacto, sEmailClaims, sNAICNumber FROM ct_aseguranzas WHERE iConsecutivo = '".$clave."'";
       $result = $conexion->query($sql);
       $items = $result->num_rows;   
       if ($items > 0) {     
@@ -101,9 +102,10 @@
       include("cn_usuarios.php"); 
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
       $transaccion_exitosa = true;
-      $_POST['sName'] = strtoupper($_POST['sName']);
-      $_POST['sEmailClaims'] = strtolower($_POST['sEmailClaims']); 
-      $_POST['sNombreContacto'] != ''? strtoupper($_POST['sNombreContacto']) : $_POST['sNombreContacto'];
+      $_POST['sName']            = strtoupper($_POST['sName']);
+      $_POST['sEmailClaims']     = strtolower($_POST['sEmailClaims']); 
+      $_POST['sNombreContacto'] != ''? strtoupper($_POST['sNombreContacto']) : "";
+      $_POST['sNAICNumber']     != ''? strtoupper($_POST['sNAICNumber'])     : "";
       
       //Revisando si ya existe un broker con el mismo nombre:
       $query = "SELECT COUNT(iConsecutivo) AS total FROM ct_aseguranzas WHERE sName ='".$_POST['sName']."'";

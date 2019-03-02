@@ -308,6 +308,7 @@
                              $row++;
                              $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloContenido, "A".$row.":G".$row); 
                              $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(20);
+                             
                              // Obtener nombre/licencia
                              if($items[$d]['iEndosoMultiple'] == '1'){
                                 $query  = "SELECT iConsecutivoOperador, sNombre, iNumLicencia,eAccion FROM cb_endoso_operador ".
