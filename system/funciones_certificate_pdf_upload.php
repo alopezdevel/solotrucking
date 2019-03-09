@@ -190,19 +190,29 @@
        
   }
   function get_files(){
-      $error = '0';
-      $msj = "";
-      $fields = "";
-      $clave = trim($_POST['clave']);
+      $error   = '0';
+      $msj     = "";
+      $fields  = "";
+      $clave   = trim($_POST['clave']);
       $domroot = $_POST['domroot'];
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);
       
-      $sql = "SELECT iConsecutivo, sNombreArchivo, sNombreArchivoAdd, DATE_FORMAT(dFechaVencimiento,'%m/%d/%Y') AS dFechaVencimiento  FROM cb_certificate_file 
-              WHERE  iConsecutivoCompania = '".$clave."'";
+      $sql    = "SELECT iConsecutivo AS iConsecutivoCertificate, sNombreArchivo AS txtsCertificatePDF, sNombreArchivoAdd, DATE_FORMAT(dFechaVencimiento,'%m/%d/%Y') AS dFechaVencimiento, eOrigenCertificado  ".
+                "FROM cb_certificate_file WHERE iConsecutivoCompania = '".$clave."'";
       $result = $conexion->query($sql); 
-      $items_files = $result->fetch_assoc();
-      if($items_files["sNombreArchivo"] != ''){
+      $rows   = $result->num_rows; 
+      
+      if ($items > 0) {     
+        $data    = $result->fetch_assoc();
+        $llaves  = array_keys($data);
+        $datos   = $data;
+        foreach($datos as $i => $b){
+            $fields .= "\$('#$domroot #".$i."').val('".$datos[$i]."');"; 
+        }  
+      }
+      
+      /*if($items_files["sNombreArchivo"] != ''){
             $fields .= "\$('#$domroot :input[id=txtsCertificatePDF]').val('".$items_files['sNombreArchivo']."');";
             $fields .= "\$('#$domroot :input[id=iConsecutivoCertificate]').val('".$items_files['iConsecutivo']."');";  
       }
@@ -211,7 +221,7 @@
       }
       if($items_files["dFechaVencimiento"] != ''){
             $fields .= "\$('#$domroot :input[id=dFechaVencimiento]').val('".$items_files['dFechaVencimiento']."');";  
-      }
+      }*/
       $conexion->rollback();
       $conexion->close(); 
       $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields");   
