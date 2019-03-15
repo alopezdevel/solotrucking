@@ -98,18 +98,67 @@
        $conexion->autocommit(FALSE);
        $transaccion_exitosa = true;
        
-       $iConsecutivoCompania =  $_POST['iConsecutivoCompania'];
+       $iConsecutivoCompania   =  $_POST['iConsecutivoCompania'];
+       $_POST['iConsecutivo'] != '' ? $edit_mode = "true" : $edit_mode = "false";
+       $campos  = array();
+       $valores = array();
+       
        if($iConsecutivoCompania != ''){
            
-           $FechaVencimiento = format_date($_POST['dFechaVencimiento']);
-           $oFichero = fopen($_FILES['userfile']["tmp_name"], 'r'); 
-           $sContenido = fread($oFichero, filesize($_FILES['userfile']["tmp_name"]));  
-           $sContenido =  $conexion->real_escape_string($sContenido);
-           #armando nombre del archivo:
-           $_POST['sNombreCompania'] != '' ? $_POST['sNombreCompania'] = str_replace(' ','_',trim(strtolower($_POST['sNombreCompania']))) : $_POST['sNombreCompania'] = $_POST['iConsecutivoCompania'].'_co';
-           $name_file = 'cert_'.$_POST['sNombreCompania'].'.pdf';
+           $_POST['dFechaVencimiento'] = format_date($_POST['dFechaVencimiento']);
            
-           if($_POST['iConsecutivo'] != ''){
+           // Si el archivo existe, entonces:
+           if(isset($_FILES['userfile']["tmp_name"])){
+               $oFichero   = fopen($_FILES['userfile']["tmp_name"], 'r'); 
+               $sContenido = fread($oFichero, filesize($_FILES['userfile']["tmp_name"]));  
+               $sContenido =  $conexion->real_escape_string($sContenido);
+               #armando nombre del archivo:
+               $_POST['sNombreCompania'] != '' ? $_POST['sNombreCompania'] = str_replace(' ','_',trim(strtolower($_POST['sNombreCompania']))) : $_POST['sNombreCompania'] = $_POST['iConsecutivoCompania'].'_co';
+               $name_file = 'cert_'.$_POST['sNombreCompania'].'.pdf'; 
+               
+               //Asignar al POST:
+               $_POST['sNombreArchivo']                  = $name_file; 
+               $_POST['iTamanioArchivo']                 = $_FILES['userfile']["size"];
+               $_POST['sTipoArchivo']                    = $_FILES['userfile']["type"];
+               $_POST['hContenidoDocumentoDigitalizado'] = $sContenido;
+                      
+           }
+           
+           #UPDATE
+           if($edit_mode == "true"){
+                foreach($_POST as $campo => $valor){
+                    if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivo" && $campo != "sNombreCompania" && $campo != "txtsCertificatePDF"){ //Estos campos no se insertan a la tabla
+                        array_push($valores,"$campo='". strtoupper($valor)."'");    
+                    }
+                } 
+                
+                // agregar campos adicionales:
+                array_push($valores,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
+                array_push($valores,"sIP='".$_SERVER['REMOTE_ADDR']."'");
+                array_push($valores,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'"); 
+                
+                $sql     = "UPDATE cb_certificate_file SET ".implode(",",$valores)." WHERE iConsecutivo='".$_POST['iConsecutivo']."' AND iConsecutivoCompania = '$iConsecutivoCompania'";   
+                $mensaje = "The data was updated successfully."; 
+           }
+           #INSERT
+           else{
+                foreach($_POST as $campo => $valor){
+                    if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivo" && $campo != "sNombreCompania" && $campo != "txtsCertificatePDF"){ //Estos campos no se insertan a la tabla
+                        array_push($campos , $campo);
+                        array_push($valores, strtoupper($valor));      
+                    }
+                }
+                // agregar campos adicionales:
+                array_push($campos , "dFechaIngreso"); array_push($valores,date("Y-m-d H:i:s")); 
+                array_push($campos , "sIP");           array_push($valores,$_SERVER['REMOTE_ADDR']);
+                array_push($campos , "dFechaActualizacion"); array_push($valores,date("Y-m-d H:i:s")); 
+                array_push($campos , "sUsuarioIngreso");     array_push($valores,$_SESSION['usuario_actual']);
+                
+                $sql     = "INSERT INTO cb_certificate_file (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')"; 
+                $mensaje = "The data was saved successfully."; 
+           }
+
+           /*if($_POST['iConsecutivo'] != ''){
                   $valores_update  = ",dFechaActualizacion='".date("Y-m-d H:i:s")."'";
                   $valores_update .= ",sIP='".$_SERVER['REMOTE_ADDR']."'";
                   $valores_update .= ",sUsuarioActualizacion='".$_SESSION['usuario_actual']."'";
@@ -117,7 +166,7 @@
            }else{
                 $sql = "INSERT INTO cb_certificate_file (iConsecutivoCompania,dFechaVencimiento,sNombreArchivo,sTipoArchivo,iTamanioArchivo,hContenidoDocumentoDigitalizado,dFechaIngreso,sIP,sUsuarioIngreso,dFechaActualizacion)
                         VALUES('$iConsecutivoCompania','$FechaVencimiento','$name_file','".$_FILES['userfile']["type"]."','".$_FILES['userfile']["size"]."','$sContenido','".date("Y-m-d H:i:s")."', '".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."','".date("Y-m-d H:i:s")."')"; 
-           }
+           }*/
            $conexion->query($sql);
            $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
            
@@ -125,13 +174,13 @@
                 #actualizar bandera en tabla de companias:
                 if($_POST['iConsecutivo'] == ''){
                     $id_file = $conexion->insert_id;
-                    $sql = "UPDATE ct_companias SET eEstatusCertificadoUpload = '1'  WHERE iConsecutivo = '".$iConsecutivoCompania."'  ";
+                    $sql     = "UPDATE ct_companias SET eEstatusCertificadoUpload = '1'  WHERE iConsecutivo = '".$iConsecutivoCompania."'";
                     $conexion->query($sql);
                 } 
                 $conexion->commit();
                 $conexion->close();
-                $mensaje = "The file was uploaded successfully.";  
-           }else{
+           }
+           else{
                 $conexion->rollback();
                 $conexion->close();
                 $mensaje = "A general system error ocurred : internal error";
@@ -139,10 +188,8 @@
            }
        
        
-   }else{
-       $error = '1';
-       $mensaje = "A general system error ocurred : internal error";
-   } 
+   }
+   else{$error = '1'; $mensaje = "A general system error ocurred : internal error";} 
    
    $response = array("mensaje"=>"$mensaje","error"=>"$error", "id_file"=>"$id_file", "name_file" => "$name_file"); 
    echo json_encode($response); 
@@ -198,12 +245,12 @@
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);
       
-      $sql    = "SELECT iConsecutivo AS iConsecutivoCertificate, sNombreArchivo AS txtsCertificatePDF, sNombreArchivoAdd, DATE_FORMAT(dFechaVencimiento,'%m/%d/%Y') AS dFechaVencimiento, eOrigenCertificado  ".
+      $sql    = "SELECT iConsecutivo, sNombreArchivo AS txtsCertificatePDF, sNombreArchivoAdd, DATE_FORMAT(dFechaVencimiento,'%m/%d/%Y') AS dFechaVencimiento, eOrigenCertificado  ".
                 "FROM cb_certificate_file WHERE iConsecutivoCompania = '".$clave."'";
       $result = $conexion->query($sql); 
       $rows   = $result->num_rows; 
       
-      if ($items > 0) {     
+      if ($rows > 0) {     
         $data    = $result->fetch_assoc();
         $llaves  = array_keys($data);
         $datos   = $data;
@@ -214,7 +261,7 @@
       
       /*if($items_files["sNombreArchivo"] != ''){
             $fields .= "\$('#$domroot :input[id=txtsCertificatePDF]').val('".$items_files['sNombreArchivo']."');";
-            $fields .= "\$('#$domroot :input[id=iConsecutivoCertificate]').val('".$items_files['iConsecutivo']."');";  
+            $fields .= "\$('#$domroot :input[id=iConsecutivo]').val('".$items_files['iConsecutivo']."');";  
       }
       if($items_files["sNombreArchivoAdd"] != ''){
             $fields .= "\$('#$domroot :input[id=txtsAdditionalPDF]').val('".$items_files['sNombreArchivoAdd']."');";  
@@ -228,4 +275,39 @@
       echo json_encode($response);
                                                                                                                          
   }
+  function get_policies(){
+      
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);
+      $company = trim($_POST['iConsecutivoCompania']);
+      $error   = '0';
+
+      $sql    = "SELECT A.iConsecutivo, sNumeroPoliza, C.sName AS BrokerName, sDescripcion, D.iConsecutivo AS TipoPoliza, D.sDescripcion AS sTipoPoliza, DATE_FORMAT(A.dFechaInicio, '%m/%d/%Y') AS dFechaInicio, DATE_FORMAT(A.dFechaCaducidad, '%m/%d/%Y') AS dFechaCaducidad ".
+                "FROM ct_polizas          AS A ".
+                "LEFT JOIN ct_brokers     AS C ON A.iConsecutivoBrokers = C.iConsecutivo ".
+                "LEFT JOIN ct_tipo_poliza AS D ON A.iTipoPoliza         = D.iConsecutivo ".
+                "WHERE iConsecutivoCompania = '".$company."' ".
+                "AND  A.iDeleted = '0' AND dFechaCaducidad >= CURDATE() AND (D.iConsecutivo = '1' OR D.iConsecutivo = '3' OR D.iConsecutivo = '5' OR D.iConsecutivo = '2') ".
+                "ORDER BY A.iConsecutivo ASC";  
+      $result = $conexion->query($sql);
+      $rows   = $result->num_rows;
+      
+      if($rows > 0) {   
+            while ($items = $result->fetch_assoc()) { 
+            
+               $htmlTabla .= "<tr>".
+                             "<td style=\"border: 1px solid #dedede;\">".$items['sTipoPoliza']."</td>".
+                             "<td style=\"border: 1px solid #dedede;\">".$items['sNumeroPoliza']."</td>". 
+                             "<td style=\"border: 1px solid #dedede;\">".$items['dFechaInicio']."</td>".
+                             "<td style=\"border: 1px solid #dedede;\">".$items['dFechaCaducidad']."</td>".
+                             "</tr>";
+      
+                    
+            }                                                                                                                                                                       
+        }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}
+        $conexion->rollback();
+        $conexion->close();
+        $response = array("mensaje"=>"$mensaje","error"=>"$error","policies_information"=>"$htmlTabla");   
+        echo json_encode($response);
+  }  
 ?>

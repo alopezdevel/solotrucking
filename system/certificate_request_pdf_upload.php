@@ -1,24 +1,24 @@
-<?php   session_start();    
-        if ( !($_SESSION["acceso"] != '2'  && $_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  )  ){ 
-            //No ha iniciado session, redirecciona a la pagina de login
-            header("Location: login.php");
-            exit;
-        }else{ 
+<?php 
+    session_start();    
+    if ( !($_SESSION["acceso"] != '2'  && $_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  )  ){ //No ha iniciado session, redirecciona a la pagina de login
+        header("Location: login.php");
+        exit;
+    }else{ 
 ?>
 <!-- HEADER -->
 <?php include("header.php"); ?> 
 <script type="text/javascript"> 
     $(document).ready(inicio);
-    function inicio(){    
+    function inicio(){  
+        $.unblockUI();    
         var usuario_actual = <?php echo json_encode($_SESSION['usuario_actual']);?>        
         var tipo_usuario = <?php echo json_encode($_SESSION['acceso']);?> 
         validapantalla(usuario_actual); 
-        fn_UsersClients.init();
-        fn_UsersClients.fillgrid();  
-        $.unblockUI();  
+        fn_certificate.init();
+        fn_certificate.fillgrid();  
     }  
     function validapantalla(usuario){if(usuario == ""  || usuario == null){location.href= "login.php";}}                    
-    var fn_UsersClients = {
+    var fn_certificate = {
             domroot:"#ct_clientusers",
             data_grid: "#data_grid_clientusers",
             filtro : "",
@@ -29,15 +29,15 @@
                 $('.num').keydown(fn_solotrucking.inputnumero); 
                 $('.decimals').keydown(fn_solotrucking.inputdecimals);
                 //Filtrado con la tecla enter
-                $(fn_UsersClients.data_grid + ' #grid-head1 input').keyup(function(event){
+                $(fn_certificate.data_grid + ' #grid-head1 input').keyup(function(event){
                     if (event.keyCode == '13') {
                         event.preventDefault();
-                        fn_UsersClients.filtraInformacion();
+                        fn_certificate.filtraInformacion();
                     }
                     if(event.keyCode == '27'){
                        event.preventDefault();
                        $(this).val(''); 
-                       fn_UsersClients.filtraInformacion();
+                       fn_certificate.filtraInformacion();
                     }
                 });
                 //INICIALIZA DATEPICKER PARA CAMPOS FECHA
@@ -59,9 +59,9 @@
                             this.setData({
                                 'accion': 'upload_certificate',
                                 'iConsecutivoCompania': $("#certificate_edit_form #iConsecutivoCompania").val(),
-                                'sNombreCompania': $("#certificate_edit_form #sNombreCompania").val(),
-                                'iConsecutivo' : $("#certificate_edit_form #iConsecutivoCertificate").val(),
-                                'dFechaVencimiento' : $('#certificate_edit_form #dFechaVencimiento').val()
+                                'sNombreCompania'     : $("#certificate_edit_form #sNombreCompania").val(),
+                                'iConsecutivo'        : $("#certificate_edit_form #iConsecutivo").val(),
+                                'dFechaVencimiento'   : $('#certificate_edit_form #dFechaVencimiento').val()
                             });
                             $('#txtsCertificatePDF').val('loading...');
                             this.disable(); 
@@ -96,7 +96,7 @@
                                 'accion': 'upload_additional',
                                 'iConsecutivoCompania': $("#certificate_edit_form #iConsecutivoCompania").val(),
                                 'sNombreCompania': $("#certificate_edit_form #sNombreCompania").val(),
-                                'iConsecutivo' : $("#certificate_edit_form #iConsecutivoCertificate").val()
+                                'iConsecutivo' : $("#certificate_edit_form #iConsecutivo").val()
                             });
                             $('#txtsAdditionalPDF').val('loading...');
                             this.disable(); 
@@ -127,26 +127,26 @@
                     data:{
                         accion:"get_companies_certificates",
                         registros_por_pagina : "15", 
-                        pagina_actual : fn_UsersClients.pagina_actual, 
-                        filtroInformacion : fn_UsersClients.filtro,  
-                        ordenInformacion : fn_UsersClients.orden,
-                        sortInformacion : fn_UsersClients.sort,
+                        pagina_actual : fn_certificate.pagina_actual, 
+                        filtroInformacion : fn_certificate.filtro,  
+                        ordenInformacion : fn_certificate.orden,
+                        sortInformacion : fn_certificate.sort,
                     },
                     async : true,
                     dataType : "json",
                     success : function(data){                               
-                        $(fn_UsersClients.data_grid+" tbody").empty().append(data.tabla);
-                        $(fn_UsersClients.data_grid+" tbody tr:even").addClass('gray');
-                        $(fn_UsersClients.data_grid+" tbody tr:odd").addClass('white');
-                        $(fn_UsersClients.data_grid + " tfoot #paginas_total").val(data.total);
-                        $(fn_UsersClients.data_grid + " tfoot #pagina_actual").val(data.pagina);
-                        fn_UsersClients.pagina_actual = data.pagina; 
-                        fn_UsersClients.edit();
+                        $(fn_certificate.data_grid+" tbody").empty().append(data.tabla);
+                        $(fn_certificate.data_grid+" tbody tr:even").addClass('gray');
+                        $(fn_certificate.data_grid+" tbody tr:odd").addClass('white');
+                        $(fn_certificate.data_grid + " tfoot #paginas_total").val(data.total);
+                        $(fn_certificate.data_grid + " tfoot #pagina_actual").val(data.pagina);
+                        fn_certificate.pagina_actual = data.pagina; 
+                        fn_certificate.edit();
                     }
                 }); 
             },
             edit: function(){
-                $(fn_UsersClients.data_grid + " tbody td .edit").bind("click",function(){
+                $(fn_certificate.data_grid + " tbody td .edit").bind("click",function(){
                     $('#certificate_edit_form input, #certificate_edit_form select').val('').removeClass('error');
                     $("#certificate_edit_form #iConsecutivoCompania").val($(this).parent().parent().find("td:eq(0)").html()); 
                     $("#certificate_edit_form #sNombreCompania").val($(this).parent().parent().find("td:eq(1)").text());
@@ -159,11 +159,7 @@
                     function(data){
                         if(data.error == '0'){ 
                            eval(data.fields); 
-                           if($('#certificate_edit_form #iConsecutivoCertificate').val() != ''){
-                              $('#certificate_edit_form .file_additional').show(); 
-                           }else{
-                               $('#certificate_edit_form .file_additional').hide();
-                           }
+                           fn_certificate.valida_tipo_certificado();
                            fn_popups.resaltar_ventana('certificate_edit_form');
                             
                         }else{
@@ -174,59 +170,118 @@
                 });  
             },
             firstPage : function(){
-                if($(fn_UsersClients.data_grid+" #pagina_actual").val() != "1"){
-                    fn_UsersClients.pagina_actual = "";
-                    fn_UsersClients.fillgrid();
+                if($(fn_certificate.data_grid+" #pagina_actual").val() != "1"){
+                    fn_certificate.pagina_actual = "";
+                    fn_certificate.fillgrid();
                 }
             },
             previousPage : function(){
-                if($(fn_UsersClients.data_grid+" #pagina_actual").val() != "1"){
-                    fn_UsersClients.pagina_actual = (parseInt($(fn_UsersClients.data_grid+" #pagina_actual").val()) - 1) + "";
-                    fn_UsersClients.fillgrid();
+                if($(fn_certificate.data_grid+" #pagina_actual").val() != "1"){
+                    fn_certificate.pagina_actual = (parseInt($(fn_certificate.data_grid+" #pagina_actual").val()) - 1) + "";
+                    fn_certificate.fillgrid();
                 }
             },
             nextPage : function(){
-                if($(fn_UsersClients.data_grid+" #pagina_actual").val() != $(fn_UsersClients.data_grid+" #paginas_total").val()){
-                    fn_UsersClients.pagina_actual = (parseInt($(fn_UsersClients.data_grid+" #pagina_actual").val()) + 1) + "";
-                    fn_UsersClients.fillgrid();
+                if($(fn_certificate.data_grid+" #pagina_actual").val() != $(fn_certificate.data_grid+" #paginas_total").val()){
+                    fn_certificate.pagina_actual = (parseInt($(fn_certificate.data_grid+" #pagina_actual").val()) + 1) + "";
+                    fn_certificate.fillgrid();
                 }
             },
             lastPage : function(){
-                if($(fn_UsersClients.data_grid+" #pagina_actual").val() != $(fn_UsersClients.data_grid+" #paginas_total").val()){
-                    fn_UsersClients.pagina_actual = $(fn_UsersClients.data_grid+" #paginas_total").val();
-                    fn_UsersClients.fillgrid();
+                if($(fn_certificate.data_grid+" #pagina_actual").val() != $(fn_certificate.data_grid+" #paginas_total").val()){
+                    fn_certificate.pagina_actual = $(fn_certificate.data_grid+" #paginas_total").val();
+                    fn_certificate.fillgrid();
                 }
             }, 
             ordenamiento : function(campo,objeto){
-                $(fn_UsersClients.data_grid + " #grid-head2 td").removeClass('down').removeClass('up');
+                $(fn_certificate.data_grid + " #grid-head2 td").removeClass('down').removeClass('up');
 
-                if(campo == fn_UsersClients.orden){
-                    if(fn_UsersClients.sort == "ASC"){
-                        fn_UsersClients.sort = "DESC";
-                        $(fn_UsersClients.data_grid + " #grid-head2 td:eq("+objeto+")").addClass('up');
+                if(campo == fn_certificate.orden){
+                    if(fn_certificate.sort == "ASC"){
+                        fn_certificate.sort = "DESC";
+                        $(fn_certificate.data_grid + " #grid-head2 td:eq("+objeto+")").addClass('up');
                     }else{
-                        fn_UsersClients.sort = "ASC";
-                        $(fn_UsersClients.data_grid + " #grid-head2 td:eq("+objeto+")").addClass('down');
+                        fn_certificate.sort = "ASC";
+                        $(fn_certificate.data_grid + " #grid-head2 td:eq("+objeto+")").addClass('down');
                     }
                 }else{
-                    fn_UsersClients.sort = "ASC";
-                    fn_UsersClients.orden = campo;
-                    $(fn_UsersClients.data_grid + " #grid-head2 td:eq("+objeto+")").addClass('down');
+                    fn_certificate.sort = "ASC";
+                    fn_certificate.orden = campo;
+                    $(fn_certificate.data_grid + " #grid-head2 td:eq("+objeto+")").addClass('down');
                 }
-                fn_UsersClients.fillgrid();
+                fn_certificate.fillgrid();
 
                 return false;
             }, 
             filtraInformacion : function(){
-                fn_UsersClients.pagina_actual = 0;
-                fn_UsersClients.filtro = "";
-                if($(fn_UsersClients.data_grid+" .flt_id").val() != ""){ fn_UsersClients.filtro += "A.iConsecutivo|"+$(fn_UsersClients.data_grid+" .flt_id").val()+","}
-                if($(fn_UsersClients.data_grid+" .flt_name").val() != ""){ fn_UsersClients.filtro += "sNombreCompania|"+$(fn_UsersClients.data_grid+" .flt_name").val()+","} 
-                if($(fn_UsersClients.data_grid+" .flt_usdot").val() != ""){ fn_UsersClients.filtro += "sUsdot|"+$(fn_UsersClients.data_grid+" .flt_usdot").val()+","} 
-                if($(fn_UsersClients.data_grid+" .flt_date").val() != ""){ fn_UsersClients.filtro += "C.dFechaActualizacion|"+$(fn_UsersClients.data_grid+" .flt_date").val()+","}
-                if($(fn_UsersClients.data_grid+" .flt_expiredate").val() != ""){ fn_UsersClients.filtro += "C.dFechaVencimiento|"+$(fn_UsersClients.data_grid+" .flt_expiredate").val()+","}  
-                fn_UsersClients.fillgrid();
-            }, 
+                fn_certificate.pagina_actual = 0;
+                fn_certificate.filtro = "";
+                if($(fn_certificate.data_grid+" .flt_id").val() != ""){ fn_certificate.filtro += "A.iConsecutivo|"+$(fn_certificate.data_grid+" .flt_id").val()+","}
+                if($(fn_certificate.data_grid+" .flt_name").val() != ""){ fn_certificate.filtro += "sNombreCompania|"+$(fn_certificate.data_grid+" .flt_name").val()+","} 
+                if($(fn_certificate.data_grid+" .flt_usdot").val() != ""){ fn_certificate.filtro += "sUsdot|"+$(fn_certificate.data_grid+" .flt_usdot").val()+","} 
+                if($(fn_certificate.data_grid+" .flt_date").val() != ""){ fn_certificate.filtro += "C.dFechaActualizacion|"+$(fn_certificate.data_grid+" .flt_date").val()+","}
+                if($(fn_certificate.data_grid+" .flt_expiredate").val() != ""){ fn_certificate.filtro += "C.dFechaVencimiento|"+$(fn_certificate.data_grid+" .flt_expiredate").val()+","}  
+                fn_certificate.fillgrid();
+            },
+            valida_tipo_certificado : function(){
+                var tipo = $("#certificate_edit_form #eOrigenCertificado").val();
+                if(tipo == 'LAYOUT'){
+                    $("#certificate_edit_form .campos-layout").show();
+                    $("#certificate_edit_form .campos-database, #info_policies").hide();
+                }else{
+                    fn_certificate.get_datapolicies();
+                    $("#certificate_edit_form .campos-database").show();
+                    $("#certificate_edit_form .campos-layout").hide();
+                }
+            },
+            get_datapolicies : function(){
+                $.ajax({             
+                    type:"POST", 
+                    url:"funciones_certificate_pdf_upload.php", 
+                    data:{'accion':"get_policies",'iConsecutivoCompania':$("#certificate_edit_form #iConsecutivoCompania").val()},
+                    async : false,
+                    dataType : "json",
+                    success : function(data){                               
+                        if(data.error == '0'){
+                            $("#info_policies").show();
+                            $("#info_policies table tbody").empty().append(data.policies_information);
+                        }
+                    }
+                });
+            },
+            save : function(){
+                var valid = true;
+                var msj   = "";
+                $("#certificate_edit_form .required-field").removeClass("error");
+                //Revisamos campos obligatorios: 
+                $("#certificate_edit_form  input.required-field, #certificate_edit_form  select.required-field").each(function(){
+                   if($(this).val() == ""){valid = false; $(this).addClass('error');msj = "<li>You must capture the required fields.</li>";}
+                });
+                
+                if(valid){ 
+                    
+                  if($("#certificate_edit_form #iConsecutivo").val() != ""){struct_data_post.edit_mode = "true";}else{struct_data_post.edit_mode = "false";}
+                  struct_data_post.action  = "upload_certificate";
+                  struct_data_post.domroot = "#certificate_edit_form";
+                  $.ajax({             
+                    type  : "POST", 
+                    url   : "funciones_certificate_pdf_upload.php", 
+                    data  : struct_data_post.parse(),
+                    async : true,
+                    dataType : "json",
+                    success  : function(data){                               
+                        switch(data.error){ 
+                         case '0':
+                            fn_solotrucking.mensaje(data.mensaje);
+                            fn_certificate.filtraInformacion();
+                         break;
+                         case '1': fn_solotrucking.mensaje(data.mensaje); break;
+                        }
+                    }
+                  }); 
+                    
+                }else{fn_solotrucking.mensaje('<p>Please check the following::</p><ul>'+msj+'</ul>');}
+            } 
                
     }
 </script>  
@@ -247,16 +302,16 @@
                 <td><input class="flt_expiredate" type="text" placeholder="Expire Date:"></td>   
                 <td></td>  
                 <td style='width:100px;'>
-                    <div class="btn-icon-2 btn-left" title="Search" onclick="fn_UsersClients.filtraInformacion();"><i class="fa fa-search"></i></div>
+                    <div class="btn-icon-2 btn-left" title="Search" onclick="fn_certificate.filtraInformacion();"><i class="fa fa-search"></i></div>
                 </td> 
             </tr>
             <tr id="grid-head2">
-                <td class="etiqueta_grid down" onclick="fn_UsersClients.ordenamiento('A.iConsecutivo',this.cellIndex);">ID</td>
-                <td class="etiqueta_grid"      onclick="fn_UsersClients.ordenamiento('sNombreCompania',this.cellIndex);">Name</td>
-                <td class="etiqueta_grid"      onclick="fn_UsersClients.ordenamiento('sUsdot',this.cellIndex);">USDOT</td>
-                <td class="etiqueta_grid"      onclick="fn_UsersClients.ordenamiento('C.dFechaActualizacion',this.cellIndex);">Upload Date</td> 
-                <td class="etiqueta_grid"      onclick="fn_UsersClients.ordenamiento('C.dFechaVencimiento',this.cellIndex);">Expire Date</td> 
-                <td class="etiqueta_grid"      onclick="fn_UsersClients.ordenamiento('eEstatusCertificadoUpload',this.cellIndex);">Files Status</td>
+                <td class="etiqueta_grid down" onclick="fn_certificate.ordenamiento('A.iConsecutivo',this.cellIndex);">ID</td>
+                <td class="etiqueta_grid"      onclick="fn_certificate.ordenamiento('sNombreCompania',this.cellIndex);">Name</td>
+                <td class="etiqueta_grid"      onclick="fn_certificate.ordenamiento('sUsdot',this.cellIndex);">USDOT</td>
+                <td class="etiqueta_grid"      onclick="fn_certificate.ordenamiento('C.dFechaActualizacion',this.cellIndex);">Upload Date</td> 
+                <td class="etiqueta_grid"      onclick="fn_certificate.ordenamiento('C.dFechaVencimiento',this.cellIndex);">Expire Date</td> 
+                <td class="etiqueta_grid"      onclick="fn_certificate.ordenamiento('eEstatusCertificadoUpload',this.cellIndex);">Files Status</td>
                 <td class="etiqueta_grid"></td>
             </tr>
         </thead>
@@ -274,10 +329,10 @@
             <tr>
                 <td colspan="100%">
                     <div id="datagrid-menu-pages">
-                        <button id="pgn-inicio"    onclick="fn_UsersClients.firstPage();" title="First page"><span></span></button>
-                        <button id="pgn-anterior"  onclick="fn_UsersClients.previousPage();" title="Previous"><span></span></button>
-                        <button id="pgn-siguiente" onclick="fn_UsersClients.nextPage();" title="Next"><span></span></button>
-                        <button id="pgn-final"     onclick="fn_UsersClients.lastPage();" title="Last Page"><span></span></button>
+                        <button id="pgn-inicio"    onclick="fn_certificate.firstPage();" title="First page"><span></span></button>
+                        <button id="pgn-anterior"  onclick="fn_certificate.previousPage();" title="Previous"><span></span></button>
+                        <button id="pgn-siguiente" onclick="fn_certificate.nextPage();" title="Next"><span></span></button>
+                        <button id="pgn-final"     onclick="fn_certificate.lastPage();" title="Last Page"><span></span></button>
                     </div>
                 </td>
             </tr>
@@ -289,7 +344,7 @@
 <div id="certificate_edit_form" class="popup-form">
     <div class="p-header">
         <h2>EDIT THE COMPANY CERTIFICATE</h2>
-        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('certificate_edit_form');fn_UsersClients.fillgrid();"><i class="fa fa-times"></i></div>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('certificate_edit_form');fn_certificate.fillgrid();"><i class="fa fa-times"></i></div>
     </div>
     <div class="p-container">
     <div>
@@ -297,10 +352,12 @@
             <fieldset>
                 <legend>GENERAL DATA FOR CERTIFICATE</legend>
                  <table style="width: 100%;border-collapse: collapse;">
+                    <tr><td colspan="100%"><p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p></td></tr>
                     <tr>
                         <td colspan="100%">
-                            <label class="required-field" title="the limit date for certificate layout">Set certificate from:</label> 
-                            <select id="eOrigenCertificado" class="required-field" style="height: 27px!important;">
+                            <label class="required-field" title="the limit date for certificate layout">Set certificate from <span style="color:#ff0000;">*</span>:</label> 
+                            <select id="eOrigenCertificado" class="required-field" style="height: 27px!important;" onblur="fn_certificate.valida_tipo_certificado();">
+                                <option value="">Select an option...</option>
                                 <option value="LAYOUT">PDF - Layout uploaded.</option>
                                 <option value="DATABASE">DATA BASE - Data from company data policies in the system.</option>
                             </select>   
@@ -309,19 +366,36 @@
                     <tr>
                         <td style="width:60%;">
                         <div class="field_item">
-                            <input id="iConsecutivoCompania" name="iConsecutivo" type="hidden" value="">
-                            <label>Company Name:</label> 
+                            <input id="iConsecutivoCompania" name="iConsecutivoCompania" type="hidden" value="">
+                            <label>Company Name <span style="color:#ff0000;">*</span>:</label> 
                             <input id="sNombreCompania"  type="text" class="readonly" readonly="readonly" style="width: 97%;">
                         </div>
                         </td>
                         <td>
                         <div class="field_item">
-                           <label title="the limit date for certificate layout">Expire Date:</label> 
-                           <input id="dFechaVencimiento" type="text" class="fecha" style="width:90%;" value="">
+                           <label title="the limit date for certificate layout">Expire Date <span style="color:#ff0000;">*</span>:</label> 
+                           <input id="dFechaVencimiento" type="text" class="fecha required-field" style="width:90%;" value="">
+                        </div>
+                        </td>
+                    </tr>  
+                    <tr>
+                        <td colspan="100%">
+                        <div id="info_policies">
+                            <table class="popup-datagrid" style="margin-bottom: 10px;width: 100%;" cellpadding="0" cellspacing="0">
+                                <thead>
+                                    <tr id="grid-head2">
+                                        <td class="etiqueta_grid">Type</td>
+                                        <td class="etiqueta_grid">Policy Number</td>
+                                        <td class="etiqueta_grid">POLICY EFF </td>
+                                        <td class="etiqueta_grid">POLICY EXP</td>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
                         </div>
                         </td>
                     </tr>
-                    <tr>
+                    <tr class="campos-database">
                         <td colspan="100%">
                         <div class="field_item">
                            <label title="DESCRIPTION OF OPERATIONS / LOCATIONS / VEHICLES (ACORD 101, Additional Remarks Schedule, may be attached if more space is required)">Descriptions of operations:</label> 
@@ -331,9 +405,11 @@
                     </tr>
                  </table>
                 <br>
-                <button type="button" class="btn-1" onclick="fn_insurances.save();">SAVE</button> 
+                <button type="button" class="btn-1 campos-database" onclick="fn_certificate.preview_pdf();" style="margin-right:10px;background:#5ec2d4;width: 180px;">PREVIEW CERTIFICATE</button> 
+                <button type="button" class="btn-1 campos-database" onclick="fn_certificate.save();">SAVE</button> 
+                <button type="button" class="btn-1 campos-database" onclick="fn_popups.cerrar_ventana('certificate_edit_form');fn_certificate.fillgrid();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
             </fieldset>
-            <fieldset>
+            <fieldset class="campos-layout">
                 <legend>UPLOAD PDF LAYOUT FROM INSURED HUB</legend>
                 <p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p>
                 <table style="width: 100%;border-collapse: collapse;">
@@ -343,58 +419,18 @@
                             <label>Certificate: <span style="color:#9e2e2e;">Please upload a copy of the form in PDF format.</span></label> 
                             <input  id="txtsCertificatePDF" type="text" readonly="readonly" value="" size="40" style="width:83%;" />
                             <button id="btnsCertificatePDF" type="button">Upload Certificate</button>
-                            <input  id="iConsecutivoCertificate" type="hidden">
+                            <input  id="iConsecutivo" type="hidden">
                         </div> 
                         </td>
                     </tr>
-                    <!--
-                    <div class="file_additional files" style="display:none;"> 
-                        <label>Additional: <span style="color:#9e2e2e;">Please upload a copy of the form in PDF format.</span></label> 
-                        <input  id="txtsAdditionalPDF" type="text" readonly="readonly" value="" size="40" style="width:85%;" />
-                        <button id="btnsAdditionalPDF" type="button">Upload Additional</button>
-                    </div>-->
                 </table>
             </fieldset> 
         </form>
     </div>
     </div>
 </div>
-<!-- DIALOGUES -->
-<div id="dialog-confirm" title="Delete" style="display: none;">
-  <p><span class="ui-icon ui-icon-alert" ></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
-</div>
 <!-- FOOTER -->
 <?php include("footer.php"); ?> 
-<div id="dialog-certificate" title="Send Certificate">
-    <fieldset id="sendEmail">
-        <form name="emailForm" id="emailForm" method="POST" action="funciones.php"  enctype="multipart/form-data">
-            <p class="mensaje_valido">&nbsp;All form fields are required.</p>
-            <br />
-            <br />
-            <label>Description:</label><textarea  name="mensaje" id="mensaje" rows="3" cols="15" placeholder="Description" ></textarea>
-            <div ><label>File:</label> <input type="file" id="adjunto" name="adjunto" size="25" class="etiqueta_grid" > *</div>  
-            <div align="center"><input type="submit" value="Upload" id="button_submit"  class="btn_2" ></div>  
-            <input type="hidden" name="accion" id="accion" value="subir_certificado"  />                    
-            <input type="hidden" name="idCertificate" id="idCertificate"   />                    
-        </form>
-        <div id="loading"></div>                                                                                
-        </fieldset>
-</div>
-<div id="dialog-certificate-aditional" title="Send Additional remarks schedule"  >
-    <fieldset id="sendEmail">
-        <form name="emailFormAdd" id="emailFormAdd" method="POST" action="funciones.php"  enctype="multipart/form-data">
-            <p class="mensaje_valido">&nbsp;All form fields are required.</p>
-            <br />
-            <br />                
-            <div ><label>File:</label> <input type="file" id="adjunto_add" name="adjunto_add" size="25" class="etiqueta_grid" > *</div>  
-            <div align="center"><input type="submit" value="Upload" id="button_submit"  class="btn_2" ></div>  
-            <input type="hidden" name="accion" id="accion" value="subir_aditional"  />                    
-            <input type="hidden" name="idCertificateAdd" id="idCertificateAdd"   />                    
-        </form>
-        <div id="loading"></div>                                                                                
-        </fieldset>
-</div>
 </body>
-
 </html>
 <?php } ?>
