@@ -281,15 +281,20 @@
                   }); 
                     
                 }else{fn_solotrucking.mensaje('<p>Please check the following::</p><ul>'+msj+'</ul>');}
-            } 
-               
+            }, 
+            preview_certificate : function(){
+                var company = $("#certificate_edit_form #iConsecutivoCompania").val() ;
+                if(company != ""){
+                    window.open('pdf_certificate.php?id='+company+'&ca=COMPANY%20NAME&cb=NUMBER%20AND%20ADDRESS&cc=CITY&cd=STATE&ce=ZIPCODE&ds=PREVIEW');
+                }
+            }   
     }
 </script>  
 <div id="layer_content" class="main-section">
     <div id="ct_clientusers" class="container">
         <div class="page-title">
             <h1>Certificates</h1>
-            <h2>Upload Certificates</h2>
+            <h2>configuration for certificates</h2>
         </div>
         <table id="data_grid_clientusers" class="data_grid">
         <thead>
@@ -309,9 +314,9 @@
                 <td class="etiqueta_grid down" onclick="fn_certificate.ordenamiento('A.iConsecutivo',this.cellIndex);">ID</td>
                 <td class="etiqueta_grid"      onclick="fn_certificate.ordenamiento('sNombreCompania',this.cellIndex);">Name</td>
                 <td class="etiqueta_grid"      onclick="fn_certificate.ordenamiento('sUsdot',this.cellIndex);">USDOT</td>
-                <td class="etiqueta_grid"      onclick="fn_certificate.ordenamiento('C.dFechaActualizacion',this.cellIndex);">Upload Date</td> 
+                <td class="etiqueta_grid"      onclick="fn_certificate.ordenamiento('C.dFechaActualizacion',this.cellIndex);">Last update</td> 
                 <td class="etiqueta_grid"      onclick="fn_certificate.ordenamiento('C.dFechaVencimiento',this.cellIndex);">Expire Date</td> 
-                <td class="etiqueta_grid"      onclick="fn_certificate.ordenamiento('eEstatusCertificadoUpload',this.cellIndex);">Files Status</td>
+                <td class="etiqueta_grid"      onclick="fn_certificate.ordenamiento('eEstatusCertificadoUpload',this.cellIndex);">Status</td>
                 <td class="etiqueta_grid"></td>
             </tr>
         </thead>
@@ -405,8 +410,8 @@
                     </tr>
                  </table>
                 <br>
-                <button type="button" class="btn-1 campos-database" onclick="fn_certificate.preview_pdf();" style="margin-right:10px;background:#5ec2d4;width: 180px;">PREVIEW CERTIFICATE</button> 
                 <button type="button" class="btn-1 campos-database" onclick="fn_certificate.save();">SAVE</button> 
+                <button type="button" class="btn-1 campos-database" onclick="fn_certificate.preview_certificate();" style="margin-right:10px;background:#5ec2d4;width: 180px;">PREVIEW CERTIFICATE</button> 
                 <button type="button" class="btn-1 campos-database" onclick="fn_popups.cerrar_ventana('certificate_edit_form');fn_certificate.fillgrid();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
             </fieldset>
             <fieldset class="campos-layout">

@@ -42,7 +42,7 @@
         $pagina_actual == "0" ? $pagina_actual = 1 : false;
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-        $sql = "SELECT  C.hContenidoDocumentoDigitalizadoAdd, A.iConsecutivo as id, sNombreCompania, eEstatusCertificadoUpload as estatus_upload, sUsdot,
+        $sql = "SELECT  C.hContenidoDocumentoDigitalizadoAdd, A.iConsecutivo as id, sNombreCompania, eEstatusCertificadoUpload as estatus_upload, sUsdot, eOrigenCertificado,
                 CASE WHEN eEstatusCertificadoUpload = '0' then 'Pending' Else 'Loaded' END AS  hActivado, iOnRedList, 
                 DATE_FORMAT(C.dFechaIngreso,'%m/%d/%Y') AS dFechaIngreso, DATE_FORMAT(C.dFechaActualizacion,'%m/%d/%Y') AS dFechaActualizacion, DATE_FORMAT(C.dFechaVencimiento,'%m/%d/%Y') AS dFechaVencimiento  
                 FROM  ct_companias A 
@@ -65,23 +65,37 @@
                      $variables = "";
                      $variables = "?id=".$items['id']."&ca=COMPANY%20NAME&cb=NUMBER%20AND%20ADDRESS&cc=CITY&cd=STATE&ce=ZIPCODE";
                      
+                     $fecha_actual  = strtotime(date("d-m-Y",time()));
+                     $fecha_entrada = strtotime($items['dFechaVencimiento']);
+                     
+                     $fecha_entrada < $fecha_actual ? $vencido = true : $vencido = false;
+                     
+                     //Revisar origen del certificado:
+                     if($items['eOrigenCertificado'] == "LAYOUT"){
+                        if($items['hActivado'] == "Loaded"){
+                            if($vencido){$estatusC = '<i class="fa fa-times-circle" style="color:#8a0000;"></i> Certificate Uploaded Expired - ('.$items['eOrigenCertificado'].')';}
+                            else{$estatusC = '<i class="fa fa-check-circle" style="color:#6ddc00;"></i> Certificate Uploaded & Valid - ('.$items['eOrigenCertificado'].')';}
+                        }
+                        else{
+                            $estatusC = '<i class="fa fa-times-circle" style="color:#8a0000;"></i> Certificate not Uploaded ('.$items['eOrigenCertificado'].')';
+                        }    
+                     }else{
+                        if($vencido){$estatusC = '<i class="fa fa-times-circle" style="color:#8a0000;"></i> Certificate Date Expired ('.$items['eOrigenCertificado'].')';}
+                        else{$estatusC = '<i class="fa fa-check-circle" style="color:#6ddc00;"></i> Certificate Date Valid ('.$items['eOrigenCertificado'].')';}  
+                     }
+                     
                      $htmlTabla .= "<tr ".$redlist_class."><td>".$items['id']."</td>".
                                    "<td>".$redlist_icon.$items['sNombreCompania']."</td>".
                                    "<td>".$items['sUsdot']."</td>".
                                    "<td>".$items['dFechaActualizacion']."</td>".
-                                   "<td>".$items['dFechaVencimiento']."</td>";
-    
-                                   if($items['hActivado'] == "Loaded"){$color = "#000080";$items['hActivado'] = "<i class=\"fa fa-check-circle\" style=\"color:#6ddc00;\"></i> Certificate Loaded";}
-                                   else{$items['hActivado'] = "<i class=\"fa fa-times-circle\"></i> Certificate not Loaded";}
-                                       
-                                   if($items['hContenidoDocumentoDigitalizadoAdd'] != ""){$items['hActivado'] =  $items['hActivado']. ",<br /><i class=\"fa fa-check-circle\"></i> Additional remarks schedule Loaded";}                                 
-                                   $htmlTabla .= "<td><b><font color ='$color'> ".$items['hActivado']."</font></b></td>";
-                                   $htmlTabla .= "<td>".
-                                                     "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Certificate\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>".
-                                                     "<div class=\"btn-icon btn-left pdf\" title=\"View the PDF\" onclick=\"window.open('pdf_certificate.php".$variables."');\"><i class=\"fa fa-file-pdf-o\"></i><span></span></div>".
-                                                  "</td>";  
-                                                                                                                                                                                                                                          
-                                "</tr>";
+                                   "<td>".$items['dFechaVencimiento']."</td>";   
+                                   //if($items['hContenidoDocumentoDigitalizadoAdd'] != ""){$items['hActivado'] =  $items['hActivado']. ",<br /><i class=\"fa fa-check-circle\"></i> Additional remarks schedule Loaded";}                                 
+                     $htmlTabla .= "<td>$estatusC</td>";
+                     $htmlTabla .= "<td>".
+                                   "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Certificate\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>".
+                                   "<div class=\"btn-icon btn-left pdf\" title=\"View the PDF\" onclick=\"window.open('pdf_certificate.php".$variables."');\"><i class=\"fa fa-file-pdf-o\"></i><span></span></div>".
+                                   "</td>";  
+                                   "</tr>";
                     
             }
             $conexion->rollback();
@@ -100,6 +114,7 @@
        
        $iConsecutivoCompania   =  $_POST['iConsecutivoCompania'];
        $_POST['iConsecutivo'] != '' ? $edit_mode = "true" : $edit_mode = "false";
+       $_POST['sDescripcionOperaciones'] != "" ? $_POST['sDescripcionOperaciones'] = utf8_encode($_POST['sDescripcionOperaciones']) : "";
        $campos  = array();
        $valores = array();
        
@@ -245,7 +260,7 @@
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);
       
-      $sql    = "SELECT iConsecutivo, sNombreArchivo AS txtsCertificatePDF, sNombreArchivoAdd, DATE_FORMAT(dFechaVencimiento,'%m/%d/%Y') AS dFechaVencimiento, eOrigenCertificado  ".
+      $sql    = "SELECT iConsecutivo, sNombreArchivo AS txtsCertificatePDF, sNombreArchivoAdd, DATE_FORMAT(dFechaVencimiento,'%m/%d/%Y') AS dFechaVencimiento, eOrigenCertificado, sDescripcionOperaciones  ".
                 "FROM cb_certificate_file WHERE iConsecutivoCompania = '".$clave."'";
       $result = $conexion->query($sql); 
       $rows   = $result->num_rows; 
@@ -287,7 +302,7 @@
                 "LEFT JOIN ct_brokers     AS C ON A.iConsecutivoBrokers = C.iConsecutivo ".
                 "LEFT JOIN ct_tipo_poliza AS D ON A.iTipoPoliza         = D.iConsecutivo ".
                 "WHERE iConsecutivoCompania = '".$company."' ".
-                "AND  A.iDeleted = '0' AND dFechaCaducidad >= CURDATE() AND (D.iConsecutivo = '1' OR D.iConsecutivo = '3' OR D.iConsecutivo = '5' OR D.iConsecutivo = '2') ".
+                "AND  A.iDeleted = '0' AND dFechaCaducidad >= CURDATE() ".
                 "ORDER BY A.iConsecutivo ASC";  
       $result = $conexion->query($sql);
       $rows   = $result->num_rows;

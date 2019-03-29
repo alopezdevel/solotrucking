@@ -329,20 +329,32 @@ var fn_policies = {
                             return false;
                         }else{
                             
+                            $("#file_edit_form .required-field").removeClass("error");
                             var policies_selected = "";
+                            var valid = true;
+                            var msj   = "";
                             $("#file_edit_form .company_policies .num_policies" ).each(function(index){
                                 if($(this).is(':checked')){if(policies_selected != ''){policies_selected += "," + this.value; }else{policies_selected += this.value;}}
                             });
-                            if(policies_selected != '' && $('#file_edit_form #iConsecutivoCompania').val() != ''){
+                            
+                            //Revisamos campos obligatorios:
+                            $("#file_edit_form .required-field").each(function(){
+                               if($(this).val() == ""){valid = false; $(this).addClass('error');msj = "<li>You must capture the required fields.</li>";}
+                            });
+                            
+                            if(policies_selected == "" || policies_selected == null){valid = false; msj = "<li>You must select at least one option from the policies.</li>";}
+                            
+                            if(valid){
                                 this.setData({
                                     'accion'              : 'upload_list_file', 
                                     'iConsecutivoCompania': $('#file_edit_form #iConsecutivoCompania').val(),
                                     'iConsecutivoPolizas' : policies_selected,
+                                    'eTipoLista'          : $("#file_edit_form select[name=File_eTipoLista]").val(),
                                 });
                                 $('#txtFile').val('loading...');
                                 this.disable();
                             }else{
-                                fn_solotrucking.mensaje('Please verify if all required fields has a value.');
+                                fn_solotrucking.mensaje('<p>Please check the following::</p><ul>'+msj+'</ul>');
                                 return false;
                             }
                         }
@@ -645,7 +657,12 @@ var fn_policies = {
             $("#policies_edit_form .premium_amounts_additional input, #policies_edit_form .premium_amounts_GL input").val('');
             
             //MTC-TI
-            if(iTipoPoliza == "5"){
+            if(iTipoPoliza == "5" || iTipoPoliza == "10"){
+                if(iTipoPoliza == "5"){ var textlimit = "Trailer Interchange Limit $:"; var textdedu = "Trailer Interchange Deductible $:";}
+                else{ var textlimit = "Reefer Breakdown Limit $:"; var textdedu = "Reefer Breakdown Deductible $:"; }
+                
+                $("#policies_edit_form .premium_amounts_additional .field_item:first-child label").text(textlimit);
+                $("#policies_edit_form .premium_amounts_additional .field_item:last-child label").text(textdedu);
                 $("#policies_edit_form .premium_amounts_additional").show();
                 $("#policies_edit_form .cargo_policie_type").show();
             }
@@ -1228,7 +1245,7 @@ var fn_policies = {
                                 <td>
                                 <div class="field_item"> 
                                     <label>Limit $: </label>
-                                    <input id="iPremiumAmount" type="text" class="decimal" style="width:97%!important;"/>
+                                    <input id="iPremiumAmount" type="text" class="" style="width:97%!important;"/>
                                 </div>
                                 </td>
                                 <td>
@@ -1242,7 +1259,7 @@ var fn_policies = {
                                 <td>
                                 <div class="field_item"> 
                                     <label>Trailer Interchange Limit $: </label>
-                                    <input id="iPremiumAmountAdditional" type="text" class="decimal" style="width:97%!important;"/>
+                                    <input id="iPremiumAmountAdditional" type="text" class="" style="width:97%!important;"/>
                                 </div>
                                 </td>
                                 <td>
@@ -1355,10 +1372,26 @@ var fn_policies = {
     <div>
         <form>
             <fieldset>
+                <table style="width: 100%;">
+                    <tr>
+                        <td><a class="btn-text btn-left" title="Download BIND Layout XLS" href="documentos/plantilla_ejemplo_upload_amic.xlsx" target="_blank"><i class="fa fa-file-excel-o"></i><span>Download BIND Layout XLS</span></a></td>
+                        <td><a class="btn-text btn-left" title="Download ENDORSEMENT Layout XLS" href="documentos/plantilla_ejemplo_upload_endosos.xlsx" target="_blank"><i class="fa fa-file-excel-o"></i><span>Download ENDORSEMENT Layout XLS</span></a></td>
+                        <td><a class="btn-text btn-left" title="Download PDF Manual" href="documentos/manual_para_subir_y_crear_plantillas.pdf" target="_blank"><i class="fa fa-file-pdf-o"></i><span>Download PDF Manual</span></a></td>
+                    </tr>
+                </table>
                 <p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p>
                 <div class="field_item">
+                    <label>List Type <span style="color:#ff0000;">*</span>:</label>  
+                    <select tabindex="1" id="eTipoLista" class="required-field"  name="File_eTipoLista" style="height:25px!important;">
+                        <option value="">Select an option...</option>
+                        <option value="">POLICY BIND</option>
+                        <option value="">LAST ENDORSEMENTS</option>
+                       
+                    </select>
+                </div>
+                <div class="field_item">
                     <label>Company <span style="color:#ff0000;">*</span>:</label>  
-                    <select tabindex="1" id="iConsecutivoCompania"  name="File_iConsecutivoCompania" onblur="fn_policies.get_company_policies(this.value);" style="height:25px!important;">
+                    <select tabindex="2" id="iConsecutivoCompania" class="required-field"  name="File_iConsecutivoCompania" onchange="fn_policies.get_company_policies(this.value);" style="height:25px!important;">
                         <option value="">Select an option...</option>
                     </select>
                 </div>                
@@ -1372,8 +1405,6 @@ var fn_policies = {
                 </div>
                 <table id="reporte_policy_update"></table>
                 <br> 
-                <a class="btn-text btn-left" title="Download Layout XLS" href="documentos/plantilla_ejemplo_upload_amic.xlsx" target="_blank"><i class="fa fa-file-excel-o"></i><span>Download Layout XLS</span></a>
-                <a class="btn-text btn-left" title="Download PDF Manual" href="documentos/manual_para_subir_y_crear_plantillas.pdf" target="_blank"><i class="fa fa-file-pdf-o"></i><span>Download PDF Manual</span></a>
                 <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('file_edit_form');" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
                 <button id="btnFile" type="button" class="btn-1" style="width:230px;">Upload & Save file</button>
             </fieldset>

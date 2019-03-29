@@ -82,9 +82,8 @@
                   <li><a href="inicio">Home</a></li>
                   <li class="submenu"><a href="#">COMPANIES</a>
                     <ul> 
-                        <li><a href="companies"><i class="fa fa-briefcase"></i>Companies</a></li>  
-                        <li><a href="users"> <i class="fa fa-users"></i> Company Users</a></li> 
-                        <li><a href="certificate_request_pdf_upload"> <i class="fa fa-cloud-upload"></i> Company Certificates (upload)</a></li>   
+                        <li><a href="companies">Companies</a></li>  
+                        <li><a href="users">Users</a></li> 
                     </ul>
                   </li>
                   <li class="submenu"><a href="#">POLICIES</a>
@@ -96,6 +95,7 @@
                         
                     </ul>
                   </li>
+                  <li class="submenu"><a href="certificate_request_pdf_upload">CERTIFICATES</a></li>
                   <?php if($_SESSION["usuario_actual"] == "customerservice@solo-trucking.com"){?>
                   <li class="submenu"><a href="#">Endorsements</a>
                    <ul>

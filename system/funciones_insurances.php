@@ -84,7 +84,7 @@
         $llaves  = array_keys($data);
         $datos   = $data;
         foreach($datos as $i => $b){
-            $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');"; 
+            $fields .= "\$('#$domroot :input[id=".$i."]').val(\"".$datos[$i]."\");"; 
         }  
       }
       $conexion->rollback();
@@ -102,43 +102,42 @@
       include("cn_usuarios.php"); 
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
       $transaccion_exitosa = true;
-      $_POST['sName']            = strtoupper($_POST['sName']);
-      $_POST['sEmailClaims']     = strtolower($_POST['sEmailClaims']); 
-      $_POST['sNombreContacto'] != ''? strtoupper($_POST['sNombreContacto']) : "";
-      $_POST['sNAICNumber']     != ''? strtoupper($_POST['sNAICNumber'])     : "";
       
       //Revisando si ya existe un broker con el mismo nombre:
-      $query = "SELECT COUNT(iConsecutivo) AS total FROM ct_aseguranzas WHERE sName ='".$_POST['sName']."'";
+      $query  = "SELECT COUNT(iConsecutivo) AS total FROM ct_aseguranzas WHERE sName =\"".(strtoupper($_POST['sName']))."\"";
       $result = $conexion->query($query);
       $valida = $result->fetch_assoc();
       
-      if($valida['total'] != '0'){
+      if($valida['total'] != '0' || $_POST["edit_mode"] == 'true'){
           if($_POST["edit_mode"] != 'true'){
-              $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
-                      Error: The Broker that you trying to add already exists. Please you verify the data.</p>';
+              $msj   = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Error: The Broker that you trying to add already exists. Please you verify the data.</p>';
               $error = '1';
           }else{
              foreach($_POST as $campo => $valor){
                 if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo"){ //Estos campos no se insertan a la tabla
-                    array_push($valores,"$campo='".trim($valor)."'");
+                    if($campo == "sName" || $campo == "sNAICNumber" || $campo == "sNombreContacto" && $valor != ""){$valor = (strtoupper($valor));}
+                    if($campo == "sEmailClaims" && $valor != ""){$valor = strtolower($valor);}
+                    array_push($valores,"$campo=\"".($valor)."\"");
                 }
              }   
           }
       }else if($_POST["edit_mode"] != 'true'){
          foreach($_POST as $campo => $valor){
             if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo"){ //Estos campos no se insertan a la tabla
+                if($campo == "sName" || $campo == "sNAICNumber" || $campo == "sNombreContacto" && $valor != ""){$valor = strtoupper($valor);}
+                if($campo == "sEmailClaims" && $valor != ""){$valor = strtolower($valor);}
                 array_push($campos ,$campo); 
-                array_push($valores, trim($valor));
+                array_push($valores,($valor));
             }
          }  
       }
-      
+    
       if($error == '0'){
           if($_POST["edit_mode"] == 'true'){
             array_push($valores ,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
             array_push($valores ,"sIP='".$_SERVER['REMOTE_ADDR']."'");
             array_push($valores ,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'"); 
-            $sql = "UPDATE ct_aseguranzas SET ".implode(",",$valores)." WHERE iConsecutivo ='".$_POST['iConsecutivo']."'";
+            $sql = "UPDATE ct_aseguranzas SET ".implode(",",$valores)." WHERE iConsecutivo =\"".$_POST['iConsecutivo']."\"";
             $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data have been updated successfully.</p>'; 
           }else{
             array_push($campos ,"dFechaIngreso");
@@ -147,9 +146,10 @@
             array_push($valores ,$_SERVER['REMOTE_ADDR']);
             array_push($campos ,"sUsuarioIngreso");
             array_push($valores ,$_SESSION['usuario_actual']);
-            $sql = "INSERT INTO ct_aseguranzas (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
+            $sql = "INSERT INTO ct_aseguranzas (".implode(",",$campos).") VALUES (\"".implode("\",\"",$valores)."\")";
             $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data have been added successfully.</p>';
           }
+       
           $conexion->query($sql);
           $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
           if($transaccion_exitosa){
@@ -162,6 +162,7 @@
                     $error = "1";
           } 
       }
+  
       $response = array("error"=>"$error","msj"=>"$msj");
       echo json_encode($response);
   }
