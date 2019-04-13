@@ -267,7 +267,7 @@
      $conexion->autocommit(FALSE);
      $htmlTabla .= "<option value=\"\">Select an option...</option>";  
      $sql = "SELECT iConsecutivo AS clave, sName AS descripcion 
-             FROM ct_aseguranzas ORDER BY iConsecutivo ASC";
+             FROM ct_aseguranzas ORDER BY sName ASC";
      $result = $conexion->query($sql);
      $tipos = $result->num_rows;  
         if($tipos > 0){     

@@ -61,7 +61,8 @@
                                 'iConsecutivoCompania': $("#certificate_edit_form #iConsecutivoCompania").val(),
                                 'sNombreCompania'     : $("#certificate_edit_form #sNombreCompania").val(),
                                 'iConsecutivo'        : $("#certificate_edit_form #iConsecutivo").val(),
-                                'dFechaVencimiento'   : $('#certificate_edit_form #dFechaVencimiento').val()
+                                'dFechaVencimiento'   : $('#certificate_edit_form #dFechaVencimiento').val(),
+                                'eOrigenCertificado'  : $("#certificate_edit_form #eOrigenCertificado").val()
                             });
                             $('#txtsCertificatePDF').val('loading...');
                             this.disable(); 

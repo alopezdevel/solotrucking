@@ -18,8 +18,8 @@ function inicio(){
         $('#dialog_delete_policy').dialog({
             modal: true,
             autoOpen: false,
-            width : 300,
-            height : 200,
+            width : 450,
+            height : 430,
             resizable : false,
             buttons : {
                 'YES' : function() {
@@ -122,16 +122,13 @@ function inicio(){
                 dates_rp.not( this ).datepicker( "option", option, date );
             },
         });
-        
-        
-        
     
 }  
 function validapantalla(usuario){if(usuario == ""  || usuario == null){location.href= "login.php";}}                   
 var fn_policies = {
         domroot:"#ct_policies",
         data_grid: "#data_grid_policies",
-        form : "#policies_edit_form",
+        form : "#policies_edit_form #policy_data_form",
         filtro : "",
         pagina_actual : "",
         sort : "ASC",
@@ -424,6 +421,45 @@ var fn_policies = {
                 if (event.keyCode == '13') {event.preventDefault();fn_policies.list.units_filtraInformacion();}
                 if(event.keyCode == '27'){event.preventDefault();$(this).val('');fn_policies.list.units_filtraInformacion();}
             });
+            
+            // CERTIFICATE UPLOAD PDF
+            new AjaxUpload('#btnsCertificatePDF', {
+                action: 'funciones_certificate_pdf_upload.php',
+                onSubmit : function(file , ext){
+                    if (!(ext && /^(pdf)$/i.test(ext))){
+                        var mensaje = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Error: The file format is not valid.</p>';
+                        fn_solotrucking.mensaje(mensaje);
+                        return false;
+                    }else{
+                        this.setData({
+                            'accion': 'upload_certificate',
+                            'iConsecutivoCompania': fn_certificate.id_company,
+                            'sNombreCompania'     : $("#policies_edit_form select[name=iConsecutivoCompania] option:selected ").text(),
+                            'iConsecutivo'        : $("#certificate_edit_form input[name=iConsecutivo]").val(),
+                            'dFechaVencimiento'   : $('#certificate_edit_form input[name=dFechaVencimiento]').val(),
+                            'eOrigenCertificado'  : $("#certificate_edit_form [name=eOrigenCertificado]").val()
+                        });
+                        $('#txtsCertificatePDF').val('loading...');
+                        this.disable(); 
+                    }
+                },
+                onComplete : function(file,response){  
+                    var respuesta = JSON.parse(response);
+                    switch(respuesta.error){
+                        case '0':
+                            $('#txtsCertificatePDF').val(respuesta.name_file);
+                            this.enable();
+                            $('#iConsecutivoCertificatePDF').val(respuesta.id_file);
+                            fn_solotrucking.mensaje(respuesta.mensaje);
+                        break;
+                        case '1':
+                           fn_solotrucking.mensaje(respuesta.mensaje);
+                           $('#txtsCertificatePDF').val(''); 
+                           this.enable();
+                        break;
+                    }   
+                }        
+            }); 
         },
         fillgrid: function(){
                $.ajax({             
@@ -490,40 +526,50 @@ var fn_policies = {
         add : function(){
            $(fn_policies.form + ' input,' + fn_policies.form +' select').val('').removeClass('error');
            $(fn_policies.form+' .mensaje_valido').empty().append('The fields containing an (*) are required.');
-           $('.policy_jacker_file').hide();
+           $('.policy_jacker_file, #certificate_edit_form').hide();
            $(fn_policies.form + ' #sNumeroPoliza ,' + fn_policies.form + ' #iConsecutivoCompania').removeAttr('readonly').removeClass('readonly');
-           fn_policies.valida_tipo_poliza();
+           fn_policies.valida_tipo_poliza(false);
            fn_popups.resaltar_ventana('policies_edit_form');  
         },
         edit : function (){
             $(fn_policies.data_grid + " tbody td .edit").bind("click",function(){
                 var clave = $(this).parent().parent().find("td:eq(0)").html();
-                $.ajax({
-                    type:"POST",
-                    url:"funciones_policies.php",
-                    data:{
-                        "accion"  :"get_policy",
-                        "clave"   : clave,
-                        "domroot" : "policies_edit_form"
-                    },
-                    async : true,
-                    dataType : "json",
-                    success : function(data){
-                        if(data.error == '0'){
-                           $(fn_policies.form+' input, '+fn_policies.form+' select').val('').removeClass('error'); 
-                           $(fn_policies.form + ' #sNumeroPoliza ,' + fn_policies.form + ' #iConsecutivoCompania').attr('readonly','readonly').addClass('readonly');
-                           eval(data.fields); 
-                           fn_policies.validate_type();
-                           fn_policies.valida_tipo_poliza();
-                           $('.policy_jacker_file').show(); 
-                           fn_popups.resaltar_ventana('policies_edit_form');
-                             
-                        }else{
-                           fn_solotrucking.mensaje(data.msj);  
-                        }       
-                    }
-                });
+                fn_policies.get_data(clave);
           });  
+        },
+        get_data : function(clave){
+            $.ajax({
+                type:"POST",
+                url:"funciones_policies.php",
+                data:{
+                    "accion"  :"get_policy",
+                    "clave"   : clave,
+                    "domroot" : "policies_edit_form"
+                },
+                async : true,
+                dataType : "json",
+                success : function(data){
+                    if(data.error == '0'){
+                       $('#policies_edit_form .file_certificate  .trash, #certificate_edit_form').hide(); 
+                       $(fn_policies.form+' input, '+fn_policies.form+' select').val('').removeClass('error'); 
+                       $(fn_policies.form + ' #sNumeroPoliza ,' + fn_policies.form + ' #iConsecutivoCompania').attr('readonly','readonly').addClass('readonly');
+                       eval(data.fields); 
+                       fn_policies.validate_type();
+                       fn_policies.valida_tipo_poliza(true);
+                       
+                       if($('#policies_edit_form :input[id=iConsecutivoArchivo]').val() != ""){$('#policies_edit_form .policyJackerField .trash').show();}
+                       if($('#policies_edit_form :input[id=iConsecutivoArchivoPFA]').val() != ""){$('#policies_edit_form .policyPFAField .trash').show();}
+                       $('.policy_jacker_file ').show(); 
+                       
+                       fn_certificate.id_company = $("#policies_edit_form #iConsecutivoCompania").val();
+                       fn_certificate.init();
+                       fn_popups.resaltar_ventana('policies_edit_form');
+                         
+                    }else{
+                       fn_solotrucking.mensaje(data.msj);  
+                    }       
+                }
+            });    
         },
         save : function (){
            //Validate Fields:
@@ -553,15 +599,14 @@ var fn_policies = {
           
            if(valid){
              if($(fn_policies.form + ' #sNumeroPoliza').attr("readonly")){struct_data_post.edit_mode = "true";}else{struct_data_post.edit_mode = "false";}  
-             struct_data_post.action="save_policy";
+             struct_data_post.action ="save_policy";
              struct_data_post.domroot= fn_policies.form; 
                 $.post("funciones_policies.php",struct_data_post.parse(),
                 function(data){
                     switch(data.error){
                      case '0':
                         fn_solotrucking.mensaje(data.msj);
-                        //fn_policies.fillgrid();
-                        //fn_popups.cerrar_ventana('policies_edit_form');
+                        fn_policies.get_data(data.clave);
                      break;
                      case '1': fn_solotrucking.mensaje(data.msj); break;
                     }
@@ -579,8 +624,10 @@ var fn_policies = {
         },
         delete_confirm : function(){
           $(fn_policies.data_grid + " tbody .btn_delete").bind("click",function(){
-               var clave = $(this).parent().parent().find("td:eq(0)").html();
+               var clave  = $(this).parent().parent().find("td:eq(0)").html();
+               var policy = $(this).parent().parent().find("td:eq(2)").html();
                $('#dialog_delete_policy #id_policy').val(clave);
+               $('#dialog_delete_policy p > span').empty().text(policy);
                $('#dialog_delete_policy').dialog( 'open' );
                return false;
            });  
@@ -650,19 +697,21 @@ var fn_policies = {
             if(fn_policies.filtro_table == 'active'){fn_policies.fillgrid();}else if(fn_policies.filtro_table == 'expired'){fn_policies.fillgrid_expired();}
             
         }, 
-        valida_tipo_poliza : function(){
+        valida_tipo_poliza : function(edit){
+            
+            if(edit == ""){edit = false;}
             var iTipoPoliza = $("#policies_edit_form #iTipoPoliza").val();
             // ocultar todos los campos primero:
             $("#policies_edit_form .premium_amounts_additional, #policies_edit_form .premium_amounts_GL, #policies_edit_form .cargo_policie_type").hide();
-            $("#policies_edit_form .premium_amounts_additional input, #policies_edit_form .premium_amounts_GL input").val('');
+            if(!(edit)){$("#policies_edit_form .premium_amounts_additional input, #policies_edit_form .premium_amounts_GL input").val('');}
             
             //MTC-TI
             if(iTipoPoliza == "5" || iTipoPoliza == "10"){
                 if(iTipoPoliza == "5"){ var textlimit = "Trailer Interchange Limit $:"; var textdedu = "Trailer Interchange Deductible $:";}
                 else{ var textlimit = "Reefer Breakdown Limit $:"; var textdedu = "Reefer Breakdown Deductible $:"; }
                 
-                $("#policies_edit_form .premium_amounts_additional .field_item:first-child label").text(textlimit);
-                $("#policies_edit_form .premium_amounts_additional .field_item:last-child label").text(textdedu);
+                $("#policies_edit_form .premium_amounts_additional > td:first-child .field_item label").text(textlimit);
+                $("#policies_edit_form .premium_amounts_additional > td:last-child  .field_item label").text(textdedu);
                 $("#policies_edit_form .premium_amounts_additional").show();
                 $("#policies_edit_form .cargo_policie_type").show();
             }
@@ -677,6 +726,7 @@ var fn_policies = {
                 $("#policies_edit_form .premium_amounts_GL").show(); 
             }else{
                 $("#policies_edit_form .premium_amounts").show(); 
+                $("#policies_edit_form .cargo_policie_type").show();
             }
         },
         upload_file : function(){
@@ -684,6 +734,25 @@ var fn_policies = {
                 var clave = $(this).parent().parent().find("td:eq(0)").html();
                 
            });  
+        },
+        delete_file : function(fileType){
+            $.ajax({
+                type:"POST",
+                url:"funciones_policies.php",
+                data:{
+                    'accion'              : "delete_file",
+                    'iConsecutivo'        : $(fn_policies.form +' #iConsecutivoArchivo').val(), 
+                    'iConsecutivoCompania': $(fn_policies.form + ' #iConsecutivoCompania').val(),
+                    'iConsecutivoPoliza'  : $(fn_policies.form + ' #iConsecutivo').val(),
+                    'eArchivo'            : fileType 
+                },
+                async : true,
+                dataType : "json",
+                success : function(data){
+                    fn_solotrucking.mensaje(data.msj);
+                    if(data.error == '0'){fn_policies.get_data($(fn_policies.form + ' #iConsecutivo').val());}
+                }
+            });        
         }, 
         //FUNCIONES PARA SUBIR TXT DE DRIVER OR UNITS:
         get_company_policies : function(){
@@ -1092,9 +1161,105 @@ var fn_policies = {
             $("#dialog_report_policies #flt_dateFrom").val(fechas[1]); 
             $("#dialog_report_policies #flt_dateTo").val(fechas[2]); 
             $("#dialog_report_policies").dialog('open'); 
-        }, 
+        },
+         
                
-}   
+} 
+
+var fn_certificate = {
+    id_company : "",
+    init : function(){
+        if(fn_certificate.id_company != ""){
+            $.ajax({
+                type:"POST",
+                url:"funciones_certificate_pdf_upload.php",
+                data:{
+                    "accion"   :"get_files", 
+                    "clave"    : fn_certificate.id_company, 
+                    "domroot"  : "certificate_edit_form",
+                    "parametro": "name",
+                },
+                async : true,
+                dataType : "json",
+                success : function(data){
+                    if(data.error == '0'){ 
+                       eval(data.fields); 
+                       fn_certificate.valida_tipo_certificado();
+                       $("#certificate_edit_form").show();
+                    }else{
+                       fn_solotrucking.mensaje(data.msj);  
+                    }     
+                }
+            });            
+        }    
+    },
+    get_datapolicies : function(){
+        $.ajax({             
+            type:"POST", 
+            url:"funciones_certificate_pdf_upload.php", 
+            data:{'accion':"get_policies",'iConsecutivoCompania':fn_certificate.id_company},
+            async : false,
+            dataType : "json",
+            success : function(data){                               
+                if(data.error == '0'){
+                    $(".fieldset-certificates #info_policies").show();
+                    $(".fieldset-certificates #info_policies table tbody").empty().append(data.policies_information);
+                }
+            }
+        });
+    },
+    valida_tipo_certificado : function(){
+        var tipo = $(".fieldset-certificates [name=eOrigenCertificado]").val();
+        if(tipo == 'LAYOUT'){
+            $("#certificate_edit_form .campos-layout").show();
+            $("#certificate_edit_form .campos-database, #certificate_edit_form #info_policies").hide();
+        }else if(tipo == 'DATABASE'){
+            fn_certificate.get_datapolicies();
+            $("#certificate_edit_form .campos-database").show();
+            $("#certificate_edit_form .campos-layout").hide();
+        }else{
+            $("#certificate_edit_form .campos-database, #certificate_edit_form #info_policies, #certificate_edit_form .campos-layout").hide();
+        }
+    },
+    preview_certificate : function(){
+        if(fn_certificate.id_company != ""){
+            window.open('pdf_certificate.php?id='+fn_certificate.id_company+'&ca=COMPANY%20NAME&cb=NUMBER%20AND%20ADDRESS&cc=CITY&cd=STATE&ce=ZIPCODE&ds=PREVIEW');
+        }
+    },
+    save : function(){
+        var valid = true;
+        var msj   = "";
+        $("#certificate_edit_form .required-field").removeClass("error");
+        //Revisamos campos obligatorios: 
+        $("#certificate_edit_form  input.required-field, #certificate_edit_form  select.required-field").each(function(){
+           if($(this).val() == ""){valid = false; $(this).addClass('error');msj = "<li>You must capture the required fields.</li>";}
+        });
+        
+        if(valid){ 
+          $("#certificate_edit_form input[name=iConsecutivoCompania]").val(fn_certificate.id_company);  
+          if($("#certificate_edit_form input[name=iConsecutivo]").val() != ""){struct_data_post_new.edit_mode = "true";}else{struct_data_post_new.edit_mode = "false";}
+          struct_data_post_new.action  = "upload_certificate";
+          struct_data_post_new.domroot = "#certificate_edit_form";
+          $.ajax({             
+            type  : "POST", 
+            url   : "funciones_certificate_pdf_upload.php", 
+            data  : struct_data_post_new.parse(),
+            async : true,
+            dataType : "json",
+            success  : function(data){                               
+                switch(data.error){ 
+                 case '0':
+                    fn_solotrucking.mensaje(data.mensaje);
+                    fn_certificate.init();
+                 break;
+                 case '1': fn_solotrucking.mensaje(data.mensaje); break;
+                }
+            }
+          }); 
+            
+        }else{fn_solotrucking.mensaje('<p>Please check the following::</p><ul>'+msj+'</ul>');}
+    },  
+}  
 
 </script> 
 <div id="layer_content" class="main-section">
@@ -1121,11 +1286,11 @@ var fn_policies = {
             <tr id="grid-head-tools">
                 <td colspan="100%">
                     <ul>
-                        <li><div class="btn-icon report btn-left"                     title="Drivers/Vehicle List"                   onclick="fn_policies.get_list_open();" style="width:auto!important;"><i class="fa fa-list-ul"></i><span style="margin-left:5px;font-size: 10px!important;">Drivers/Vehicle List</span></div></li>
-                        <li><div class="btn-icon report btn-left"                     title="Report of Policies"                   onclick="fn_policies.dialog_report_open();" style="width:auto!important;"><i class="fa fa-folder-open"></i><span style="margin-left:5px;font-size: 10px!important;">Report of Policies</span></div></li>  
-                        <li><div class="btn-icon add btn-left active active_policies" title="View Actived Policies "               onclick="fn_policies.pagina_actual='';fn_policies.fillgrid();"><i class="fa fa-file-text"></i></div></li> 
+                        <li><div class="btn-icon report btn-left"                     title="Drivers/Vehicle List"                  onclick="fn_policies.get_list_open();" style="width:auto!important;"><i class="fa fa-list-ul"></i><span style="margin-left:5px;font-size: 10px!important;">Drivers/Vehicle List</span></div></li>
+                        <li><div class="btn-icon report btn-left"                     title="Report of Policies"                    onclick="fn_policies.dialog_report_open();" style="width:auto!important;"><i class="fa fa-folder-open"></i><span style="margin-left:5px;font-size: 10px!important;">Report of Policies</span></div></li>  
+                        <li><div class="btn-icon add btn-left active active_policies" title="View Actived Policies "                onclick="fn_policies.pagina_actual='';fn_policies.fillgrid();"><i class="fa fa-file-text"></i></div></li> 
                         <li><div class="btn-icon trash btn-left expired_policies"      title="View Canceled & Expired Policies "    onclick="fn_policies.pagina_actual='';fn_policies.fillgrid_expired();"><i class="fa fa-clock-o"></i></div></li>
-                        <li><div class="btn-icon add btn-left"                        title="Upload drivers or units of a company" onclick="fn_policies.upload_file_form();"><i class="fa fa-upload"></i></div></li>
+                        <li><div class="btn-icon edit btn-left"                        title="Upload drivers or units of a company"  onclick="fn_policies.upload_file_form();" style="width: auto;"><i class="fa fa-upload"></i><span style="margin-left:5px;font-size: 10px!important;">Upload Excel List</span></div></li>
                     </ul>
                 </td>
             </tr>
@@ -1172,8 +1337,9 @@ var fn_policies = {
     </div>
     <div class="p-container">
     <div id="policy_information">
-        <form>
-            <fieldset>
+        <form>   
+            <fieldset id="policy_data_form">
+                <legend>Policy Data</legend>
                 <p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p>
                 <table style="width: 100%;border-collapse: collapse;">
                     <tr>
@@ -1195,7 +1361,7 @@ var fn_policies = {
                         <td>
                         <div class="field_item"> 
                             <label>Type <span style="color:#ff0000;">*</span>:</label> 
-                            <select tabindex="3" id="iTipoPoliza"  name="iTipoPoliza" onblur="fn_policies.valida_tipo_poliza();" style="height: 27px!important;"><option value="">Select an option...</option></select>
+                            <select tabindex="3" id="iTipoPoliza"  name="iTipoPoliza" onblur="fn_policies.valida_tipo_poliza(false);" style="height: 27px!important;"><option value="">Select an option...</option></select>
                         </div>
                         </td>
                     </tr>
@@ -1216,7 +1382,7 @@ var fn_policies = {
                     <tr class="cargo_policie_type">
                         <td>
                             <div class="field_item"> 
-                                <label>Cargo Policy Type: </label>
+                                <label>Data Type: </label>
                                 <select tabindex="6" id="eTipoCategoria" style="width: 99%!important;height: 27px!important;">
                                     <option value="">Select an option...</option>
                                     <option value="GROSS">Gross</option>
@@ -1233,6 +1399,7 @@ var fn_policies = {
                                 <option value="CHANGE">Change</option>
                                 <option value="MONTHLY">Monthly</option>
                                 <option value="TRIMONTHS">Trimonths</option>
+                                <option value="QUATERLY">Quaterly</option>
                                 <option value="YEAR">Year</option>
                             </select>
                         </div>
@@ -1314,14 +1481,6 @@ var fn_policies = {
                         </table>
                         </td>
                     </tr>
-                    <!--<tr>
-                        <td colspan="100%">
-                        <div class="field_item">
-                            <label>Insurance Premium Financing:</label>  
-                            <select tabindex="3" id="iConsecutivoInsurancePremiumFinancing"  name="iConsecutivoInsurancePremiumFinancing"><option value="">Select an option...</option></select> 
-                        </div>
-                        </td>
-                    </tr>-->
                     <tr>
                         <td colspan="100%">
                         <div class="field_item">
@@ -1339,25 +1498,99 @@ var fn_policies = {
                         </td>
                     </tr>
                 </table>
-                <div class="policy_jacker_file" style="display:none;">
+                <div class="policy_jacker_file" style="display:none;height: 45px;">
                     <!--<legend>POLICY FILES</legend>-->
-                    <div class="file_certificate files"> 
+                    <div class="file_certificate files policyJackerField" style="width: 50%;float: left;"> 
                         <label>Policy Jacker: <span style="color:#9e2e2e;">Please upload the policy jacker in PDF format.</span></label> 
-                        <input  id="txtPolicyJacker" type="text" readonly="readonly" value="" size="40" style="width:85%;" />
-                        <button id="btnPolicyJacker" type="button">Upload file</button>
+                        <input  id="txtPolicyJacker" type="text" readonly="readonly" value="" size="40" style="width:55%;float: left;" />
+                        <button id="btnPolicyJacker" type="button" style="top: 5px!important;float: left;margin-left: 5px;">Upload file</button>
+                        <div class="btn-icon trash btn-left active" title="Delete Policy Jacker" onclick="fn_policies.delete_file('policy_jacker');" style="padding: 3px 5px;position: relative;top: 3px;"><i class="fa fa-trash"></i></div>
                         <input  id="iConsecutivoArchivo" type="hidden">
                     </div>
-                    <div class="file_certificate files"> 
-                        <label>PFA: <span style="color:#9e2e2e;">Please upload the PFA in PDF format.</span></label> 
-                        <input  id="txtPolicyPFA" type="text" readonly="readonly" value="" size="40" style="width:85%;" />
-                        <button id="btnPolicyPFA" type="button">Upload file</button>
+                    <div class="file_certificate files policyPFAField" style="width: 50%;float: left;"> 
+                        <label>PFA: <span style="color:#9e2e2e;">Please upload the PFA in PDF format.</span></label>
+                        <div class="btn-icon trash btn-left active" title="Delete Policy PFA" onclick="fn_policies.delete_file('pfa');" style="padding: 3px 5px;position: relative;top: 19px;float: right;"><i class="fa fa-trash"></i></div> 
+                        <button id="btnPolicyPFA" type="button" style="top: 21px!important;float: right;margin-left: 5px;">Upload file</button>
+                        <input  id="txtPolicyPFA" type="text" readonly="readonly" value="" size="40" style="width:55%;float: right;clear: none;" />
                         <input  id="iConsecutivoArchivoPFA" type="hidden">
                     </div>
                 </div>
                 <br> 
-                <button type="button" class="btn-1" onclick="fn_policies.save();">SAVE</button> 
+                <button type="button" class="btn-1" onclick="fn_policies.save();" style="width: 130px;">SAVE POLICY</button> 
                 <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('policies_edit_form');fn_policies.fillgrid();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
             </fieldset>
+            <div id="certificate_edit_form">
+            <fieldset class="fieldset-certificates">
+                <legend>GENERAL DATA FOR CERTIFICATE</legend>
+                 <table style="width: 100%;border-collapse: collapse;">
+                    <tr><td colspan="100%"><p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p></td></tr>
+                    <tr>
+                        <td style="width:60%;">
+                        <div class="field_item">
+                            <label class="required-field" title="the limit date for certificate layout">Set certificate from <span style="color:#ff0000;">*</span>:</label> 
+                            <select name="eOrigenCertificado" class="required-field" style="height: 27px!important;" onblur="fn_certificate.valida_tipo_certificado();">
+                                <option value="">Select an option...</option>
+                                <option value="LAYOUT">PDF - Layout uploaded.</option>
+                                <option value="DATABASE">DATA BASE - Data from company data policies in the system.</option>
+                            </select>
+                            <input name="iConsecutivoCompania"  type="hidden" value="">
+                        </div>
+                        </td>
+                        <td>
+                        <div class="field_item">
+                           <label title="the limit date for certificate layout">Expire Date <span style="color:#ff0000;">*</span>:</label> 
+                           <input name="dFechaVencimiento" type="text" class="fecha required-field" style="width:90%;" value="">
+                        </div>
+                        </td>
+                    </tr>  
+                    <tr>
+                        <td colspan="100%">
+                        <div id="info_policies">
+                            <table class="popup-datagrid" style="margin-bottom: 10px;width: 100%;" cellpadding="0" cellspacing="0">
+                                <thead>
+                                    <tr id="grid-head2">
+                                        <td class="etiqueta_grid">Type</td>
+                                        <td class="etiqueta_grid">Policy Number</td>
+                                        <td class="etiqueta_grid">POLICY EFF </td>
+                                        <td class="etiqueta_grid">POLICY EXP</td>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        </td>
+                    </tr>
+                    <tr class="campos-database">
+                        <td colspan="100%">
+                        <div class="field_item">
+                           <label title="DESCRIPTION OF OPERATIONS / LOCATIONS / VEHICLES (ACORD 101, Additional Remarks Schedule, may be attached if more space is required)">Descriptions of operations:</label> 
+                           <textarea name="sDescripcionOperaciones" style="width:99%;"></textarea>
+                        </div>
+                        </td>
+                    </tr>
+                 </table>
+                <br>
+                <button type="button" class="btn-1 campos-database" onclick="fn_certificate.save();" style="width:150px;">SAVE CERTIFICATE</button> 
+                <button type="button" class="btn-1 campos-database" onclick="fn_certificate.preview_certificate();" style="margin-right:10px;background:#5ec2d4;width: 180px;">PREVIEW CERTIFICATE</button> 
+                <button type="button" class="btn-1 campos-database" onclick="fn_popups.cerrar_ventana('policies_edit_form');fn_policies.fillgrid();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
+            </fieldset>
+            <fieldset class="campos-layout">
+                <legend>UPLOAD PDF LAYOUT FROM INSURED HUB</legend>
+                <p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p>
+                <table style="width: 100%;border-collapse: collapse;">
+                    <tr>
+                        <td colspan="100%">
+                        <div class="file_certificate files"> 
+                            <label>Certificate: <span style="color:#9e2e2e;">Please upload a copy of the form in PDF format.</span></label> 
+                            <input  id="txtsCertificatePDF" name="txtsCertificatePDF" type="text" readonly="readonly" value="" size="40" style="width:83%;" />
+                            <button id="btnsCertificatePDF" type="button">Upload Certificate</button>
+                            <input  name="iConsecutivo" type="hidden">
+                        </div> 
+                        </td>
+                    </tr>
+                </table>
+            </fieldset> 
+            </div>
         </form>
     </div>
     </div>
@@ -1375,20 +1608,11 @@ var fn_policies = {
                 <table style="width: 100%;">
                     <tr>
                         <td><a class="btn-text btn-left" title="Download BIND Layout XLS" href="documentos/plantilla_ejemplo_upload_amic.xlsx" target="_blank"><i class="fa fa-file-excel-o"></i><span>Download BIND Layout XLS</span></a></td>
-                        <td><a class="btn-text btn-left" title="Download ENDORSEMENT Layout XLS" href="documentos/plantilla_ejemplo_upload_endosos.xlsx" target="_blank"><i class="fa fa-file-excel-o"></i><span>Download ENDORSEMENT Layout XLS</span></a></td>
+                        <!--<td><a class="btn-text btn-left" title="Download ENDORSEMENT Layout XLS" href="documentos/plantilla_ejemplo_upload_endosos.xlsx" target="_blank"><i class="fa fa-file-excel-o"></i><span>Download ENDORSEMENT Layout XLS</span></a></td>-->
                         <td><a class="btn-text btn-left" title="Download PDF Manual" href="documentos/manual_para_subir_y_crear_plantillas.pdf" target="_blank"><i class="fa fa-file-pdf-o"></i><span>Download PDF Manual</span></a></td>
                     </tr>
                 </table>
                 <p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p>
-                <div class="field_item">
-                    <label>List Type <span style="color:#ff0000;">*</span>:</label>  
-                    <select tabindex="1" id="eTipoLista" class="required-field"  name="File_eTipoLista" style="height:25px!important;">
-                        <option value="">Select an option...</option>
-                        <option value="">POLICY BIND</option>
-                        <option value="">LAST ENDORSEMENTS</option>
-                       
-                    </select>
-                </div>
                 <div class="field_item">
                     <label>Company <span style="color:#ff0000;">*</span>:</label>  
                     <select tabindex="2" id="iConsecutivoCompania" class="required-field"  name="File_iConsecutivoCompania" onchange="fn_policies.get_company_policies(this.value);" style="height:25px!important;">
@@ -1463,12 +1687,12 @@ var fn_policies = {
                         <td class="etiqueta_grid">LICENSE TYPE</td> 
                         <td class="etiqueta_grid">EXPIRE DATE</td> 
                         <td class="etiqueta_grid">EXPERIENCE YEARS</td>
-                        <td class="etiqueta_grid" style="padding: 3px 0px 0px!important;">
+                        <td class="etiqueta_grid" style="padding: 3px 0px 0px!important;width:450px;">
                             <span style="display: block;padding: 0px 3px;text-align: center;">POLICIES</span>
                             <table style="width: 100%;text-transform: uppercase;">
                             <thead><tr>
-                                <td style="width:35%;">No.</td>
-                                <td style="width:15%">Type</td>
+                                <td style="width:40%;">No.</td>
+                                <td style="width:10%">Type</td>
                                 <td style="width:50%">Application Date</td>
                             </tr></thead></table>
                         </td>
@@ -1600,11 +1824,11 @@ var fn_policies = {
                         <td class="etiqueta_grid">TYPE</td> 
                         <td class="etiqueta_grid">CAPACITY</td> 
                         <td class="etiqueta_grid">$ VALUE</td> 
-                        <td class="etiqueta_grid" style="padding: 3px 0px 0px!important;">
+                        <td class="etiqueta_grid" style="padding: 3px 0px 0px!important;width:450px;">
                             <span style="display: block;padding: 0px 3px;text-align: center;">POLICIES</span>
                             <table style="width: 100%;text-transform: uppercase;"><thead><tr>
-                                <td style="width:35%;">No.</td>
-                                <td style="width:15%">Type</td>
+                                <td style="width:40%">No.</td>
+                                <td style="width:10%">Type</td>
                                 <td style="width:50%">Application Date</td>
                             </tr></thead></table>
                         </td>
@@ -1742,9 +1966,19 @@ var fn_policies = {
     </form>  
 </div>
 <div id="dialog_delete_policy" title="SYSTEM ALERT" style="display:none;">
-    <p>If you check the policy as canceled this will no longer be visible in the module. Are you sure?</p>
+    <p>Are you sure you want to delete the policy: <span></span>?</p>
     <form id="elimina" method="post">
-           <input type="hidden" name="id_policy" id="id_policy">
+        <fieldset>
+            <input type="hidden" name="id_policy" id="id_policy">
+            <label>Mark the policy like:</label>
+            <select name="eDeletedStatus">
+                <option value="DELETED">Deleted</option>
+                <option value="CANCELED">Canceled</option>
+                <option value="RENEWED">deleted for Renew</option>
+            </select>
+            <label>Additional Comments:</label>
+            <textarea name="sComentariosCancelacion" style="resize:none;width: 98%;"></textarea>
+        </fieldset>
     </form>  
 </div>
 <div id="dialog_report_history_list" title="REPORT OF HISTORY LISTS" style="display:none;" >

@@ -28,7 +28,7 @@
         else{
            $certificado = $result->fetch_assoc(); 
            $origenCerti = $certificado['eOrigenCertificado'];
-             
+           
            #PLANTILLA
            if($origenCerti == "LAYOUT" && $ds == ""){
                 $contenido   = $certificado['hContenidoDocumentoDigitalizado'];
@@ -38,9 +38,8 @@
                 $nombre_pdf     = "documentos/$nombre";    
                 $pdf_multiple[] = $nombre_pdf;
                 $data           = $contenido; 
-                $error          = false;
-                $mensaje_error  = "";
-                if(file_put_contents($nombre_pdf, $data) == FALSE) { $error = true;$mensaje = "No se pudo generar correctamente el archivo PDF.";}   
+                if(file_put_contents($nombre_pdf, $data) == FALSE){ $error = true;$mensaje = "No se pudo generar correctamente el archivo PDF.";}   
+    
            }
            #BASE DE DATOS
            else if($origenCerti == "DATABASE" || $ds == "PREVIEW"){
@@ -261,14 +260,27 @@
                     
                     //limits:
                     if($Palias == "MTC" || $Palias == "PD" || $Palias == "TI"){
-                        $limit = $polizas[$z]['iPremiumAmount'] > 0 ? "\$ ".number_format($polizas[$z]['iPremiumAmount'],2,'.',',') : strtoupper($polizas[$z]['iPremiumAmount']);
+                        
+                        if($polizas[$z]['iPremiumAmount'] > 0) {$limit = "\$ ".number_format($polizas[$z]['iPremiumAmount'],2,'.',',');}else
+                        if($polizas[$z]['iPremiumAmount'] == 0){$limit = "";}
+                        else{$limit = strtoupper($polizas[$z]['iPremiumAmount']);}
+            
                         $deduc = $polizas[$z]['iDeductible'] > 0 ? "DED \$".number_format($polizas[$z]['iDeductible'],2,'.',',') : "";
                         
                         $x += 17; $pdf->SetXY($x,$yExtra); $pdf->Cell(56,3,$limit." ".$deduc,0,0,'L',false);
                     }else{
-                       $limit = $polizas[$z]['iPremiumAmount'] > 0 ? "\$ ".number_format($polizas[$z]['iPremiumAmount'],2,'.',',') : strtoupper($polizas[$z]['iPremiumAmount']);
+                        
+                       if($polizas[$z]['iPremiumAmount'] > 0) {$limit = "\$ ".number_format($polizas[$z]['iPremiumAmount'],2,'.',',');}else
+                       if($polizas[$z]['iPremiumAmount'] == 0){$limit = "";}
+                       else{$limit = strtoupper($polizas[$z]['iPremiumAmount']);}
+                       
+                       if($polizas[$z]['iPremiumAmountAdditional'] > 0) {$limit2 = "\$ ".number_format($polizas[$z]['iPremiumAmountAdditional'],2,'.',',');}else
+                       if($polizas[$z]['iPremiumAmountAdditional'] == 0){$limit2 = "";}
+                       else{$limit2 = strtoupper($polizas[$z]['iPremiumAmountAdditional']);}
+                         
+                       //$limit = $polizas[$z]['iPremiumAmount'] > 0 ? "\$ ".number_format($polizas[$z]['iPremiumAmount'],2,'.',',') : strtoupper($polizas[$z]['iPremiumAmount']);
                        $deduc = $polizas[$z]['iDeductible'] > 0 ? "DED \$".number_format($polizas[$z]['iDeductible'],2,'.',',') : "";
-                       $limit2= $polizas[$z]['iPremiumAmountAdditional'] > 0 ? "\$ ".number_format($polizas[$z]['iPremiumAmountAdditional'],2,'.',',') : strtoupper($polizas[$z]['iPremiumAmountAdditional']);
+                       //$limit2= $polizas[$z]['iPremiumAmountAdditional'] > 0 ? "\$ ".number_format($polizas[$z]['iPremiumAmountAdditional'],2,'.',',') : strtoupper($polizas[$z]['iPremiumAmountAdditional']);
                        $deduc2= $polizas[$z]['iDeductibleAdditional'] > 0 ? "DED \$".number_format($polizas[$z]['iDeductibleAdditional'],2,'.',',') : "";
                        $x += 17; 
                        $pdf->SetXY($x,$yExtra); $pdf->Cell(56,3,$limit." ".$deduc,0,0,'L',false);

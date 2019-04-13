@@ -95,7 +95,7 @@
                                            "<td>".$items['dFechaCaducidad']."</td>".                                                                                                                                                                                                                     
                                            "<td>
                                                 <div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Policy\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>
-                                                <div class=\"btn_delete btn-icon trash btn-left\" title=\"Mark Policy as Canceled\"><i class=\"fa fa-trash\"></i> <span></span></div>
+                                                <div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete or Cancel Policy\"><i class=\"fa fa-trash\"></i> <span></span></div>
                                                 $btn_pdf 
                                                 $btn_drivers
                                            </td></tr>";   
@@ -317,19 +317,20 @@
             $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data have been added successfully.</p>';
           } 
 
-          $conexion->query($sql);
-          $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
+          
+          !($conexion->query($sql))? $transaccion_exitosa = false : $transaccion_exitosa = true;
           if($transaccion_exitosa){
-                    $conexion->commit();
-                    $conexion->close();
+            $_POST["edit_mode"] == 'true' ? $iConsecutivoPoliza = $_POST['iConsecutivo'] : $iConsecutivoPoliza = $conexion->insert_id; 
+            $conexion->commit();
+            $conexion->close();
           }else{
-                    $conexion->rollback();
-                    $conexion->close();
-                    $msj = "A general system error ocurred : internal error";
-                    $error = "1";
+            $conexion->rollback();
+            $conexion->close();
+            $msj = "A general system error ocurred : internal error";
+            $error = "1";
           } 
       }
-      $response = array("error"=>"$error","msj"=>"$msj");
+      $response = array("error"=>"$error","msj"=>"$msj","clave"=>$iConsecutivoPoliza);
       echo json_encode($response);
   }
   function delete_policy(){
@@ -371,10 +372,10 @@
       $_POST['sNombreCompania'] != '' ? $nameCompany = str_replace(' ','',$_POST['sNombreCompania']).'_' : $nameCompany =  '';
       $idFile = $_POST['iConsecutivo'];  
       
-      $oFichero = fopen($_FILES['userfile']["tmp_name"], 'r'); 
+      $oFichero   = fopen($_FILES['userfile']["tmp_name"], 'r'); 
       $sContenido = fread($oFichero, filesize($_FILES['userfile']["tmp_name"]));  
       $sContenido =  $conexion->real_escape_string($sContenido);
-      $typeFile = $_POST['eArchivo'];
+      $typeFile   = $_POST['eArchivo'];
       
        
       //Revisamos el tamaño del archivo:
@@ -448,6 +449,28 @@
       
       $response = array("mensaje"=>"$mensaje","error"=>"$error", "id_file"=>"$id_file", "name_file" => "$name_file"); 
       echo json_encode($response);             
+  }
+  function delete_file(){
+      $error = "0";
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true; 
+      $idCompany = $_POST['iConsecutivoCompania'];
+      $idFile    = $_POST['iConsecutivo']; 
+      $eArchivo  = $_POST['eArchivo'];
+      
+      if($idFile != ""){
+        $query  = "DELETE FROM cb_company_files WHERE iConsecutivo ='$idFile' AND iConsecutivoCompania = '$idCompany'"; 
+        $success= $conexion->query($query);  
+        
+        if(!($success)){$transaccion_exitosa = false; $mensaje = "Error when deleting the file, please try again.";}
+        else{$mensaje = "The file was successfully deleted.";} 
+      }else{$transaccion_exitosa = false; $mensaje = "The data was not found, please try again.";}  
+      
+      $transaccion_exitosa ? $conexion->commit() : $conexion->rollback(); 
+      
+      $response = array("mensaje"=>"$mensaje","error"=>"$error"); 
+      echo json_encode($response);  
   }
   
   /*-------FILE DRIVERS UNITS UPLOAD FUNCTIONS -----------*/
@@ -1102,8 +1125,8 @@
                         while ($poli = $r->fetch_assoc()){
                            
                             $polizas .= "<tr>";
-                            $polizas .= "<td style=\"width:35%;\">".$poli['sNumeroPoliza']."</td>";
-                            $polizas .= "<td style=\"width:15%;\">".$poli['sAlias']."</td>";
+                            $polizas .= "<td style=\"width:40\">".$poli['sNumeroPoliza']."</td>";
+                            $polizas .= "<td style=\"width:10;\">".$poli['sAlias']."</td>";
                             $polizas .= "<td style=\"width:50%;\">".$poli['eModoIngreso']." - ".$poli['dFechaIngreso']."</td>";
                             $polizas .= "</tr>";
                         }
@@ -1463,8 +1486,8 @@
                         while ($poli = $r->fetch_assoc()){
                            
                             $polizas .= "<tr>";
-                            $polizas .= "<td style=\"width:35%;\">".$poli['sNumeroPoliza']."</td>";
-                            $polizas .= "<td style=\"width:15%;\">".$poli['sAlias']."</td>";
+                            $polizas .= "<td style=\"width:40%;\">".$poli['sNumeroPoliza']."</td>";
+                            $polizas .= "<td style=\"width:10;\">".$poli['sAlias']."</td>";
                             $polizas .= "<td style=\"width:50%;\">".$poli['eModoIngreso']." - ".$poli['dFechaIngreso']."</td>";
                             $polizas .= "</tr>";
                            if($poli['sAlias'] == "PD"){$PDApply = true;}

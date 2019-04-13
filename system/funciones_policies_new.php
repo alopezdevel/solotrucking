@@ -119,8 +119,9 @@
                                       
                                           $sVIN = strtoupper(trim($sVIN));
                                           $sVIN = preg_replace("[^A-Za-z0-9]","",$sVIN);
+                                          $sVIN = trim($sVIN);
                                           
-                                          if(strlen($sVIN) > 18){$error = 1;$mensaje = "Error: Please verify the VIN on the column $col row $row from Excel file.";}
+                                          if(strlen($sVIN) > 18){$error = 1;$mensaje = "Error: Please verify the VIN \"$sVIN\" on the column $row row $col from Excel file.";}
                                           else{  
                                               //Revisamos si ya existe la unidad para esta compañia:
                                               $query  = "SELECT COUNT(iConsecutivo) AS total FROM ct_unidades WHERE sVIN='$sVIN' AND iConsecutivoCompania = '$iConsecutivoCompania'";
@@ -133,7 +134,7 @@
                                           } 
                                 
                                     }
-                                    else{$error = 1; $mensaje = "Error: Please verify the VIN \"$sVIN\" on the row $row from Excel file."; $success = false;}
+                                    else{$error = 1; $mensaje = "Error: Please verify the VIN \"$sVIN\" on the row $col from Excel file."; $success = false;}
                                 }else
                                 if($header == "RADIUS"){
                                     $iRadius = trim($value);
@@ -323,8 +324,7 @@
                                     $iLicense = trim($iLicense);
                                     
                                     if($iLicense != ""){
-                                        if(strpos($iLicense,'<br/>')){$error = 1;$mensaje = "Error: Please verify the LICENSE $iLicense on the column $col row $row from Excel file.";}
-                                        else{ 
+                                        if(strpos($iLicense,'<br/>') === false){ 
                                           $pos = strpos($iLicense,'-');
                                           if(!($pos === false)){$iLicense = substr($iLicense,0,$pos);}  
                                           //Revisamos si ya existe el driver para esta compañia:
@@ -333,8 +333,9 @@
                                           $items  = $result->fetch_assoc();
                                           $existe = $items["total"];
                                           if($existe == "0"){array_push($campos,"iNumLicencia");array_push($valores,trim($iLicense));}
-                                        }       
-                                    }else{$error = 1; $mensaje = "Error: Please verify the LICENSE $iLicense on the row $row from Excel file."; $success = false;} 
+                                        
+                                        }else{$error = 1;$mensaje = "Error: Please verify the LICENSE $iLicense on the column $row row $col from Excel file.";}      
+                                    }else{$error = 1; $mensaje = "Error: Please verify the LICENSE $iLicense on the row $col from Excel file."; $success = false;} 
                                 }else
                                 if($header == "YOE"){
                                     $YOE = $value; 

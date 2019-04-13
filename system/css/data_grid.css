@@ -338,8 +338,8 @@ div.btn-icon span{font-weight: bold;font-size: 13px;}
 .edit:hover i, .edit.active  i {color:#1673b3!important;}
 .edit:hover, .edit.active {background: #d5edfe!important;border: 1px solid #4aaaf3!important;}
 /*--TRASH--*/
-.trash:hover i, .btn-red:hover i, .trash:hover a, .btn-red:hover a, .trash:hover , .btn-red:hover {color:#a51313!important;}
-.trash:hover, .btn-red:hover{background: #fedede!important;border: 1px solid #cb0b0b!important;}
+.trash:hover i, .btn-red:hover i, .trash:hover a, .btn-red:hover a, .trash:hover , .btn-red:hover , .trash.active i, .trash.active a, .btn-red.active i, .btn-red.active a{color:#a51313!important;}
+.trash:hover, .btn-red:hover, .trash.active, .btn-red.active{background: #fedede!important;border: 1px solid #cb0b0b!important;}
 /*--VIEW--*/
 .view:hover i{color:#0abdbc!important;}
 .view:hover {background: #e7fdfd!important;border: 1px solid #4af3f1!important;}

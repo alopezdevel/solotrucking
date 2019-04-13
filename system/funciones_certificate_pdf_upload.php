@@ -114,7 +114,7 @@
        
        $iConsecutivoCompania   =  $_POST['iConsecutivoCompania'];
        $_POST['iConsecutivo'] != '' ? $edit_mode = "true" : $edit_mode = "false";
-       $_POST['sDescripcionOperaciones'] != "" ? $_POST['sDescripcionOperaciones'] = utf8_encode($_POST['sDescripcionOperaciones']) : "";
+       $_POST['sDescripcionOperaciones'] != "" ? $_POST['sDescripcionOperaciones'] = preg_replace("/\r\n|\r|\n/",'\n',trim($_POST['sDescripcionOperaciones'])) : "";
        $campos  = array();
        $valores = array();
        
@@ -143,7 +143,7 @@
            if($edit_mode == "true"){
                 foreach($_POST as $campo => $valor){
                     if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivo" && $campo != "sNombreCompania" && $campo != "txtsCertificatePDF"){ //Estos campos no se insertan a la tabla
-                        array_push($valores,"$campo='". strtoupper($valor)."'");    
+                        array_push($valores,"$campo='".($valor)."'");    
                     }
                 } 
                 
@@ -160,7 +160,7 @@
                 foreach($_POST as $campo => $valor){
                     if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivo" && $campo != "sNombreCompania" && $campo != "txtsCertificatePDF"){ //Estos campos no se insertan a la tabla
                         array_push($campos , $campo);
-                        array_push($valores, strtoupper($valor));      
+                        array_push($valores, ($valor));      
                     }
                 }
                 // agregar campos adicionales:
@@ -182,8 +182,9 @@
                 $sql = "INSERT INTO cb_certificate_file (iConsecutivoCompania,dFechaVencimiento,sNombreArchivo,sTipoArchivo,iTamanioArchivo,hContenidoDocumentoDigitalizado,dFechaIngreso,sIP,sUsuarioIngreso,dFechaActualizacion)
                         VALUES('$iConsecutivoCompania','$FechaVencimiento','$name_file','".$_FILES['userfile']["type"]."','".$_FILES['userfile']["size"]."','$sContenido','".date("Y-m-d H:i:s")."', '".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."','".date("Y-m-d H:i:s")."')"; 
            }*/
-           $conexion->query($sql);
-           $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
+         
+           $success = $conexion->query($sql);
+           !($success) ? $transaccion_exitosa = false : $transaccion_exitosa = true;
            
            if($transaccion_exitosa){
                 #actualizar bandera en tabla de companias:
@@ -257,6 +258,7 @@
       $fields  = "";
       $clave   = trim($_POST['clave']);
       $domroot = $_POST['domroot'];
+      isset($_POST['parametro']) == "" ? $parametro = "#" : $parametro = $_POST['parametro']; 
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);
       
@@ -270,7 +272,16 @@
         $llaves  = array_keys($data);
         $datos   = $data;
         foreach($datos as $i => $b){
-            $fields .= "\$('#$domroot #".$i."').val('".$datos[$i]."');"; 
+            
+            if(($data['eOrigenCertificado'] == "LAYOUT" && $i != "sDescripcionOperaciones") || ($data['eOrigenCertificado'] == "DATABASE")){
+                if($i == "sDescripcionOperaciones"){
+                    $datos[$i] = preg_replace("/\r\n|\r|\n/",'\n',$datos[$i]);   
+                }
+                
+                if($parametro != "#" || $parametro == ""){$campo = "[$parametro=$i]";}else{$campo = $parametro.$i;}
+                $fields .= "\$('#$domroot ".$campo."').val('".$datos[$i]."');";     
+            }
+            
         }  
       }
       
