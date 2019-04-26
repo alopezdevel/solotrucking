@@ -19,13 +19,15 @@ function inicio(){
             modal: true,
             autoOpen: false,
             width : 450,
-            height : 430,
+            height : 400,
             resizable : false,
             buttons : {
                 'YES' : function() {
-                    clave = $('#id_policy').val();
+                    var clave  = $('#dialog_delete_policy input[name=id_policy]').val();
+                    var status = $('#dialog_delete_policy select[name=eDeletedStatus]').val();
+                    var motivo = $('#dialog_delete_policy textarea[name=sComentariosCancelacion]').val();
                     $(this).dialog('close');
-                    fn_policies.delete_policy(clave);             
+                    fn_policies.delete_policy(clave,status,motivo);             
                 },
                  'NO' : function(){
                     $(this).dialog('close');
@@ -131,7 +133,7 @@ var fn_policies = {
         form : "#policies_edit_form #policy_data_form",
         filtro : "",
         pagina_actual : "",
-        sort : "ASC",
+        sort : "DESC",
         orden : "A.iConsecutivo",
         filtro_table : 'active', 
         init : function(){
@@ -328,8 +330,8 @@ var fn_policies = {
                             
                             $("#file_edit_form .required-field").removeClass("error");
                             var policies_selected = "";
-                            var valid = true;
-                            var msj   = "";
+                            var valid             = true;
+                            var msj               = "";
                             $("#file_edit_form .company_policies .num_policies" ).each(function(index){
                                 if($(this).is(':checked')){if(policies_selected != ''){policies_selected += "," + this.value; }else{policies_selected += this.value;}}
                             });
@@ -346,7 +348,7 @@ var fn_policies = {
                                     'accion'              : 'upload_list_file', 
                                     'iConsecutivoCompania': $('#file_edit_form #iConsecutivoCompania').val(),
                                     'iConsecutivoPolizas' : policies_selected,
-                                    'eTipoLista'          : $("#file_edit_form select[name=File_eTipoLista]").val(),
+                                    'eTipoLista'          : $("#file_edit_form select[name=eTipoArchivo]").val(),
                                 });
                                 $('#txtFile').val('loading...');
                                 this.disable();
@@ -489,36 +491,9 @@ var fn_policies = {
                     fn_policies.filtro_table = 'active';
                 }
             }); 
-        },
-        fillgrid_expired: function(){
-               $.ajax({             
-                type:"POST", 
-                url:"funciones_policies.php", 
-                data:{
-                    accion:"get_expired_policies",
-                    registros_por_pagina : "15", 
-                    pagina_actual : fn_policies.pagina_actual, 
-                    filtroInformacion : fn_policies.filtro,  
-                    ordenInformacion : fn_policies.orden,
-                    sortInformacion : fn_policies.sort,
-                },
-                async : true,
-                dataType : "json",
-                success : function(data){                               
-                    $(fn_policies.data_grid+" tbody").empty().append(data.tabla);
-                    $(fn_policies.data_grid+" tbody tr:even").addClass('gray');
-                    $(fn_policies.data_grid+" tbody tr:odd").addClass('white');
-                    $(fn_policies.data_grid + " tfoot #paginas_total").val(data.total);
-                    $(fn_policies.data_grid + " tfoot #pagina_actual").val(data.pagina);
-                    fn_policies.pagina_actual = data.pagina; 
-                    $(fn_policies.data_grid + ' .btn-icon.active_policies').removeClass('active');
-                    $(fn_policies.data_grid + ' .btn-icon.expired_policies').addClass('active');
-                    fn_policies.filtro_table = 'expired'; 
-                }
-            }); 
-        },
+        }, 
         upload_file_form : function(){
-          $('#file_edit_form input, #file_edit_form select').val('');
+          $('#file_edit_form input, #file_edit_form select').val('').removeClass("error");
           $("#file_edit_form .company_policies").empty();
           $('#reporte_policy_update').empty();
           fn_popups.resaltar_ventana('file_edit_form'); 
@@ -632,8 +607,8 @@ var fn_policies = {
                return false;
            });  
         },
-        delete_policy : function(id){
-          $.post("funciones_policies.php",{accion:"delete_policy", 'clave': id},
+        delete_policy : function(id,status,motivo){
+          $.post("funciones_policies.php",{accion:"delete_policy", 'clave': id, 'eDeletedStatus':status,'sComentariosCancelacion' : motivo },
            function(data){
                 fn_solotrucking.mensaje(data.msj);
                 if(fn_policies.filtro_table == 'active'){fn_policies.fillgrid();}else if(fn_policies.filtro_table == 'expired'){fn_policies.fillgrid_expired();}
@@ -641,8 +616,16 @@ var fn_policies = {
         },
         firstPage : function(){
             if($(fn_policies.data_grid+" #pagina_actual").val() != "1"){
-                fn_policies.pagina_actual = "";
-                if(fn_policies.filtro_table == 'active'){fn_policies.fillgrid();}else if(fn_policies.filtro_table == 'expired'){fn_policies.fillgrid_expired();}
+                //POLIZAS ACTUALES
+                if(fn_policies.filtro_table == 'active'){
+                    fn_policies.fillgrid();
+                    fn_policies.pagina_actual = "";
+                }
+                // POLIZAS VENCIDAS
+                else if(fn_policies.filtro_table == 'expired'){
+                    fn_policies.fillgrid_expired();
+                    fn_policies.pagina_actual_exp = "";
+                }
             }
         },
         previousPage : function(){
@@ -1162,8 +1145,38 @@ var fn_policies = {
             $("#dialog_report_policies #flt_dateTo").val(fechas[2]); 
             $("#dialog_report_policies").dialog('open'); 
         },
-         
-               
+        //Cargar Polizas Vencidas:
+        filtro_exp : "",
+        pagina_actual_exp : "",
+        sort_exp : "DESC",
+        orden_exp : "A.iConsecutivo",
+        fillgrid_expired: function(){
+               $.ajax({             
+                type:"POST", 
+                url:"funciones_policies.php", 
+                data:{
+                    accion:"get_expired_policies",
+                    registros_por_pagina : "15", 
+                    pagina_actual        : fn_policies.pagina_actual_exp, 
+                    filtroInformacion    : fn_policies.filtro_exp,  
+                    ordenInformacion     : fn_policies.orden_exp,
+                    sortInformacion      : fn_policies.sort_exp,
+                },                   
+                async : true,
+                dataType : "json",
+                success : function(data){                               
+                    $(fn_policies.data_grid+" tbody").empty().append(data.tabla);
+                    $(fn_policies.data_grid+" tbody tr:even").addClass('gray');
+                    $(fn_policies.data_grid+" tbody tr:odd").addClass('white');
+                    $(fn_policies.data_grid + " tfoot #paginas_total").val(data.total);
+                    $(fn_policies.data_grid + " tfoot #pagina_actual").val(data.pagina);
+                    fn_policies.pagina_actual = data.pagina; 
+                    $(fn_policies.data_grid + ' .btn-icon.active_policies').removeClass('active');
+                    $(fn_policies.data_grid + ' .btn-icon.expired_policies').addClass('active');
+                    fn_policies.filtro_table = 'expired'; 
+                }
+            }); 
+        }, 
 } 
 
 var fn_certificate = {
@@ -1608,17 +1621,25 @@ var fn_certificate = {
                 <table style="width: 100%;">
                     <tr>
                         <td><a class="btn-text btn-left" title="Download BIND Layout XLS" href="documentos/plantilla_ejemplo_upload_amic.xlsx" target="_blank"><i class="fa fa-file-excel-o"></i><span>Download BIND Layout XLS</span></a></td>
-                        <!--<td><a class="btn-text btn-left" title="Download ENDORSEMENT Layout XLS" href="documentos/plantilla_ejemplo_upload_endosos.xlsx" target="_blank"><i class="fa fa-file-excel-o"></i><span>Download ENDORSEMENT Layout XLS</span></a></td>-->
+                        <td><a class="btn-text btn-left" title="Download ENDORSEMENT Layout XLS" href="documentos/plantilla_ejemplo_upload_endosos.xlsx" target="_blank"><i class="fa fa-file-excel-o"></i><span>Download ENDORSEMENT Layout XLS</span></a></td>
                         <td><a class="btn-text btn-left" title="Download PDF Manual" href="documentos/manual_para_subir_y_crear_plantillas.pdf" target="_blank"><i class="fa fa-file-pdf-o"></i><span>Download PDF Manual</span></a></td>
                     </tr>
                 </table>
                 <p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p>
                 <div class="field_item">
                     <label>Company <span style="color:#ff0000;">*</span>:</label>  
-                    <select tabindex="2" id="iConsecutivoCompania" class="required-field"  name="File_iConsecutivoCompania" onchange="fn_policies.get_company_policies(this.value);" style="height:25px!important;">
+                    <select tabindex="1" id="iConsecutivoCompania" class="required-field"  name="File_iConsecutivoCompania" onchange="fn_policies.get_company_policies(this.value);" style="height:25px!important;">
                         <option value="">Select an option...</option>
                     </select>
-                </div>                
+                </div> 
+                <div class="field_item">
+                    <label>Upload list Type <span style="color:#ff0000;">*</span>:</label>  
+                    <select tabindex="2" id="File_eTipoArchivo" class="required-field"  name="eTipoArchivo" style="height:25px!important;">
+                        <option value="">Select an option...</option>
+                        <option value="BIND">BIND LIST</option>
+                        <option value="ENDOSOS">ENDORSEMENTS</option>
+                    </select>
+                </div>               
                 <div class="field_item">
                     <label>Policies <span style="color:#ff0000;">*</span>:</label>  
                     <div class="company_policies" style="padding:5px 10px;"></div>
@@ -1966,7 +1987,7 @@ var fn_certificate = {
     </form>  
 </div>
 <div id="dialog_delete_policy" title="SYSTEM ALERT" style="display:none;">
-    <p>Are you sure you want to delete the policy: <span></span>?</p>
+    <p>Are you sure you want to delete the policy: <span style="color: #1482b4;font-weight: 700;"></span>?</p>
     <form id="elimina" method="post">
         <fieldset>
             <input type="hidden" name="id_policy" id="id_policy">

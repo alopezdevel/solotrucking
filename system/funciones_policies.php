@@ -149,7 +149,22 @@
         $pagina_actual == "0" ? $pagina_actual = 1 : false;
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-        $sql = "SELECT A.iConsecutivo AS clave, sNumeroPoliza, sNombreCompania, sName, sDescripcion, iOnRedList, DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio, DATE_FORMAT(dFechaCaducidad,'%m/%d/%Y') AS dFechaCaducidad, iConsecutivoArchivo,A.iConsecutivoCompania, iTipoPoliza, iConsecutivoArchivoPFA,IF(A.iDeleted = '1','DELETED','EXPIRED') AS Estatus, A.iDeleted ".
+        $sql = "SELECT
+                    A.iConsecutivo AS clave,
+                    sNumeroPoliza,
+                    sNombreCompania,
+                    sName,
+                    sDescripcion,
+                    iOnRedList,
+                    DATE_FORMAT( dFechaInicio, '%m/%d/%Y' ) AS dFechaInicio,
+                    DATE_FORMAT( dFechaCaducidad, '%m/%d/%Y' ) AS dFechaCaducidad,
+                    iConsecutivoArchivo,
+                    A.iConsecutivoCompania,
+                    iTipoPoliza,
+                    iConsecutivoArchivoPFA,
+                IF
+                    ( A.iDeleted = '1', IF(A.eDeletedStatus IS NOT NULL, A.eDeletedStatus, 'DELETED'), 'EXPIRED' ) AS Estatus,
+                    A.iDeleted  ".
                "FROM      ct_polizas     AS A ".
                "LEFT JOIN ct_companias   AS B ON A.iConsecutivoCompania = B.iConsecutivo ".
                "LEFT JOIN ct_brokers     AS C ON A.iConsecutivoBrokers = C.iConsecutivo ".
@@ -179,7 +194,7 @@
                      $items['iDeleted'] == 0 ? $EstatusPoliza = "class=\"red\"" : $EstatusPoliza = "";
                      
                      $iConsecutivoPoliza = $items['clave'];
-                     $htmlTabla .= "<tr $EstatusPoliza>
+                     $htmlTabla .= "<tr>
                                         <td>".$items['clave']."</td>".
                                        "<td>".$redlist_icon.$items['sNombreCompania']."</td>".
                                        "<td>".$items['sNumeroPoliza']."</td>".
@@ -340,8 +355,10 @@
       include("cn_usuarios.php"); 
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
       $transaccion_exitosa = true;
+      $_POST['sComentariosCancelacion'] != "" ? $sComentarios = ", sComentariosCancelacion='".utf8_encode($_POST['sComentariosCancelacion'])."'" : $sComentarios = ""; 
       
-      $query = "UPDATE ct_polizas SET iDeleted = '1' WHERE iConsecutivo = '".$_POST["clave"]."'"; 
+      
+      $query = "UPDATE ct_polizas SET iDeleted = '1', eDeletedStatus = '".$_POST['eDeletedStatus']."' $sComentarios WHERE iConsecutivo = '".$_POST["clave"]."'"; 
       $conexion->query($query);
       $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
       if($transaccion_exitosa){

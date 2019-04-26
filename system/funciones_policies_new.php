@@ -18,6 +18,7 @@
       #variables:
       $iConsecutivoCompania = trim($_POST['iConsecutivoCompania']);
       $iConsecutivoPolizas  = trim($_POST['iConsecutivoPolizas']);
+      $eTipoLista           = trim($_POST['eTipoLista']);
       $iConsecutivoPolizas  = explode(',',trim($iConsecutivoPolizas));
       $count                = count($iConsecutivoPolizas);
       $error                = 0;
@@ -25,10 +26,12 @@
       $htmlTabla            = ""; 
       $success_unit         = 0;
       $success_driv         = 0;
-      //Archivo Data:
-      $fileName      = $_FILES['userfile']['name'];
-      $tmpName       = $_FILES['userfile']['tmp_name'];
-      $inputFileName = $tmpName.'.xls';
+      $fileName             = $_FILES['userfile']['name'];
+      $tmpName              = $_FILES['userfile']['tmp_name'];
+      $inputFileName        = $tmpName.'.xls';
+      $sIP                  = $_SERVER['REMOTE_ADDR'];
+      $sUsuario             = $_SESSION['usuario_actual'];
+      $dFecha               = date("Y-m-d H:i:s");
       
       //Crear archivo fisico en el Temporal:
       $fp      = fopen($tmpName, 'r'); 
@@ -66,8 +69,8 @@
                     $colsL = $objWorksheet->getHighestColumn(); //Max columna en LETRA
                     $cols  = PHPExcel_Cell::columnIndexFromString($colsL); // Max columna INDEX
                     
-                    #UNIDADES/VEHICLES
-                    if($title == "UNITS"){
+                    #UNIDADES/VEHICLES 
+                    if($title == "UNITS" && $eTipoLista == 'BIND'){
                         
                         // Transaccion BEGIN:
                         $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
@@ -258,7 +261,7 @@
                         else{$conexion->rollback();}   
                     }
                     #DRIVERS/OPERADORES
-                    if($title == "DRIVERS"){
+                    if($title == "DRIVERS" && $eTipoLista == "BIND"){
                         // Transaccion BEGIN:
                         $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
                         $success = true;
@@ -444,6 +447,207 @@
                         if($success && $error == 0){$conexion->commit(); $mensaje .= "The data of $success_driv drivers has been uploaded successfully, please verify the data in the company policies.<br><br>";}
                         else{$conexion->rollback();}  
                             
+                    } 
+                    
+                    
+                    #ENDORSEMENTS/ENDOSOS UNIDADES
+                    if($title == "UNITS" && $eTipoLista == "ENDOSOS"){
+                       
+                    }
+                    #DRIVERS/ENDOSOS OPERADORES
+                    if($title == "DRIVERS" && $eTipoLista == "ENDOSOS"){
+                        
+                        // Transaccion BEGIN:
+                        $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+                        $success = true;  
+                        
+                        // Recorrer sheet por RENGLONES:
+                        for($row = 2; $row <= $rows; $row++){
+                            
+                            // Variables:
+                            $existe    = false; 
+                            $campos    = array(); //<--- insert
+                            $valores   = array(); //<--- insert
+                            $endoso    = array(); //<--- insert endoso
+                            $dataArray = array();
+                            
+                            //Recorrer Sheet por COLUMNAS:   
+                            for($col = 0; $col < $cols; $col++){
+                                
+                                $header = strtoupper(trim($objWorksheet->getCellByColumnAndRow($col,1)->getValue()));
+                                $value  = trim($objWorksheet->getCellByColumnAndRow($col,$row)->getValue());
+                                
+                                if($header == "ACTION"){
+                                    $value = strtoupper(str_replace(" ","",$value)); 
+                                    if($value == "" || $value == NULL){$error = 1; $mensaje = "Error: Please verify the ACTION: $value on the column $row row $col from Excel file.";}
+                                    else{
+                                        //Dar formato en caso de solo contener INICIALES:
+                                        if($value == "A"){$value = 'ADD';}else if($value == "D"){$value = "DELETE";}else if($value == "AS"){$value = "ADDSWAP";}else if($value == "DS"){$value = "DELETESWAP";}
+                                        $dataArray['eAccion'] = $value;
+                                    }   
+                                }else
+                                if($header == "END#" || $header == "END"){
+                                    $value = strtoupper(str_replace(" ","",$value));
+                                    if($value == "" || $value == NULL){$error = 1; $mensaje = "Error: Please verify the END#: $value on the column $row row $col from Excel file.";}
+                                    else{$dataArray['sNumeroEndosoBroker'] = $value;}     
+                                }else
+                                if($header == "APPLICATIONDATE" || $header == "APPLICATION" || $header == "APPDATE"){
+                                     
+                                    if($value == "" || $value == NULL){$error = 1; $mensaje = "Error: Please verify the APP DATE: $value on the column $row row $col from Excel file.";}
+                                    else{
+                                        
+                                       $UNIX_DATE  = ($value - 25569) * 86400;
+                                       $EXCEL_DATE = 25569 + ($UNIX_DATE / 86400);
+                                       $UNIX_DATE  = ($EXCEL_DATE - 25569) * 86400;
+                                       $value      = gmdate("Y-m-d", $UNIX_DATE);
+                                       
+                                       $dataArray['dFechaAplicacion'] = date("Y-m-d", strtotime($value));
+                                       
+                                    }
+                                }else
+                                if($header == "NAME"){
+                                    
+                                    $value = strtoupper($value);
+                                    $value = str_replace(",","",$value);
+                                    
+                                    if($value == "" || $value == NULL){$error = 1; $mensaje = "Error: Please verify the NAME: $value on the column $row row $col from Excel file.";}
+                                    else{$dataArray['sNombre'] = $value;}
+                                     
+                                }else
+                                if($header == "DOB"){
+                                    $DOB = $value; 
+                                    if($DOB != ""){
+                                        
+                                       if(strpos($DOB,'-') || strpos($DOB,'/')){
+                                           
+                                       }else{
+                                           $unixDate  = ($DOB - 25569) * 86400;
+                                           $ExcelDate = 25569 + ($unixDate / 86400);
+                                           $unixDate  = ($ExcelDate - 25569) * 86400;
+                                           $DOB       = gmdate("Y-m-d", $unixDate);
+                                       } 
+          
+                                       $dataArray['dFechaNacimiento'] = date("Y-m-d", strtotime($DOB));
+            
+                                    } 
+                                }else
+                                if($header == "LICENSE"){
+                                    
+                                    $iLicense = strtoupper($value);
+                                    $iLicense = str_replace(' ','',nl2br($iLicense));
+                                    $iLicense = trim($iLicense);
+                                    
+                                    if($iLicense != ""){
+                                        if(strpos($iLicense,'<br/>') === false){ 
+                                          $pos = strpos($iLicense,'-');
+                                          if(!($pos === false)){$iLicense = substr($iLicense,0,$pos);}  
+                                          //Revisamos si ya existe el driver para esta compañia:
+                                          $query  = "SELECT COUNT(iConsecutivo) AS total FROM ct_operadores WHERE iNumLicencia = '$iLicense' AND iConsecutivoCompania = '$iConsecutivoCompania'";
+                                          $result = $conexion->query($query);
+                                          $items  = $result->fetch_assoc();
+                                          
+                                          if($items["total"] == "0"){$existe = true;}
+                                          
+                                          $dataArray['iNumLicencia'] = $iLicense;
+                                        
+                                        }else{$error = 1;$mensaje = "Error: Please verify the LICENSE $iLicense on the column $row row $col from Excel file.";}      
+                                    }else{$error = 1; $mensaje = "Error: Please verify the LICENSE $iLicense on the row $col from Excel file."; $success = false;} 
+                                }else
+                                if($header == "YOE"){
+                                    $YOE = $value; 
+                                    if($YOE != ""){
+                                       $dataArray['iExperienciaYear'] = str_replace("+",'',$YOE);
+                                    } 
+                                }else
+                                if($header == "EXPIREDATE"){
+                                    $ExpireDate = $value; 
+                                    if($ExpireDate != ""){
+                                        
+                                       $UNIX_DATE  = ($ExpireDate - 25569) * 86400;
+                                       $EXCEL_DATE = 25569 + ($UNIX_DATE / 86400);
+                                       $UNIX_DATE  = ($EXCEL_DATE - 25569) * 86400;
+                                       $ExpireDate = gmdate("Y-m-d", $UNIX_DATE);
+                                       
+                                       $dataArray['dFechaExpiracionLicencia'] = date("Y-m-d", strtotime($ExpireDate));
+                                       
+                                    }
+                                }else
+                                if($header == "TYPE" || $header == "LICENSETYPE"){
+                                   $Type = strtoupper($value); 
+                                   if($Type != ""){
+                                       $dataArray['eTipoLicencia'] = $Type;
+                                   } 
+                                }
+                                
+                                print_r($dataArray);
+                                exit;
+                            }  
+                            #INSERT / UPDATE EFFECT:
+                            if($error != 0){$success = false;}
+                            else{
+                               // update:
+                               if($existe != "0"){
+                                    #UPDATE INFORMATION: Agregando campos adicionales:
+                                    array_push($update,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
+                                    array_push($update,"sIP='".$_SERVER['REMOTE_ADDR']."'");
+                                    array_push($update,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'");
+                                    array_push($update,"iDeleted='0'"); 
+                                    array_push($update,"eModoIngreso='EXCEL'"); 
+                                    
+                                    $query   = "UPDATE ct_operadores SET ".implode(",",$update)." WHERE iNumLicencia='$iLicense' AND iConsecutivoCompania='$iConsecutivoCompania'"; 
+                                    $success = $conexion->query($query);
+                                    if(!($success)){$error = 1; $mensaje = "The data of driver was not updated properly, please try again.";}
+                                    else{
+                                        #ACTUALIZAR TABLA DE POLIZAS/OPERADORES:
+                                        $query = "SELECT iConsecutivo FROM ct_operadores WHERE iNumLicencia='$iLicense' AND iConsecutivoCompania='$iConsecutivoCompania'";
+                                        $result= $conexion->query($query);
+                                        $item  = $result->fetch_assoc();
+                                        
+                                        $iConsecutivoOperador = $item['iConsecutivo'];
+                        
+                                    }  
+                               } 
+                               else{
+                                    #INSERT INFORMATION: Agregando campos adicionales:
+                                    array_push($campos ,"iConsecutivoCompania"); array_push($valores,trim($iConsecutivoCompania)); //<-- Compania
+                                    array_push($campos ,"dFechaIngreso");        array_push($valores,date("Y-m-d H:i:s"));
+                                    array_push($campos ,"sIP");                  array_push($valores,$_SERVER['REMOTE_ADDR']);
+                                    array_push($campos ,"sUsuarioIngreso");      array_push($valores,$_SESSION['usuario_actual']);
+                                    array_push($campos ,"eModoIngreso");         array_push($valores,'EXCEL');
+                                    
+                                    $query = "INSERT INTO ct_operadores (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
+                                    $conexion->query($query);
+                                    
+                                    if($conexion->affected_rows < 1){$error = 1; $success = false; $mensaje = "The data of driver was not saved properly, please try again.";}
+                                    else{
+                                        #ACTUALIZAR TABLA DE POLIZAS/UNIDADES:
+                                        $iConsecutivoOperador = $conexion->insert_id;
+                                    }
+                               }
+                               
+                               #ACTUALIZAR TABLA DE POLIZAS/UNIDADES:
+                               if($error == 0){
+                                   for($p=0;$p<$count;$p++){
+                                       
+                                        //CONSULTAR FECHA PARA BIND:
+                                        $q = "SELECT dFechaInicio FROM ct_polizas WHERE iConsecutivo = '".$iConsecutivoPolizas[$p]."'";
+                                        $r = $conexion->query($q);
+                                        $r = $r->fetch_assoc();
+                                        
+                                        $query = "INSERT INTO cb_poliza_operador (iConsecutivoPoliza,iConsecutivoOperador,eModoIngreso,dFechaIngreso,sIPIngreso,sUsuarioIngreso) ".
+                                                 "VALUES('".$iConsecutivoPolizas[$p]."','$iConsecutivoOperador','AMIC','".$r['dFechaInicio']."','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
+                                        $conexion->query($query);
+                                        
+                                        if($conexion->affected_rows < 1){$error = 1; $success = false; $mensaje = "The data of driver in the policy was not saved properly, please try again.";}
+                                        else{$success_driv ++;}
+                                        
+                                   }
+                               }
+                            }           
+                        } 
+                        
+                        if($success && $error == 0){$conexion->commit(); $mensaje .= "The data of $success_driv drivers endorsements has been updated/added successfully, please verify the data in the company policies.<br><br>";}
+                        else{$conexion->rollback();}         
                     }
                     
                     // Verificar en caso que suban un sheet con un nombre invalido:
