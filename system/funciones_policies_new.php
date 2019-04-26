@@ -53,6 +53,19 @@
           
             //Open Connection.
             include("cn_usuarios.php");  
+            
+            //CONSULTAR DATOS DE LAS POLIZAS:
+            $polizas = array();
+            for($p=0;$p<$count;$p++){
+                
+                $q = "SELECT iConsecutivo, sNumeroPoliza, iTipoPoliza FROM ct_polizas WHERE iConsecutivo = '".$iConsecutivoPolizas[$p]."'";
+                $r = $conexion->query($q);
+                $r = $r->fetch_assoc();  
+                
+                $polizas[$r['iConsecutivo']]['sNumeroPoliza'] = $r['sNumeroPoliza']; 
+                $polizas[$r['iConsecutivo']]['iTipoPoliza']   = $r['iTipoPoliza'];
+            
+            }
           
             #CONTAMOS LAS SHEET:
             $sheetCount = $objPHPExcel->getSheetCount();
@@ -459,7 +472,7 @@
                         
                         // Transaccion BEGIN:
                         $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
-                        $success = true;  
+                        $success = true; 
                         
                         // Recorrer sheet por RENGLONES:
                         for($row = 2; $row <= $rows; $row++){
@@ -486,10 +499,48 @@
                                         $dataArray['eAccion'] = $value;
                                     }   
                                 }else
-                                if($header == "END#" || $header == "END"){
+                                //NUMEROS  DE ENDOSO:
+                                if($header == "ENDAL#" || $header == "ENDAL" || $header == "AL#"){
                                     $value = strtoupper(str_replace(" ","",$value));
-                                    if($value == "" || $value == NULL){$error = 1; $mensaje = "Error: Please verify the END#: $value on the column $row row $col from Excel file.";}
-                                    else{$dataArray['sNumeroEndosoBroker'] = $value;}     
+                                    /*if($value == "" || $value == NULL){$error = 1; $mensaje = "Error: Please verify the END AL#: $value on the column $row row $col from Excel file.";}
+                                    else{$dataArray['ENDAL'] = $value;}*/
+                                    if($value != ""){$dataArray['ENDAL'] = $value;}     
+                                }else
+                                if($header == "ENDMTC#" || $header == "ENDMTC" || $header == "MTC#"){
+                                    $value = strtoupper(str_replace(" ","",$value));
+                                    if($value != ""){$dataArray['ENDMTC'] = $value;}    
+                                }else
+                                if($header == "ENDPD#" || $header == "ENDPD" || $header == "PD#"){
+                                    $value = strtoupper(str_replace(" ","",$value));
+                                    if($value != ""){$dataArray['ENDPD'] = $value;}   
+                                }else
+                                // VALUES $$ DEL ENDOSO
+                                if($header == "AL" || $header == "ALVALUE"){
+                                    
+                                    $value = str_replace(" ","",$value);
+                                    $value = str_replace(",","",$value);
+                                    $value = str_replace("\$","",$value);
+                                    $value = preg_replace('/[^0-9]+/', '', $value);
+                                    $value = floatval(trim($value)); 
+                                    if($value != ''){$dataArray['AL'] = $value;}
+                                }else
+                                if($header == "MTC" || $header == "MTCVALUE"){
+                                    
+                                    $value = str_replace(" ","",$value);
+                                    $value = str_replace(",","",$value);
+                                    $value = str_replace("\$","",$value);
+                                    $value = preg_replace('/[^0-9]+/', '', $value);
+                                    $value = floatval(trim($value)); 
+                                    if($value != ''){$dataArray['MTC'] = $value;}
+                                }else
+                                if($header == "PD" || $header == "PDVALUE"){
+                                    
+                                    $value = str_replace(" ","",$value);
+                                    $value = str_replace(",","",$value);
+                                    $value = str_replace("\$","",$value);
+                                    $value = preg_replace('/[^0-9]+/', '', $value);
+                                    $value = floatval(trim($value)); 
+                                    if($value != ''){$dataArray['PD'] = $value;}
                                 }else
                                 if($header == "APPLICATIONDATE" || $header == "APPLICATION" || $header == "APPDATE"){
                                      
@@ -546,7 +597,7 @@
                                           $result = $conexion->query($query);
                                           $items  = $result->fetch_assoc();
                                           
-                                          if($items["total"] == "0"){$existe = true;}
+                                          if($items["total"] != "0"){$existe = true;}
                                           
                                           $dataArray['iNumLicencia'] = $iLicense;
                                         
@@ -579,23 +630,35 @@
                                    } 
                                 }
                                 
-                                print_r($dataArray);
-                                exit;
+                               
                             }  
                             #INSERT / UPDATE EFFECT:
                             if($error != 0){$success = false;}
                             else{
                                // update:
-                               if($existe != "0"){
-                                    #UPDATE INFORMATION: Agregando campos adicionales:
-                                    array_push($update,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
-                                    array_push($update,"sIP='".$_SERVER['REMOTE_ADDR']."'");
-                                    array_push($update,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'");
-                                    array_push($update,"iDeleted='0'"); 
-                                    array_push($update,"eModoIngreso='EXCEL'"); 
+                               if($existe){
+                                   
+                                    #----------------------------- ACTUALIZAR OPERADOR -------------------------#
+                                    //Campos para actualizar solo registro del operador:
+                                    foreach($dataArray as $campo => $valor){
+                                        if($campo == "sNombre" || $campo == "dFechaNacimiento" || $campo == "dFechaExpiracionLicencia" || $campo == "eTipoLicencia"){
+                                            array_push($valores,"$campo='".$valor."'");
+                                        }    
+                                    }
                                     
-                                    $query   = "UPDATE ct_operadores SET ".implode(",",$update)." WHERE iNumLicencia='$iLicense' AND iConsecutivoCompania='$iConsecutivoCompania'"; 
+                                    // Agregando campos adicionales:
+                                    array_push($valores,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
+                                    array_push($valores,"sIP='".$_SERVER['REMOTE_ADDR']."'");
+                                    array_push($valores,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'");
+                                    array_push($valores,"iDeleted='0'"); 
+                                    
+                                    // Si es un ADD se cambia tambien el metodo de ingreso en la tabla de operdores.
+                                    if($dataArray['eAccion'] == "ADD" || $dataArray['eAccion'] == "ADDSWAP"){array_push($valores,"eModoIngreso='ENDORSEMENT'");}
+                                   
+                                    //Actualizamos el registro del operador:
+                                    $query = "UPDATE ct_operadores SET  ".implode(",",$valores)." WHERE iNumLicencia='".$dataArray['iNumLicencia']."' AND iConsecutivoCompania='$iConsecutivoCompania'";
                                     $success = $conexion->query($query);
+                                    
                                     if(!($success)){$error = 1; $mensaje = "The data of driver was not updated properly, please try again.";}
                                     else{
                                         #ACTUALIZAR TABLA DE POLIZAS/OPERADORES:
@@ -608,12 +671,23 @@
                                     }  
                                } 
                                else{
+                                   
+                                   
+                                   //Campos para actualizar solo registro del operador:
+                                   foreach($dataArray as $campo => $valor){
+                                        if($campo == "sNombre" || $campo == "dFechaNacimiento" || $campo == "dFechaExpiracionLicencia" || $campo == "eTipoLicencia" || $campo == 'iNumLicencia'){
+                                            array_push($campos, $campo);
+                                            array_push($valores,date_to_server($valor));
+                                        }    
+                                   }
+                                   
+                                   /////
                                     #INSERT INFORMATION: Agregando campos adicionales:
                                     array_push($campos ,"iConsecutivoCompania"); array_push($valores,trim($iConsecutivoCompania)); //<-- Compania
                                     array_push($campos ,"dFechaIngreso");        array_push($valores,date("Y-m-d H:i:s"));
                                     array_push($campos ,"sIP");                  array_push($valores,$_SERVER['REMOTE_ADDR']);
                                     array_push($campos ,"sUsuarioIngreso");      array_push($valores,$_SESSION['usuario_actual']);
-                                    array_push($campos ,"eModoIngreso");         array_push($valores,'EXCEL');
+                                    array_push($campos ,"eModoIngreso");         array_push($valores,'ENDORSEMENT');
                                     
                                     $query = "INSERT INTO ct_operadores (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
                                     $conexion->query($query);
@@ -625,25 +699,140 @@
                                     }
                                }
                                
-                               #ACTUALIZAR TABLA DE POLIZAS/UNIDADES:
-                               if($error == 0){
+                               //////////////
+                               #----------------------------- AGREGAR ENDOSO -------------------------#
+                               if($error == 0){ 
+                               
+                                   $filtro_search      = "";
+                                   $iConsecutivoEndoso = "";
+                                   if(isset($dataArray['ENDAL'])) {$filtro_search .= "A.sNumeroEndosoBroker = '".$dataArray['ENDAL']."'";} 
+                                   if(isset($dataArray['ENDMTC'])){$filtro_search != "" ? $filtro_search .= " OR A.sNumeroEndosoBroker = '".$dataArray['ENDMTC']."'" : $filtro_search = "A.sNumeroEndosoBroker = '".$dataArray['ENDMTC']."'";} 
+                                   if(isset($dataArray['ENDPD'])) {$filtro_search != "" ? $filtro_search .= " OR A.sNumeroEndosoBroker = '".$dataArray['ENDPD']."'"  : $filtro_search = "A.sNumeroEndosoBroker = '".$dataArray['ENDPD']."'";}
+                                     
+                                   if($filtro_search != ""){
+                                        //VERIFICAR SI YA EXITE ALGUN ENDOSO CON LOS DATOS DEL DRIVER:
+                                        $query  = "SELECT iConsecutivoEndoso ".
+                                                  "FROM cb_endoso_estatus AS A ".
+                                                  "INNER JOIN cb_endoso   AS B ON A.iConsecutivoEndoso = B.iConsecutivo ".
+                                                  "WHERE B.dFechaAplicacion='".$dataArray['dFechaAplicacion']."' AND B.iConsecutivoCompania = '$iConsecutivoCompania' ".
+                                                  "AND ($filtro_search)";  
+                                        $result = $conexion->query($query);  
+                                        $result = $result->fetch_assoc(); 
+                                        
+                                        $iConsecutivoEndoso = $result['iConsecutivoEndoso'];  
+                                   }
+                                            
+                                   if($iConsecutivoEndoso == ""){
+                                        // ACREGAR ENDOSO:
+                                        $query = "INSERT INTO cb_endoso (iConsecutivoCompania, iConsecutivoTipoEndoso, eStatus, sComentarios, dFechaAplicacion, sIP,sUsuarioIngreso,dFechaIngreso) ".
+                                                 "VALUES('$iConsecutivoCompania','2','A','".utf8_encode('ENDORSEMENT UPLOADED FROM EXCEL FILE')."', '".$dataArray['dFechaAplicacion']."','$sUsuario','$sIP','$dFecha')";
+                                        $conexion->query($query); 
+                                        if($conexion->affected_rows < 1){$error = 1; $mensaje = "The data of endorsement was not saved properly, please try again. <br> Error DB: ".$conexion->error;}
+                                        else{$iConsecutivoEndoso =  $conexion->insert_id;}    
+                                   }
+                                   
+                                   if($error == 0){
+                                       #----------------------------- AGREGAR DETALLE DEL ENDOSO -------------------------#
+                                       //verificar si ya existe para el endoso:
+                                       $query  = "SELECT COUNT(iConsecutivoOperador) AS total FROM cb_endoso_operador ".
+                                                 "WHERE iConsecutivoEndoso='$iConsecutivoEndoso' AND iConsecutivoOperador='$iConsecutivoOperador'";
+                                       $result = $conexion->query($query); 
+                                       $result = $result->fetch_assoc(); 
+                                       
+                                       // si no existe, lo agregamos:
+                                       if($result['total'] == 0){
+                                           $query = "INSERT INTO cb_endoso_operador (iConsecutivoEndoso, iConsecutivoOperador, sNombre, iNumLicencia, eAccion) ".
+                                                    "VALUES('$iConsecutivoEndoso','$iConsecutivoOperador', '".$dataArray['sNombre']."', '".$dataArray['iNumLicencia']."', '".$dataArray['eAccion']."')";
+                                           $conexion->query($query);
+                                           if($conexion->affected_rows < 1){$error = 1; $mensaje = "The data of driver with license #: ".$dataArray['iNumLicencia']." was not saved properly to the endorsement, please try again. <br> Error DB: ".$conexion->error;}
+                                       }
+                                   }
+                                   
+                                   // Recorrer polizas:
                                    for($p=0;$p<$count;$p++){
                                        
-                                        //CONSULTAR FECHA PARA BIND:
-                                        $q = "SELECT dFechaInicio FROM ct_polizas WHERE iConsecutivo = '".$iConsecutivoPolizas[$p]."'";
-                                        $r = $conexion->query($q);
-                                        $r = $r->fetch_assoc();
+                                        $iConsecutivoPoliza = $iConsecutivoPolizas[$p]; 
                                         
-                                        $query = "INSERT INTO cb_poliza_operador (iConsecutivoPoliza,iConsecutivoOperador,eModoIngreso,dFechaIngreso,sIPIngreso,sUsuarioIngreso) ".
-                                                 "VALUES('".$iConsecutivoPolizas[$p]."','$iConsecutivoOperador','AMIC','".$r['dFechaInicio']."','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
-                                        $conexion->query($query);
+                                        // AL
+                                        if($polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 3){
+                                            isset($dataArray['ENDAL']) ? $sNumeroEndosoBroker  =  $dataArray['ENDAL'] : $sNumeroEndosoBroker  = "";  
+                                            isset($dataArray['AL'])    ? $rImporteEndosoBroker =  $dataArray['AL']    : $rImporteEndosoBroker = "";
+                                        }
+                                        // MTC 
+                                        else if($polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 2 || $polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 5 || $polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 10){
+                                            isset($dataArray['ENDMTC']) ? $sNumeroEndosoBroker  =  $dataArray['ENDMTC'] : $sNumeroEndosoBroker  = "";  
+                                            isset($dataArray['MTC'])    ? $rImporteEndosoBroker =  $dataArray['MTC']    : $rImporteEndosoBroker = "";
+                                        }
+                                        // PD 
+                                        else if($polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 1){
+                                            isset($dataArray['ENDPD']) ? $sNumeroEndosoBroker  =  $dataArray['ENDPD'] : $sNumeroEndosoBroker  = "";  
+                                            isset($dataArray['PD'])    ? $rImporteEndosoBroker =  $dataArray['PD']    : $rImporteEndosoBroker = "";
+                                        }
+                                        else{$error = 1;$mensaje = "The Endorsements can only be applied to policies of type: AL, MTC OR PD, Please check it.";}
                                         
-                                        if($conexion->affected_rows < 1){$error = 1; $success = false; $mensaje = "The data of driver in the policy was not saved properly, please try again.";}
-                                        else{$success_driv ++;}
+                                        if($error == 0){
                                         
+                                            #-------------------- ACREGAR ENDOSO ESTATUS ---------------------#
+                                            //Verificamos si el registro para el estatus de la poliza existe:
+                                            $query  = "SELECT COUNT(iConsecutivoEndoso) AS total ".
+                                                      "FROM cb_endoso_estatus WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoEndoso='$iConsecutivoEndoso'";
+                                            $result = $conexion->query($query);
+                                            $result = $result->fetch_assoc(); 
+                                            
+                                            if($result['total'] == 0){
+                                                $query   = "INSERT INTO cb_endoso_estatus (iConsecutivoEndoso, iConsecutivoPoliza, eStatus, sNumeroEndosoBroker, rImporteEndosoBroker, sEmail, sIP,sUsuarioIngreso,dFechaIngreso) ".
+                                                           "VALUES('$iConsecutivoEndoso','$iConsecutivoPoliza', 'A','$sNumeroEndosoBroker','$rImporteEndosoBroker', 'N/A', '$sIP', '$sUsuario', '$dFecha')";
+                                                $conexion->query($query);  
+                                                if($conexion->affected_rows < 1){$error = 1; $mensaje = "The data of endorsement policies was not saved properly, please try again.<br> Error DB: ".$conexion->error;}
+                                            }
+                                            
+                                            #----------------- AGREGAR / ACTUALIZAR POLIZA/OPERADOR RELACION ------------------ #
+                                            // Verificar si ya existe el registro:
+                                            $query  = "SELECT COUNT(iConsecutivoPoliza) AS total FROM cb_poliza_operador ".
+                                                      "WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoOperador='$iConsecutivoOperador'";
+                                            $result = $conexion->query($query);
+                                            $result = $result->fetch_assoc();
+                                            $eAccion= $dataArray['eAccion'];
+                                            
+                                            #UPDATE
+                                            if($result['total'] == 0){
+                                                if($eAccion == "ADD" || $eAccion == "ADDSWAP"){
+                                                    //Agregar registro a la tabla de relacion: 
+                                                    $query   = "UPDATE cb_poliza_operador SET iDeleted='0',dFechaActualizacion='".$dataArray['dFechaAplicacion']."',sIPActualizacion='$sIP',sUsuarioActualizacion='$sUsuario' ".
+                                                               "WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoOperador='$iConsecutivoOperador'";
+                                                    $success = $conexion->query($query);     
+                                                }
+                                                else if($eAccion == "DELETE" || $eAccion == "DELETESWAP"){
+                                                    //Agregar registro a la tabla de relacion: 
+                                                    $query   = "UPDATE cb_poliza_operador SET iDeleted='1',dFechaActualizacion='".$dataArray['dFechaAplicacion']."',sIPActualizacion='$sIP',sUsuarioActualizacion='$sUsuario' ".
+                                                               "WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoOperador='$iConsecutivoOperador'";
+                                                    $success = $conexion->query($query); 
+                                                }      
+                                            }
+                                            #INSERT
+                                            else{
+                                                if($eAccion == "ADD" || $eAccion == "ADDSWAP"){
+                                                    //Agregar registro a la tabla de relacion: 
+                                                    $query   = "INSERT INTO cb_poliza_operador (iConsecutivoPoliza,iConsecutivoOperador,eModoIngreso,dFechaIngreso,sIPIngreso,sUsuarioIngreso) ".
+                                                               "VALUES('$iConsecutivoPoliza','$iConsecutivoOperador','ENDORSEMENT','".$dataArray['dFechaAplicacion']."','$sIP','$sUsuario')";
+                                                    $success = $conexion->query($query);         
+                                                }
+                                                else if($eAccion == "DELETE" || $eAccion == "DELETESWAP"){
+                                                    //Agregar registro a la tabla de relacion: 
+                                                    $query   = "INSERT INTO cb_poliza_operador (iConsecutivoPoliza,iConsecutivoOperador,eModoIngreso,dFechaIngreso,sIPIngreso,sUsuarioIngreso,iDeleted) ".
+                                                               "VALUES('$iConsecutivoPoliza','$iConsecutivoOperador','ENDORSEMENT','".$dataArray['dFechaAplicacion']."','$sIP','$sUsuario','1')";
+                                                    $success = $conexion->query($query);     
+                                                }  
+                                                
+                                            }  
+                                            if(!($success)){$error = 1; $success = false; $mensaje = "The data of driver with license #: ".$dataArray['iNumLicencia']." in the policy was not saved properly, please try again.";}
+                                            else{$success_driv ++;}
+                                        }
                                    }
                                }
-                            }           
+                            }
+                            
+                            //print_r($dataArray);           
                         } 
                         
                         if($success && $error == 0){$conexion->commit(); $mensaje .= "The data of $success_driv drivers endorsements has been updated/added successfully, please verify the data in the company policies.<br><br>";}
