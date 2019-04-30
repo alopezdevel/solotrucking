@@ -495,4 +495,48 @@
       echo $pass;
   }
   
+  /* REPORTES */
+  function reporte_usuarios_activos(){
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);
+      $mensaje       = "";
+      $error         = 0;
+      $fecha_inicial = trim($_POST['fecha_ini']);
+      $fecha_final   = trim($_POST['fecha_fin']);
+      $company       = trim($_POST['company']);
+      $fecha_inicial = substr($fecha_inicial,6,4).'-'.substr($fecha_inicial,0,2).'-'.substr($fecha_inicial,3,2); 
+      $fecha_final   = substr($fecha_final,6,4).'-'.substr($fecha_final,0,2).'-'.substr($fecha_final,3,2);
+      
+      $company != "" ? $flt_company = "AND A.iConsecutivoCompania='$company' " : $flt_company = "";
+      //Query reporte:
+      $query  = "SELECT A.sUsuario, sCorreo, C.sNombreCompania, DATE_FORMAT(B.dFechaIngreso,'%m/%d/%Y') AS sFechaConexion, DATE_FORMAT(B.dFechaIngreso,'%H:%i %p') AS 'sHoraConexion' ".
+                "FROM cu_control_acceso AS A ".
+                "LEFT JOIN cu_intentos_acceso AS B ON A.sCorreo = B.sUsuario ".
+                "LEFT JOIN ct_companias AS C ON A.iConsecutivoCompania = C.iConsecutivo ".
+                "WHERE B.dFechaIngreso BETWEEN '$fecha_inicial' AND '$fecha_final' AND A.iDeleted = '0' AND A.hActivado = '1' AND A.iConsecutivoTipoUsuario = 2 ".
+                $flt_company."ORDER BY B.dFechaIngreso DESC";
+      $result = $conexion->query($query);
+      $rows   = $result->num_rows;
+      
+      if ($rows > 0) {    
+        while ($item = $result->fetch_assoc()) {
+          
+             $item['sNombreCompania'] != "" ? $nombreCompania = $item['sNombreCompania'] : $nombreCompania = "SOLO-TRUCKING INSURANCE";
+             $htmlTabla .= "<tr>".
+                           "<td>".$item['sUsuario']."</td>".
+                           "<td>".$item['sCorreo']."</td>".
+                           "<td>".$nombreCompania."</td>".
+                           "<td class=\"txt-c\">".$item['sFechaConexion']."</td>".  
+                           "<td class=\"txt-c\">".$item['sHoraConexion']."</td>". 
+                           "<td></td>".                                                                                                                                                                                                                     
+                           "</tr>";
+        }
+        $conexion->rollback();
+        $conexion->close();                                                                                                                                                                       
+      }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";} 
+      
+      $response = array("mensaje"=>"$mensaje","error"=>"$error","html"=>"$htmlTabla");   
+      echo json_encode($response);
+  }
+  
 ?>

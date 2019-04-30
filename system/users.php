@@ -34,6 +34,54 @@
                     }
                 }
             });
+            $('#dialog_report_user').dialog({
+                modal: true,
+                autoOpen: false,
+                width : 650,
+                height : 350,
+                resizable : false,
+                buttons : {
+                    'OK' : function() {
+                       //Parametros:
+                       var company   = $("#dialog_report_user select[name=flt_company]").val();
+                       //var type  = $("#dialog_report_user .flt_type").val();  
+                       var dExp_init = $("#dialog_report_user input[name=flt_dateFrom]").val(); 
+                       var dExp_endi = $("#dialog_report_user input[name=flt_dateTo]").val(); 
+                       var parametro = $("#dialog_report_user select[name=flt_report]").val();  
+                       
+                       if(dExp_init != "" && dExp_endi != ""){
+                           fn_users.reporte_usuarios(company,dExp_init,dExp_endi,parametro);
+                           $(this).dialog('close');
+                       }
+                       else{fn_solotrucking.mensaje("Please select before a valid dates."); }             
+                    },
+                    'DOWNLOAD EXCEL FILE' : function() {
+                       //Parametros:
+                       var company   = $("#dialog_report_user select[name=flt_company]").val();
+                       //var type  = $("#dialog_report_user .flt_type").val();  
+                       var dExp_init = $("#dialog_report_user input[name=flt_dateFrom]").val(); 
+                       var dExp_endi = $("#dialog_report_user input[name=flt_dateTo]").val();   
+                       
+                       if(dExp_init != "" && dExp_endi != ""){fn_users.download_report_login(company,dExp_init, dExp_endi)}
+                       else{fn_solotrucking.mensaje("Please select before a valid dates."); }             
+                    },
+                    'CANCEL' : function(){
+                        $(this).dialog('close');
+                    }
+                }
+            });
+            
+            //DATEPICKERS
+            var dates_rp = $( "#dialog_report_user input[name=flt_dateFrom], #dialog_report_user input[name=flt_dateTo]" ).datepicker({
+                changeMonth: true,
+                dateFormat: 'mm/dd/yy',
+                onSelect: function( selectedDate ) {
+                    var option   = this.name == "flt_dateFrom" ? "minDate" : "maxDate",
+                        instance = $( this ).data( "datepicker" );
+                        date     = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings );
+                    dates_rp.not( this ).datepicker( "option", option, date );
+                },
+            });
         
     }  
     function validapantalla(usuario){if(usuario == ""  || usuario == null){location.href= "login.php";}}                   
@@ -56,6 +104,7 @@
                     success : function(data){                               
                         $("#users_edit_form #iConsecutivoTipoUsuario").empty().append(data.types);
                         $("#users_edit_form #iConsecutivoCompania").empty().append(data.company); 
+                        $("#dialog_report_user select[name=flt_company], #frm_reporte_usuario select[name=flt_company]").append(data.company);
                     }
                 });
                 //Filtrado con la tecla enter
@@ -301,7 +350,41 @@
                         }
                     }
                });  
-            }  
+            },
+            //REPORTES:
+            dialog_report_open : function(){
+                
+                var fechas = fn_solotrucking.obtener_fechas();
+                $("#dialog_report_user :text, #dialog_report_user select").val("");
+                $("#dialog_report_user select[name=flt_report]").val('logins');
+                $("#dialog_report_user input[name=flt_dateFrom]").val(fechas[1]); 
+                $("#dialog_report_user input[name=flt_dateTo]").val(fechas[2]); 
+                $("#dialog_report_user").dialog('open'); 
+            },
+            reporte_usuarios: function(company,dExp_init,dExp_endi,parametro){
+                
+                $.post("funciones_users.php",
+                    {
+                        "accion"    : "reporte_usuarios_activos", 
+                        "company"   : company, 
+                        "fecha_ini" : dExp_init,
+                        "fecha_fin" : dExp_endi,
+                    },
+                    function(data){
+                        if(data.error == '0'){
+                           $('#frm_reporte_usuario input, #frm_reporte_usuario select').val('');
+                           $('#frm_reporte_usuario select[name=flt_company]').val(company);
+                           $('#frm_reporte_usuario input[name=flt_dateFrom]').val(dExp_init);
+                           $('#frm_reporte_usuario input[name=flt_dateTo]').val(dExp_endi);
+                           $("#frm_reporte_usuario .popup-datagrid > tbody").empty().append(data.html);
+                           fn_popups.resaltar_ventana('frm_reporte_usuario');
+                        }
+                        else{fn_solotrucking.mensaje(data.msj);  }       
+                },"json");     
+            },  
+            download_report_login : function(company, dExp_init, dExp_endi){
+                window.open('xlsx_rep_users_login.php?company='+company+'&fecha_init='+dExp_init+'&fecha_endi='+dExp_endi);    
+            }
     }    
     $(document).ready(inicio);  
 </script> 
@@ -317,7 +400,6 @@
                 <td style='width:45px;'><input class="flt_id" class="numeros" type="text" placeholder="ID:"></td>
                 <td><input class="flt_name_user" type="text" placeholder="Name:"></td>
                 <td><input class="flt_email_user" type="text" placeholder="E-mail:"></td>
-                <!--<td><input class="flt_type_user" type="text" placeholder="User Type:"></td>-->
                 <td><input class="flt_company" type="text" placeholder="Company:"></td> 
                 <td></td>  
                 <td style='width:170px;'>
@@ -325,11 +407,19 @@
                     <div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_users.add();"><i class="fa fa-plus"></i></div>
                 </td> 
             </tr>
+            <?php if($_SESSION['acceso'] == "3" || $_SESSION["usuario_actual"] == "customerservice@solo-trucking.com" || $_SESSION['acceso'] == "1"){ ?>
+            <tr id="grid-head-tools">
+                <td colspan="100%">
+                    <ul>
+                        <li><div class="btn-icon report btn-left" title="Report of Users" onclick="fn_users.dialog_report_open();" style="width:auto!important;"><i class="fa fa-folder-open"></i><span style="margin-left:5px;font-size: 10px!important;">Report of Users</span></div></li>  
+                    </ul>
+                </td>
+            </tr>
+            <?php } ?>
             <tr id="grid-head2">
                 <td class="etiqueta_grid down" onclick="fn_users.ordenamiento('A.iConsecutivo',this.cellIndex);">ID</td> 
                 <td class="etiqueta_grid"      onclick="fn_users.ordenamiento('sUsuario',this.cellIndex);">Name</td>
                 <td class="etiqueta_grid"      onclick="fn_users.ordenamiento('sCorreo',this.cellIndex);">E-mail</td>
-                <!--<td class="etiqueta_grid"      onclick="fn_users.ordenamiento('sDescripcionTipo',this.cellIndex);">User Type</td> -->
                 <td class="etiqueta_grid"      onclick="fn_users.ordenamiento('sNombreCompania',this.cellIndex);">Company</td>
                 <td class="etiqueta_grid"      onclick="fn_users.ordenamiento('hActivado',this.cellIndex);">Status</td>
                 <td class="etiqueta_grid"></td>
@@ -432,6 +522,52 @@
     </div>
     </div>
 </div>
+<div id="frm_reporte_usuario" class="popup-form" style="width:90%!important;">
+    <div class="p-header">
+        <h2>REPORT OF USERS: List of login by user</h2>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('frm_reporte_usuario');"><i class="fa fa-times"></i></div>
+    </div>
+    <div class="p-container">
+    <form> 
+    <fieldset>
+    <table style="width:100%;margin: 5px auto;">
+        <tr>
+            <td>
+            <div class="field_item"> 
+                <label>Company <span style="color:#ff0000;">*</span>: </label>
+                <select name="flt_company" disabled="disabled" class="readonly-field" style="height: 25px!important;"><option value="">All</option></select>
+            </div>
+            </td>
+            <td>
+            <div class="field_item"> 
+                <label>Date Range: </label>
+                <div>
+                    <label class="check-label" style="position: relative;top: 0px;">From</label>
+                    <input name="flt_dateFrom" type="text"  placeholder="MM/DD/YY" style="width: 140px;" readonly="readonly" class="readonly-field">
+                    <label class="check-label" style="position: relative;top: 0px;">To</label>
+                    <input name="flt_dateTo"   type="text"  placeholder="MM/DD/YY" style="width: 140px;" readonly="readonly" class="readonly-field">
+                </div>
+            </div> 
+            </td>
+        </tr>  
+    </table>
+    </fieldset>                                                                         
+    </form>
+    <table class="popup-datagrid" style="width:100%!important;">
+            <thead>
+                <tr id="grid-head2">
+                    <td class="etiqueta_grid">Name</td>
+                    <td class="etiqueta_grid">User</td>
+                    <td class="etiqueta_grid">Company</td>
+                    <td class="etiqueta_grid">LOGIN DATE</td>
+                    <td class="etiqueta_grid">LOGIN HOUR</td> 
+                    <td class="etiqueta_grid"><div class="btn-icon report btn-left" title="Download excel list" onclick="fn_users.download_report_login($('#frm_reporte_usuario select[name=flt_company]').val(),  $('#frm_reporte_usuario input[name=flt_dateFrom]').val(), $('#frm_reporte_usuario input[name=flt_dateTo]').val());" style="width:auto!important;"><i class="fa fa-download"></i><span style="margin-left:5px;font-size: 10px!important;">Download Excel</span></div></td>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
 <!-- DIALOGUES -->
 <div id="dialog_delete_user" title="SYSTEM ALERT" style="display:none;">
     <p>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
@@ -439,9 +575,36 @@
            <input type="hidden" name="id_user" id="id_user">
     </form>  
 </div>
+<div id="dialog_report_user" title="REPORT OF USERS" style="display:none;" >
+    <p>Please select the parameters to generate a report of the users:</p>
+    <form id="frm_report_policies" method="post">
+        <fieldset>
+        <div class="field_item"> 
+            <label>Report Type: </label>
+            <select name="flt_report">
+                <option value="logins">List of login by user</option>
+            </select>
+        </div>
+        <div class="field_item"> 
+            <label>Company: </label>
+            <select name="flt_company"><option value="">All</option></select>
+        </div>
+        <!--<div class="field_item"> 
+            <label>Type: </label>
+            <select class="flt_type"><option>All</option></select>
+        </div>--> 
+        <div class="field_item"> 
+            <label>Filter by Date: </label>
+            <div>
+                <label class="check-label" style="position: relative;top: 0px;">From</label><input name="flt_dateFrom" type="text"  placeholder="MM/DD/YY" style="width: 140px;">
+                <label class="check-label" style="position: relative;top: 0px;">To</label><input   name="flt_dateTo"   type="text"  placeholder="MM/DD/YY" style="width: 140px;">
+            </div>
+        </div> 
+        </fieldset>
+    </form>  
+</div>
 <!-- FOOTER -->
 <?php include("footer.php"); ?> 
-
 </body>
 
 </html>

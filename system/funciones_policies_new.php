@@ -462,11 +462,7 @@
                             
                     } 
                     
-                    
-                    #ENDORSEMENTS/ENDOSOS UNIDADES
-                    if($title == "UNITS" && $eTipoLista == "ENDOSOS"){
-                       
-                    }
+                    /* --------------------------- ENDOSOS ------------------------------------------*/
                     #DRIVERS/ENDOSOS OPERADORES
                     if($title == "DRIVERS" && $eTipoLista == "ENDOSOS"){
                         
@@ -492,7 +488,7 @@
                                 
                                 if($header == "ACTION"){
                                     $value = strtoupper(str_replace(" ","",$value)); 
-                                    if($value == "" || $value == NULL){$error = 1; $mensaje = "Error: Please verify the ACTION: $value on the column $row row $col from Excel file.";}
+                                    if($value == "" || $value == NULL){$error = 1; $mensaje = "Error: Please verify the ACTION: $value on the column $row row $col from Excel file in the DRIVERS sheet.";}
                                     else{
                                         //Dar formato en caso de solo contener INICIALES:
                                         if($value == "A"){$value = 'ADD';}else if($value == "D"){$value = "DELETE";}else if($value == "AS"){$value = "ADDSWAP";}else if($value == "DS"){$value = "DELETESWAP";}
@@ -544,7 +540,7 @@
                                 }else
                                 if($header == "APPLICATIONDATE" || $header == "APPLICATION" || $header == "APPDATE"){
                                      
-                                    if($value == "" || $value == NULL){$error = 1; $mensaje = "Error: Please verify the APP DATE: $value on the column $row row $col from Excel file.";}
+                                    if($value == "" || $value == NULL){$error = 1; $mensaje = "Error: Please verify the APP DATE: $value on the column $row row $col from Excel file in the DRIVERS sheet.";}
                                     else{
                                         
                                        $UNIX_DATE  = ($value - 25569) * 86400;
@@ -795,7 +791,7 @@
                                             $eAccion= $dataArray['eAccion'];
                                             
                                             #UPDATE
-                                            if($result['total'] == 0){
+                                            if($result['total'] != 0){
                                                 if($eAccion == "ADD" || $eAccion == "ADDSWAP"){
                                                     //Agregar registro a la tabla de relacion: 
                                                     $query   = "UPDATE cb_poliza_operador SET iDeleted='0',dFechaActualizacion='".$dataArray['dFechaAplicacion']."',sIPActualizacion='$sIP',sUsuarioActualizacion='$sUsuario' ".
@@ -824,7 +820,8 @@
                                                     $success = $conexion->query($query);     
                                                 }  
                                                 
-                                            }  
+                                            } 
+                                           
                                             if(!($success)){$error = 1; $success = false; $mensaje = "The data of driver with license #: ".$dataArray['iNumLicencia']." in the policy was not saved properly, please try again.";}
                                             else{$success_driv ++;}
                                         }
@@ -837,6 +834,247 @@
                         
                         if($success && $error == 0){$conexion->commit(); $mensaje .= "The data of $success_driv drivers endorsements has been updated/added successfully, please verify the data in the company policies.<br><br>";}
                         else{$conexion->rollback();}         
+                    }
+                     #ENDORSEMENTS/ENDOSOS UNIDADES
+                    if($title == "UNITS" && $eTipoLista == "ENDOSOS"){
+                        // Transaccion BEGIN:
+                        $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+                        $success = true;  
+                        
+                        // Recorrer sheet por RENGLONES:
+                        for($row = 2; $row <= $rows; $row++){
+                            
+                            // Variables:
+                            $existe    = false; 
+                            $campos    = array(); //<--- insert
+                            $valores   = array(); //<--- insert
+                            $endoso    = array(); //<--- insert endoso
+                            $dataArray = array();
+                            
+                            //Recorrer Sheet por COLUMNAS:   
+                            for($col = 0; $col < $cols; $col++){
+                                
+                                $header = strtoupper(trim($objWorksheet->getCellByColumnAndRow($col,1)->getValue()));
+                                $value  = trim($objWorksheet->getCellByColumnAndRow($col,$row)->getValue());
+                                
+                                #CAMPOS PARA ENDOSO:
+                                if($header == "ACTION"){
+                                    $value = strtoupper(str_replace(" ","",$value)); 
+                                    if($value == "" || $value == NULL){$error = 1; $mensaje = "Error: Please verify the ACTION: $value on the column $row row $col from Excel file in the UNITS sheet.";}
+                                    else{
+                                        //Dar formato en caso de solo contener INICIALES:
+                                        if($value == "A"){$value = 'ADD';}else if($value == "D"){$value = "DELETE";}else if($value == "AS"){$value = "ADDSWAP";}else if($value == "DS"){$value = "DELETESWAP";}
+                                        $dataArray['eAccion'] = $value;
+                                    }   
+                                }else
+                                //NUMEROS  DE ENDOSO:
+                                if($header == "ENDAL#" || $header == "ENDAL" || $header == "AL#"){
+                                    $value = strtoupper(str_replace(" ","",$value));
+                                    if($value != ""){$dataArray['ENDAL'] = $value;}     
+                                }else
+                                if($header == "ENDMTC#" || $header == "ENDMTC" || $header == "MTC#"){
+                                    $value = strtoupper(str_replace(" ","",$value));
+                                    if($value != ""){$dataArray['ENDMTC'] = $value;}    
+                                }else
+                                if($header == "ENDPD#" || $header == "ENDPD" || $header == "PD#"){
+                                    $value = strtoupper(str_replace(" ","",$value));
+                                    if($value != ""){$dataArray['ENDPD'] = $value;}   
+                                }else
+                                // VALUES $$ DEL ENDOSO
+                                if($header == "AL" || $header == "ALVALUE"){
+                                    $value = str_replace(" ","",$value);
+                                    $value = str_replace(",","",$value);
+                                    $value = str_replace("\$","",$value);
+                                    $value = preg_replace('/[^0-9]+/', '', $value);
+                                    $value = floatval(trim($value)); 
+                                    if($value != ''){$dataArray['AL'] = $value;}
+                                }else
+                                if($header == "MTC" || $header == "MTCVALUE"){
+                                    $value = str_replace(" ","",$value);
+                                    $value = str_replace(",","",$value);
+                                    $value = str_replace("\$","",$value);
+                                    $value = preg_replace('/[^0-9]+/', '', $value);
+                                    $value = floatval(trim($value)); 
+                                    if($value != ''){$dataArray['MTC'] = $value;}
+                                }else
+                                if($header == "PD" || $header == "PDVALUE"){
+                                    $value = str_replace(" ","",$value);
+                                    $value = str_replace(",","",$value);
+                                    $value = str_replace("\$","",$value);
+                                    $value = preg_replace('/[^0-9]+/', '', $value);
+                                    $value = floatval(trim($value)); 
+                                    if($value != ''){$dataArray['PD'] = $value;}
+                                }else
+                                if($header == "APPLICATIONDATE" || $header == "APPLICATION" || $header == "APPDATE"){
+                                    if($value == "" || $value == NULL){$error = 1; $mensaje = "Error: Please verify the APP DATE: $value on the column $row row $col from Excel file in the UNITS sheet.";}
+                                    else{
+                                        
+                                       $UNIX_DATE  = ($value - 25569) * 86400;
+                                       $EXCEL_DATE = 25569 + ($UNIX_DATE / 86400);
+                                       $UNIX_DATE  = ($EXCEL_DATE - 25569) * 86400;
+                                       $value      = gmdate("Y-m-d", $UNIX_DATE);
+                                       
+                                       $dataArray['dFechaAplicacion'] = date("Y-m-d", strtotime($value));
+                                       
+                                    }
+                                }else
+                                #CAMPOS PARA VEHICULO
+                                if($header == "MAKE"){
+                                    $value = strtoupper($value); 
+                                    //Revisamos si existe el modelo en el catalogo:
+                                    $query  = "SELECT iConsecutivo AS Make FROM ct_unidad_modelo WHERE sDescripcion = '$value' OR sAlias = '$value'";
+                                    $result = $conexion->query($query);
+                                    $items  = $result->fetch_assoc();
+                                    $iMake  = $items["Make"];
+                                    if($iMake != ""){ $dataArray['iModelo'] = $iMake;}
+                                }else
+                                if($header == "VIN"){
+                                    $sVIN = trim($value); 
+                                    $sVIN = str_replace(' ','',nl2br($sVIN));
+                                    strpos($sVIN,'<br/>')? $sVIN =  str_replace('<br/>','',nl2br($sVIN)) : "";
+                                    
+                                    if($sVIN != ""){
+                                      
+                                          $sVIN = strtoupper(trim($sVIN));
+                                          $sVIN = preg_replace("[^A-Za-z0-9]","",$sVIN);
+                                          $sVIN = trim($sVIN);
+                                          
+                                          if(strlen($sVIN) > 18){$error = 1;$mensaje = "Error: Please verify the VIN \"$sVIN\" on the column $row row $col from Excel file.";}
+                                          else{  
+                                              //Revisamos si ya existe la unidad para esta compañia:
+                                              $query  = "SELECT COUNT(iConsecutivo) AS total FROM ct_unidades WHERE sVIN='$sVIN' AND iConsecutivoCompania = '$iConsecutivoCompania'";
+                                              $result = $conexion->query($query);
+                                              $items  = $result->fetch_assoc();
+                                              
+                                              if($items["total"] != "0"){$existe = true;}
+                                              
+                                              $dataArray['sVIN'] = $sVIN;
+                                              
+                                          } 
+                                
+                                    }
+                                    else{$error = 1; $mensaje = "Error: Please verify the VIN \"$sVIN\" on the row $col from Excel file."; $success = false;}
+                                }else
+                                if($header == "RADIUS"){
+                                    $iRadius = trim($value);
+                                    $iRadius = str_replace(' ','',$iRadius);
+                                  
+                                    //Revisamos si existe el Radius en el catalogo: 
+                                    $query  = "SELECT iConsecutivo AS Radius FROM ct_unidad_radio WHERE sDescripcion = '$iRadius'";
+                                    $result = $conexion->query($query);
+                                    $items  = $result->fetch_assoc();
+                                    $iRadius= $items["Radius"];
+                                    
+                                    if($iRadius != ""){
+                                      //UPDATE 
+                                      array_push($update,"iConsecutivoRadio='$iRadius'");
+                                      //INSERT
+                                      array_push($campos,"iConsecutivoRadio");
+                                      array_push($valores,$iRadius); 
+                                    }
+                                }else
+                                if($header == "TYPE"){
+                                    $sType = strtoupper(trim($value)); 
+                                    if($sType == 'UNIT' || $sType == 'TRAILER' || $sType == "TRACTOR"){
+                                      //UPDATE 
+                                      array_push($update,"sTipo='$sType'");
+                                      //INSERT 
+                                      array_push($campos,"sTipo");
+                                      array_push($valores,$sType);
+                                    }
+                                }else
+                                if($header == "YEAR"){
+                                    $iYear = intval(trim($value)); 
+                                    if($iYear > 0){
+                                      //UPDATE 
+                                      array_push($update,"iYear='$iYear'");
+                                      //INSERT 
+                                      array_push($campos,"iYear");
+                                      array_push($valores,$iYear);
+                                    }
+                                }else
+                                if($header == "TOTALPREMIUM" || $header == "PD" || $header == "TOTALPREMIUMPD"){
+                                    $totalP = trim($value);
+                                    $totalP = str_replace(" ","",$totalP);
+                                    $totalP = str_replace(",","",$totalP);
+                                    $totalP = str_replace("\$","",$totalP);
+                                    $totalP = preg_replace('/[^0-9]+/', '', $totalP);
+                                    $totalP = intval(trim($totalP)); 
+                                      if($totalP != ''){
+                                          //UPDATE 
+                                          array_push($update,"iTotalPremiumPD='$totalP'");
+                                          //INSERT 
+                                          array_push($campos,"iTotalPremiumPD");
+                                          array_push($valores,$totalP); 
+                                      }
+                                }
+                                
+                            }  
+                            //////////////////////
+                            #INSERT / UPDATE EFFECT:
+                            if($error != 0){$success = false;}
+                            else{
+                               // update:
+                               if($existe != "0"){
+                                    #UPDATE INFORMATION: Agregando campos adicionales:
+                                    array_push($update,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
+                                    array_push($update,"sIP='".$_SERVER['REMOTE_ADDR']."'");
+                                    array_push($update,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'");
+                                    array_push($update,"iDeleted='0'"); 
+                                    array_push($update,"eModoIngreso='EXCEL'"); 
+                                    
+                                    $query   = "UPDATE ct_unidades SET ".implode(",",$update)." WHERE sVIN='$sVIN' AND iConsecutivoCompania='$iConsecutivoCompania'"; 
+                                    $success = $conexion->query($query);
+                                    if(!($success)){$error = 1; $mensaje = "The data of unit was not updated properly, please try again.";}
+                                    else{
+                                        #ACTUALIZAR TABLA DE POLIZAS/UNIDADES:
+                                        $query = "SELECT iConsecutivo FROM ct_unidades WHERE sVIN = '$sVIN' AND iConsecutivoCompania ='$iConsecutivoCompania'";
+                                        $result= $conexion->query($query);
+                                        $item  = $result->fetch_assoc();
+                                        
+                                        $iConsecutivoUnidad = $item['iConsecutivo']; 
+                                    }  
+                               } 
+                               else{
+                                    #INSERT INFORMATION: Agregando campos adicionales:
+                                    array_push($campos ,"iConsecutivoCompania"); array_push($valores,trim($iConsecutivoCompania)); //<-- Compania
+                                    array_push($campos ,"dFechaIngreso");        array_push($valores,date("Y-m-d H:i:s"));
+                                    array_push($campos ,"sIP");                  array_push($valores,$_SERVER['REMOTE_ADDR']);
+                                    array_push($campos ,"sUsuarioIngreso");      array_push($valores,$_SESSION['usuario_actual']);
+                                    array_push($campos ,"eModoIngreso");         array_push($valores,'EXCEL');
+                                    
+                                    $query = "INSERT INTO ct_unidades (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
+                                    $conexion->query($query);
+                                    
+                                    if($conexion->affected_rows < 1){$error = 1; $success = false; $mensaje = "The data of unit was not saved properly, please try again.";}
+                                    else{
+                                        #ACTUALIZAR TABLA DE POLIZAS/UNIDADES:
+                                        $iConsecutivoUnidad = $conexion->insert_id;
+                                    }
+                               }
+                               
+                               #ACTUALIZAR TABLA DE POLIZAS/UNIDADES:
+                               if($error == 0){
+                                    for($p=0;$p<$count;$p++){
+                                        
+                                        //CONSULTAR FECHA PARA BIND:
+                                        $q = "SELECT dFechaInicio FROM ct_polizas WHERE iConsecutivo = '".$iConsecutivoPolizas[$p]."'";
+                                        $r = $conexion->query($q);
+                                        $r = $r->fetch_assoc();
+                                        
+                                        $query  = "INSERT INTO cb_poliza_unidad (iConsecutivoPoliza,iConsecutivoUnidad,eModoIngreso,dFechaIngreso,sIPIngreso,sUsuarioIngreso) ".
+                                                  "VALUES('".$iConsecutivoPolizas[$p]."','$iConsecutivoUnidad','AMIC','".$r['dFechaInicio']."','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
+                                        $conexion->query($query);
+                                                
+                                        if($conexion->affected_rows < 1){$error = 1; $success = false; $mensaje = "The data of unit in the policy was not saved properly, please try again.";}
+                                        else{$success_unit ++;}
+                                   }    
+                               }
+                            }           
+                        } 
+                        
+                        if($success && $error == 0){$conexion->commit(); $mensaje .= "The data of $success_unit units has been uploaded successfully, please verify the data in the company policies.<br><br>";}
+                        else{$conexion->rollback();}   
                     }
                     
                     // Verificar en caso que suban un sheet con un nombre invalido:
