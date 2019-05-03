@@ -76,6 +76,7 @@
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
         $sql = "SELECT A.iConsecutivo AS clave, email, sCholderA,sCholderB,sCholderC,sCholderD,sCholderE,
+                DATE_FORMAT(A.dFechaEnvio,  '%m/%d/%Y %H:%i %p')    as dFechaEnvio, 
                 DATE_FORMAT(A.dFechaIngreso,  '%m/%d/%Y')    as dFechaIngreso, 
                 DATE_FORMAT(A.dFechaArchivo,  '%m/%d/%Y')    as dFechaArchivo,  sNombreCompania, sUsdot          
                 FROM cb_certificate A
@@ -86,11 +87,13 @@
             while ($certificates = $result->fetch_assoc()) {
                if($certificates["clave"] != ""){  
                      $variables = "?id=".$company."&ca=".$certificates['sCholderA']."&cb=".$certificates['sCholderB']."&cc=".$certificates['sCholderC']."&cd=".$certificates['sCholderD']."&ce=".$certificates['sCholderE'];                    
+                     
                      $htmlTabla .= "<tr>
                                         <td>".$certificates['clave']."</td>".
                                        "<td>".$certificates['email']."</td>".  
                                        "<td>".$certificates['sCholderA']."</td>". 
                                        "<td>".$certificates['dFechaIngreso']."</td>". 
+                                       "<td>".$certificates['dFechaEnvio']."</td>".
                                        "<td><div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Layout\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>";
                      if(!($isVencido)){
                         $htmlTabla .= "<div class=\"btn-icon btn-left pdf\" title=\"View the PDF\" onclick=\"window.open('pdf_certificate.php".$variables."');\"><i class=\"fa fa-file-pdf-o\"></i> <span></span></div>".
@@ -401,12 +404,14 @@
                 $mail->AddAddress(trim($certificate['email']));                          
                 $mail->AddAttachment($file);
                 $mail_error = false;
-                if(!$mail->Send()){
-                    $mail_error = true; 
-                    $mail->ClearAddresses();
-                    //echo "Mailer Error: " . $mail->ErrorInfo;
+                if(!$mail->Send()){$mail_error = true; $mail->ClearAddresses();}
+                if(!$mail_error){
+                    $msj = "The e-mail was successfully sent.";
+                    //Actualizar fecha de envio:
+                    $query = "UPDATE cb_certificate SET dFechaEnvio = NOW(), sUsuarioEnvio = '".$_SESSION["usuario_actual"]."' ".
+                             "WHERE iConsecutivo='$clave' AND iConsecutivoCompania = '$company'";
+                    $conexion->query($query);
                 }
-                if(!$mail_error){$msj = "The e-mail was successfully sent.";}
                 else{
                     $msj = "Error: The e-mail cannot be sent.";
                     $error = "1";            

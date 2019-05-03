@@ -62,7 +62,7 @@
           $pagina_actual == "0" ? $pagina_actual = 1 : false;
           $limite_superior = $registros_por_pagina;
           $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;  
-          $sql = "SELECT A.iConsecutivo,iConsecutivoTipoEndoso AS Tipo,iConsecutivoOperador,iConsecutivoUnidad, DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y %H:%i') AS dFechaIngreso, B.sDescripcion AS categoria, A.eStatus, eAccion, sNombre, sVIN, sNombreOperador, sVINUnidad ". 
+          $sql = "SELECT A.iConsecutivo,iConsecutivoTipoEndoso AS Tipo,iConsecutivoOperador,iConsecutivoUnidad, DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y') AS dFechaIngreso, B.sDescripcion AS categoria, A.eStatus, eAccion, sNombre, sVIN, sNombreOperador, sVINUnidad ". 
                  "FROM cb_endoso A ".
                  "LEFT JOIN ct_tipo_endoso B ON A.iConsecutivoTipoEndoso = B.iConsecutivo ".
                  "LEFT JOIN ct_operadores  C ON A.iConsecutivoOperador = C.iConsecutivo ".

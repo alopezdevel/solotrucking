@@ -44,7 +44,7 @@
         data_grid: "#data_grid_certificates",
         filtro : "",
         pagina_actual : "",
-        sort : "ASC",
+        sort : "DESC",
         orden : "A.iConsecutivo",
         init : function(){
                 $('.num').keydown(fn_solotrucking.inputnumero); 
@@ -201,6 +201,7 @@
                 if($(fn_certificate.data_grid+" .flt_email").val() != ""){ fn_certificate.filtro += "email|"+$(fn_certificate.data_grid+" .flt_email").val()+","} 
                 if($(fn_certificate.data_grid+" .flt_estatus").val() != ""){ fn_certificate.filtro += "sCholderA|"+$(fn_certificate.data_grid+" .flt_estatus").val()+","} 
                 if($(fn_certificate.data_grid+" .flt_date").val() != ""){ fn_certificate.filtro += "dFechaIngreso|"+$(fn_certificate.data_grid+" .flt_date").val()+","} 
+                if($(fn_certificate.data_grid+" .flt_dateE").val() != ""){ fn_certificate.filtro += "dFechaEnvio|"+$(fn_certificate.data_grid+" .flt_dateE").val()+","} 
                 fn_certificate.fillgrid();
        }, 
         edit: function(){
@@ -270,17 +271,19 @@
                 <input class="flt_id" class="numeros" type="text" placeholder="ID:"></td>
                 <td><input class="flt_email" type="text" placeholder="E-mail:"></td> 
                 <td><input class="flt_estatus" type="text" placeholder="Customer:"></td>  
-                <td><input class="flt_date" type="text" placeholder="Income Date:"></td>
+                <td><input class="flt_date" type="text" placeholder="Income Date:"></td>  
+                <td><input class="flt_dateE" type="text" placeholder="Last Sent Date:"></td>
                 <td style='width:160px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick=""><i class="fa fa-search"></i></div>
                     <div class="new btn-icon-2 btn-left" title="New Certificate +"  onclick="fn_certificate.add();"><i class="fa fa-plus"></i></div>
                 </td> 
             </tr>
             <tr id="grid-head2">
-                <td class="etiqueta_grid down" onclick="fn_certificate.ordenamiento('A.iConsecutivo',this.cellIndex);">ID</td>
+                <td class="etiqueta_grid up" onclick="fn_certificate.ordenamiento('A.iConsecutivo',this.cellIndex);">ID</td>
                 <td class="etiqueta_grid"      onclick="fn_certificate.ordenamiento('email',this.cellIndex);">E-mail</td> 
                 <td class="etiqueta_grid"      onclick="fn_certificate.ordenamiento('sCholderA',this.cellIndex);">Customer </td>
                 <td class="etiqueta_grid"      onclick="fn_certificate.ordenamiento('dFechaIngreso',this.cellIndex);">Income Date</td>
+                <td class="etiqueta_grid"      onclick="fn_certificate.ordenamiento('dFechaEnvio',this.cellIndex);">last sent date</td>
                 <td class="etiqueta_grid"></td> 
             </tr>
         </thead>

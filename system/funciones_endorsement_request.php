@@ -55,7 +55,7 @@
       $limite_superior = $registros_por_pagina;
       $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
        
-      $sql = "SELECT A.iConsecutivo,D.sNombreCompania,DATE_FORMAT(A.dFechaAplicacion, '%m/%d/%Y %H:%i') AS dFechaIngreso,C.sDescripcion,A.eStatus,eAccion,D.iOnRedList, F.sNombre, iEndosoMultiple ".
+      $sql = "SELECT A.iConsecutivo,D.sNombreCompania,DATE_FORMAT(A.dFechaAplicacion, '%m/%d/%Y') AS dFechaIngreso,C.sDescripcion,A.eStatus,eAccion,D.iOnRedList, F.sNombre, iEndosoMultiple ".
              "FROM cb_endoso AS A ".
              "LEFT JOIN ct_tipo_endoso AS C ON A.iConsecutivoTipoEndoso = C.iConsecutivo ".
              "LEFT JOIN ct_companias   AS D ON A.iConsecutivoCompania   = D.iConsecutivo ".
