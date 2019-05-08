@@ -407,9 +407,9 @@
                     }
                 }); 
             },
-            view : function (){
+            /*view : function (){
                 $(fn_endorsement_co.data_grid + " tbody td .view").bind("click",function(){
-                    fn_endorsement_co.add();
+                    //fn_endorsement_co.add();
                     var clave = $(this).parent().parent().find("td:eq(0)").html();
                     $.post("funciones_endorsements.php",{accion:"get_endorsement", clave: clave, domroot : "endorsements_co_edit_form"},
                     function(data){
@@ -455,7 +455,7 @@
                         }       
                     },"json"); 
               });  
-            },
+            },*/
             delete_confirm : function(){
               $(fn_endorsement_co.data_grid + " tbody .btn_delete").bind("click",function(){
                    var clave = $(this).parent().parent().find("td:eq(0)").html();
@@ -619,8 +619,8 @@
                     fn_endorsement_co.pagina_actual = 0;
                     fn_endorsement_co.filtro = "";
                     if($(fn_endorsement_co.data_grid+" .flt_id").val() != ""){ fn_endorsement_co.filtro += "A.iConsecutivo|"+$(fn_endorsement_co.data_grid+" .flt_id").val()+","}
-                    if($(fn_endorsement_co.data_grid+" .flt_category").val() != ""){ fn_endorsement_co.filtro += "B.sDescripcion|"+$(fn_endorsement_co.data_grid+" .flt_category").val()+","} 
-                    if($(fn_endorsement_co.data_grid+" .flt_action").val() != ""){ fn_endorsement_co.filtro += "eAccion|"+$(fn_endorsement_co.data_grid+" .flt_action").val()+","} 
+                    if($(fn_endorsement_co.data_grid+" .flt_category").val() != ""){ fn_endorsement_co.filtro += "A.iConsecutivoTipoEndoso|"+$(fn_endorsement_co.data_grid+" .flt_category").val()+","} 
+                    //if($(fn_endorsement_co.data_grid+" .flt_action").val() != ""){ fn_endorsement_co.filtro += "eAccion|"+$(fn_endorsement_co.data_grid+" .flt_action").val()+","} 
                     if($(fn_endorsement_co.data_grid+" .flt_datein").val() != ""){ fn_endorsement_co.filtro += "A.dFechaAplicacion|"+$(fn_endorsement_co.data_grid+" .flt_datein").val()+","} 
                     if($(fn_endorsement_co.data_grid+" .flt_status").val() != ""){ fn_endorsement_co.filtro += "eStatus|"+$(fn_endorsement_co.data_grid+" .flt_status").val()+","}
                     fn_endorsement_co.fillgrid();
@@ -653,7 +653,7 @@
                     var clave = $(this).parent().parent().find("td:eq(0)").html();
                     
                     //Revisamos que tipo de endoso es:
-                    var TipoEndoso = $(this).parent().parent().find("td:eq(2)").prop('class'); 
+                    var TipoEndoso = $(this).parent().parent().find("td:eq(1)").prop('class'); 
                     if(TipoEndoso == 'UNIT'){
                         var domroot = "frm_endorsements_unit"; 
                         var funcion = 'units';
@@ -1320,11 +1320,11 @@
                 <td>
                     <select class="flt_category" type="text" onblur="fn_endorsement_co.filtraInformacion();">
                         <option value="">Select a Type...</option>
-                        <option value="Driver">Driver</option>
-                        <option value="Unit">Unit or Trailer</option>  
+                        <option value="2">Driver</option>
+                        <option value="1">Vehicle</option>  
                     </select>
                 </td>
-                <td><input class="flt_action" type="text" placeholder="Action:"></td> 
+                <!--<td><input class="flt_action" type="text" placeholder="Action:"></td>--> 
                 <td><input class="flt_datein" type="text" placeholder="Application Date:"></td>
                 <td><select class="flt_status" onblur="fn_endorsement_co.filtraInformacion();">
                         <option value="">Select an option...</option>
@@ -1342,8 +1342,8 @@
             </tr>
             <tr id="grid-head2">
                 <td class="etiqueta_grid"      onclick="fn_endorsement_co.ordenamiento('A.iConsecutivo',this.cellIndex);">ID</td> 
-                <td class="etiqueta_grid"      onclick="fn_endorsement_co.ordenamiento('B.sDescripcion',this.cellIndex);">type / Description</td>
-                <td class="etiqueta_grid"      onclick="fn_endorsement_co.ordenamiento('eAccion',this.cellIndex);">Action</td> 
+                <td class="etiqueta_grid"      onclick="fn_endorsement_co.ordenamiento('A.iConsecutivoTipoEndoso',this.cellIndex);">type / Description</td>
+                <!--<td class="etiqueta_grid"      onclick="fn_endorsement_co.ordenamiento('eAccion',this.cellIndex);">Action</td> -->
                 <td class="etiqueta_grid up"   onclick="fn_endorsement_co.ordenamiento('A.dFechaAplicacion',this.cellIndex);">Application Date</td>
                 <td class="etiqueta_grid"      onclick="fn_endorsement_co.ordenamiento('eStatus',this.cellIndex);">Status</td>
                 <td class="etiqueta_grid"></td>
@@ -1693,7 +1693,7 @@
     <div class="field_item_operador"> 
       <Select id="TipoEndoso">
         <option value="">Select an option...</option>
-        <option value="1">Unit or Trailer</option>
+        <option value="1">Vehicle</option>
         <option value="2">Driver</option>
       </select>
     </div>

@@ -1745,7 +1745,7 @@
               #CONSULTAR DESCRIPCION DEL ENDOSO:
               $query  = "SELECT A.iConsecutivo, A.sNombre, DATE_FORMAT(A.dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, A.eTipoLicencia, A.iNumLicencia, DATE_FORMAT(A.dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, iExperienciaYear ".
                         "FROM   ct_operadores AS A ".
-                        "WHERE A.iConsecutivo = '".$Endoso['iConsecutivoOperador']."' AND A.iConsecutivoCompania = '".$Endoso['iConsecutivoCompania']."' AND A.iDeleted='0' ";
+                        "WHERE A.iConsecutivo = '".$Endoso['iConsecutivoOperador']."' AND A.iConsecutivoCompania = '".$Endoso['iConsecutivoCompania']."' ";
               $result = $conexion->query($query) or die($conexion->error);
               $rows   = $result->num_rows;
               if($rows == 0){$error = '1';$mensaje = "Error to query the endorsement description data, please try again later.";}
@@ -1893,7 +1893,7 @@
               #CONSULTAR DESCRIPCION DEL ENDOSO:
               $query  = "SELECT A.iConsecutivoOperador, A.sNombre, DATE_FORMAT(B.dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, B.eTipoLicencia, A.iNumLicencia, DATE_FORMAT(B.dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, iExperienciaYear,eAccion ".
                         "FROM cb_endoso_operador AS A ".
-                        "LEFT JOIN ct_operadores AS B ON A.iConsecutivoOperador = B.iConsecutivo AND B.iDeleted='0'".
+                        "LEFT JOIN ct_operadores AS B ON A.iConsecutivoOperador = B.iConsecutivo ".
                         "WHERE A.iConsecutivoEndoso = '".$Endoso['iConsecutivo']."' ";
               $result = $conexion->query($query) or die($conexion->error);
               $rows   = $result->num_rows; 

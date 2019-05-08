@@ -45,7 +45,7 @@
 
         //contando registros // 
         $query_rows = "SELECT COUNT(A.iConsecutivo) AS total FROM  cb_endoso A ". 
-                      "LEFT JOIN ct_tipo_endoso B ON A.iConsecutivoTipoEndoso = B.iConsecutivo ".
+                      //"LEFT JOIN ct_tipo_endoso B ON A.iConsecutivoTipoEndoso = B.iConsecutivo ".
                       "LEFT JOIN ct_operadores C ON A.iConsecutivoOperador = C.iConsecutivo ".
                       "LEFT JOIN ct_unidades D ON A.iConsecutivoUnidad = D.iConsecutivo ".$filtroQuery;
         $Result = $conexion->query($query_rows);
@@ -62,9 +62,9 @@
           $pagina_actual == "0" ? $pagina_actual = 1 : false;
           $limite_superior = $registros_por_pagina;
           $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;  
-          $sql = "SELECT A.iConsecutivo,iConsecutivoTipoEndoso AS Tipo,iConsecutivoOperador,iConsecutivoUnidad, DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y') AS dFechaIngreso, B.sDescripcion AS categoria, A.eStatus, eAccion, sNombre, sVIN, sNombreOperador, sVINUnidad ". 
+          $sql = "SELECT A.iConsecutivo,iConsecutivoTipoEndoso AS Tipo,iConsecutivoOperador,iConsecutivoUnidad, DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y') AS dFechaIngreso, A.iConsecutivoTipoEndoso AS categoria, A.eStatus, eAccion, sNombre, sVIN, sNombreOperador, sVINUnidad, iEndosoMultiple ". 
                  "FROM cb_endoso A ".
-                 "LEFT JOIN ct_tipo_endoso B ON A.iConsecutivoTipoEndoso = B.iConsecutivo ".
+                 //"LEFT JOIN ct_tipo_endoso B ON A.iConsecutivoTipoEndoso = B.iConsecutivo ".
                  "LEFT JOIN ct_operadores  C ON A.iConsecutivoOperador = C.iConsecutivo ".
                  "LEFT JOIN ct_unidades    D ON A.iConsecutivoUnidad = D.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
           $result = $conexion->query($sql);
@@ -72,93 +72,123 @@
              
             if ($rows > 0) {    
                 while ($items = $result->fetch_assoc()) { 
-                   if($items["iConsecutivo"] != ""){
-                         $btn_confirm = "";
-                         $class = "";
-                         $descripcion = ""; 
-                         $estado = ''; 
+                    
+                     $btn_confirm = "";
+                     $class       = "";
+                     $descripcion = ""; 
+                     $estado      = ''; 
+                     $action      = "";
+                     $detalle     = "";
+                     
+                     #DRIVERS
+                     if($items['categoria'] == '2'){  
                          
-                         if($items['categoria'] == 'Driver'){
+                         $descripcion = "DRIVER";
+                         
+                         //Revisar si el endoso es multiple:
+                         if($items['iEndosoMultiple'] == 1){ 
+                             #CONSULTAR DETALLE DEL ENDOSO:
+                             $query = "SELECT A.sNombre, (CASE 
+                                        WHEN A.eAccion = 'ADDSWAP'    THEN 'ADD SWAP'
+                                        WHEN A.eAccion = 'DELETESWAP' THEN 'DELETE SWAP'
+                                        ELSE A.eAccion
+                                        END) AS eAccion FROM cb_endoso_operador AS A WHERE A.iConsecutivoEndoso = '".$items['iConsecutivo']."' ORDER BY sNombre ASC";
+                             $r     = $conexion->query($query);
+                             while($item = $r->fetch_assoc()){
+                                $detalle == "" ? $detalle = $item['eAccion'].' '.$descripcion.' '.$item['sNombre'] : $detalle.= "<br>".$item['eAccion'].' '.$descripcion.' '.$item['sNombre'];
+                             } 
+                             $descripcion = $detalle;   
+                         }
+                         else{
+                            
+                            $items["eAccion"] == "A" ?  $action = 'ADD' : $action = 'DELETE';
+                            $items['iConsecutivoOperador'] != "" ? $sNombreOperador = utf8_decode(trim($items['sNombre'])) : $sNombreOperador = utf8_decode(trim($items['sNombreOperador']));  
+                            $descripcion = $action.' '.$descripcion.' '.$sNombreOperador;
+                            
+                         }
+                         $class_unit  = "DRIVER";
+                     }
+                     #VEHICLES
+                     else if($items['categoria'] == '1'){
+                         
+                         $descripcion = "VEHICLE";
+                         
+                         //Revisar si el endoso es multiple:
+                         if($items['iEndosoMultiple'] == 1){
+                             #CONSULTAR DETALLE DEL ENDOSO:
+                             $query = "SELECT A.sVIN, (CASE 
+                                        WHEN A.eAccion = 'ADDSWAP'    THEN 'ADD SWAP'
+                                        WHEN A.eAccion = 'DELETESWAP' THEN 'DELETE SWAP'
+                                        ELSE A.eAccion
+                                        END) AS eAccion FROM cb_endoso_unidad AS A WHERE A.iConsecutivoEndoso = '".$items['iConsecutivo']."' ORDER BY sVIN ASC";
+                             $r     = $conexion->query($query);
+                             while($item = $r->fetch_assoc()){
+                                 $detalle == "" ? $detalle = $item['eAccion'].' '.$descripcion.'  VIN# '.$item['sVIN'] : $detalle.= "<br>".$item['eAccion'].' '.$descripcion.'  VIN# '.$item['sVIN'];
+                             }
+                             $descripcion = $detalle; 
                              
-                             $items['iConsecutivoOperador'] != "" ? $sNombreOperador = utf8_decode(trim($items['sNombre'])) : $sNombreOperador = utf8_decode(trim($items['sNombreOperador']));  
-                             $descripcion = strtoupper($items['categoria']).' / '.$sNombreOperador;
-                             $class_unit  = "DRIVER";
                          }
-                         else if($items['categoria'] == 'Unit or Trailer'){
-                             $items['iConsecutivoUnidad'] != "" ? $sVINUnidad = trim($items['sVIN']) : $sVINUnidad = trim($items['sVINUnidad']); 
-                             $descripcion = strtoupper($items['categoria']).' / VIN# '.$sVINUnidad;
-                             $class_unit = 'UNIT';
+                         else{
+                            $items["eAccion"] == "A" ?  $action = 'ADD' : $action = 'DELETE'; 
+                            $items['iConsecutivoUnidad'] != "" ? $sVINUnidad = trim($items['sVIN']) : $sVINUnidad = trim($items['sVINUnidad']);
+                            $descripcion = $action.' '.$descripcion.'  VIN# '.$sVINUnidad;    
                          }
-                         
-                         switch($items["eStatus"]){
-                             case 'E': 
-                                $estado = 'UNSENT';
-                                $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Endorsement\"><i class=\"fa fa-pencil-square-o\"></i> <span></span>".
-                                               "</div><div class=\"btn_send_email_brokers btn-icon send-email btn-left\" title=\"Send endorsement to Solo-Trucking Insurance\"><i class=\"fa fa-envelope\"></i><span></span></div>".
-                                               "<div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete Endorsement\"><i class=\"fa fa-trash\"></i> <span></span></div>";  
-                             break;
-                             case 'S': 
-                                $estado = 'SENT';
-                                $class = "class = \"blue\""; 
-                                $btn_confirm = "<div class=\"btn_view btn-icon view btn-left\" title=\"View Endorsement Sent\"><i class=\"fa fa-eye\"></i> <span></span></div>".
-                                               "<div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete Endorsement\"><i class=\"fa fa-trash\"></i> <span></span></div>";  
-                             break;
-                             case 'SB': 
-                                $estado = 'SENT TO BROKERS';
-                                $class = "class = \"yellow\""; 
-                                $btn_confirm ="<div class=\"btn_view btn-icon view btn-left\" title=\"View Endorsement Sent\"><i class=\"fa fa-eye\"></i> <span></span></div>"; 
-                             break;
-                             case 'A': 
-                                $estado = 'APPROVED'; 
-                                $class = "class = \"green\"";
-                                $btn_confirm ="<div class=\"btn_view btn-icon view btn-left\" title=\"View Endorsement Sent\"><i class=\"fa fa-eye\"></i> <span></span></div>"; 
-                                break;
-                             case 'D': 
-                                $estado = 'DENIED'; 
-                                $class = "class = \"red\"";
-                                $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Endorsement\"><i class=\"fa fa-pencil-square-o\"></i> <span></span>".
-                                               "</div><div class=\"btn_resend_email btn-icon send-email btn-left\" title=\"Resend endorsement to Solo-Trucking Insurance\"><i class=\"fa fa-envelope\"></i><span></span></div>";    
-                             break;
-                             case 'P': 
-                                $estado = 'IN PROCESS'; 
-                                $class = "class = \"orange\"";
-                                $btn_confirm ="<div class=\"btn_view btn-icon view btn-left\" title=\"View Endorsement Sent\"><i class=\"fa fa-eye\"></i> <span></span></div>";     
-                             break;
-                         }
-                         $color_action = "";
-                         $action = "";
-                         switch($items["eAccion"]){
-                             case 'A': 
-                                $action = 'ADD';
-                                $color_action = "color:#00970d"; 
-                             break;
-                             case 'D': 
-                                $action = 'DELETE'; 
-                                $color_action = "color:#ab0000"; 
-                             break;
-                         }
+          
+                         $class_unit = 'UNIT';
+                     }
+                     
+                     switch($items["eStatus"]){
+                         case 'E': 
+                            $estado = 'UNSENT';
+                            $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Endorsement\"><i class=\"fa fa-pencil-square-o\"></i> <span></span>".
+                                           "</div><div class=\"btn_send_email_brokers btn-icon send-email btn-left\" title=\"Send endorsement to Solo-Trucking Insurance\"><i class=\"fa fa-envelope\"></i><span></span></div>".
+                                           "<div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete Endorsement\"><i class=\"fa fa-trash\"></i> <span></span></div>";  
+                         break;
+                         case 'S': 
+                            $estado = 'SENT';
+                            $class = "class = \"blue\""; 
+                            $btn_confirm = "<div class=\"btn_view btn-icon view btn-left\" title=\"View Endorsement Sent\"><i class=\"fa fa-eye\"></i> <span></span></div>".
+                                           "<div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete Endorsement\"><i class=\"fa fa-trash\"></i> <span></span></div>";  
+                         break;
+                         case 'SB': 
+                            $estado = 'SENT TO BROKERS';
+                            $class = "class = \"yellow\""; 
+                            //$btn_confirm ="<div class=\"btn_view btn-icon view btn-left\" title=\"View Endorsement Sent\"><i class=\"fa fa-eye\"></i> <span></span></div>"; 
+                         break;
+                         case 'A': 
+                            $estado = 'APPROVED'; 
+                            $class = "class = \"green\"";
+                            //$btn_confirm ="<div class=\"btn_view btn-icon view btn-left\" title=\"View Endorsement Sent\"><i class=\"fa fa-eye\"></i> <span></span></div>"; 
+                            break;
+                         case 'D': 
+                            $estado = 'DENIED'; 
+                            $class = "class = \"red\"";
+                            $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Endorsement\"><i class=\"fa fa-pencil-square-o\"></i> <span></span>".
+                                           "</div><div class=\"btn_resend_email btn-icon send-email btn-left\" title=\"Resend endorsement to Solo-Trucking Insurance\"><i class=\"fa fa-envelope\"></i><span></span></div>";    
+                         break;
+                         case 'P': 
+                            $estado = 'IN PROCESS'; 
+                            $class = "class = \"orange\"";
+                            //$btn_confirm ="<div class=\"btn_view btn-icon view btn-left\" title=\"View Endorsement Sent\"><i class=\"fa fa-eye\"></i> <span></span></div>";     
+                         break;
+                     }
+                     
 
-                         $htmlTabla .= "<tr $class>
-                                            <td>".$items['iConsecutivo']."</td>".
-                                           "<td>".$descripcion."</td>".
-                                           "<td class=\"$class_unit\" style=\"$color_action\">".$action."</td>".
-                                           "<td>".$items['dFechaIngreso']."</td>". 
-                                           "<td>".$estado."</td>".                                                                                                                                                                                                                       
-                                           "<td> 
-                                                $btn_confirm
-                                           </td></tr>";
-                     }else{                                                                                                                                                                                                        
+                     $htmlTabla .= "<tr $class>
+                                        <td>".$items['iConsecutivo']."</td>".
+                                       "<td class=\"$class_unit\">".$descripcion."</td>".
+                                       //"<td class=\"$class_unit\" >".$action."</td>".
+                                       "<td>".$items['dFechaIngreso']."</td>". 
+                                       "<td>".$estado."</td>".                                                                                                                                                                                                                       
+                                       "<td> 
+                                            $btn_confirm
+                                       </td></tr>";
                         
-                         $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;
-                     }    
                 }
                 $conexion->rollback();
                 $conexion->close();                                                                                                                                                                       
-            } else { 
-                
-                $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;    
-                
-            }
+            } 
+            else { $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}
           }
           $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
           echo json_encode($response); 
