@@ -1017,19 +1017,30 @@
     <div>
         <br>
         <form>
+            <p class="mensaje_valido">
+            &nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.<br>
+            <span style="color:#ff0000;font-size:1em;"> &nbsp;<b>Note: </b>Please check before sending to brokers, that all data in this endorsement are correct.</span></p>
             <fieldset id="frm_endorsement_information">
+                <legend>APPLICANT DATA</legend>
+                <table style="width: 100%;" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td class="general_information">
+                        <div class="field_item">
+                            <label>Name / E-mail / Date</label>
+                            <div>
+                                <input tabindex="1" name="sSolicitanteNombre" id="sSolicitanteNombre" type="text" value="" class="txt-uppercase" style="width:40%;float:left;clear: none;">
+                                <input tabindex="2" name="sSolicitanteEmail"  id="sSolicitanteEmail"  type="text" value="" class="txt-lowercase" style="width:30%;float:left;clear: none;">
+                                <input tabindex="3" name="sSolicitanteFecha"  id="sSolicitanteFecha"  type="text" value="" class="fecha" style="width:25%;float:left;clear: none;">
+                            </div>
+                        </div>
+                        </td>
+                    </tr>
+                </table>
                 <legend>GENERAL DATA</legend>
                 <table style="width:100%" cellpadding="0" cellspacing="0" class="general_information">
                     <tr>
-                    <td colspan="100%">
-                        <p class="mensaje_valido">
-                        &nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.<br>
-                        <span style="color:#ff0000;font-size:1em;"> &nbsp;<b>Note: </b>Please check before sending to brokers, that all data in this endorsement are correct.</span></p>
-                        <input id="iConsecutivo" name="iConsecutivo" type="hidden" value=""> 
-                    </td>
-                    </tr>
-                    <tr>
                         <td colspan="100%">
+                        <input id="iConsecutivo" name="iConsecutivo" type="hidden" value="">
                         <div id="info_policies">
                             <table class="popup-datagrid" style="margin-bottom: 10px;width: 100%;" cellpadding="0" cellspacing="0">
                                 <thead>
@@ -1241,6 +1252,7 @@
     <div class="p-container"> 
     <div>
         <form>
+            <p class="mensaje_valido"><span style="color:#ff0000;font-size:1em;"> &nbsp;<b>Note: </b>Please check before sending to brokers, that all data in this endorsement are correct.</span></p>
             <div class="field_item"> 
                 <label style="margin-left:5px;">Policies in which the endorsement was applied:</label> 
                 <div class="company_policies" style="padding:5px 0px;">

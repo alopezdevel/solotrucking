@@ -163,7 +163,7 @@
       #Function Begin
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                 
-      $sql    = "SELECT A.iConsecutivo, iConsecutivoCompania, sComentarios, DATE_FORMAT(dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
+      $sql    = "SELECT A.iConsecutivo, iConsecutivoCompania, sComentarios, DATE_FORMAT(dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion,sSolicitanteNombre, sSolicitanteEmail, IF(sSolicitanteFecha != '0000-00-00 00:00:00' AND sSolicitanteFecha != '',DATE_FORMAT(sSolicitanteFecha,'%m/%d/%Y'), '') AS sSolicitanteFecha, ".
                 "iConsecutivoOperador, eAccion,iEndosoMultiple, iConsecutivoTipoEndoso   ".  
                 "FROM      cb_endoso      AS A ".
                 "LEFT JOIN ct_tipo_endoso AS B ON A.iConsecutivoTipoEndoso = B.iConsecutivo ". 
@@ -255,8 +255,8 @@
           
             foreach($_POST as $campo => $valor){
                 if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivo" && strpos($campo,"chk_policies_") === false && $campo != "dFechaAplicacionHora"){ // Estos campos no se insertan a la tabla
-                    if($campo == 'dFechaAplicacion'){$valor = date('Y-m-d',strtotime(trim($valor)));}else
-                    if($campo == 'sComentarios' && $valos != ""){$valor = utf8_encode($valor);}
+                    if(($campo == 'dFechaAplicacion' || $campo == "sSolicitanteFecha") && $valor != ""){$valor = date('Y-m-d',strtotime(trim($valor)));}else
+                    if($campo == 'sComentarios' && $valor != ""){$valor = utf8_encode($valor);}
                     array_push($valores,"$campo='".$valor."'");
                 }
             }
@@ -274,8 +274,8 @@
       else{
           foreach($_POST as $campo => $valor){ 
             if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivo" && strpos($campo,"chk_policies_") === false && $campo != "dFechaAplicacionHora"){ // Estos campos no se insertan a la tabla
-                if($campo == 'dFechaAplicacion'){$valor = date('Y-m-d',strtotime(trim($valor)));}else
-                if($campo == 'sComentarios'){$valor = utf8_encode($valor);}
+                if(($campo == 'dFechaAplicacion' || $campo == "sSolicitanteFecha") && $valor != ""){$valor = date('Y-m-d',strtotime(trim($valor)));}else
+                if($campo == 'sComentarios' && $valor != ""){$valor = utf8_encode($valor);}
                 array_push($campos, $campo);
                 array_push($valores,date_to_server($valor));
             }
@@ -1939,7 +1939,7 @@
                       while($data = $result->fetch_assoc()){ 
                             //Variables por Email:
                             $email      = array();
-                            $sMensaje   = $data['sMensajeEmail'];
+                            /*$sMensaje   = $data['sMensajeEmail']; */
                             $sNumPoliza = $data['sNumeroPoliza'];
                             $sEmails    = $data['sEmail'];
                             $sBrokerName= $data['sBrokerName'];
@@ -1947,11 +1947,11 @@
                             $idPoliza   = $data['iConsecutivoPoliza'];
                             $tipoPoliza = get_policy_type($data['iTipoPoliza']);
                             
-                            $data['sMensajeEmail'] != "" ?  $action = $data['sMensajeEmail'] : $action = "Please do the following in drivers from policy: ";
+                            $data['sMensajeEmail'] != "" ?  $message = $data['sMensajeEmail'] : $message = "Please do the following in drivers from policy: ";
                             
                             #DATOS DEL CORREO:
-                            $action   = $action."$ComNombre, $sNumPoliza - $sTipoPoliza.";
-                            $subject  = "$ComNombre//$sNumPoliza - $sTipoPoliza. Endorsement application - please do the following in vehicles from policy.";
+                            $action   = $message."$ComNombre, $sNumPoliza - $sTipoPoliza.";
+                            $subject  = "$ComNombre//$sNumPoliza - $sTipoPoliza. Endorsement application - ".$message;
                             $bodyData = "<table cellspacing=\"0\" cellpadding=\"0\" style=\"color:#000;margin:5px auto; text-align:left;float:left;min-width:300px;\">";
                             $detalle  = "";
                             
@@ -1970,13 +1970,13 @@
                                 $expYear= $Detalle[$x]['iExperienciaYear'];
                                 
                                 $detalle .= "<tr>";
-                                $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$Acti</td>";
-                                $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$nombre</td>";
-                                $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$dob</td>";
-                                $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$license</td>";
-                                $tipoLi != "" ? $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$tipoLi</td>" : "";
-                                $expLi  != "" ? $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$expLi</td>"  : "";
-                                $expYear!= "" ? $detalle .= "<td style=\"padding:1px 3px;border: 1px solid #dedede;\">$expYear</td>": "";
+                                $detalle .= "<td style=\"padding:1px 5px;\">$Acti</td>";
+                                $detalle .= "<td style=\"padding:1px 5px;\">$nombre</td>";
+                                $detalle .= "<td style=\"padding:1px 5px;\">$dob</td>";
+                                $detalle .= "<td style=\"padding:1px 5px;\">$license</td>";
+                                $tipoLi != "" ? $detalle .= "<td style=\"padding:1px 5px;\">$tipoLi</td>" : "";
+                                $expLi  != "" ? $detalle .= "<td style=\"padding:1px 5px;\">$expLi</td>"  : "";
+                                $expYear!= "" ? $detalle .= "<td style=\"padding:1px 5px;\">$expYear</td>": "";
                                 $detalle .= "</tr>";
                             }
                             

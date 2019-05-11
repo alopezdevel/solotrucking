@@ -988,19 +988,30 @@
     <div class="p-container">
     <div>
         <form method="post" autocomplete="off">
+            <p class="mensaje_valido">
+            &nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.<br>
+            <span style="color:#ff0000;font-size:1em;"> &nbsp;<b>Note: </b>Please check before sending to brokers, that all data in this endorsement are correct.</span></p>
             <fieldset id="frm_endorsement_information" style="padding-bottom: 0;">
-                <legend>GENERAL DATA</legend>  
+                <legend>APPLICANT DATA</legend>
+                <table style="width: 100%;" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td class="general_information">
+                        <div class="field_item">
+                            <label>Name / E-mail / Date</label>
+                            <div>
+                                <input tabindex="1" name="sSolicitanteNombre" id="sSolicitanteNombre" type="text" value="" class="txt-uppercase" style="width:40%;float:left;clear: none;">
+                                <input tabindex="2" name="sSolicitanteEmail"  id="sSolicitanteEmail"  type="text" value="" class="txt-lowercase" style="width:30%;float:left;clear: none;">
+                                <input tabindex="3" name="sSolicitanteFecha"  id="sSolicitanteFecha"  type="text" value="" class="fecha" style="width:25%;float:left;clear: none;">
+                            </div>
+                        </div>
+                        </td>
+                    </tr>
+                </table>
+                <legend>GENERAL DATA</legend>
                 <table style="width:100%" cellpadding="0" cellspacing="0" class="general_information">
                     <tr>
-                    <td colspan="100%">
-                        <p class="mensaje_valido">
-                        &nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.<br>
-                        <span style="color:#ff0000;font-size:1em;"> &nbsp;<b>Note: </b>Please check before sending to brokers, that all data in this endorsement are correct.</span></p>
-                        <input id="iConsecutivo" name="iConsecutivo" type="hidden" value=""> 
-                    </td>
-                    </tr>
-                    <tr>
                         <td colspan="100%">
+                        <input id="iConsecutivo" name="iConsecutivo" type="hidden" value="">
                         <div id="info_policies">
                             <table class="popup-datagrid" style="margin-bottom: 10px;width: 100%;" cellpadding="0" cellspacing="0">
                                 <thead>
@@ -1010,18 +1021,18 @@
                             </table>
                         </div>
                         </td>
-                    </tr>
+                    </tr> 
                     <tr>
                         <td style="width: 70%;">
                             <div class="field_item">
                                 <label>Company <span style="color:#ff0000;">*</span>:</label>  
-                                <select id="iConsecutivoCompania" onchange="fn_endorsement.get_company_data();"  name="iConsecutivoCompania" class="required-field" style="height: 25px!important;width: 99%!important;"><option value="">Select an option...</option></select>
+                                <select tabindex="4" id="iConsecutivoCompania" onchange="fn_endorsement.get_company_data();"  name="iConsecutivoCompania" class="required-field" style="height: 25px!important;width: 99%!important;"><option value="">Select an option...</option></select>
                             </div>
                         </td>
                         <td>
                             <div class="field_item">
                                 <label>Application Date <span style="color:#ff0000;">*</span>:</label> 
-                                <input tabindex="2" id="dFechaAplicacion" name="dFechaAplicacion" class="txt-uppercase fecha required-field" placeholder="mm/dd/yyyy" type="text" style="width: 85%;">
+                                <input tabindex="5" id="dFechaAplicacion" name="dFechaAplicacion" class="txt-uppercase fecha required-field" placeholder="mm/dd/yyyy" type="text" style="width: 85%;">
                             </div>
                         </td>
                     </tr>
@@ -1030,12 +1041,10 @@
                 <table id="frm_driver_information" style="width:100%" cellpadding="0" cellspacing="0">
                     <tr>
                         <td colspan="100%">
-                        <input  name="iConsecutivoOperador" id="iConsecutivoOperador" type="hidden" value="">
-                         <input name="iConsecutivoCompania" type="hidden" value="">
-                         <input name="iConsecutivoEndoso"   type="hidden" value="">
+                        <input  name="iConsecutivoOperador" id="iConsecutivoOperador" type="hidden" value=""><input name="iConsecutivoCompania" type="hidden" value=""><input name="iConsecutivoEndoso"   type="hidden" value="">
                         <div class="field_item">
                             <label>Name <span style="color:#ff0000;">*</span>:</label> 
-                            <input id="sNombre" name="sNombre"  type="text" class="required-field-add required-field-delete txt-uppercase" style="width: 97%;" autocomplete="off" placeholder="Write the name or system id of your driver" onblur="fn_endorsement.detalle.set_driver();">
+                            <input tabindex="6" id="sNombre" name="sNombre"  type="text" class="required-field-add required-field-delete txt-uppercase" style="width: 97%;" autocomplete="off" placeholder="Write the name or system id of your driver" onblur="fn_endorsement.detalle.set_driver();">
                         </div>
                         </td>
                     </tr>
@@ -1043,7 +1052,7 @@
                         <td>
                             <div class="field_item">
                                 <label>Action <span style="color:#ff0000;">*</span>:</label> 
-                                <select id="eAccion" name="eAccion" class="required-field-add required-field-delete" onblur="fn_endorsement.detalle.valid_action();" style="height: 25px!important;">
+                                <select tabindex="7" id="eAccion" name="eAccion" class="required-field-add required-field-delete" onblur="fn_endorsement.detalle.valid_action();" style="height: 25px!important;">
                                     <option value="">Select an option...</option> 
                                     <option value="ADD">ADD</option>
                                     <option value="DELETE">DELETE</option>
@@ -1055,13 +1064,13 @@
                         <td>
                         <div class="field_item">
                             <label>Birthdate <span style="color:#ff0000;">*</span>:</label> 
-                            <input id="dFechaNacimiento" name="dFechaNacimiento"  type="text" class="txt-uppercase fecha required-field-add" placeholder="mm/dd/yyyy" style="width:85%;" onblur="fn_endorsement.validate_age();">
+                            <input tabindex="8" id="dFechaNacimiento" name="dFechaNacimiento"  type="text" class="txt-uppercase fecha required-field-add" placeholder="mm/dd/yyyy" style="width:85%;" onblur="fn_endorsement.validate_age();">
                         </div>
                         </td>
                         <td>
                         <div class="field_item">
                             <label>Experience Years <span style="color:#ff0000;" class="add_field">*</span>:</label>
-                            <input id="iExperienciaYear" name="iExperienciaYear"  type="text" style="width:96%;" placeholder="Experience Years. " class="required-field-add num">
+                            <input tabindex="9" id="iExperienciaYear" name="iExperienciaYear"  type="text" style="width:96%;" placeholder="Experience Years. " class="required-field-add num">
                         </div>
                         </td>
                     </tr>
@@ -1069,7 +1078,7 @@
                         <td>
                         <div class="field_item">
                             <label>License Type <span style="color:#ff0000;" class="add_field">*</span>:</label>
-                            <Select id="eTipoLicencia" name="eTipoLicencia" onblur="fn_endorsement.valid_country();" style="width:99%!important;height: 25px!important;" class="required-field-add">
+                            <Select tabindex="10" id="eTipoLicencia" name="eTipoLicencia" onblur="fn_endorsement.valid_country();" style="width:99%!important;height: 25px!important;" class="required-field-add">
                                 <option value="">Select an option...</option>
                                 <option value="FEDERAL/B1">FEDERAL / B1</option>
                                 <option value="COMMERCIAL/CDL-A">COMMERCIAL / CDL-1</option>
@@ -1079,13 +1088,13 @@
                         <td>
                         <div class="field_item">
                             <label>License Number <span style="color:#ff0000;">*</span>:</label>
-                            <input id="iNumLicencia" name="iNumLicencia" type="text" class="required-field-add required-field-delete txt-uppercase"  style="width: 95%;" placeholder="No. ">
+                            <input tabindex="11" id="iNumLicencia" name="iNumLicencia" type="text" class="required-field-add required-field-delete txt-uppercase"  style="width: 95%;" placeholder="No. ">
                         </div>
                         </td>
                         <td>
                         <div class="field_item">
                             <label>License Expire Date <span style="color:#ff0000;" class="add_field">*</span></label>
-                            <input id="dFechaExpiracionLicencia" name="dFechaExpiracionLicencia" class="txt-uppercase fecha required-field-add" placeholder="mm/dd/yyyy" type="text" style="width: 85%;">
+                            <input tabindex="12" id="dFechaExpiracionLicencia" name="dFechaExpiracionLicencia" class="txt-uppercase fecha required-field-add" placeholder="mm/dd/yyyy" type="text" style="width: 85%;">
                         </div>
                         </td>
                     </tr>
@@ -1156,7 +1165,7 @@
                     <td colspan="100%" class="general_information">
                     <div class="field_item">
                         <label>General Comments for this Endorsement: <span style="color: #5e8bd4;;">(These comments are those that will be shown to the client.)</span></label> 
-                        <textarea tabindex="9" id="sComentarios" name ="sComentarios" style="resize:none;height:30px!important;"></textarea>
+                        <textarea tabindex="13" id="sComentarios" name ="sComentarios" style="resize:none;height:30px!important;"></textarea>
                     </div>
                     </td>
                 </tr>
@@ -1176,6 +1185,7 @@
     <div class="p-container"> 
     <div>
         <form>
+            <p class="mensaje_valido"><span style="color:#ff0000;font-size:1em;"> &nbsp;<b>Note: </b>Please check before sending to brokers, that all data in this endorsement are correct.</span></p>
             <div class="field_item"> 
                 <label style="margin-left:5px;">Policies in which the endorsement was applied:</label> 
                 <div class="company_policies" style="padding:5px 0px;">

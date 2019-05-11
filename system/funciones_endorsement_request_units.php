@@ -169,7 +169,8 @@
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                 
       $sql    = "SELECT A.iConsecutivo, iConsecutivoCompania, iConsecutivoTipoEndoso, A.eStatus, ". 
-                "A.sComentarios, DATE_FORMAT(dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, DATE_FORMAT(dFechaAplicacion,'%H:%i') AS dFechaAplicacionHora   ".  
+                "A.sComentarios, DATE_FORMAT(dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, DATE_FORMAT(dFechaAplicacion,'%H:%i') AS dFechaAplicacionHora, ".
+                "sSolicitanteNombre, sSolicitanteEmail, IF(sSolicitanteFecha != '0000-00-00 00:00:00' AND sSolicitanteFecha != '',DATE_FORMAT(sSolicitanteFecha,'%m/%d/%Y'), '') AS sSolicitanteFecha ".  
                 "FROM cb_endoso A ".
                 "LEFT JOIN ct_tipo_endoso B ON A.iConsecutivoTipoEndoso = B.iConsecutivo ". 
                 "WHERE A.iConsecutivo = '$clave'";
@@ -310,21 +311,25 @@
       $sIP                  = $_SERVER['REMOTE_ADDR'];
       $sUsuario             = $_SESSION['usuario_actual'];
       $dFecha               = date("Y-m-d H:i:s");
-      $dFechaApp            = trim($_POST['dFechaAplicacion']) != "" ? date('Y-m-d',strtotime(trim($_POST['dFechaAplicacion']))) : date("Y-m-d");
+      $dFechaApp            = trim($_POST['dFechaAplicacion'])     != "" ? date('Y-m-d',strtotime(trim($_POST['dFechaAplicacion']))) : date("Y-m-d");
       $dFechaAppHora        = trim($_POST['dFechaAplicacionHora']) != "" ? date('H:i:s',strtotime(trim($_POST['dFechaAplicacionHora']))) : date("H:m:s");
       $dFechaApp            = $dFechaApp." ".$dFechaAppHora;
+      $sSolicitanteNombre   = trim(strtoupper($_POST['sSolicitanteNombre']));
+      $sSolicitanteEmail    = trim(strtolower($_POST['sSolicitanteEmail']));
+      $sSolicitanteFecha    = $_POST['sSolicitanteFecha'] != "" ? date('Y-m-d',strtotime(trim($_POST['sSolicitanteFecha']))) : "";
   
       //GUARDAMOS EL ENDOSO
       if($edit_mode == 'true'){
           //UPDATE
-          $query   = "UPDATE cb_endoso SET dFechaAplicacion='$dFechaApp', sComentarios=$sComentarios, sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha',iEndosoMultiple='1' ".
+          $query   = "UPDATE cb_endoso SET dFechaAplicacion='$dFechaApp', sComentarios=$sComentarios, sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha',iEndosoMultiple='1', ".
+                     "sSolicitanteNombre='$sSolicitanteNombre',sSolicitanteEmail='$sSolicitanteEmail',sSolicitanteFecha='$sSolicitanteFecha' ".   
                      "WHERE iConsecutivo='$iConsecutivo' AND iConsecutivoCompania='$iConsecutivoCompania'";
           $mensaje = "The data was updated successfully.";
       
       }else if($edit_mode == 'false'){
           //INSERT
-          $query   = "INSERT cb_endoso (iConsecutivoCompania,iConsecutivoTipoEndoso,eStatus,dFechaAplicacion,sComentarios,sIP,sUsuarioIngreso,dFechaIngreso) ".
-                     "VALUES('$iConsecutivoCompania','1','S','$dFechaApp',$sComentarios,'$sIP','$sUsuario','$dFecha') ";
+          $query   = "INSERT cb_endoso (iConsecutivoCompania,iConsecutivoTipoEndoso,eStatus,dFechaAplicacion,sComentarios,sIP,sUsuarioIngreso,dFechaIngreso,sSolicitanteNombre,sSolicitanteEmail,sSolicitanteFecha) ".
+                     "VALUES('$iConsecutivoCompania','1','S','$dFechaApp',$sComentarios,'$sIP','$sUsuario','$dFecha','$sSolicitanteNombre','$sSolicitanteEmail','$sSolicitanteFecha') ";
           $mensaje = "The data was saved successfully.";
       }
       
@@ -1514,11 +1519,11 @@
                         $idPoliza   = $data['iConsecutivoPoliza'];
                         $tipoPoliza = get_policy_type($data['iTipoPoliza']);
                         
-                        $data['sMensajeEmail'] != "" ?  $action = $data['sMensajeEmail'] : $action = "Please do the following in vehicles from policy: ";
+                        $data['sMensajeEmail'] != "" ?  $message = $data['sMensajeEmail'] : $message = "Please do the following in vehicles from policy: ";
                         
                         #DATOS DEL CORREO:
-                        $action   = $action."$ComNombre, $sNumPoliza - $sTipoPoliza.";
-                        $subject  = "$ComNombre//$sNumPoliza - $sTipoPoliza. Endorsement application - please do the following in vehicles from policy.";
+                        $action   = $message."$ComNombre, $sNumPoliza - $sTipoPoliza.";
+                        $subject  = "$ComNombre//$sNumPoliza - $sTipoPoliza. Endorsement application - ".$message;
                         $bodyData = "<table cellspacing=\"0\" cellpadding=\"0\" style=\"color:#000;margin:5px auto; text-align:left;float:left;min-width:300px;\">";
                         $detalle  = "";
                         //Recorremos array de DETALLE:
