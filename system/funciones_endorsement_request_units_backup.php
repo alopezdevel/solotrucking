@@ -64,47 +64,41 @@
          
         if ($rows > 0) {    
             while ($items = $result->fetch_assoc()) { 
-              
+               if($items["iConsecutivo"] != ""){
+                   
                      $btn_confirm = "";
                      $estado      = "";
                      $class       = "";
-                     //$descripcion = ""; 
-                     $titleEstatus="";
+                     $descripcion = ""; 
                      #ESTATUS DEL ENDOSO:
                      switch($items["eStatus"]){
                          case 'S': 
-                            $estado      = '<i class="fa fa-circle-o icon-estatus " aria-hidden=\"true\"></i><span style="font-size: 10px;">NEW</span>';
-                            $titleEstatus= "The data can be edited only by the employees of Solo-Trucking.";
+                            $estado      = 'SENT TO SOLO-TRUCKING<br><span style="font-size:11px!important;">The data can be edited by you or by the employees of just-trucking.</span>';
                             $class       = "class = \"blue\"";
                             $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"View and Edit Endorsement Status\"><i class=\"fa fa-pencil-square-o\"></i></div>".
-                                           "<div class=\"btn_edit_estatus btn-icon send-email btn-left\" title=\"Send e-mail to the brokers\"><i class=\"fa fa-envelope\"></i></div>".
-                                           "<div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete Endorsement\"><i class=\"fa fa-trash\"></i> <span></span></div>"; 
+                                           "<div class=\"btn_edit_estatus btn-icon send-email btn-left\" title=\"Send e-mail to the brokers\"><i class=\"fa fa-envelope\"></i></div>"; 
                          break;
                          case 'A': 
-                            $estado      = '<i class="fa fa-check-circle status-success icon-estatus " aria-hidden=\"true\"></i><span style="font-size: 10px;">APPROVED</span>';
-                            $titleEstatus= "Your endorsement has been approved successfully.";
+                            $estado      = 'APPROVED<br><span style="font-size:11px!important;">Your endorsement has been approved successfully.</span>';
                             $class       = "class = \"green\"";
                             $btn_confirm = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of endorsement\"><i class=\"fa fa-pencil-square-o\"></i></div>";
                             $btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$items['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>"; 
                          break;
                          case 'D': 
-                            $estado      = '<i class="fa fa-times status-error icon-estatus " aria-hidden=\"true\"></i><span style="font-size: 10px;">CANCELED</span>';
-                            $titleEstatus= "Your endorsement has been canceled, please see the reasons on the comments.";
+                            $estado      = 'CANCELED<br><span style="font-size:11px!important;">Your endorsement has been canceled, please see the reasons on the edit button.</span>';
                             $class       = "class = \"red\"";
                             $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"View and Edit Endorsement Status\"><i class=\"fa fa-pencil-square-o\"></i></div>".
                                            "<div class=\"btn_edit_estatus btn-icon send-email btn-left\" title=\"Send e-mail to the brokers\"><i class=\"fa fa-envelope\"></i></div>";
                                         
                          break;
                          case 'SB': 
-                            $estado      = '<i class="fa fa-share-square-o status-process icon-estatus " aria-hidden=\"true\"></i><span style="font-size: 10px;">SENT TO BROKERS</span>';
-                            $titleEstatus= "Your endorsement has been sent to the brokers.";
+                            $estado      = 'SENT TO BROKERS<br><span style="font-size:11px!important;">Your endorsement has been sent to the brokers.</span>';
                             $class       = "class = \"yellow\"";
                             $btn_confirm = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of endorsement\"><i class=\"fa fa-pencil-square-o\"></i></div>"; 
                             $btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$items['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>";
                          break;
                          case 'P': 
-                            $estado      = '<i class="fa fa-refresh status-process icon-estatus " aria-hidden=\"true\"></i><span style="font-size: 10px;">IN PROCESS</span>';
-                            $titleEstatus= "Your endorsement is being in process by the brokers.";
+                            $estado      = 'IN PROCESS<br><span style="font-size:11px!important;">Your endorsement is being in process by the brokers.</span>';
                             $class       = "class = \"orange\"";
                             $btn_confirm = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of endorsement\"><i class=\"fa fa-pencil-square-o\"></i></div>";
                             $btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$items['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>";
@@ -114,21 +108,14 @@
                      $color_action = "";
                      $action       = "";
                      $detalle      = "";
-                     $polocies     = "";
                      
                      if($items['iEndosoMultiple'] == "0"){
                          switch($items["eAccion"]){
                              case 'A': $action = 'ADD'; break;
                              case 'D': $action = 'DELETE'; break;
                          }
-                         $detalle = "<table style=\"width:100%;padding:0!important;margin:0!important;\">";
-                         $detalle.= "<tr style='background: none;'>".
-                                    "<td style='border: 0;width:120px;padding: 0!important;'>".$action."</td>".
-                                    "<td style='border: 0;padding: 0!important;'>".strtoupper($items['sVIN'])."</td>".
-                                    "</tr>";
-                         $detalle.= "</table>";
-                     }
-                     else if($items['iEndosoMultiple'] == "1"){
+                         $detalle = strtoupper($items['sVIN']);
+                     }else if($items['iEndosoMultiple'] == "1"){
                          #CONSULTAR DETALLE DEL ENDOSO:
                          $query = "SELECT A.sVIN, (CASE 
                                     WHEN A.eAccion = 'ADDSWAP'    THEN 'ADD SWAP'
@@ -136,56 +123,26 @@
                                     ELSE A.eAccion
                                     END) AS eAccion FROM cb_endoso_unidad AS A WHERE A.iConsecutivoEndoso = '".$items['iConsecutivo']."' ORDER BY sVIN ASC";
                          $r     = $conexion->query($query);
-                         
-                         $detalle     = "<table style=\"width:100%;padding:0!important;margin:0!important;border-collapse: collapse;\">";
-                         $description = "";
-                         
                          while($item = $r->fetch_assoc()){
-                            //$detalle == "" ? $detalle = $item['eAccion']." ".$item['sVIN']    : $detalle.= "<br>".$item['sVIN'];
-                            //$action  == "" ? $action  = $item['eAccion'] : $action .= "<br>".$item['eAccion'];
-                            $description .= "<tr style='background: none;'>".
-                                            "<td style='border: 0;width:120px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['eAccion']."</td>".
-                                            "<td style='border: 0;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['sVIN']."</td>".
-                                            "</tr>"; 
+                            $detalle == "" ? $detalle = $item['sVIN']    : $detalle.= "<br>".$item['sVIN'];
+                            $action  == "" ? $action  = $item['eAccion'] : $action .= "<br>".$item['eAccion']; 
                          }
-                         $detalle .= $description."</table>";
-                     }
-                     
-                     //Consultar Estatus x poliza:
-                     $query = "SELECT A.iConsecutivoPoliza,P.sNumeroPoliza, T.sDescripcion AS sTipoPoliza, B.sName AS sBrokerName ,A.eStatus, A.sNumeroEndosoBroker, A.rImporteEndosoBroker 
-                                FROM cb_endoso_estatus AS A 
-                                INNER JOIN ct_polizas  AS P ON A.iConsecutivoPoliza = P.iConsecutivo
-                                LEFT  JOIN ct_tipo_poliza AS T ON P.iTipoPoliza = T.iConsecutivo
-                                LEFT  JOIN     ct_brokers    AS B ON P.iConsecutivoBrokers = B.iConsecutivo
-                                WHERE A.iConsecutivoEndoso = '".$items['iConsecutivo']."' 
-                                ORDER BY iConsecutivoPoliza DESC";
-                     $r     = $conexion->query($query);
-                     
-                     if($r->num_rows > 0){
-                         $policies = "<table style=\"width:100%;padding:0!important;margin:0!important;border-collapse: collapse;border-spacing: 0;\">";
-                         while($item = $r->fetch_assoc()){
-                             
-                            $item['sNumeroEndosoBroker']  != "" ? $item['sNumeroEndosoBroker'] = "END# ".$item['sNumeroEndosoBroker'] : ""; 
-                            $item['rImporteEndosoBroker'] != "" && $item['rImporteEndosoBroker'] != 0 ? $item['rImporteEndosoBroker'] = "\$ ".number_format($item['rImporteEndosoBroker'],2,'.',',') : $item['rImporteEndosoBroker'] = "";
-                            
-                            $policies .= "<tr style='background: none;' title='".$item['sTipoPoliza']."/ ".$item['sBrokerName']."'>";
-                            $policies .= "<td style='border: 0;width:40%;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['sNumeroPoliza']."</td>"; 
-                            $policies .= "<td style='border: 0;width:30%;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['sNumeroEndosoBroker']."</td>";
-                            $policies .= "<td style='border: 0;width:30%;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['rImporteEndosoBroker']."</td>";
-                            $policies .= "</tr>"; 
-                         }
-                         $policies.="</table>";
                      }
                      
                       //Redlist:
                      $items['iOnRedList'] == '1' ? $redlist_icon = "<i class=\"fa fa-star\" style=\"color:#e8051b;margin-right:4px;\"></i>" : $redlist_icon = ""; 
-                     $htmlTabla .= "<tr>".
-                                   "<td id=\"iCve_".$items['iConsecutivo']."\">".$redlist_icon.$items['sNombreCompania']."</td>".
-                                   "<td>".$detalle."</td>". 
-                                   "<td>".$policies."</td>".
-                                   "<td class=\"text-center\">".$items['dFechaIngreso']."</td>". 
-                                   "<td title='$titleEstatus'>".$estado."</td>".                                                                                                                                                                                                                       
-                                   "<td> $btn_confirm</td></tr>";
+                     $htmlTabla .= "<tr $class>
+                                        <td>".$items['iConsecutivo']."</td>".
+                                       "<td>".$redlist_icon.$items['sNombreCompania']."</td>".
+                                       "<td>".$detalle."</td>". 
+                                       "<td>".$action."</td>".
+                                       "<td class=\"text-center\">".$items['dFechaIngreso']."</td>". 
+                                       "<td class=\"text-center\">".$estado."</td>".                                                                                                                                                                                                                       
+                                       "<td> $btn_confirm</td></tr>";
+                 }else{                                                                                                                                                                                                        
+                    
+                     $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;
+                 }    
             }
             $conexion->rollback();
             $conexion->close();                                                                                                                                                                       
@@ -800,7 +757,7 @@
               $endosoFields .= "<td style=\"vertical-align:top;\">";
               $endosoFields .= "<div $div>".
                                     "<label $label>Endorsement No:</label>".
-                                    "<input $input class=\"num\" type=\"text\" maxlength=\"15\" name=\"sNumeroEndosoBroker\" title=\"This number is the one granted by the broker for the endorsement.\" placeholder=\"Endorsement No:\">".
+                                    "<input $input type=\"text\" maxlength=\"15\" name=\"sNumeroEndosoBroker\" title=\"This number is the one granted by the broker for the endorsement.\" placeholder=\"Endorsement No:\">".
                                "</div>";
               $endosoFields .= "<div $div>".
                                     "<label $label>Amount \$:</label>".

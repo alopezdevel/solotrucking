@@ -100,27 +100,27 @@ tbody td{
 	color:#424242;
 	/*padding-left:5px!important; */
 }
-.data_grid tbody td{min-height:30px!important;height:30px;padding:0px 5px 0px!important;border: 1px solid #dbdbdb;}
+.data_grid tbody td{min-height:30px!important;height:30px;padding:4px 5px 0px!important;border: 1px solid #dbdbdb;}
 /*------ ALINEACION DE TEXTOS----*/
 td.txt-r{text-align:right!important;}
 td.txt-c{text-align:center!important;}
-tbody .gray, tbody .white{
-	
-	-webkit-transition: left 0.3s linear;
-	-webkit-transition-property:background-color;
-	-moz-transition: left 0.3s linear;
-	-moz-transition-property:background-color;
-	-o-transition: left 0.3s linear;
-	-o-transition-property:background-color;
-	-ms-transition: left 0.3s linear;
-	-ms-transition-property:background-color;
-	transition: left 0.3s linear;
-	transition-property:background-color;
+tbody .gray, tbody .white, .data_grid tbody tr:nth-child(odd), .data_grid tbody tr:nth-child(even){
+    
+    -webkit-transition: left 0.3s linear;
+    -webkit-transition-property:background-color;
+    -moz-transition: left 0.3s linear;
+    -moz-transition-property:background-color;
+    -o-transition: left 0.3s linear;
+    -o-transition-property:background-color;
+    -ms-transition: left 0.3s linear;
+    -ms-transition-property:linear;
+    transition: left 0.3s linear;
+    transition-property:background-color;
 }
-tbody .gray{background: rgb(249, 249, 249);}
-tbody .white{background: rgb(255, 255, 255);}
-tbody .gray:hover, tbody .white:hover{background-color: rgb(251, 253, 198);cursor:pointer;}
-tbody .row_red{background: rgb(255, 251, 251);} 
+tbody .gray, .data_grid tbody tr:nth-child(odd){background: rgb(247, 247, 247);}
+tbody .white, .data_grid tbody tr:nth-child(even){background: rgb(255, 255, 255);}
+tbody .gray:hover, .data_grid tbody .white:hover, .data_grid tbody tr:hover{background-color: rgb(251, 253, 208);cursor:pointer;}
+/*tbody .row_red{background: rgb(255, 251, 251);}  */
 /*--- endorsements ---*/
 tbody .red{background: rgb(253, 203, 203);} 
 tbody .green{background: rgb(217, 253, 203);}
@@ -531,5 +531,35 @@ input.fecha{max-width: 96%;margin-right: 5px!important;}
 /*---- subtotales y totales ----*/
 .data-grid-totales label{font-size: 12px;color: #044c8b;float: right;}
 .data-grid-totales input[readonly="readonly"]{background: #f1f1f1!important;width: auto;border: 1px solid #dedede!important;margin: 2px!important;}  
-
+.icon-estatus{
+    background-color: #ebebeb;
+    padding: 3.5px 5px 4px;
+    border-radius: 50%;
+    color: #c1c1c1;
+    border: 1px solid #d6d6d6;
+    float: left;
+    margin-right: 10px;   
+}
+.status-process {
+    background-color: #f3bb25;
+    color: #fff;
+    border-color: #e2ad1f;    
+}
+.status-s {
+    background-color: #47d147;
+    color: #fff;
+    border-color: #33cc33;    
+}
+.status-error {
+    background-color: #dd0707;
+    color: #fff;
+    border-color: #ca0202;
+    padding: 3px 5px 4px;    
+}
+.status-success {
+    background-color: #34dd07;
+    color: #fff;
+    border-color: #27b900;
+    padding: 3px 5px 4px;    
+}
 /*----------------------cmsm---------------------------*/

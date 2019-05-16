@@ -147,8 +147,8 @@
                          case 'S': 
                             $estado = 'SENT';
                             $class = "class = \"blue\""; 
-                            $btn_confirm = "<div class=\"btn_view btn-icon view btn-left\" title=\"View Endorsement Sent\"><i class=\"fa fa-eye\"></i> <span></span></div>".
-                                           "<div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete Endorsement\"><i class=\"fa fa-trash\"></i> <span></span></div>";  
+                            //$btn_confirm = "<div class=\"btn_view btn-icon view btn-left\" title=\"View Endorsement Sent\"><i class=\"fa fa-eye\"></i> <span></span></div>".
+                            $btn_confirm = "<div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete Endorsement\"><i class=\"fa fa-trash\"></i> <span></span></div>";  
                          break;
                          case 'SB': 
                             $estado = 'SENT TO BROKERS';
