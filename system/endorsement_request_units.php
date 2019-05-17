@@ -955,7 +955,7 @@
                 <!--<td style='width:45px;'><input class="flt_id" class="numeros" type="text" placeholder="ID:"></td>-->
                 <td style="width:300px;"><input class="flt_company" type="text" placeholder="Company:"></td>
                 <td style="width:280px;;"><!--<input class="flt_description" type="text" placeholder="Descripcion:">--></td>
-                <td style="width: 400px;"></td>
+                <td style="width:500px;"></td>
                 <!--<td style="width:110px">
                     <select class="flt_action" onblur="fn_endorsement.filtraInformacion();">
                         <option value="">Select an action ..</option>
@@ -963,7 +963,7 @@
                         <option value="D">DELETE</option>
                     </select>
                 </td>-->  
-                <td><input class="flt_date" type="text" placeholder="MM/DD/YYYY"></td>
+                <td style="width: 95px;"><input class="flt_date" type="text" placeholder="MM/DD/YYYY"></td>
                 <td>
                     <select class="flt_status" onblur="fn_endorsement.filtraInformacion();">
                         <option value="">Select an option...</option>

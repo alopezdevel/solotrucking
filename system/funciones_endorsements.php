@@ -79,6 +79,7 @@
                      $estado      = ''; 
                      $action      = "";
                      $detalle     = "";
+                     $titleEstatus= "";
                      
                      #DRIVERS
                      if($items['categoria'] == '2'){  
@@ -139,50 +140,55 @@
                      
                      switch($items["eStatus"]){
                          case 'E': 
-                            $estado = 'UNSENT';
+
+                            $estado      = '<i class="fa fa-circle-o icon-estatus " aria-hidden=\"true\"></i><span style="font-size: 10px;">UNSENT</span>';
+                            $titleEstatus= "The data can be edited only by you.";
                             $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Endorsement\"><i class=\"fa fa-pencil-square-o\"></i> <span></span>".
                                            "</div><div class=\"btn_send_email_brokers btn-icon send-email btn-left\" title=\"Send endorsement to Solo-Trucking Insurance\"><i class=\"fa fa-envelope\"></i><span></span></div>".
                                            "<div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete Endorsement\"><i class=\"fa fa-trash\"></i> <span></span></div>";  
                          break;
                          case 'S': 
-                            $estado = 'SENT';
-                            $class = "class = \"blue\""; 
+                            $estado      = '<i class="fa fa-circle-o icon-estatus " aria-hidden=\"true\"></i><span style="font-size: 10px;">SENT</span>';
+                            $titleEstatus= "The data can be edited only by the employees of Solo-Trucking Insurance.";
+                            $class       = "class = \"blue\""; 
                             //$btn_confirm = "<div class=\"btn_view btn-icon view btn-left\" title=\"View Endorsement Sent\"><i class=\"fa fa-eye\"></i> <span></span></div>".
-                            $btn_confirm = "<div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete Endorsement\"><i class=\"fa fa-trash\"></i> <span></span></div>";  
+                            $btn_confirm = "<div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete Endorsement\"><i class=\"fa fa-trash\"></i><span></span></div>";  
                          break;
                          case 'SB': 
-                            $estado = 'SENT TO BROKERS';
-                            $class = "class = \"yellow\""; 
+                            $estado      = '<i class="fa fa-share-square-o status-process icon-estatus " aria-hidden=\"true\"></i><span style="font-size: 10px;">SENT TO BROKERS</span>';
+                            $titleEstatus= "Your endorsement has been sent to the brokers by Solo-Trucking Insurance.";
+                            $class  = "class = \"yellow\""; 
                             //$btn_confirm ="<div class=\"btn_view btn-icon view btn-left\" title=\"View Endorsement Sent\"><i class=\"fa fa-eye\"></i> <span></span></div>"; 
                          break;
                          case 'A': 
-                            $estado = 'APPROVED'; 
-                            $class = "class = \"green\"";
+                            $estado      = '<i class="fa fa-check-circle status-success icon-estatus " aria-hidden=\"true\"></i><span style="font-size: 10px;">APPROVED</span>';
+                            $titleEstatus= "Your endorsement has been approved successfully."; 
+                            $class       = "class = \"green\"";
                             //$btn_confirm ="<div class=\"btn_view btn-icon view btn-left\" title=\"View Endorsement Sent\"><i class=\"fa fa-eye\"></i> <span></span></div>"; 
                             break;
                          case 'D': 
-                            $estado = 'DENIED'; 
-                            $class = "class = \"red\"";
+                            $estado      = '<i class="fa fa-times status-error icon-estatus " aria-hidden=\"true\"></i><span style="font-size: 10px;">CANCELED</span>';
+                            $titleEstatus= "Your endorsement has been canceled, please see the reasons on the comments."; 
+                            $class       = "class = \"red\"";
                             $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Endorsement\"><i class=\"fa fa-pencil-square-o\"></i> <span></span>".
                                            "</div><div class=\"btn_resend_email btn-icon send-email btn-left\" title=\"Resend endorsement to Solo-Trucking Insurance\"><i class=\"fa fa-envelope\"></i><span></span></div>";    
                          break;
                          case 'P': 
-                            $estado = 'IN PROCESS'; 
-                            $class = "class = \"orange\"";
+                            $estado      = '<i class="fa fa-refresh status-process icon-estatus " aria-hidden=\"true\"></i><span style="font-size: 10px;">IN PROCESS</span>';
+                            $titleEstatus= "Your endorsement is being in process by the brokers.";
+                            $class       = "class = \"orange\"";
                             //$btn_confirm ="<div class=\"btn_view btn-icon view btn-left\" title=\"View Endorsement Sent\"><i class=\"fa fa-eye\"></i> <span></span></div>";     
                          break;
                      }
                      
 
-                     $htmlTabla .= "<tr $class>
-                                        <td>".$items['iConsecutivo']."</td>".
-                                       "<td class=\"$class_unit\">".$descripcion."</td>".
-                                       //"<td class=\"$class_unit\" >".$action."</td>".
-                                       "<td>".$items['dFechaIngreso']."</td>". 
-                                       "<td>".$estado."</td>".                                                                                                                                                                                                                       
-                                       "<td> 
-                                            $btn_confirm
-                                       </td></tr>";
+                     $htmlTabla .= "<tr $class>".
+                                   "<td id=\"Cve_".$items['iConsecutivo']."\" class=\"$class_unit\">".$descripcion."</td>".
+                                   "<td></td>".
+                                   "<td>".$items['dFechaIngreso']."</td>". 
+                                   "<td title='$titleEstatus'>".$estado."</td>".                                                                                                                                                                                                                       
+                                   "<td> $btn_confirm</td>".
+                                   "</tr>";
                         
                 }
                 $conexion->rollback();
@@ -663,22 +669,24 @@
       $response = array("msj"=>"$msj","error"=>"$error");   
       echo json_encode($response);
   }
-  function get_endorsement(){
-      $error = '0';
-      $msj = "";
-      $fields = "";
-      $clave = trim($_POST['clave']);
+  /*function get_endorsement(){  
+      $error   = '0';
+      $msj     = "";
+      $fields  = "";
+      $clave   = trim($_POST['clave']);
       $company = $_SESSION['company'];
       $domroot = $_POST['domroot'];
+      
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                 
-      $sql = "SELECT iConsecutivo, iConsecutivoTipoEndoso, eStatus, iReeferYear,iTrailerExchange, iPDAmount, iPDApply, iConsecutivoOperador, iConsecutivoUnidad, eAccion, sComentarios, sNumPolizas ".  
-             "FROM cb_endoso ". 
-             "WHERE iConsecutivo = '".$clave."'";
+      $sql    = "SELECT iConsecutivo, iConsecutivoTipoEndoso, eStatus, iReeferYear,iTrailerExchange, iPDAmount, iPDApply, iConsecutivoOperador, iConsecutivoUnidad, eAccion, sComentarios, sNumPolizas ".  
+                "FROM cb_endoso ". 
+                "WHERE iConsecutivo = '".$clave."'";
       $result = $conexion->query($sql);
-      $items = $result->num_rows; 
+      $items  = $result->num_rows;
+       
       if ($items > 0) {     
-        $data = $result->fetch_assoc();
+        $data = $result->fetch_assoc(); 
         $llaves  = array_keys($data);
         $datos   = $data;
         foreach($datos as $i => $b){ 
@@ -753,8 +761,8 @@
                          }
                  } 
             }
-        }
-        else if($data['iConsecutivoUnidad']!= '' && $data['iConsecutivoTipoEndoso']== '1'){
+        }  
+        else if($data['iConsecutivoUnidad']!= '' && $data['iConsecutivoTipoEndoso']== '1'){ 
             $sql2 = "SELECT iConsecutivo, iConsecutivoRadio, iYear, iModelo, sVIN, sModelo, sTipo ".    
                     "FROM ct_unidades ".
                     "WHERE iConsecutivo = '".$data['iConsecutivoUnidad']."'";
@@ -800,7 +808,7 @@
       $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields","denied" => "$endorsement_denied","policies_table"=>"$tablaPolizas");   
       echo json_encode($response);  
       
-  }  
+  } */ 
   function delete_endorsement_co(){
       $clave = $_POST['clave'];
       $error = '0';  
@@ -1974,29 +1982,29 @@
       echo json_encode($response); 
   }
   function cargar_endoso(){
-      $error = '0';
-      $msj = "";
-      $fields = "";
-      $clave = trim($_POST['clave']);
+      $error   = '0';
+      $msj     = "";
+      $fields  = "";
+      $clave   = trim($_POST['clave']);
       $company = $_SESSION['company'];
       $domroot = $_POST['domroot'];
+      
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                 
-      $sql = "SELECT iConsecutivo, iConsecutivoTipoEndoso, eStatus, iReeferYear,iTrailerExchange, iPDAmount, iPDApply, iConsecutivoOperador, iConsecutivoUnidad, eAccion, sComentarios, sNumPolizas,sNombreOperador, sVINUnidad ".  
-             "FROM cb_endoso ". 
-             "WHERE iConsecutivo = '".$clave."'";
+      $sql    = "SELECT iConsecutivo, iConsecutivoTipoEndoso, eStatus, iReeferYear,iTrailerExchange, iPDAmount, iPDApply, iConsecutivoOperador, iConsecutivoUnidad, eAccion, sComentarios, sNumPolizas,sNombreOperador, sVINUnidad, iEndosoMultiple ".  
+                "FROM cb_endoso WHERE iConsecutivo = '".$clave."'";
       $result = $conexion->query($sql);
-      $items = $result->num_rows;
+      $items  = $result->num_rows;
       
       if ($items > 0) { 
-          $data = $result->fetch_assoc();
+          $data    = $result->fetch_assoc();
           $llaves  = array_keys($data);
           $datos   = $data;
           
           //1- recorremos el array con los datos generales del endoso:
           foreach($datos as $i => $b){
              //1.2- Revisamos que no sea alguno de los siguientes campos:
-             if($i != 'eStatus' && $i != 'sComentarios' && $i != 'sNumPolizas' && $i != 'eAccion' && $i != 'iConsecutivoOperador' && $i != 'sNombreOperador' && $i != 'sVINUnidad' && $i != 'iConsecutivoUnidad'){ 
+             if($i != 'eStatus' && $i != 'sComentarios' && $i != 'sNumPolizas' && $i != 'eAccion' && $i != 'iConsecutivoOperador' && $i != 'sNombreOperador' && $i != 'sVINUnidad' && $i != 'iConsecutivoUnidad' && $i != 'iEndosoMultiple'){ 
                    $fields .= "\$('#$domroot #frm_general_information :input[id=".$i."]').val('".$datos[$i]."');";
              }
              //1.3 - Revisamos si es la accion, esta ira por aparte.

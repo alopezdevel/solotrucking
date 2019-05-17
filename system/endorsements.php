@@ -400,9 +400,9 @@
                         $(fn_endorsement_co.data_grid + " tfoot #pagina_actual").val(data.pagina);
                         fn_endorsement_co.pagina_actual = data.pagina;
                         fn_endorsement_co.edit();
-                        fn_endorsement_co.view();
+                        //fn_endorsement_co.view();
                         fn_endorsement_co.delete_confirm();
-                        fn_endorsement_co.quote_confirmation();
+                        //fn_endorsement_co.quote_confirmation();
                         fn_endorsement_co.endorsement_resend_email();
                     }
                 }); 
@@ -458,7 +458,9 @@
             },*/
             delete_confirm : function(){
               $(fn_endorsement_co.data_grid + " tbody .btn_delete").bind("click",function(){
-                   var clave = $(this).parent().parent().find("td:eq(0)").html();
+                   var clave    = $(this).parent().parent().find("td:eq(0)").prop('id');
+                       clave    = clave.split('_');
+                       clave    = clave[1];
                    $('#dialog_delete_endorsement_co #id_endorsement_co').val(clave);
                    $('#dialog_delete_endorsement_co').dialog( 'open' );
                    return false;
@@ -472,7 +474,7 @@
                },"json");  
             },
             validade_action : function(){
-                if($('#eAccion_endoso').val() == 'D'){
+                if($('#eAccion_endoso').val() == 'DELETESWAP' || $('#eAccion_endoso').val() == 'DELETE'){
                    fn_endorsement_co.validate_endorsementtype();   
                    $('#iPDAmount_endoso').addClass('readonly').attr('readonly','readonly').val(''); 
                    $('#iPDApply_endoso').addClass('readonly').attr('disabled','disabled').val('0');
@@ -492,7 +494,7 @@
                           $('#pd_information #iPDApply_endoso').val(0); 
                     }
                     
-                }else if($('#eAccion_endoso').val() == 'A'){
+                }else if($('#eAccion_endoso').val() == 'ADD' || $('#eAccion_endoso').val() == 'ADDSWAP'){
                    fn_endorsement_co.validate_endorsementtype();  
                    $('#iPDApply_endoso').removeClass('readonly').removeAttr('disabled').val('0');
                    //Verificar que tipo de endoso es:
@@ -522,11 +524,11 @@
                     if($('#endorsements_co_edit_form #iConsecutivoTipoEndoso_endoso').val() == '1'){$('#frm_unit_information .files').hide(); } 
                 }
             },
-            quote_confirmation : function(){
+            /*quote_confirmation : function(){
               $(fn_endorsement_co.data_grid + " tbody .btn_send_email_brokers").bind("click",function(){   
-                   var clave = $(this).parent().parent().find("td:eq(0)").html();
+                   var clave   = $(this).parent().parent().find("td:eq(0)").html();
                    var action  =  $(this).parent().parent().find("td:eq(2)").html();
-                   var type  =  $(this).parent().parent().find("td:eq(2)").attr('class'); 
+                   var type    =  $(this).parent().parent().find("td:eq(2)").attr('class'); 
                    
                    if(type == 'UNIT' && action == 'ADD'){
                        $('#dialog_quote_unit #id_endorsement').val(clave);
@@ -536,7 +538,7 @@
                    }
                    
               });  
-            },
+            },*/
             send_quote : function(clave){
                 msg = "<p style=\"text-align:center;\">Please wait, we are sending to us your endorsement data...<br><img src=\"images/ajax-loader.gif\" alt=\"ajax-loader.gif\" style=\"margin-top:10px;\"><br></p>";
                 $('#Wait').empty().append(msg).dialog('open');
@@ -560,8 +562,10 @@
             },
             endorsement_resend_email : function(){
                 $(fn_endorsement_co.data_grid + " tbody .btn_resend_email").bind("click",function(){
-                   var clave = $(this).parent().parent().find("td:eq(0)").html();
-                   msg = "<p style=\"text-align:center;\">Please wait, we are sending to us your endorsement data...<br><img src=\"images/ajax-loader.gif\" alt=\"ajax-loader.gif\" style=\"margin-top:10px;\"><br></p>";
+                   var clave    = $(this).parent().parent().find("td:eq(0)").prop('id');
+                       clave    = clave.split('_');
+                       clave    = clave[1];
+                       msg      = "<p style=\"text-align:center;\">Please wait, we are sending to us your endorsement data...<br><img src=\"images/ajax-loader.gif\" alt=\"ajax-loader.gif\" style=\"margin-top:10px;\"><br></p>";
                    $('#Wait').empty().append(msg).dialog('open');
                    $.post("funciones_endorsements.php",{accion:"resend_endorsement_data", clave: clave},
                     function(data){
@@ -618,7 +622,7 @@
             filtraInformacion : function(){
                     fn_endorsement_co.pagina_actual = 0;
                     fn_endorsement_co.filtro = "";
-                    if($(fn_endorsement_co.data_grid+" .flt_id").val() != ""){ fn_endorsement_co.filtro += "A.iConsecutivo|"+$(fn_endorsement_co.data_grid+" .flt_id").val()+","}
+                    //if($(fn_endorsement_co.data_grid+" .flt_id").val() != ""){ fn_endorsement_co.filtro += "A.iConsecutivo|"+$(fn_endorsement_co.data_grid+" .flt_id").val()+","}
                     if($(fn_endorsement_co.data_grid+" .flt_category").val() != ""){ fn_endorsement_co.filtro += "A.iConsecutivoTipoEndoso|"+$(fn_endorsement_co.data_grid+" .flt_category").val()+","} 
                     //if($(fn_endorsement_co.data_grid+" .flt_action").val() != ""){ fn_endorsement_co.filtro += "eAccion|"+$(fn_endorsement_co.data_grid+" .flt_action").val()+","} 
                     if($(fn_endorsement_co.data_grid+" .flt_datein").val() != ""){ fn_endorsement_co.filtro += "A.dFechaAplicacion|"+$(fn_endorsement_co.data_grid+" .flt_datein").val()+","} 
@@ -650,10 +654,12 @@
             edit : function (){
                 $(fn_endorsement_co.data_grid + " tbody td .edit").bind("click",function(){
                     
-                    var clave = $(this).parent().parent().find("td:eq(0)").html();
+                    var clave    = $(this).parent().parent().find("td:eq(0)").prop('id');
+                        clave    = clave.split('_');
+                        clave    = clave[1];
                     
                     //Revisamos que tipo de endoso es:
-                    var TipoEndoso = $(this).parent().parent().find("td:eq(1)").prop('class'); 
+                    var TipoEndoso = $(this).parent().parent().find("td:eq(0)").prop('class'); 
                     if(TipoEndoso == 'UNIT'){
                         var domroot = "frm_endorsements_unit"; 
                         var funcion = 'units';
@@ -871,7 +877,7 @@
                               if(sNumPolizas != ''){sNumPolizas += "|" + this.value;}
                               else{sNumPolizas += this.value;}
                               
-                               if($(this).hasClass("PD") && Eaccion.val() == 'A'){  //<--- Si la poliza seleccionada es de tipo PD, revisamos PD Amount:
+                               if($(this).hasClass("PD") && (Eaccion.val() == 'ADD' || Eaccion.val() == 'ADDSWAP')){  //<--- Si la poliza seleccionada es de tipo PD, revisamos PD Amount:
                                   var PDAmount = $("#frm_unit_add #iPDAmount").val(); 
                                   if(PDAmount == "" || parseInt(PDAmount) <= 0){
                                       valid = false;
@@ -891,7 +897,7 @@
                        }  
                       
                       //3 - Revisar Accion del Endoso: 
-                      if(Eaccion.val() == 'D'){ 
+                      if(Eaccion.val() == 'DELETE' || Eaccion.val() == 'DELETESWAP'){ 
                           //DELETE
                           var unidad_id = $("#frm_unit_delete #sUnitTrailer");  
                           // - Revisamos que hayan seleccionado una unidad para eliminar de la lista...
@@ -928,7 +934,7 @@
                           } 
                           
                           
-                      }else if(Eaccion.val() == 'A'){
+                      }else if(Eaccion.val() == 'ADD' || Eaccion.val() == 'ADDSWAP'){
                           //ENDOSO TIPO ADD
                           //YEAR, MAKE, RADIUS:
                            if($('#frm_unit_add div.required_field input').val() == '' || $('#frm_unit_add div.required_field select').val() == ''){
@@ -1046,7 +1052,7 @@
                     });   
                 },
                 valid_country : function(){
-                   if($('#frm_endorsements_driver #eAccion').val() != 'D'){
+                   if($('#frm_endorsements_driver #eAccion').val() != 'DELETE' || $('#frm_endorsements_driver #eAccion').val() != 'DELETESWAP'){
                        if($('#frm_driver_add #eTipoLicencia').val() == 'COMMERCIAL/CDL-A'){  //<---- SI ES AMERICANO....
                             $('#frm_driver_add .file_mvr').show(); 
                             $('#frm_driver_add .file_psp').hide();
@@ -1071,7 +1077,7 @@
                     fecha= new Date(fecha);
                       
                     ed = parseInt((hoy-fecha)/365/24/60/60/1000);
-                    if(ed >= 65 && $('#frm_endorsements_driver #eAccion').val() != 'D'){
+                    if(ed >= 65 && ($('#frm_endorsements_driver #eAccion').val() != 'DELETE' || $('#frm_endorsements_driver #eAccion').val() != 'DELETESWAP')){
                        
                         $('#frm_driver_add .file_longterm').show(); 
                        
@@ -1147,7 +1153,7 @@
                     }
                     
                     //Revisamos accion del endoso:
-                    if(Eaccion.val() == 'D'){
+                    if(Eaccion.val() == 'DELETE' || Eaccion.val() == 'DELETESWAP'){
                         var driver_id = $("#frm_driver_delete #sDriver");  
                         // - Revisamos que hayan seleccionado un driver para eliminar de la lista...
                         if(driver_id.val() == "" ){
@@ -1162,7 +1168,7 @@
                         }
                         
                     }
-                    else if(Eaccion.val() == 'A'){
+                    else if(Eaccion.val() == 'ADD' || Eaccion.val() == 'ADDSWAP'){
                       //CAMPOS REQUERIDOS...
                       if($('#frm_driver_add div.required_field input').val() == '' || $('#frm_driver_add div.required_field select').val() == ''){
                              $('#frm_driver_add > div.required_field').each(function(index){
@@ -1315,8 +1321,6 @@
         <table id="data_grid_endorsement_co" class="data_grid">
         <thead>
             <tr id="grid-head1">
-                <td style='width:45px;'>
-                <input class="flt_id" class="numeros" type="text" placeholder="ID:"></td>
                 <td>
                     <select class="flt_category" type="text" onblur="fn_endorsement_co.filtraInformacion();">
                         <option value="">Select a Type...</option>
@@ -1324,27 +1328,29 @@
                         <option value="1">Vehicle</option>  
                     </select>
                 </td>
-                <!--<td><input class="flt_action" type="text" placeholder="Action:"></td>--> 
+                <td style='width: 200px;'></td> 
                 <td><input class="flt_datein" type="text" placeholder="Application Date:"></td>
                 <td><select class="flt_status" onblur="fn_endorsement_co.filtraInformacion();">
-                        <option value="">Select an option...</option>
+                        <option value="">ALL</option>
                         <option value="S">NEW APLICATION</option>
                         <option value="SB">SENT TO BROKERS</option>
                         <option value="D">DENIED</option>
                         <option value="P">IN PROGRESS</option>
                         <option value="A">APPROVED</option>
-                    </select></td>
-                </td>  
+                    </select>
+                </td>
                 <td style='width:160px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_endorsement_co.filtraInformacion();"><i class="fa fa-search"></i></div>
                     <div class="btn-icon-2 btn-left" title="New Endorsement +"  onclick="$('#dialog_types').dialog('open');"><i class="fa fa-plus"></i></div>
                 </td> 
             </tr>
             <tr id="grid-head2">
-                <td class="etiqueta_grid"      onclick="fn_endorsement_co.ordenamiento('A.iConsecutivo',this.cellIndex);">ID</td> 
                 <td class="etiqueta_grid"      onclick="fn_endorsement_co.ordenamiento('A.iConsecutivoTipoEndoso',this.cellIndex);">type / Description</td>
-                <!--<td class="etiqueta_grid"      onclick="fn_endorsement_co.ordenamiento('eAccion',this.cellIndex);">Action</td> -->
-                <td class="etiqueta_grid up"   onclick="fn_endorsement_co.ordenamiento('A.dFechaAplicacion',this.cellIndex);">Application Date</td>
+                <td class="etiqueta_grid">
+                    <span style="display: -webkit-inline-box;width: 60%;">Policy</span>
+                    <span style="display: -webkit-inline-box;width: 38%;">END No.</span>
+                </td>
+                <td class="etiqueta_grid up"   onclick="fn_endorsement_co.ordenamiento('A.dFechaAplicacion',this.cellIndex);">APP Date</td>
                 <td class="etiqueta_grid"      onclick="fn_endorsement_co.ordenamiento('eStatus',this.cellIndex);">Status</td>
                 <td class="etiqueta_grid"></td>
             </tr>
@@ -1374,39 +1380,7 @@
         </table>    
     </div>
 </div>
-<!-- formulario help -->
-<div id="endorsements_help_info" class="popup-form">
-    <div class="p-header">
-        <h2>ENDORSEMENTS HELP INFORMATION</h2>
-        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('endorsements_help_info');"><i class="fa fa-times"></i></div>
-    </div>
-    <div id="accordion_help" class="p-container">
-    <ul>                           
-        <br>
-        <li>Module Description</li>
-        <div>
-            In following picture you can see a table with the list of applications for existing endorsements or message "No data Available" if you have not discharged any yet.
-            <br><br>
-            <img src="./documentos/system_help/endorsement_help/img_1.jpg" border="0" width="824" height="271" alt="img_1.jpg (87,497 bytes)">
-            <ul style="text-align:left;margin:0;list-style:decimal;">
-               <li>Displays data of your current policies in which you can apply an endorsement.</li> 
-               <li>Displays your endorsement applications and its description.</li>
-            </ul>
-        </div>
-        <li>Additional Options: Filter, Sorting and Pagination.</li>
-        <div>
-            Each module provides data handle more easily and dynamically for you, then explains each of the options and how to use it:
-            <br><br>
-            <img src="./documentos/system_help/endorsement_help/img_2.jpg" border="0" width="824" height="271" alt="img_2.jpg (87,497 bytes)">
-            <ul style="text-align:left;margin:0;list-style:none;">
-               <li>A. FILTERS: Used to purge the data shown in the table, writing a value according to the column where the filter is. Once written the value only just press the "Enter" key or click on the "search" button.</li> 
-               <li>B. SORTING: They are used to sort the records by clicking on the desired column. (ASC or DESC)</li>
-               <li>C. PAGINATION: Are the options for managing the pages of the table if it contains more than 15 entries.</li>
-            </ul>
-        </div>
-    </ul>   
-    </div>
-</div>
+
 <!-- DIALOGUES -->
 <div id="dialog_delete_endorsement_co" title="SYSTEM ALERT" style="display:none;">
     <p>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
@@ -1432,56 +1406,56 @@
     <div>
         <form>
             <fieldset>
-                <legend>Endorsement Information</legend>
-                <p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p>
-                <div id="frm_general_information">
-                <div class="field_item">
-                    <input id="iConsecutivo" name="iConsecutivo" type="hidden">
-                    <input id="iConsecutivoTipoEndoso" type="hidden" value="">                 
-                </div>
+            <legend>Vehicle Data</legend>
+            <p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p>
+            <div id="frm_general_information">
+                <input id="iConsecutivo" name="iConsecutivo" type="hidden">
+                <input id="iConsecutivoTipoEndoso" type="hidden" value="">                 
+                <div id="policies_endorsement" class="field_item"></div>
                 <div class="field_item"> 
                   <label>Action <span style="color:#ff0000;">*</span>: </label>
-                  <Select id="eAccion" onblur="fn_endorsement_co.units.valid_action(this.value);">
+                  <Select id="eAccion" onblur="fn_endorsement_co.units.valid_action(this.value);" style="height: 27px!important;">
                     <option value="">Select an option...</option> 
-                    <option value="A">ADD</option>
-                    <option value="D">DELETE</option>
+                    <option value="ADD">ADD</option>
+                    <option value="DELETE">DELETE</option>
+                    <option value="ADDSWAP">ADD SWAP</option>
+                    <option value="DELETESWAP">DELETE SWAP</option>
                   </select>
                 </div>
-                <div id="policies_endorsement" class="field_item"></div>
             </div> 
-            </fieldset>
             <!-- UNITS DELETE -->
-            <fieldset id="frm_unit_delete" class="frm_information" style="display:none;">
-                <legend>Unit Information</legend>
-               <!--<div class="field_item required_field"> 
-                    <label>VIN# <span style="color:#ff0000;">*</span>: </label>
-                    <Select id="iConsecutivo" onchange="fn_endorsement_co.filtrar_polizas(this.value,'UNIT');"><option value="">Select an option...</option> </select>
-                </div>-->
-                <div class="field_item"> 
-                    <label>Unit/Trailer <span style="color:#ff0000;">*</span>: <span style="color:#ff0000;font-size:0.9em;">(Please check before that the unit/trailer is in the selected policy.)</span></label> 
-                    <input id="sUnitTrailer" class="txt-uppercase" type="text" placeholder="Write the VIN or system id of your Unit or Trailer" style="width: 100%;" title="Please check before that the unit/trailer is in the selected policy.">
-                </div>
-                <div class="field_item delete_field">
-                    <label>Attachment File <span style="color:#ff0000;">*</span>: </label>
-                    <Select id="DeleteCause" onblur="fn_endorsement_co.units.valid_delete_atachments();" style="height: 27px!important;">
-                        <option value="">Select an option...</option>
-                        <option value="DA">Delease Agreement</option>   
-                        <option value="BS">Bill of Sale</option>   
-                        <option value="NOR">Non-Op Registration</option>   
-                        <option value="PTL">Proof of Total Loss</option>   
-                    </select> 
-                </div> 
-                <div class="file_uda files" style="display:none;"> 
-                    <label>Delease Agreement <span style="color:#ff0000;">*</span>: <span style="color:#9e2e2e;">Please upload a copy of Unit's Delease Agreement in PDF or JPG format.</span></label>
-                    <input type="text" id="txtsDAPDF" readonly="readonly" value="" size="40" style="width:85%;" />
-                    <button id="btnsDAPDF" type="button">Upload File</button>
-                    <input id="iConsecutivoDAPDF" class="id_file" type="hidden">
-                </div> 
-            </fieldset>
+            <table style="width:100%;" cellpadding="0" cellspacing="0" id="frm_unit_delete" class="frm_information" style="display:none;">
+                <tr>
+                    <td>
+                    <div class="field_item"> 
+                        <label>Unit/Trailer <span style="color:#ff0000;">*</span>: <span style="color:#ff0000;font-size:0.9em;">(Please check before that the unit/trailer is in the selected policy.)</span></label> 
+                        <input id="sUnitTrailer" class="txt-uppercase" type="text" placeholder="Write the VIN or system id of your Unit or Trailer" style="width: 99%;" title="Please check before that the unit/trailer is in the selected policy.">
+                    </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                    <div class="field_item delete_field">
+                        <label>Attachment File <span style="color:#ff0000;">*</span>: </label>
+                        <Select id="DeleteCause" onblur="fn_endorsement_co.units.valid_delete_atachments();" style="height: 27px!important;">
+                            <option value="">Select an option...</option>
+                            <option value="DA">Delease Agreement</option>   
+                            <option value="BS">Bill of Sale</option>   
+                            <option value="NOR">Non-Op Registration</option>   
+                            <option value="PTL">Proof of Total Loss</option>   
+                        </select> 
+                    </div> 
+                    <div class="file_uda files" style="display:none;"> 
+                        <label>Delease Agreement <span style="color:#ff0000;">*</span>: <span style="color:#9e2e2e;">Please upload a copy of Unit's Delease Agreement in PDF or JPG format.</span></label>
+                        <input type="text" id="txtsDAPDF" readonly="readonly" value="" size="40" style="width:85%;" />
+                        <button id="btnsDAPDF" type="button">Upload File</button>
+                        <input id="iConsecutivoDAPDF" class="id_file" type="hidden">
+                    </div>
+                    </td>
+                </tr>
+            </table>
             <!-- UNITS ADD -->
-            <fieldset id="frm_unit_add" class="frm_information" style="display:none;">
-                <legend>Unit Information</legend>
-                <table style="width:100%;" cellpadding="0" cellspacing="0">
+            <table style="width:100%;" cellpadding="0" cellspacing="0" id="frm_unit_add" class="frm_information" style="display:none;">
                     <tr>
                         <td colspan="100%">
                         <input id="iConsecutivo" name="iConsecutivo" type="hidden">
@@ -1532,9 +1506,9 @@
                         </div>
                         </td>
                     </tr>
-                </table>
-            </fieldset>
-            <br>  
+            </table>
+            <br> 
+            </fieldset> 
             <button type="button" class="btn-1" onclick="fn_endorsement_co.units.valid_data();">SAVE</button>
             <button type="button" class="btn-1" onclick="fn_endorsement_co.units.valid_files();" style="margin-right:10px;background:#e8051b;">CLOSE</button>
         </form> 
@@ -1703,6 +1677,39 @@
     <p>Please select a company first:</p>
     <form><div> <Select id="iConsecutivoCompania"><option value="">Select an option...</option></select></div></form>   
 </div> 
+<!-- formulario help -->
+<div id="endorsements_help_info" class="popup-form">
+    <div class="p-header">
+        <h2>ENDORSEMENTS HELP INFORMATION</h2>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('endorsements_help_info');"><i class="fa fa-times"></i></div>
+    </div>
+    <div id="accordion_help" class="p-container">
+    <ul>                           
+        <br>
+        <li>Module Description</li>
+        <div>
+            In following picture you can see a table with the list of applications for existing endorsements or message "No data Available" if you have not discharged any yet.
+            <br><br>
+            <img src="./documentos/system_help/endorsement_help/img_1.jpg" border="0" width="824" height="271" alt="img_1.jpg (87,497 bytes)">
+            <ul style="text-align:left;margin:0;list-style:decimal;">
+               <li>Displays data of your current policies in which you can apply an endorsement.</li> 
+               <li>Displays your endorsement applications and its description.</li>
+            </ul>
+        </div>
+        <li>Additional Options: Filter, Sorting and Pagination.</li>
+        <div>
+            Each module provides data handle more easily and dynamically for you, then explains each of the options and how to use it:
+            <br><br>
+            <img src="./documentos/system_help/endorsement_help/img_2.jpg" border="0" width="824" height="271" alt="img_2.jpg (87,497 bytes)">
+            <ul style="text-align:left;margin:0;list-style:none;">
+               <li>A. FILTERS: Used to purge the data shown in the table, writing a value according to the column where the filter is. Once written the value only just press the "Enter" key or click on the "search" button.</li> 
+               <li>B. SORTING: They are used to sort the records by clicking on the desired column. (ASC or DESC)</li>
+               <li>C. PAGINATION: Are the options for managing the pages of the table if it contains more than 15 entries.</li>
+            </ul>
+        </div>
+    </ul>   
+    </div>
+</div>
 <!-- FOOTER -->
 <?php include("footer.php"); ?> 
 </body>
