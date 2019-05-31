@@ -102,6 +102,7 @@
                         $(fn_invoices.data_grid + " tfoot #pagina_actual").val(data.pagina);
                         fn_invoices.pagina_actual = data.pagina; 
                         fn_invoices.edit();
+                        fn_solotrucking.btn_tooltip();
                     }
                 }); 
             },

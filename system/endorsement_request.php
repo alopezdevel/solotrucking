@@ -137,22 +137,32 @@
                         fn_endorsement.edit();
                         fn_endorsement.edit_estatus();
                         fn_endorsement.change_estatus();
+                        //fn_solotrucking.btn_tooltip();
                     }
                 }); 
             },
             add : function(){
                $('#endorsements_edit_form input, #endorsements_edit_form select, #endorsements_edit_form textarea').val('');
                $("#frm_endorsement_information .required-field").removeClass("error");
+               $("#endorsements_edit_form #iConsecutivoCompania").removeClass('readonly').removeProp('disabled');
                $("#files_datagrid, #info_policies").hide();//ocultar grid de archivos...
                $("#info_policies tbody").empty();
                fn_solotrucking.get_date("#dFechaAplicacion.fecha");
                fn_solotrucking.get_time("#dFechaAplicacionHora");
+               
+               //DETALLE:
+               fn_endorsement.detalle.iConsecutivoEndoso = "";
+               fn_endorsement.detalle.add();
+               fn_endorsement.detalle.fillgrid();
+               
                fn_popups.resaltar_ventana('endorsements_edit_form'); 
             },
             edit : function (){
                 $(fn_endorsement.data_grid + " tbody td .btn_edit").bind("click",function(){
-                    var clave    = $(this).parent().parent().find("td:eq(0)").html();
-                    var company  = $(this).parent().parent().find("td:eq(1)").text(); 
+                    var clave    = $(this).parent().parent().find("td:eq(0)").prop('id');
+                        clave    = clave.split('_');
+                        clave    = clave[1];
+                    var company  = $(this).parent().parent().find("td:eq(0)").text(); 
                     $('#endorsements_edit_form .p-header h2').empty().text('Endorsement / ' + company + ': ID# ' + clave);
                     fn_endorsement.detalle.add();
                     fn_endorsement.get_data(clave);
@@ -244,10 +254,10 @@
             filtraInformacion : function(){
                     fn_endorsement.pagina_actual = 0;
                     fn_endorsement.filtro = "";
-                    if($(fn_endorsement.data_grid+" .flt_id").val() != ""){ fn_endorsement.filtro += "A.iConsecutivo|"+$(fn_endorsement.data_grid+" .flt_id").val()+","}
+                    //if($(fn_endorsement.data_grid+" .flt_id").val() != ""){ fn_endorsement.filtro += "A.iConsecutivo|"+$(fn_endorsement.data_grid+" .flt_id").val()+","}
                     if($(fn_endorsement.data_grid+" .flt_company").val() != ""){ fn_endorsement.filtro += "D.sNombreCompania|"+$(fn_endorsement.data_grid+" .flt_company").val()+","} 
-                    if($(fn_endorsement.data_grid+" .flt_description").val() != ""){ fn_endorsement.filtro += "sNombre|"+$(fn_endorsement.data_grid+" .flt_description").val()+","} 
-                    if($(fn_endorsement.data_grid+" .flt_action").val() != ""){ fn_endorsement.filtro += "eAccion|"+$(fn_endorsement.data_grid+" .flt_action").val()+","}
+                    //if($(fn_endorsement.data_grid+" .flt_description").val() != ""){ fn_endorsement.filtro += "sNombre|"+$(fn_endorsement.data_grid+" .flt_description").val()+","} 
+                    //if($(fn_endorsement.data_grid+" .flt_action").val() != ""){ fn_endorsement.filtro += "eAccion|"+$(fn_endorsement.data_grid+" .flt_action").val()+","}
                     if($(fn_endorsement.data_grid+" .flt_date").val() != ""){ fn_endorsement.filtro += "A.dFechaAplicacion|"+$(fn_endorsement.data_grid+" .flt_date").val()+","}
                     if($(fn_endorsement.data_grid+" .flt_status").val() != ""){ fn_endorsement.filtro += "A.eStatus|"+$(fn_endorsement.data_grid+" .flt_status").val()+","}
                     fn_endorsement.fillgrid();
@@ -528,7 +538,9 @@
             //PREVIEW AND SEND EMAILS:
             edit_estatus : function(){
                 $(fn_endorsement.data_grid + " tbody .btn_edit_estatus").bind("click",function(){
-                   var clave    = $(this).parent().parent().find("td:eq(0)").html();
+                   var clave    = $(this).parent().parent().find("td:eq(0)").prop('id');
+                       clave    = clave.split('_');
+                       clave    = clave[1];
                    $.ajax({             
                         type:"POST", 
                         url:"funciones_endorsement_request.php", 
@@ -650,8 +662,10 @@
             },  
             change_estatus : function(){
                     $(fn_endorsement.data_grid + " tbody td .btn_change_status").bind("click",function(){
-                       var clave = $(this).parent().parent().find("td:eq(0)").html();
-                       var name  = $(this).parent().parent().find("td:eq(1)").html();
+                       var clave    = $(this).parent().parent().find("td:eq(0)").prop('id');
+                           clave    = clave.split('_');
+                           clave    = clave[1];
+                       var name     = $(this).parent().parent().find("td:eq(0)").html();
                        $.ajax({             
                             type:"POST", 
                             url:"funciones_endorsement_request.php", 
@@ -918,19 +932,11 @@
         <table id="data_grid_endorsement" class="data_grid">
         <thead>
             <tr id="grid-head1">
-                <td style='width:45px;'>
-                    <input class="flt_id" class="numeros" type="text" placeholder="ID:"></td>
-                <td><input class="flt_company" type="text" placeholder="Company:"></td>
-                <td><input class="flt_description" type="text" placeholder="Descripcion:"></td>
-                <td style="width:110px">
-                    <select class="flt_action" onblur="fn_endorsement.filtraInformacion();">
-                        <option value="">Select an action ..</option>
-                        <option value="A">ADD</option>
-                        <option value="D">DELETE</option>
-                    </select>
-                </td>  
-                <td><input class="flt_date" type="text" placeholder="Application Date:"></td> 
-                <td>
+                <td style="width:300px;"><input class="flt_company" type="text" placeholder="Company:"></td>
+                <td style="width:380px;"></td>
+                <td style="width:500px;"></td>  
+                <td style="width: 95px;"><input class="flt_date" type="text" placeholder="Application Date:"></td> 
+                <td style="width: 130px;">
                     <select class="flt_status" onblur="fn_endorsement.filtraInformacion();">
                         <option value="">Select an option...</option>
                         <option value="S">NEW APLICATION</option>
@@ -939,17 +945,23 @@
                         <option value="P">IN PROGRESS</option>
                         <option value="A">APPROVED</option> 
                     </select></td>  
-                <td style='width:160px;'>
+                <td style='width:110px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_endorsement.filtraInformacion();"><i class="fa fa-search"></i></div>
                     <div class="btn-icon-2 btn-left" title="New Endorsement +"  onclick="fn_endorsement.add();"><i class="fa fa-plus"></i></div>
                 </td> 
             </tr>
             <tr id="grid-head2">
-                <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('A.iConsecutivo',this.cellIndex);">ID</td> 
                 <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('D.sNombreCompania',this.cellIndex);">COMPANY</td>
-                <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('sNombre',this.cellIndex);">Description</td>
-                <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('eAccion',this.cellIndex);">ACTION</td>
-                <td class="etiqueta_grid up"   onclick="fn_endorsement.ordenamiento('A.dFechaAplicacion',this.cellIndex);">APPLICATION DATE</td> 
+                <td class="etiqueta_grid">
+                    <span style="display: -webkit-inline-box;width:120px">Action</span>
+                    <span style="display: -webkit-inline-box;">Description</span>
+                </td>
+                <td class="etiqueta_grid">
+                    <span style="display: -webkit-inline-box;width: 40%;">Policy</span>
+                    <span style="display: -webkit-inline-box;width: 29%;">END No.</span>
+                    <span style="display: -webkit-inline-box;width: 29%;">Amount</span>
+                </td>
+                <td class="etiqueta_grid up"   onclick="fn_endorsement.ordenamiento('A.dFechaAplicacion',this.cellIndex);">APP DATE</td> 
                 <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('A.eStatus',this.cellIndex);">Status</td>
                 <td class="etiqueta_grid"></td>
             </tr>

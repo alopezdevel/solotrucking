@@ -30,6 +30,8 @@ $(function() {
         $(this).toggleClass("active");
         $(this).next("div").stop('true','true').slideToggle("slow");
    });
+   
+   fn_solotrucking.btn_tooltip();
 
 }); 
 
@@ -217,6 +219,11 @@ var fn_solotrucking = {
      calcular_decimales : function(value,decimals){
          var num = parseFloat(value).toFixed(decimals);
          return value;
+     },
+     btn_tooltip : function(){
+        $( ".btn-icon-2, .btn-icon, button" ).tooltip({
+            classes: {"ui-tooltip": "btn-tooltip"}
+        });
      },
      //Archivos:
      files : {

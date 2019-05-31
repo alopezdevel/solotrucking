@@ -143,6 +143,7 @@
                         fn_endorsement.edit();
                         fn_endorsement.edit_estatus();
                         fn_endorsement.change_estatus();
+                        fn_solotrucking.btn_tooltip();
                     }
                 }); 
             },

@@ -50,7 +50,7 @@
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
         
-        $sql    = "SELECT A.iConsecutivo, B.sNombreCompania, C.sName AS sNombreBroker, DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y %H:%i') AS dFechaAplicacion,B.iOnRedList,A.sEmail, A.eStatus ".
+        $sql    = "SELECT A.iConsecutivo, B.sNombreCompania, C.sName AS sNombreBroker,iTipoReporte, DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion,B.iOnRedList,A.sEmail, A.eStatus, DATE_FORMAT(A.dFechaInicio,'%m/%d/%Y') AS dFechaInicio, DATE_FORMAT(A.dFechaFin,'%m/%d/%Y') AS dFechaFin ".
                   "FROM cb_endoso_mensual  AS A ".
                   "INNER JOIN ct_companias AS B ON A.iConsecutivoCompania = B.iConsecutivo ".
                   "LEFT JOIN ct_brokers    AS C ON A.iConsecutivoBroker = C.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
@@ -60,7 +60,7 @@
         if($rows > 0){    
             while ($items = $result->fetch_assoc()) { 
                 
-                    switch($items["eStatus"]){
+                  switch($items["eStatus"]){
                          case 'S': 
                             $estado      = 'SENT TO SOLO-TRUCKING<br><span style="font-size:11px!important;">The data can be edited by you or by the employees of just-trucking.</span>';
                             $class       = "blue";
@@ -98,13 +98,17 @@
                  if($items['iOnRedList'] == '1'){$redlist_class = "row_red";$redlist_icon  = "<i class=\"fa fa-star\" style=\"color:#e8051b;margin-right:4px;\"></i>";}
                  else{$redlist_icon = ""; $redlist_class = "";}
                  
+                 $items['iTipoReporte'] == 1 ? $txtTipo = "VEHICLES" : $txtTipo = "DRIVERS";
+                 
                  $class = " class=\"$class $redlist_class\"";
                  $htmlTabla .= "<tr$class>
                                     <td>".$items['iConsecutivo']."</td>".
                                    "<td>".$redlist_icon.$items['sNombreCompania']."</td>".
+                                   "<td class=\"txt-c\">".$items['dFechaInicio']."</td>".
+                                   "<td class=\"txt-c\">".$items['dFechaFin']."</td>".
                                    "<td>".$items['sNombreBroker']."</td>". 
                                    "<td>".$items['sEmail']."</td>".
-                                   "<td>".$items['dFechaAplicacion']."</td>".
+                                   "<td class=\"txt-c\">".$items['dFechaAplicacion']."</td>".
                                    "<td>$btn_confirm</td></tr>";
             }
         
@@ -299,7 +303,7 @@
                     "AND C.iDeleted = '0' $flt_query
                     AND B.iConsecutivoPoliza='$iConsecutivoPoliza'
                     AND A.dFechaAplicacion BETWEEN '$fecha_inicial' 
-                    AND '$fecha_final'";
+                    AND '$fecha_final' AND A.iConsecutivo NOT IN(SELECT iConsecutivoEndoso FROM cb_endoso_mensual_relacion WHERE iConsecutivoEndoso = A.iConsecutivo)";
       $result = $conexion->query($query);
       $rows   = $result->num_rows; 
       
@@ -349,7 +353,7 @@
     if($iTipoReporte == "1"){
        $flt_join = "LEFT  JOIN ct_unidades                AS U ON C.iConsecutivoUnidad = U.iConsecutivo ";
        $flt_join.= "LEFT  JOIN ct_unidad_modelo           AS M ON U.iModelo            = M.iConsecutivo";
-       $flt_field= "C.sVINUnidad, C.iConsecutivoUnidad, U.sVIN, U.iYear, M.sAlias AS sMake, U.sTipo, C.iPDAmount AS iPDAmount "; 
+       $flt_field= "C.sVINUnidad, C.iConsecutivoUnidad, U.sVIN, U.iYear, M.sAlias AS sMake, U.sTipo, C.iPDAmount AS iTotalPremiumPD "; 
     }else if($iTipoReporte == "2"){
        $flt_join  = "LEFT JOIN ct_operadores AS U ON C.iConsecutivoOperador = U.iConsecutivo "; 
        $flt_field = "C.sNombreOperador, C.iConsecutivoOperador, U.sNombre, DATE_FORMAT(U.dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, U.iExperienciaYear, U.iNumLicencia, DATE_FORMAT(U.dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia "; 
@@ -380,50 +384,95 @@
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
         
-        $sql    = "SELECT A.iConsecutivo AS iConsecutivoEndosoMensual,D.iConsecutivoPoliza,A.eStatus,C.iConsecutivo, A.iConsecutivoCompania, IF(C.eAccion = 'A','ADD','DELETE') AS eAccion, C.iConsecutivo AS iConsecutivoEndoso, E.sNumeroPoliza, F.sDescripcion,DATE_FORMAT(C.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
+        $sql    = "SELECT A.iConsecutivo AS iConsecutivoEndosoMensual,D.iConsecutivoPoliza,A.eStatus,C.iConsecutivo, A.iConsecutivoCompania, ".
+                  "IF(C.eAccion = 'A','ADD','DELETE') AS eAccion, C.iConsecutivo AS iConsecutivoEndoso, E.sNumeroPoliza, F.sDescripcion,".
+                  "DATE_FORMAT(C.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, C.iEndosoMultiple, ".
                   "$flt_field ".
                   "FROM cb_endoso_mensual AS A ".
                   "INNER JOIN cb_endoso_mensual_relacion AS B ON A.iConsecutivo       = B.iConsecutivoEndosoMensual ".
                   "INNER JOIN cb_endoso                  AS C ON B.iConsecutivoEndoso = C.iConsecutivo AND A.iTipoReporte = C.iConsecutivoTipoEndoso  ".
                   "INNER JOIN cb_endoso_estatus          AS D ON C.iConsecutivo       = D.iConsecutivoEndoso AND D.iConsecutivoPoliza = A.iConsecutivoPoliza ".
                   "INNER JOIN ct_polizas                 AS E ON D.iConsecutivoPoliza = E.iConsecutivo AND E.iDeleted = '0' AND A.iConsecutivoBroker = E.iConsecutivoBrokers  ".
-                  "INNER JOIN ct_tipo_poliza             AS F ON E.iTipoPoliza        = F.iConsecutivo  ".$flt_join.$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
+                  "INNER JOIN ct_tipo_poliza             AS F ON E.iTipoPoliza        = F.iConsecutivo  ".$flt_join.$filtroQuery.$ordenQuery;
+                  //" LIMIT ".$limite_inferior.",".$limite_superior;
         $result = $conexion->query($sql);
         $rows   = $result->num_rows; 
            
         if($rows > 0){    
             while ($items = $result->fetch_assoc()) { 
                 
+                #VEHICULOS
                 if($iTipoReporte == "1"){
-                    $Descripcion = $items['iYear']." - ".$items['sMake']." - ".$items['sVIN']." - \$".number_format($items['iPDAmount'],2,'.','')." ".$items['sTipo'];
-                }else if($iTipoReporte == "2"){
-                    $Descripcion = $items['sNombre']." - DOB: ".$items['dFechaNacimiento']." - LIC: ".$items['iNumLicencia']." EXP.".$items['dFechaExpiracionLicencia'];
+                    // ENDOSO NO MULTIPLE
+                    if($items['iEndosoMultiple'] == 0){
+                         $Descripcion = "<table style=\"width:100%;padding:0!important;margin:0!important;\">";
+                         $Descripcion.= "<tr style='background: none;'>".
+                                        "<td style='border: 0;width:120px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$items['eAccion']."</td>".
+                                        "<td style='border: 0;width:50px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$items['iYear']."</td>".
+                                        "<td style='border: 0;width:100px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$items['sMake']."</td>".
+                                        "<td style='border: 0;width:160px;padding: 0!important;min-height: auto!important;height:auto!important;'>".strtoupper($items['sVIN'])."</td>".
+                                        "<td style='border: 0;width:100px;padding: 0!important;min-height: auto!important;height:auto!important;'>\$".number_format($items['iTotalPremiumPD'],2,'.','')."</td>".
+                                        "<td style='border: 0;width:50px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$items['sTipo']."</td>".
+                                        "</tr>";
+                         $Descripcion.= "</table>";
+                    
+                    }
+                    // ENDOSO MULTIPLE
+                    else if ($items['iEndosoMultiple'] == 1){
+                         #CONSULTAR DETALLE DEL ENDOSO:
+                         $query = "SELECT A.sVIN, iConsecutivoUnidad, B.iYear, A.iTotalPremiumPD, C.sDescripcion AS sRadio, D.sAlias AS sModelo, B.sTipo, B.sPeso, ".
+                                  "(CASE  WHEN A.eAccion = 'ADDSWAP'    THEN 'ADD SWAP' WHEN A.eAccion = 'DELETESWAP' THEN 'DELETE SWAP' ELSE A.eAccion END) AS eAccion ".
+                                  "FROM cb_endoso_unidad      AS A ".
+                                  "LEFT JOIN ct_unidades      AS B ON A.iConsecutivoUnidad = B.iConsecutivo ".
+                                  "LEFT JOIN ct_unidad_radio  AS C ON A.iConsecutivoRadio  = C.iConsecutivo ".
+                                  "LEFT JOIN ct_unidad_modelo AS D ON B.iModelo = D.iConsecutivo ".
+                                  "WHERE A.iConsecutivoEndoso = '".$items['iConsecutivo']."' ORDER BY sVIN ASC";
+                         $r     = $conexion->query($query);
+                         
+                         $Descripcion = "<table style=\"width:100%;padding:0!important;margin:0!important;border-collapse: collapse;\">";
+                         $description = "";
+                         
+                         while($item = $r->fetch_assoc()){
+                            $description .= "<tr style='background: none;'>".
+                                            "<td style='border: 0;width:120px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['eAccion']."</td>".
+                                            "<td style='border: 0;width:50px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['iYear']."</td>".
+                                            "<td style='border: 0;width:100px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['sModelo']."</td>".
+                                            "<td style='border: 0;width:160px;padding: 0!important;min-height: auto!important;height:auto!important;'>".strtoupper($item['sVIN'])."</td>".
+                                            "<td style='border: 0;width:100px;padding: 0!important;min-height: auto!important;height:auto!important;'>\$".number_format($item['iTotalPremiumPD'],2,'.','')."</td>".
+                                            "<td style='border: 0;width:50px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['sTipo']."</td>".
+                                            "</tr>"; 
+                         }
+                         $Descripcion.= $description."</table>";    
+                    }
+                        
                 }
-                if($items['eStatus'] == "S"){
-                   $btns       = "<div class=\"btn_delete_detalle btn-icon trash btn-left\" title=\"Delete of this Report\"><i class=\"fa fa-trash\"></i> <span></span></div>"; 
-                } 
+                #DRIVERS
+                else if($items['iEndosoMultiple'] == 0 && $iTipoReporte == "2"){
+                    $Descripcion = $items['sNombre']." - DOB: ".$items['dFechaNacimiento']." - LIC: ".$items['iNumLicencia']." EXP.".$items['dFechaExpiracionLicencia'];    
+                }
+                /////////
                 
-                $htmlTabla .= "<tr>".
-                              "<td style=\"width: 25px;\">".$items['iConsecutivo']."</td>".
-                              "<td class=\"txt-c\">".$items['eAccion']."</td>".
+                if($_POST['iEditable']== 'true'){
+                   $btns = "<div class=\"btn_delete_detalle btn-icon trash btn-left\" title=\"Delete from this Report\"><i class=\"fa fa-trash\"></i><span></span></div>"; 
+                }else{$btns = "";} 
+                
+                $htmlTabla .= "<tr>". 
+                              "<td id=\"iMonth_".$items['iConsecutivo']."\" class=\"txt-c\">".$items['dFechaAplicacion']."</td>".
+                              //"<td style=\"width: 25px;\">".$items['iConsecutivo']."</td>".
+                              //"<td class=\"txt-c\">".$items['eAccion']."</td>".
                               "<td>".$items['sNumeroPoliza']." - ".$items['sDescripcion']."</td>". 
                               "<td>".$Descripcion."</td>".
-                              "<td class=\"txt-c\">".$items['dFechaAplicacion']."</td>".
                               "<td>$btns</td></tr>";
                 $iConsecutivoPoliza = $items['iConsecutivoPoliza'];
-            }
-        
-            
-            $conexion->rollback();
-            $conexion->close();                                                                                                                                                                       
-        } else { 
-            
-            $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";    
-            
+            }                                                                                                                                                               
         } 
+        else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";    } 
     }
-     $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla","iConsecutivoPoliza"=>"$iConsecutivoPoliza");   
-     echo json_encode($response); 
+    
+    $conexion->rollback();
+    $conexion->close();   
+    $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla","iConsecutivoPoliza"=>"$iConsecutivoPoliza");   
+    echo json_encode($response); 
   }
   function detalle_delete_data(){
       $error = '0';  
@@ -452,7 +501,7 @@
   } 
   
   #DETALLE ENDOSOS ENVIADOS:
-  function detalle_enviados_get_datagrid(){
+  /*function detalle_enviados_get_datagrid(){
     
     $iConsecutivo = trim($_POST['iConsecutivo']);
     $iTipoReporte = trim($_POST['iTipoReporte']); 
@@ -510,7 +559,9 @@
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
         
-        $sql    = "SELECT A.iConsecutivo AS iConsecutivoEndosoMensual,D.iConsecutivoPoliza,A.eStatus,C.iConsecutivo, A.iConsecutivoCompania, IF(C.eAccion = 'A','ADD','DELETE') AS eAccion, C.iConsecutivo AS iConsecutivoEndoso, E.sNumeroPoliza, F.sDescripcion,DATE_FORMAT(C.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
+        $sql    = "SELECT A.iConsecutivo AS iConsecutivoEndosoMensual,D.iConsecutivoPoliza,A.eStatus,C.iConsecutivo, A.iConsecutivoCompania, ".
+                  "IF(C.eAccion = 'A','ADD','DELETE') AS eAccion, C.iConsecutivo AS iConsecutivoEndoso, E.sNumeroPoliza, F.sDescripcion,".
+                  "DATE_FORMAT(C.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, C.iEndosoMultiple, ".
                   "$flt_field ".
                   "FROM cb_endoso_mensual AS A ".
                   "INNER JOIN cb_endoso_mensual_relacion AS B ON A.iConsecutivo       = B.iConsecutivoEndosoMensual ".
@@ -523,22 +574,64 @@
            
         if($rows > 0){    
             while ($items = $result->fetch_assoc()) { 
-                
+                $btns = "";
+                #VEHICULOS
                 if($iTipoReporte == "1"){
-                    $Descripcion = $items['iYear']." - ".$items['sMake']." - ".$items['sVIN']." - \$".number_format($items['iPDAmount'],2,'.','')." ".$items['sTipo'];
-                }else if($iTipoReporte == "2"){
+                    // ENDOSO NO MULTIPLE
+                    if($items['iEndosoMultiple'] == 0){
+                         $Descripcion = "<table style=\"width:100%;padding:0!important;margin:0!important;\">";
+                         $Descripcion.= "<tr style='background: none;'>".
+                                        "<td style='border: 0;width:120px;padding: 0!important;'>".$items['eAccion']."</td>".
+                                        "<td style='border: 0;padding: 0!important;'>".$items['iYear']."</td>".
+                                        "<td style='border: 0;padding: 0!important;'>".$items['sMake']."</td>".
+                                        "<td style='border: 0;padding: 0!important;'>".strtoupper($items['sVIN'])."</td>".
+                                        "<td style='border: 0;padding: 0!important;'>\$".number_format($items['iTotalPremiumPD'],2,'.','')."</td>".
+                                        "<td style='border: 0;padding: 0!important;'>".$items['sTipo']."</td>".
+                                        "</tr>";
+                         $Descripcion.= "</table>";
+                    
+                    }
+                    // ENDOSO MULTIPLE
+                    else if ($items['iEndosoMultiple'] == 1){
+                         #CONSULTAR DETALLE DEL ENDOSO:
+                         $query = "SELECT A.sVIN, iConsecutivoUnidad, B.iYear, A.iTotalPremiumPD, C.sDescripcion AS sRadio, D.sAlias AS sModelo, B.sTipo, B.sPeso, ".
+                                  "(CASE  WHEN A.eAccion = 'ADDSWAP'    THEN 'ADD SWAP' WHEN A.eAccion = 'DELETESWAP' THEN 'DELETE SWAP' ELSE A.eAccion END) AS eAccion ".
+                                  "FROM cb_endoso_unidad      AS A ".
+                                  "LEFT JOIN ct_unidades      AS B ON A.iConsecutivoUnidad = B.iConsecutivo ".
+                                  "LEFT JOIN ct_unidad_radio  AS C ON A.iConsecutivoRadio  = C.iConsecutivo ".
+                                  "LEFT JOIN ct_unidad_modelo AS D ON B.iModelo = D.iConsecutivo ".
+                                  "WHERE A.iConsecutivoEndoso = '".$items['iConsecutivo']."' ORDER BY sVIN ASC";
+                         $r     = $conexion->query($query);
+                         
+                         $Descripcion = "<table style=\"width:100%;padding:0!important;margin:0!important;border-collapse: collapse;\">";
+                         $description = "";
+                         
+                         while($item = $r->fetch_assoc()){
+                            $description .= "<tr style='background: none;'>".
+                                            "<td style='border: 0;width:120px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['eAccion']."</td>".
+                                            "<td style='border: 0;width:50px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['iYear']."</td>".
+                                            "<td style='border: 0;width:100px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['sModelo']."</td>".
+                                            "<td style='border: 0;width:160px;padding: 0!important;min-height: auto!important;height:auto!important;'>".strtoupper($item['sVIN'])."</td>".
+                                            "<td style='border: 0;width:100px;padding: 0!important;min-height: auto!important;height:auto!important;'>\$".number_format($item['iTotalPremiumPD'],2,'.','')."</td>".
+                                            "<td style='border: 0;width:50px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['sTipo']."</td>".
+                                            "</tr>"; 
+                         }
+                         $Descripcion.= $description."</table>";    
+                    }
+                        
+                }
+                
+                else if($iTipoReporte == "2"){
                     $Descripcion = $items['sNombre']." - DOB: ".$items['dFechaNacimiento']." - LIC: ".$items['iNumLicencia']." EXP.".$items['dFechaExpiracionLicencia'];
                 }
-                if($items['eStatus'] == "S"){
-                   $btns       = "<div class=\"btn_delete_detalle btn-icon trash btn-left\" title=\"Delete of this Report\"><i class=\"fa fa-trash\"></i> <span></span></div>"; 
-                } 
+                 
                 
-                $htmlTabla .= "<tr>".
-                              "<td style=\"width: 25px;\">".$items['iConsecutivo']."</td>".
-                              "<td class=\"txt-c\">".$items['eAccion']."</td>".
+                $htmlTabla .= "<tr>". 
+                              "<td id=\"iMonth_".$items['iConsecutivo']."\" class=\"txt-c\">".$items['dFechaAplicacion']."</td>".
+                              //"<td style=\"width: 25px;\">".$items['iConsecutivo']."</td>".
+                              //"<td class=\"txt-c\">".$items['eAccion']."</td>".
                               "<td>".$items['sNumeroPoliza']." - ".$items['sDescripcion']."</td>". 
                               "<td>".$Descripcion."</td>".
-                              "<td class=\"txt-c\">".$items['dFechaAplicacion']."</td>".
                               "<td>$btns</td></tr>";
                 $iConsecutivoPoliza = $items['iConsecutivoPoliza'];
             }
@@ -554,7 +647,7 @@
     }
      $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla","iConsecutivoPoliza"=>"$iConsecutivoPoliza");   
      echo json_encode($response); 
-  }  
+  }  */
   
   #ESTATUS ENDOSO:
   function estatus_get_data(){

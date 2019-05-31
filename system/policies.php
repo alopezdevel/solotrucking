@@ -489,6 +489,7 @@ var fn_policies = {
                     $(fn_policies.data_grid + ' .btn-icon.expired_policies').removeClass('active');
                     $(fn_policies.data_grid + ' .btn-icon.active_policies').addClass('active');
                     fn_policies.filtro_table = 'active';
+                    fn_solotrucking.btn_tooltip();
                 }
             }); 
         }, 

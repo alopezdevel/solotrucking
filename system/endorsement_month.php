@@ -107,6 +107,7 @@ var fn_endosos = {
                     fn_endosos.edit();
                     fn_endosos.estatus_edit();
                     fn_endosos.delete_confirm();
+                    fn_solotrucking.btn_tooltip();
                 }
             }); 
         },
@@ -232,6 +233,9 @@ var fn_endosos = {
             fn_endosos.filtro = "";
             if($(fn_endosos.data_grid+" .flt_id").val() != ""){ fn_endosos.filtro += "A.iConsecutivo|"+$(fn_endosos.data_grid+" .flt_id").val()+","}
             if($(fn_endosos.data_grid+" .flt_name").val() != ""){ fn_endosos.filtro += "B.sNombreCompania|"+$(fn_endosos.data_grid+" .flt_name").val()+","} 
+            if($(fn_endosos.data_grid+" .flt_tipo").val() != ""){ fn_endosos.filtro += "iTipoReporte|"+$(fn_endosos.data_grid+" .flt_tipo").val()+","} 
+            if($(fn_endosos.data_grid+" .flt_datefrom").val() != ""){ fn_endosos.filtro += "dFechaInicio|"+$(fn_endosos.data_grid+" .flt_datefrom").val()+","} 
+            if($(fn_endosos.data_grid+" .flt_dateto").val() != ""){ fn_endosos.filtro += "dFechaFin|"+$(fn_endosos.data_grid+" .flt_dateto").val()+","} 
             if($(fn_endosos.data_grid+" .flt_broker").val() != ""){ fn_endosos.filtro += "C.sName|"+$(fn_endosos.data_grid+" .flt_broker").val()+","} 
             if($(fn_endosos.data_grid+" .flt_email").val() != ""){ fn_endosos.filtro += "A.sEmail|"+$(fn_endosos.data_grid+" .flt_email").val()+","} 
             if($(fn_endosos.data_grid+" .flt_date").val() != ""){ fn_endosos.filtro += "A.dFechaAplicacion|"+$(fn_endosos.data_grid+" .flt_date").val()+","}    
@@ -310,6 +314,7 @@ var fn_endosos = {
                             filtroInformacion    : fn_endosos.detalle.filtro,  
                             ordenInformacion     : fn_endosos.detalle.orden,
                             sortInformacion      : fn_endosos.detalle.sort,
+                            iEditable            : 'true',
                         },
                         async : true,
                         dataType : "json",
@@ -322,6 +327,7 @@ var fn_endosos = {
                             fn_endosos.detalle.pagina_actual = data.pagina;
                             $("#frm_edit_new select[name=iConsecutivoPoliza").val(data.iConsecutivoPoliza); 
                             fn_endosos.detalle.borrar();
+                            fn_solotrucking.btn_tooltip();
                         }
                     });     
                 }
@@ -352,7 +358,9 @@ var fn_endosos = {
             },
             borrar : function(){
               $(fn_endosos.detalle.data_grid + " tbody .btn_delete_detalle").bind("click",function(){
-                   var clave = $(this).parent().parent().find("td:eq(0)").html();
+                   var clave    = $(this).parent().parent().find("td:eq(0)").prop('id');
+                       clave    = clave.split('_');
+                       clave    = clave[1];
                    $.post("endorsement_month_server.php",{accion:"detalle_delete_data", 'clave': clave,'claveReporte':fn_endosos.detalle.iConsecutivo},
                    function(data){
                         fn_solotrucking.mensaje(data.msj);
@@ -453,7 +461,7 @@ var fn_endosos = {
                         type:"POST", 
                         url:"endorsement_month_server.php", 
                         data:{
-                            accion               : "detalle_enviados_get_datagrid",
+                            accion               : "detalle_get_datagrid",
                             iConsecutivo         : fn_endosos.detalle_enviados.iConsecutivo,
                             iTipoReporte         : fn_endosos.detalle_enviados.iTipo,
                             registros_por_pagina : "15", 
@@ -461,6 +469,7 @@ var fn_endosos = {
                             filtroInformacion    : fn_endosos.detalle_enviados.filtro,  
                             ordenInformacion     : fn_endosos.detalle_enviados.orden,
                             sortInformacion      : fn_endosos.detalle_enviados.sort,
+                            iEditable            : 'false',
                         },
                         async : true,
                         dataType : "json",
@@ -472,6 +481,7 @@ var fn_endosos = {
                             $(fn_endosos.detalle_enviados.data_grid+" tfoot .pagina_actual").val(data.pagina);
                             fn_endosos.detalle_enviados.pagina_actual = data.pagina;
                             $("#frm_edit_estatus select[name=iConsecutivoPoliza").val(data.iConsecutivoPoliza); 
+                            fn_solotrucking.btn_tooltip();
                         }
                     });     
                 }
@@ -515,6 +525,15 @@ var fn_endosos = {
             <tr id="grid-head1">
                 <td style='width:45px;'><input class="flt_id" class="numeros" type="text" placeholder="ID:"></td>
                 <td><input class="flt_name" type="text" placeholder="Company Name:"></td>
+                <td>
+                <select class="flt_tipo">
+                    <option value="">All</option>
+                    <option value="">Drivers</option>
+                    <option value="">Vehicles</option>
+                </select>
+                </td>
+                <td><input class="flt_datefrom" type="text" placeholder="MM/DD/YYYY"></td> 
+                <td><input class="flt_dateto" type="text" placeholder="MM/DD/YYYY"></td> 
                 <td><input class="flt_broker" type="text" placeholder="Broker Name:"></td> 
                 <td><input class="flt_email" type="text" placeholder="E-mails:"></td> 
                 <td><input class="flt_date" type="text" placeholder="MM/DD/YYYY"></td> 
@@ -533,6 +552,9 @@ var fn_endosos = {
             <tr id="grid-head2">
                 <td class="etiqueta_grid down" onclick="fn_endosos.ordenamiento('iConsecutivo',this.cellIndex);">ID</td>
                 <td class="etiqueta_grid"      onclick="fn_endosos.ordenamiento('sNombreCompania',this.cellIndex);">Company</td>
+                <td class="etiqueta_grid"      onclick="fn_endosos.ordenamiento('iTipoReporte',this.cellIndex);">Report Type</td>
+                <td class="etiqueta_grid"      onclick="fn_endosos.ordenamiento('dFechaInicio',this.cellIndex);">Date from</td>
+                <td class="etiqueta_grid"      onclick="fn_endosos.ordenamiento('dFechaFin',this.cellIndex);">Date To</td>
                 <td class="etiqueta_grid"      onclick="fn_endosos.ordenamiento('sNombreBroker',this.cellIndex);">Broker</td>
                 <td class="etiqueta_grid"      onclick="fn_endosos.ordenamiento('sEmail',this.cellIndex);">E-mails</td>
                 <td class="etiqueta_grid"      onclick="fn_endosos.ordenamiento('dFechaAplicacion',this.cellIndex);">Sent Date</td>
@@ -656,16 +678,14 @@ var fn_endosos = {
                     <table class="popup-datagrid" style="margin-bottom: 10px;" cellpadding="0" cellspacing="0">
                         <thead>
                             <tr id="grid-head2">
-                                <td class="etiqueta_grid txt-c" title="ID of endorsement on internal system.">ID</td>
-                                <td class="etiqueta_grid txt-c" style="width: 65px;">Action</td>
+                                <td class="etiqueta_grid txt-c" style="width: 115px;">Application Date</td>
                                 <td class="etiqueta_grid" style="width: 200px;">Policy No.</td>
                                 <td class="etiqueta_grid">Descripcion</td>
-                                <td class="etiqueta_grid txt-c" style="width: 115px;">Application Date</td>
                                 <td class="etiqueta_grid" style="width: 80px;text-align: center;"></td>
                             </tr>
                         </thead>
                         <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
-                        <tfoot>
+                        <!--<tfoot>
                             <tr>
                                 <td colspan="100%">
                                     <div class="datagrid-pages">
@@ -685,15 +705,15 @@ var fn_endosos = {
                                     </div>
                                 </td>
                             </tr>
-                        </tfoot>
+                        </tfoot>-->
                     </table>
                     </td>
                 </tr>
                 </table> 
-                <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('frm_edit_new');fn_endosos.fillgrid();" style="margin-right:10px;background:#e8051b;">CLOSE</button>
-                <button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.save(true);fn_solotrucking.mensaje('The data has been sent!, please check the account customerservice@solo-trucking.com to receive the response from the brokers.');window.open('endorsement_month_xlsx.php?idReport='+$('#frm_edit_new input[name=iConsecutivo]').val()+'&mail=1');" style="margin-right:10px;background: #87c540;width: 140px;">SEND E-MAIL</button>
+                <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('frm_edit_new');fn_endosos.fillgrid();" style="margin-right:10px;background:#e8051b;" title="Close">CLOSE</button>
+                <button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.save(true);fn_solotrucking.mensaje('The data has been sent!, please check the account customerservice@solo-trucking.com to receive the response from the brokers.');window.open('endorsement_month_xlsx.php?idReport='+$('#frm_edit_new input[name=iConsecutivo]').val()+'&mail=1');" style="margin-right:10px;background: #87c540;width: 140px;" title="Send report to the broker">SEND E-MAIL</button>
                 <!--<button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.email.preview();" style="margin-right:10px;background:#5ec2d4;width: 140px;">PREVIEW E-MAIL</button>--> 
-                <button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.download_excel($('#frm_edit_new input[name=iConsecutivo]').val());" style="margin-right:10px;background: #87c540;width: 180px;">DOWNLOAD EXCEL FILE</button> 
+                <button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.download_excel($('#frm_edit_new input[name=iConsecutivo]').val());" style="margin-right:10px;background: #87c540;width: 180px;" title="Download report without send">DOWNLOAD EXCEL FILE</button> 
                 <button type="button" class="btn-1" onclick="fn_endosos.save();" style="margin-right:10px;">SAVE</button> 
             </fieldset>
         </form>
@@ -783,7 +803,7 @@ var fn_endosos = {
                     <tr>
                         <td colspan="100%">
                         <div class="field_item">
-                            <label>General Comments: <span style="color:#044c8b;font-size:10px;">(This field will be displayed to the customer in our system.)</span></label> 
+                            <label>General Comments: <span style="color:#044c8b;font-size:10px;">(This field will be displayed only to Solo-Trucking users.)</span></label> 
                             <textarea tabindex="2" id="sComentarios" name="sComentarios" maxlenght="1000" style="resize: none;" title="Max. 1000 characters." style="height: 30px!important;"></textarea>
                         </div>
                         </td>
@@ -796,11 +816,9 @@ var fn_endosos = {
                     <table class="popup-datagrid" style="margin-bottom: 10px;" cellpadding="0" cellspacing="0">
                         <thead>
                             <tr id="grid-head2">
-                                <td class="etiqueta_grid txt-c" title="ID of endorsement on internal system.">ID</td>
-                                <td class="etiqueta_grid txt-c" style="width: 65px;">Action</td>
+                                <td class="etiqueta_grid txt-c" style="width: 115px;">App Date</td>
                                 <td class="etiqueta_grid" style="width: 200px;">Policy No.</td>
                                 <td class="etiqueta_grid">Descripcion</td>
-                                <td class="etiqueta_grid txt-c" style="width: 115px;">Application Date</td>
                                 <td class="etiqueta_grid" style="width: 80px;text-align: center;"></td>
                             </tr>
                         </thead>
@@ -830,9 +848,9 @@ var fn_endosos = {
                     </td>
                 </tr>
                 </table> 
-                <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('frm_edit_estatus');fn_endosos.fillgrid();" style="margin-right:10px;background:#e8051b;">CLOSE</button>
-                <!--<button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.download_excel($('#frm_edit_estatus input[name=iConsecutivo]').val());" style="margin-right:10px;background: #87c540;width: 180px;">DOWNLOAD EXCEL FILE</button>--> 
-                <button type="button" class="btn-1" onclick="fn_endosos.estatus_save();" style="margin-right:10px;">SAVE</button> 
+                <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('frm_edit_estatus');fn_endosos.fillgrid();" style="margin-right:10px;background:#e8051b;" title="Close">CLOSE</button>
+                <!--<button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.download_excel($('#frm_edit_estatus input[name=iConsecutivo]').val());" style="margin-right:10px;background: #87c540;width: 180px;" title="Download Excel file without send">DOWNLOAD EXCEL FILE</button>-->
+                <button type="button" class="btn-1" onclick="fn_endosos.estatus_save();" style="margin-right:10px;" title="Save status">SAVE</button> 
             </fieldset>
         </form>
     </div>

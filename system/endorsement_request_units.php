@@ -66,6 +66,24 @@
                     }
                 }
             }); 
+            $('#dialog_delete_endorsement').dialog({
+                modal: true,
+                autoOpen: false,
+                width : 300,
+                height : 200,
+                resizable : false,
+                buttons : {
+                    'YES' : function() {
+                        clave = $('#dialog_delete_endorsement input[name=iConsecutivo]').val();
+                        $(this).dialog('close');
+                        
+                        fn_endorsement.delete_endorsement(clave);             
+                    },
+                     'NO' : function(){
+                        $(this).dialog('close');
+                    }
+                }
+            }); 
                
     }  
     function validapantalla(usuario){if(usuario == ""  || usuario == null){location.href= "login.php";}  }                   
@@ -175,6 +193,8 @@
                         fn_endorsement.edit();
                         fn_endorsement.edit_estatus();
                         fn_endorsement.change_estatus();
+                        fn_endorsement.delete_confirm();
+                        fn_solotrucking.btn_tooltip();
                     }
                 }); 
             },
@@ -350,6 +370,23 @@
                 }
                 else{fn_solotrucking.mensaje('<p>Please check the following::</p><ul>'+msj+'</ul>');}     
                 
+            },
+            delete_confirm : function(){
+              $(fn_endorsement.data_grid + " tbody .btn_delete").bind("click",function(){
+                   var clave    = $(this).parent().parent().find("td:eq(0)").prop('id');
+                       clave    = clave.split('_');
+                       clave    = clave[1];
+                   $('#dialog_delete_endorsement input[name=iConsecutivo]').val(clave);
+                   $('#dialog_delete_endorsement').dialog( 'open' );
+                   return false;
+               });  
+            },
+            delete_endorsement : function(id){
+              $.post("funciones_endorsement_request_units.php",{accion:"delete_endorsement", 'clave': id},
+               function(data){
+                    fn_solotrucking.mensaje(data.msj);
+                    fn_endorsement.filtraInformacion();
+               },"json");  
             },
             files : {
                pagina_actual : "",
@@ -964,7 +1001,7 @@
                     </select>
                 </td>-->  
                 <td style="width: 95px;"><input class="flt_date" type="text" placeholder="MM/DD/YYYY"></td>
-                <td>
+                <td style="width: 130px;">
                     <select class="flt_status" onblur="fn_endorsement.filtraInformacion();">
                         <option value="">Select an option...</option>
                         <option value="S">NEW APLICATION</option>
@@ -1066,25 +1103,17 @@
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="100%">
+                        <td style="width: 70%;">
                             <div class="field_item">
                                 <label>Company <span style="color:#ff0000;">*</span>:</label>  
                                 <select tabindex="1" id="iConsecutivoCompania" onchange="fn_endorsement.get_company_data();"  name="iConsecutivoCompania" class="required-field" style="height: 25px!important;width:100%!important;"><option value="">Select an option...</option></select>
                             </div>
                         </td>
-                    </tr>
-                    <tr>
                         <td>
                             <div class="field_item">
                                 <label>Application Date <span style="color:#ff0000;">*</span>:</label> 
                                 <input tabindex="2" id="dFechaAplicacion" name="dFechaAplicacion" class="txt-uppercase fecha required-field" placeholder="mm/dd/yyyy" type="text" style="width: 85%;">
                             </div>
-                        </td>
-                        <td>
-                        <div class="field_item"> 
-                            <label>Hour <span style="color:#ff0000;">*</span>: <span style="color: #5e8bd4;;">(Please capture the hour in 24/h format)</span></label><br>
-                            <input tabindex="3" id="dFechaAplicacionHora" name="dFechaAplicacionHora" type="text" class="hora required-field" title="Please capture the hour in 24/h format" style="width: 98%;" placeholder="HH:MM">
-                        </div>
                         </td>
                     </tr>
                 </table>
@@ -1442,6 +1471,12 @@
 <div id="dialog_endorsement_save" title="SYSTEM ALERT" style="display:none;"><p>We will be sending a notice to the company about the status of endorsements. Are you sure want to continue?</p></div> 
 <div id="dialog_send_email" title="SYSTEM ALERT" style="display:none;">
     <p>Are you sure that want to send the endorsement to the broker(s)?</p>
+</div> 
+<div id="dialog_delete_endorsement" title="SYSTEM ALERT" style="display:none;">
+    <p>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
+    <form id="elimina" method="post">
+           <input type="hidden" name="iConsecutivo" value="">
+    </form>  
 </div> 
 <!-- FOOTER -->
 <?php include("footer.php"); ?> 

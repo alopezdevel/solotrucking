@@ -885,28 +885,13 @@
           $query = "DELETE FROM cb_endoso WHERE iConsecutivo = '$clave' AND iConsecutivoCompania = '$company'"; 
           $conexion->query($query);
           $conexion->affected_rows ? $transaccion_exitosa = true : $transaccion_exitosa = false;
-      }else{
-      
-           $msj = "Error: Descriptions in Endorsement are not found."; 
-           $conexion->rollback();
-           $conexion->close();
-      } 
+      }
+      else{$msj = "Error: Descriptions in Endorsement are not found.";$transaccion_exitosa = false;} 
       
       if($transaccion_exitosa){
-        //Ya que se borro el endoso borramos los driver o unidades que pertenecian a el:
-        if($endoso['iConsecutivoTipoEndoso'] == 2 && $endoso['iConsecutivoOperador'] != ''){
-          $query_operador = "DELETE FROM ct_operadores WHERE iConsecutivo = '".$endoso['iConsecutivoOperador']."' AND iConsecutivoCompania = '$company'";
-          $conexion->query($query_operador);
-              
-        }else if( $endoso['iConsecutivoTipoEndoso'] == 1 && $endoso['iConsecutivoUnidad'] != ''){
-          $query_operador = "DELETE FROM ct_unidad WHERE iConsecutivo = '".$endoso['iConsecutivoUnidad']."' AND iConsecutivoCompania = '$company'"; 
-          $conexion->query($query_operador);
-        }  
-           
         $conexion->commit();
         $conexion->close();
-        $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
-                Data has been deleted succesfully!</p>';
+        $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data has been deleted succesfully!</p>';
       }else{
         $conexion->rollback();
         $conexion->close();
@@ -1771,7 +1756,7 @@
       #Function Begin
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);
-      $sql    = "SELECT A.iConsecutivoUnidad, A.sVIN, A.iConsecutivoRadio, A.iTotalPremiumPD, A.eAccion, B.iModelo, B.iYear, B.sTipo ".  
+      $sql    = "SELECT A.iConsecutivoUnidad, A.sVIN, A.iConsecutivoRadio, A.iTotalPremiumPD AS iPDAmount, A.eAccion, B.iModelo, B.iYear, B.sTipo ".  
                 "FROM      cb_endoso_unidad AS A ".
                 "LEFT JOIN ct_unidades      AS B ON A.iConsecutivoUnidad = B.iConsecutivo ". 
                 "WHERE A.iConsecutivoEndoso = '$idEndoso' AND A.iConsecutivoUnidad='$clave'";
@@ -1782,16 +1767,18 @@
           $data    = $result->fetch_assoc();
           $llaves  = array_keys($data);
           $datos   = $data; 
+          
+          $data['eAccion'] == 'ADD' || $data['eAccion'] == 'ADDSWAP' ? $form = '#frm_unit_add' : $form = '#frm_unit_delete';
             
           foreach($datos as $i => $b){ 
-            $fields .= "\$('$domroot [name=".$i."]').val('".$datos[$i]."');";   
+            $fields .= "\$('$domroot $form [id=".$i."]').val('".$datos[$i]."');";   
           }  
             
       }else{$error = "1"; $msj = "Error to data query, please try again later.";}
       $conexion->rollback();
       $conexion->close(); 
       
-      $response = array("msj"=>"$msj", "error"=>"$error", "fields"=>"$fields",);   
+      $response = array("msj"=>"$msj", "error"=>"$error", "fields"=>"$fields",'accion'=>$data['eAccion']);   
       echo json_encode($response); 
      
   }
@@ -1972,6 +1959,50 @@
           }
           $response = array("error"=>"$error","msj"=>"$mensaje",'iConsecutivoDriver' => "$iConsecutivoRegistro");
           echo json_encode($response);       
+  }
+  function driver_cargar(){
+      #Err flags:
+      $error = '0';
+      $msj   = "";
+      #Variables
+      $fields   = "";
+      $clave    = trim($_POST['iConsecutivoOperador']);
+      $idEndoso = trim($_POST['iConsecutivoEndoso']);
+      $domroot  = $_POST['domroot']; 
+      
+      #Function Begin
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);
+      $sql    = "SELECT A.iConsecutivoOperador, A.eAccion, A.sNombre, A.iNumLicencia, DATE_FORMAT(B.dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(B.dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, B.iExperienciaYear, B.eTipoLicencia ".  
+                "FROM      cb_endoso_operador AS A ".
+                "LEFT JOIN ct_operadores      AS B ON A.iConsecutivoOperador = B.iConsecutivo ". 
+                "WHERE A.iConsecutivoEndoso = '$idEndoso' AND A.iConsecutivoOperador='$clave'";
+      $result = $conexion->query($sql);
+      $items  = $result->num_rows; 
+      if ($items > 0) {
+            
+          $data    = $result->fetch_assoc();
+          $llaves  = array_keys($data);
+          $datos   = $data; 
+          
+          $data['eAccion'] == 'ADD' || $data['eAccion'] == 'ADDSWAP' ? $form = '#frm_driver_add' : $form = '#frm_driver_delete';
+            
+          foreach($datos as $i => $b){ 
+            $fields .= "\$('$domroot $form [id=".$i."]').val('".$datos[$i]."');";   
+          }  
+          
+          /*if($data['eAccion'] == 'DELETE' || $data['eAccion'] == 'DELETESWAP'){
+              $sql = "SELECT sNombreArchivo, sTipoArchivo, eArchivo='$eArchivo', ".
+                     "FROM cb_operador_files WHERE iConsecutivo ='".$_POST['iConsecutivo']."'"; 
+          } */
+          
+            
+      }else{$error = "1"; $msj = "Error to data query, please try again later.";}
+      $conexion->rollback();
+      $conexion->close(); 
+      
+      $response = array("msj"=>"$msj", "error"=>"$error", "fields"=>"$fields",'accion'=>$data['eAccion']);   
+      echo json_encode($response);     
   }
   
   function guardar_endoso(){
@@ -2170,13 +2201,11 @@
         }
       }
       
-      
-      
       if($transaccion_exitosa || $error == 0){$conexion->commit();$mensaje = "The data has been saved successfully!";}
       else{$conexion->rollback();}
       
       $conexion->close();
-      $response = array("error"=>"$error","msj"=>"$mensaje","error_mysqli"=>$ErrMySQL);
+      $response = array("error"=>"$error","msj"=>"$mensaje","error_mysqli"=>$ErrMySQL,'iConsecutivo'=>$iConsecutivoEndoso);
       echo json_encode($response); 
   }
   function cargar_endoso(){

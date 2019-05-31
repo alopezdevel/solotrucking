@@ -145,6 +145,7 @@
                         fn_users.edit();
                         fn_users.delete_confirm();
                         fn_users.user_email_confirm();
+                        fn_solotrucking.btn_tooltip();
                     }
                 }); 
             },

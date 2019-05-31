@@ -85,6 +85,7 @@ if ( !($_SESSION["acceso"] != '2'  && $_SESSION["usuario_actual"] != "" && $_SES
                         fn_insurances.pagina_actual = data.pagina; 
                         fn_insurances.edit();
                         fn_insurances.delete_confirm();
+                        fn_solotrucking.btn_tooltip();
                     }
                 }); 
             },

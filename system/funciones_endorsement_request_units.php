@@ -355,8 +355,8 @@
       $sUsuario             = $_SESSION['usuario_actual'];
       $dFecha               = date("Y-m-d H:i:s");
       $dFechaApp            = trim($_POST['dFechaAplicacion'])     != "" ? date('Y-m-d',strtotime(trim($_POST['dFechaAplicacion']))) : date("Y-m-d");
-      $dFechaAppHora        = trim($_POST['dFechaAplicacionHora']) != "" ? date('H:i:s',strtotime(trim($_POST['dFechaAplicacionHora']))) : date("H:m:s");
-      $dFechaApp            = $dFechaApp." ".$dFechaAppHora;
+      //$dFechaAppHora        = trim($_POST['dFechaAplicacionHora']) != "" ? date('H:i:s',strtotime(trim($_POST['dFechaAplicacionHora']))) : date("H:m:s");
+      $dFechaApp            = $dFechaApp." 00:00:00";
       $sSolicitanteNombre   = trim(strtoupper($_POST['sSolicitanteNombre']));
       $sSolicitanteEmail    = trim(strtolower($_POST['sSolicitanteEmail']));
       $sSolicitanteFecha    = $_POST['sSolicitanteFecha'] != "" ? date('Y-m-d',strtotime(trim($_POST['sSolicitanteFecha']))) : "";
@@ -401,6 +401,48 @@
       $conexion->close();
       $response = array("error"=>"$error","msj"=>"$mensaje","iConsecutivo"=>"$iConsecutivo");
       echo json_encode($response);
+  }
+  function delete_endorsement(){
+      
+      //Conexion:
+      include("cn_usuarios.php"); 
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $success= true;
+      $clave  = $_POST['clave'];
+      $error  = '0';  
+      $msj    = ""; 
+      $clave  = trim($_POST['clave']); 
+      
+      //Revisar que tipo de endoso es para verrificar si hay que borrar otros datos antes:
+      $query  = "SELECT iConsecutivoTipoEndoso, iReeferYear, iTrailerExchange, iConsecutivoOperador, iConsecutivoUnidad FROM cb_endoso WHERE iConsecutivo = '$clave'"; 
+      $result = $conexion->query($query); 
+      $rows   = $result->num_rows;
+      if($rows > 0 ){$endoso = $result->fetch_assoc();}else{$error = '1';}
+      
+      //BORRAMOS ENDOSO.
+      if($error == '0'){
+          
+          // Lo marcamos como eliminado mas no se elimina fisicamente de la BDD.
+          $query = "UPDATE cb_endoso SET iDeleted='1' WHERE iConsecutivo = '$clave'"; 
+          $conexion->query($query);
+          $conexion->affected_rows ? $transaccion_exitosa = true : $transaccion_exitosa = false;
+      }
+      else{$msj = "Error: Descriptions in Endorsement are not found.";$transaccion_exitosa = false;} 
+      
+      if($transaccion_exitosa){
+        $conexion->commit();
+        $conexion->close();
+        $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data has been deleted succesfully!</p>';
+      }else{
+        $conexion->rollback();
+        $conexion->close();
+        $msj = "A general system error ocurred : internal error";
+        $error = "1";
+      }
+        
+      $response = array("msj"=>"$msj","error"=>"$error");   
+      echo json_encode($response);
+      
   }
   
   #MULTIPLE UNITS:
@@ -1615,13 +1657,13 @@
                              $data['iTipoPoliza'] == '1' && $Detalle[$x]["iTotalPremiumPD"] > 0 ? $PDAmount = number_format($Detalle[$x]["iTotalPremiumPD"],2,'.','') : $PDAmount = "";
                              
                              $detalle .= "<tr>";
-                             $detalle .= "<td style=\"padding:1px 3px;\">$Acti</td>";
-                             $detalle .= "<td style=\"padding:1px 3px;\">$Year</td>";
-                             $detalle .= "<td style=\"padding:1px 3px;\">$Make</td>";
-                             $detalle .= "<td style=\"padding:1px 3px;\">$VIN</td>";
-                             $detalle .= "<td style=\"padding:1px 3px;\">$Radius</td>";
-                             $detalle .= "<td style=\"padding:1px 3px;\">$Peso</td>";
-                             $detalle .= "<td style=\"padding:1px 3px;\">$PDAmount</td>";
+                             $detalle .= "<td style=\"padding:1px 3px;border:0px;\">$Acti</td>";
+                             $detalle .= "<td style=\"padding:1px 3px;border:0px;\">$Year</td>";
+                             $detalle .= "<td style=\"padding:1px 3px;border:0px;\">$Make</td>";
+                             $detalle .= "<td style=\"padding:1px 3px;border:0px;\">$VIN</td>";
+                             $detalle .= "<td style=\"padding:1px 3px;border:0px;\">$Radius</td>";
+                             $detalle .= "<td style=\"padding:1px 3px;border:0px;\">$Peso</td>";
+                             $detalle .= "<td style=\"padding:1px 3px;border:0px;\">$PDAmount</td>";
                              $detalle .= "</tr>";
                         }
                      

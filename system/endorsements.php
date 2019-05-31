@@ -381,6 +381,8 @@
                     buttonImageOnly: true
                 });
                 $(".fecha,.flt_fecha").mask("99/99/9999"); 
+                
+                fn_endorsement_co.units.cargar_catalogos();
             },
             fillgrid: function(){
                    $.ajax({             
@@ -408,6 +410,7 @@
                         fn_endorsement_co.delete_confirm();
                         //fn_endorsement_co.quote_confirmation();
                         fn_endorsement_co.endorsement_resend_email();
+                        fn_solotrucking.btn_tooltip();
                     }
                 }); 
             },
@@ -791,7 +794,7 @@
                     else if(action == 'ADD' || action == 'ADDSWAP'){
                         $('#frm_endorsements_unit #frm_unit_add').show();
                         $('#frm_endorsements_unit .file_ut, #frm_endorsements_unit .add_field').show();
-                        fn_endorsement_co.units.cargar_catalogos();   
+                        //fn_endorsement_co.units.cargar_catalogos();   
                     }
                     
                     //Revisar si es nuevo o se edta editando el endoso:
@@ -1063,7 +1066,12 @@
                              case '0':
                                 fn_solotrucking.mensaje(data.msj);
                                 fn_endorsement_co.fillgrid();
-                                fn_popups.cerrar_ventana('frm_endorsements_unit');
+                                //cargar datos del endoso:
+                                $("#frm_endorsements_unit #frm_general_information #iConsecutivo").val(data.iConsecutivo);
+                                fn_endorsement_co.units.get_detalle(data.iConsecutivo);
+                                fn_endorsement_co.units.add();
+                                
+                                //fn_popups.cerrar_ventana('frm_endorsements_unit');
                              break;
                              case '1': fn_solotrucking.mensaje(data.msj); break;
                             }
@@ -1092,15 +1100,19 @@
                             dataType : "json",
                             success : function(data){                               
                                 $(fn_endorsement_co.units.data_grid+" tbody").empty().append(data.tabla);
-                                //fn_endorsement.detalle.edit(); 
+                                fn_endorsement_co.units.edit(); 
                                 //fn_endorsement.detalle.borrar(); 
                             }
                         });   
                     }  
                 },
                 add : function(){
-                    $("#frm_endorsements_unit .field-action").show();   
-                     
+                    $("#frm_endorsements_unit .field-action").show(); 
+                    $("#frm_endorsements_unit #frm_general_information #eAccion").val('');
+                    $('#frm_endorsements_unit input[name=edit_detalle]').val('false');
+                    $("#frm_endorsements_unit #frm_unit_add select, #frm_endorsements_unit #frm_unit_add input").val('');  
+                    $("#frm_endorsements_unit #frm_unit_delete select, #frm_endorsements_unit #frm_unit_delete input").val('');
+                    fn_endorsement_co.units.valid_action(); 
                 },
                 edit : function (){
                     $(fn_endorsement_co.units.data_grid + " tbody td .btn_edit_detalle").bind("click",function(){
@@ -1116,13 +1128,15 @@
                                 "iConsecutivoEndoso": $("#frm_endorsements_unit #frm_general_information #iConsecutivo").val(),
                                 "iConsecutivoUnidad": clave,
                                 "domroot"           : "#frm_endorsements_unit"},
-                            async : true,
+                            async : false,
                             dataType : "json",
                             success : function(data){ 
                                 if(data.error == "0"){
-                                   $("#frm_endorsements_unit .field-action").show(); 
+                                   $("#frm_endorsements_unit .field-action").show();
+                                   $("#frm_endorsements_unit #frm_general_information #eAccion").val(data.accion);
+                                   $('#frm_endorsements_unit input[name=edit_detalle]').val('true');
+                                   fn_endorsement_co.units.valid_action(data.accion);
                                    eval(data.fields);
-                                   fn_endorsement_co.units.valid_action(); 
                                 }
                                 else{fn_solotrucking.mensaje(data.msj);}                          
                                 
@@ -1203,7 +1217,13 @@
                     else if(action == 'ADD' || action == 'ADDSWAP'){
                         $('#frm_endorsements_driver #frm_driver_add').show();
                     }
-                    fn_endorsement_co.drivers.cargar_policies(); 
+                    //Revisar si es nuevo o se edta editando el endoso:
+                    if($("#frm_endorsements_driver #frm_general_information #iConsecutivo").val() != ""){
+                        $("#frm_endorsements_driver .frm-data-grid").show();    
+                    }
+                    else{
+                        fn_endorsement_co.drivers.cargar_policies(); 
+                    } 
                 },
                 cargar_policies : function(){
                     $.ajax({             
@@ -1256,7 +1276,8 @@
                             if(driver_id.val() == "" ){
                                  driver_id.addClass('error');
                                  fn_solotrucking.mensaje('Please select first a driver from your list or write the name.');
-                                 valid = false; return false;  
+                                 valid = false; 
+                                 return false;  
                             }
                             
                             if(valid){
@@ -1384,7 +1405,11 @@
                              case '0':
                                 fn_solotrucking.mensaje(data.msj);
                                 fn_endorsement_co.fillgrid();
-                                fn_popups.cerrar_ventana('frm_endorsements_driver');
+                                //cargar datos del endoso:
+                                $("#frm_endorsements_driver #frm_general_information #iConsecutivo").val(data.iConsecutivo);
+                                fn_endorsement_co.drivers.get_detalle(data.iConsecutivo);
+                                fn_endorsement_co.drivers.add();
+                                //fn_popups.cerrar_ventana('frm_endorsements_driver');
                              break;
                              case '1': fn_solotrucking.mensaje(data.msj); break;
                             }
@@ -1401,12 +1426,50 @@
                             dataType : "json",
                             success : function(data){                               
                                 $(fn_endorsement_co.drivers.data_grid+" tbody").empty().append(data.tabla);
-                                //fn_endorsement.detalle.edit(); 
+                                fn_endorsement_co.drivers.edit(); 
                                 //fn_endorsement.detalle.borrar(); 
                             }
                         });
                     }
-                }
+                },
+                add : function(){
+                    $("#frm_endorsements_driver .field-action").show(); 
+                    $("#frm_endorsements_driver #frm_general_information #eAccion").val('');
+                    $('#frm_endorsements_driver input[name=edit_detalle]').val('false');
+                    $("#frm_endorsements_driver #frm_driver_add select, #frm_endorsements_driver #frm_driver_add input").val('');  
+                    $("#frm_endorsements_driver #frm_driver_delete select, #frm_endorsements_driver #frm_driver_delete input").val('');
+                    fn_endorsement_co.drivers.valid_action(); 
+                },
+                edit : function (){
+                    $(fn_endorsement_co.drivers.data_grid + " tbody td .btn_edit_detalle").bind("click",function(){
+                        var clave = $(this).parent().parent().find("td:eq(0)").prop('id');
+                            clave = clave.split('idDet_');
+                            clave = clave[1];
+                        
+                        $.ajax({             
+                            type:"POST", 
+                            url:"funciones_endorsements.php", 
+                            data:{
+                                accion              : "driver_cargar",
+                                "iConsecutivoEndoso": $("#frm_endorsements_driver #frm_general_information #iConsecutivo").val(),
+                                "iConsecutivoOperador": clave,
+                                "domroot"           : "#frm_endorsements_driver"},
+                            async : false,
+                            dataType : "json",
+                            success : function(data){ 
+                                if(data.error == "0"){
+                                   $("#frm_endorsements_driver .field-action").show();
+                                   $("#frm_endorsements_driver #frm_general_information #eAccion").val(data.accion);
+                                   $('#frm_endorsements_driver input[name=edit_detalle]').val('true');
+                                   fn_endorsement_co.drivers.valid_action(data.accion);
+                                   eval(data.fields);
+                                }
+                                else{fn_solotrucking.mensaje(data.msj);}                          
+                                
+                            }
+                        });        
+                  });  
+                },
             },
       
     }    
@@ -1797,36 +1860,37 @@
                         </td>
                     </tr>
                 </table>
-                <!-- DATA GRID -->
-                 <fieldset class="frm_information frm-data-grid">
-                    <legend>DRIVERS ADDED TO THE ENDORSEMENT</legend>
-                    <table style="width:100%;" cellpadding="0" cellspacing="0" >
-                    <tr>
-                    <td colspan="100%">
-                    <table id="drivers_datagrid" class="popup-datagrid" style="width: 100%;margin-top: 10px;margin-bottom: 10px;" cellpadding="0" cellspacing="0">
-                        <thead>
-                            <tr id="grid-head2">
-                                <td class="etiqueta_grid">Action</td>
-                                <td class="etiqueta_grid" style="width:150px;">Name</td>
-                                <td class="etiqueta_grid">DOB</td>
-                                <td class="etiqueta_grid">License Number</td>
-                                <td class="etiqueta_grid">License Type</td> 
-                                <td class="etiqueta_grid">Expire Date</td> 
-                                <td class="etiqueta_grid">Experience Years</td> 
-                                <td class="etiqueta_grid" style="width: 120px;text-align: center;">
-                                    <div class="btn-icon edit btn-left" title="Add New Driver" onclick="fn_endorsement.detalle.save();" style="width: auto!important;"><i class="fa fa-plus"></i><span style="padding-left: 5px;font-size: 0.8em;text-transform: uppercase;">Add Driver</span></div>
-                                </td>
-                            </tr>
-                        </thead>
-                        <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
-                    </table>
-                    </td>
-                    </tr>
-                    </table>
-                </fieldset>
-            <br>  
-            <button type="button" class="btn-1 field-action" onclick="fn_endorsement_co.drivers.valid_data();">SAVE</button>
-            <button type="button" class="btn-1 field-action" onclick="fn_endorsement_co.drivers.valid_files();" style="margin-right:10px;background:#e8051b;">CLOSE</button>
+                <br>
+                <button type="button" class="btn-1 field-action" onclick="fn_endorsement_co.drivers.valid_data();">SAVE</button>
+            </fieldset>
+            <!-- DATA GRID -->
+            <fieldset class="frm_information frm-data-grid">
+                <legend>DRIVERS ADDED TO THE ENDORSEMENT</legend>
+                <table style="width:100%;" cellpadding="0" cellspacing="0" >
+                <tr>
+                <td colspan="100%">
+                <table id="drivers_datagrid" class="popup-datagrid" style="width: 100%;margin-top: 10px;margin-bottom: 10px;" cellpadding="0" cellspacing="0">
+                    <thead>
+                        <tr id="grid-head2">
+                            <td class="etiqueta_grid">Action</td>
+                            <td class="etiqueta_grid" style="width:150px;">Name</td>
+                            <td class="etiqueta_grid">DOB</td>
+                            <td class="etiqueta_grid">License Number</td>
+                            <td class="etiqueta_grid">License Type</td> 
+                            <td class="etiqueta_grid">Expire Date</td> 
+                            <td class="etiqueta_grid">Experience Years</td> 
+                            <td class="etiqueta_grid" style="width: 120px;text-align: center;">
+                                <div class="btn-icon edit btn-left" title="Add New Driver" onclick="fn_endorsement.detalle.save();" style="width: auto!important;"><i class="fa fa-plus"></i><span style="padding-left: 5px;font-size: 0.8em;text-transform: uppercase;">Add Driver</span></div>
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
+                </table>
+                </td>
+                </tr>
+                </table>
+            </fieldset>
+            <button type="button" class="btn-1" onclick="fn_endorsement_co.drivers.valid_files();" style="margin-right:10px;background:#e8051b;">CLOSE</button>
         </form> 
     </div>
     </div>

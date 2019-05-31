@@ -83,6 +83,7 @@ var fn_endorsement = {
                     $(fn_endorsement.data_grid + " tfoot #pagina_actual").val(data.pagina);
                     fn_endorsement.pagina_actual = data.pagina;
                     fn_endorsement.edit();
+                    fn_solotrucking.btn_tooltip();
                     
                 }
             }); 
