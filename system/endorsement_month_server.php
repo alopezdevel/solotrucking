@@ -101,15 +101,16 @@
                  $items['iTipoReporte'] == 1 ? $txtTipo = "VEHICLES" : $txtTipo = "DRIVERS";
                  
                  $class = " class=\"$class $redlist_class\"";
-                 $htmlTabla .= "<tr$class>
-                                    <td>".$items['iConsecutivo']."</td>".
-                                   "<td>".$redlist_icon.$items['sNombreCompania']."</td>".
-                                   "<td class=\"txt-c\">".$items['dFechaInicio']."</td>".
-                                   "<td class=\"txt-c\">".$items['dFechaFin']."</td>".
-                                   "<td>".$items['sNombreBroker']."</td>". 
-                                   "<td>".$items['sEmail']."</td>".
-                                   "<td class=\"txt-c\">".$items['dFechaAplicacion']."</td>".
-                                   "<td>$btn_confirm</td></tr>";
+                 $htmlTabla .= "<tr$class>".
+                 "<td>".$items['iConsecutivo']."</td>".
+                 "<td>".$redlist_icon.$items['sNombreCompania']."</td>".
+                 "<td>".$txtTipo."</td>".
+                 "<td class=\"txt-c\">".$items['dFechaInicio']."</td>".
+                 "<td class=\"txt-c\">".$items['dFechaFin']."</td>".
+                 "<td>".$items['sNombreBroker']."</td>". 
+                 "<td>".$items['sEmail']."</td>".
+                 "<td class=\"txt-c\">".$items['dFechaAplicacion']."</td>".
+                 "<td>$btn_confirm</td></tr>";
             }
         
             
@@ -385,7 +386,7 @@
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
         
         $sql    = "SELECT A.iConsecutivo AS iConsecutivoEndosoMensual,D.iConsecutivoPoliza,A.eStatus,C.iConsecutivo, A.iConsecutivoCompania, ".
-                  "IF(C.eAccion = 'A','ADD','DELETE') AS eAccion, C.iConsecutivo AS iConsecutivoEndoso, E.sNumeroPoliza, F.sDescripcion,".
+                  "IF(C.eAccion = 'A','ADD','DELETE') AS eAccion, C.iConsecutivo AS iConsecutivoEndoso, E.sNumeroPoliza, F.sAlias AS sDescripcion,".
                   "DATE_FORMAT(C.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, C.iEndosoMultiple, ".
                   "$flt_field ".
                   "FROM cb_endoso_mensual AS A ".
@@ -400,6 +401,8 @@
            
         if($rows > 0){    
             while ($items = $result->fetch_assoc()) { 
+                
+                $Descripcion = "";
                 
                 #VEHICULOS
                 if($iTipoReporte == "1"){
@@ -447,8 +450,47 @@
                         
                 }
                 #DRIVERS
-                else if($items['iEndosoMultiple'] == 0 && $iTipoReporte == "2"){
-                    $Descripcion = $items['sNombre']." - DOB: ".$items['dFechaNacimiento']." - LIC: ".$items['iNumLicencia']." EXP.".$items['dFechaExpiracionLicencia'];    
+                else if($iTipoReporte == "2"){
+                    // ENDOSO NO MULTIPLE
+                    if($items['iEndosoMultiple'] == 0){
+                         $Descripcion = "<table style=\"width:100%;padding:0!important;margin:0!important;\">";
+                         $Descripcion.= "<tr style='background: none;'>".
+                                        "<td style='border: 0;width:120px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$items['eAccion']."</td>".
+                                        "<td style='border: 0;width:160px;padding: 0!important;min-height: auto!important;height:auto!important;'>".strtoupper($item['sNombre'])."</td>".
+                                        "<td style='border: 0;width:50px;padding: 0!important;min-height: auto!important;height:auto!important;'>DOB: ".$items['dFechaNacimiento']."</td>".
+                                        "<td style='border: 0;width:100px;padding: 0!important;min-height: auto!important;height:auto!important;'>LIC#: ".$items['iNumLicencia']."</td>".
+                                        "<td style='border: 0;width:160px;padding: 0!important;min-height: auto!important;height:auto!important;'>LIC EXP:".$items['dFechaExpiracionLicencia']."</td>".
+                                        "</tr>";
+                         $Descripcion.= "</table>";
+                    
+                    }
+                    // ENDOSO MULTIPLE
+                    else if ($items['iEndosoMultiple'] == 1){
+                         #CONSULTAR DETALLE DEL ENDOSO:
+                         $query = "SELECT A.sNombre, iConsecutivoOperador, B.iNumLicencia, DATE_FORMAT(B.dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(B.dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, B.iExperienciaYear, B.eTipoLicencia, ".
+                                  "(CASE WHEN A.eAccion = 'ADDSWAP' THEN 'ADD SWAP' WHEN A.eAccion = 'DELETESWAP' THEN 'DELETE SWAP' ELSE A.eAccion END) AS eAccion ".
+                                  "FROM cb_endoso_operador      AS A ".
+                                  "LEFT JOIN ct_operadores      AS B ON A.iConsecutivoOperador = B.iConsecutivo ".
+                                  "WHERE A.iConsecutivoEndoso = '".$items['iConsecutivo']."' ORDER BY sNombre ASC";
+                         $r     = $conexion->query($query);
+                         
+                         $Descripcion = "<table style=\"width:100%;padding:0!important;margin:0!important;border-collapse: collapse;\">";
+                         $description = "";
+                         
+                         while($item = $r->fetch_assoc()){
+                             
+                            $item['dFechaExpiracionLicencia'] != "" ? $item['dFechaExpiracionLicencia'] = "EXP ".$item['dFechaExpiracionLicencia'] : ""; 
+                            $description .= "<tr style='background: none;'>".
+                                            "<td style='border: 0;width:120px;padding: 1px 0px 1px 0px!important;min-height: auto!important;height:auto!important;'>".$item['eAccion']."</td>".
+                                            "<td style='border: 0;width:200px;padding: 1px 0px 1px 0px!important;min-height: auto!important;height:auto!important;'>".strtoupper($item['sNombre'])."</td>".
+                                            "<td style='border: 0;width:80px;padding: 1px 0px 1px 0px!important;min-height: auto!important;height:auto!important;'>DOB ".$item['dFechaNacimiento']."</td>".
+                                            "<td style='border: 0;width:100px;padding: 1px 0px 1px 0px!important;min-height: auto!important;height:auto!important;'>LIC# ".$item['iNumLicencia']."</td>".
+                                            "<td style='border: 0;width:80px;padding: 1px 0px 1px 0px!important;min-height: auto!important;height:auto!important;'>".$item['dFechaExpiracionLicencia']."</td>".
+                                            "</tr>"; 
+                         }
+                         $Descripcion.= $description."</table>";    
+                    }
+                     
                 }
                 /////////
                 
@@ -458,9 +500,7 @@
                 
                 $htmlTabla .= "<tr>". 
                               "<td id=\"iMonth_".$items['iConsecutivo']."\" class=\"txt-c\">".$items['dFechaAplicacion']."</td>".
-                              //"<td style=\"width: 25px;\">".$items['iConsecutivo']."</td>".
-                              //"<td class=\"txt-c\">".$items['eAccion']."</td>".
-                              "<td>".$items['sNumeroPoliza']." - ".$items['sDescripcion']."</td>". 
+                              "<td>".$items['sNumeroPoliza']." / ".$items['sDescripcion']."</td>". 
                               "<td>".$Descripcion."</td>".
                               "<td>$btns</td></tr>";
                 $iConsecutivoPoliza = $items['iConsecutivoPoliza'];

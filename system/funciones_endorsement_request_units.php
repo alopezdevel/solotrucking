@@ -1,4 +1,5 @@
 <?php
+  session_set_cookie_params(86400); ini_set('session.gc_maxlifetime', 86400);   
   session_start();
   // Generic functions lib 
   include("functiones_genericas.php"); 
@@ -491,7 +492,9 @@
             if($campo != "accion" && $campo != "edit_mode"){ //Estos campos no se insertan a la tabla
                 #CAMPOS QUE SE GUARDAN A NIVEL CATALOGO
                 if($campo != "iConsecutivoUnidad" && $campo != "iConsecutivoCompania" && $campo != "iTotalPremiumPD" && $campo != "iConsecutivoRadio" && $campo != "eAccion" && $campo != "iConsecutivoEndoso"){
-                   array_push($valorCatalogo,"$campo='". strtoupper($valor)."'"); 
+                   if($valor != ""){
+                       array_push($valorCatalogo,"$campo='". strtoupper($valor)."'"); 
+                   }
                 }
                 #CAMPOS QUE DE GUARDAN A NIVEL DETALLE ENDOSO:
                 if($campo == "sVIN" || $campo == "iConsecutivoEndoso" || $campo == "iConsecutivoRadio" || $campo == "iTotalPremiumPD" || $campo == "eAccion" || $campo == "iConsecutivoUnidad"){

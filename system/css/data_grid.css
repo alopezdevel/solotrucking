@@ -122,11 +122,11 @@ tbody .white, .data_grid tbody tr:nth-child(even){background: rgb(255, 255, 255)
 tbody .gray:hover, .data_grid tbody .white:hover, .data_grid tbody tr:hover{background-color: rgb(251, 253, 208);cursor:pointer;}
 /*tbody .row_red{background: rgb(255, 251, 251);}  */
 /*--- endorsements ---*/
-tbody .red{background: rgb(253, 203, 203);} 
-tbody .green{background: rgb(217, 253, 203);}
-tbody .blue{background: rgb(203, 238, 253);}
-tbody .yellow{background: rgb(253, 245, 203);}
-tbody .orange{background: rgb(255, 217, 134);} 
+tbody .red{background: rgb(253, 203, 203)!important;} 
+tbody .green{background: rgb(217, 253, 203)!important;}
+tbody .blue{background: rgb(203, 238, 253)!important;}
+tbody .yellow{background: rgb(253, 245, 203)!important;}
+tbody .orange{background: rgb(255, 217, 134)!important;} 
 
 /*-------------------------AGREGAR SCROLL BAR -----------------------*/
 .grid-scroll{

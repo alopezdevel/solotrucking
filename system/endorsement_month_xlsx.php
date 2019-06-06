@@ -79,7 +79,8 @@
         }
         
         $sql    = "SELECT A.iConsecutivo AS iConsecutivoEndosoMensual,C.iConsecutivo, A.iConsecutivoCompania, IF(C.eAccion = 'A','ADD','DELETE') AS eAccion, ".
-                  "C.iConsecutivo AS iConsecutivoEndoso, D.iConsecutivoPoliza, E.sNumeroPoliza, F.sDescripcion,F.sAlias,DATE_FORMAT(C.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, DATE_FORMAT(E.dFechaInicio,'%m/%d/%Y') AS inceptionDate, DATE_FORMAT(E.dFechaCaducidad,'%m/%d/%Y') AS expirationDate,".
+                  "C.iConsecutivo AS iConsecutivoEndoso, D.iConsecutivoPoliza, E.sNumeroPoliza, F.sDescripcion,F.sAlias,DATE_FORMAT(C.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
+                  "DATE_FORMAT(E.dFechaInicio,'%m/%d/%Y') AS inceptionDate, DATE_FORMAT(E.dFechaCaducidad,'%m/%d/%Y') AS expirationDate, C.iEndosoMultiple, ".
                   "$flt_field ".
                   "FROM cb_endoso_mensual AS A ".
                   "INNER JOIN cb_endoso_mensual_relacion AS B ON A.iConsecutivo       = B.iConsecutivoEndosoMensual ".
@@ -159,6 +160,7 @@
            
             $row = 1;
             //Definir encabezados:
+            #VEHICULOS
             if($DatosReporte['iTipoReporte'] == "1"){
                 $objPHPExcel->getActiveSheet()
                 ->setCellValue('A'.$row, 'Year')
@@ -166,24 +168,27 @@
                 ->setCellValue('C'.$row, 'Model')
                 ->setCellValue('D'.$row, 'VIN')
                 ->setCellValue('E'.$row, 'Value')
-                ->setCellValue('F'.$row, 'Type');
+                ->setCellValue('F'.$row, 'Type')
+                ->setCellValue('G'.$row, 'Action');
                 /*->setCellValue('G'.$row, 'Leinholder Name')
                 ->setCellValue('H'.$row, 'Leinholder Address')
                 ->setCellValue('I'.$row, 'GVW')
                 ->setCellValue('J'.$row, 'Additional Vehicle Detail')
                 ->setCellValue('K'.$row, 'Garaging Location')
                 ->setCellValue('L'.$row, 'Garaging State');*/
-                $limitCol = "F";
+                $limitCol = "G";
   
             }
+            #DRIVERS
             else if($DatosReporte['iTipoReporte'] == "2"){
                 $objPHPExcel->getActiveSheet()
                 ->setCellValue('A'.$row, 'Name')
                 ->setCellValue('B'.$row, 'DOB')
                 ->setCellValue('C'.$row, 'License Number')
                 ->setCellValue('D'.$row, 'License Expiration Date')
-                ->setCellValue('E'.$row, 'Experience Years');
-                $limitCol = "E";
+                ->setCellValue('E'.$row, 'Experience Years')
+                ->setCellValue('F'.$row, 'Action');
+                $limitCol = "F";
             } 
             
             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado, "A".$row.":".$limitCol.$row);
@@ -191,36 +196,109 @@
             
             foreach($DatosDetalle as $i => $l){
                 
-                $row++;
                 $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloContenido, "A".$row.":".$limitCol.$row); 
                 $objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(20); 
+                
+                #VEHICULOS
                 if($DatosReporte['iTipoReporte'] == "1"){ 
                     
-                    //Agregar formato numerico a columna de value:
-                    $objPHPExcel->getActiveSheet()->getStyle('E'.$row)->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
+                    // ENDOSO NO MULTIPLE
+                    if($DatosDetalle[$i]['iEndosoMultiple'] == 0){
+                        
+                        $row++;
+                        
+                        //Agregar formato numerico a columna de value:
+                        $objPHPExcel->getActiveSheet()->getStyle('E'.$row)->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
+                        
+                        //Reporte contenido:
+                        $objPHPExcel->getActiveSheet()
+                        ->setCellValue('A'.$row, $DatosDetalle[$i]['iYear'])
+                        ->setCellValue('B'.$row, $DatosDetalle[$i]['sMake'])
+                        ->setCellValue('C'.$row, '')
+                        ->setCellValue('D'.$row, $DatosDetalle[$i]['sVIN'])
+                        ->setCellValue('E'.$row, $DatosDetalle[$i]['iPDAmount'])
+                        ->setCellValue('F'.$row, ucfirst(strtolower($DatosDetalle[$i]['sTipo'])))
+                        ->setCellValue('G'.$row, $DatosDetalle[$i]['eAccion']);
+                    }
+                    // ENDOSO MULTIPLE
+                    else if ($DatosDetalle[$i]['iEndosoMultiple'] == 1){
+                         #CONSULTAR DETALLE DEL ENDOSO:
+                         $query = "SELECT A.sVIN, iConsecutivoUnidad, B.iYear, A.iTotalPremiumPD, C.sDescripcion AS sRadio, D.sAlias AS sModelo, B.sTipo, B.sPeso, ".
+                                  "(CASE  WHEN A.eAccion = 'ADDSWAP'    THEN 'ADD SWAP' WHEN A.eAccion = 'DELETESWAP' THEN 'DELETE SWAP' ELSE A.eAccion END) AS eAccion ".
+                                  "FROM cb_endoso_unidad      AS A ".
+                                  "LEFT JOIN ct_unidades      AS B ON A.iConsecutivoUnidad = B.iConsecutivo ".
+                                  "LEFT JOIN ct_unidad_radio  AS C ON A.iConsecutivoRadio  = C.iConsecutivo ".
+                                  "LEFT JOIN ct_unidad_modelo AS D ON B.iModelo = D.iConsecutivo ".
+                                  "WHERE A.iConsecutivoEndoso = '".$DatosDetalle[$i]['iConsecutivo']."' ORDER BY sVIN ASC";
+                         $r     = $conexion->query($query);
+                         
+                         while($item = $r->fetch_assoc()){
+                             
+                             $row++;
+                             
+                             //Agregar formato numerico a columna de value:
+                             $objPHPExcel->getActiveSheet()->getStyle('E'.$row)->getNumberFormat()->setFormatCode("_(\"$\"* #,##0.00_);_(\"$\"* \(#,##0.00\);_(\"$\"* \"-\"??_);_(@_)");
+                        
+                             //Reporte contenido:
+                             $objPHPExcel->getActiveSheet()
+                             ->setCellValue('A'.$row, $item['iYear'])
+                             ->setCellValue('B'.$row, $item['sModelo'])
+                             ->setCellValue('C'.$row, '')
+                             ->setCellValue('D'.$row, strtoupper($item['sVIN']))
+                             ->setCellValue('E'.$row, $item['iTotalPremiumPD'])
+                             ->setCellValue('F'.$row, ucfirst(strtolower($item['sTipo'])))
+                             ->setCellValue('G'.$row, $item['eAccion']);
+                         }
+                    }
                     
-                    //Reporte contenido:
-                    $objPHPExcel->getActiveSheet()
-                    ->setCellValue('A'.$row, $DatosDetalle[$i]['iYear'])
-                    ->setCellValue('B'.$row, $DatosDetalle[$i]['sMake'])
-                    ->setCellValue('C'.$row, '')
-                    ->setCellValue('D'.$row, $DatosDetalle[$i]['sVIN'])
-                    ->setCellValue('E'.$row, $DatosDetalle[$i]['iPDAmount'])
-                    ->setCellValue('F'.$row, ucfirst(strtolower($DatosDetalle[$i]['sTipo'])));
                     
+                    //Revisar si la poliza ya existe en o no para agregarla al XLS
                     if(!(in_array($DatosDetalle[$i]['sNumeroPoliza']."|".$DatosDetalle[$i]['inceptionDate']."|".$DatosDetalle[$i]['expirationDate'],$NoPolizas))){
                        array_push($NoPolizas,$DatosDetalle[$i]['sNumeroPoliza']."|".$DatosDetalle[$i]['inceptionDate']."|".$DatosDetalle[$i]['expirationDate']); 
                     }
                     
                 }
+                #DRIVERS
                 else if($DatosReporte['iTipoReporte'] == "2"){
-                    $objPHPExcel->getActiveSheet()
-                    ->setCellValue('A'.$row, $DatosDetalle[$i]['sNombre'])
-                    ->setCellValue('B'.$row, $DatosDetalle[$i]['dFechaNacimiento'])
-                    ->setCellValue('C'.$row, $DatosDetalle[$i]['iNumLicencia'])
-                    ->setCellValue('D'.$row, $DatosDetalle[$i]['dFechaExpiracionLicencia'])
-                    ->setCellValue('E'.$row, $DatosDetalle[$i]['iExperienciaYear']);
                     
+                    // ENDOSO NO MULTIPLE
+                    if($DatosDetalle[$i]['iEndosoMultiple'] == 0){
+                        
+                        $row++;
+                        
+                        $objPHPExcel->getActiveSheet()
+                        ->setCellValue('A'.$row, $DatosDetalle[$i]['sNombre'])
+                        ->setCellValue('B'.$row, $DatosDetalle[$i]['dFechaNacimiento'])
+                        ->setCellValue('C'.$row, $DatosDetalle[$i]['iNumLicencia'])
+                        ->setCellValue('D'.$row, $DatosDetalle[$i]['dFechaExpiracionLicencia'])
+                        ->setCellValue('E'.$row, $DatosDetalle[$i]['iExperienciaYear'])
+                        ->setCellValue('F'.$row, $DatosDetalle[$i]['eAccion']);
+                    }
+                    // ENDOSO MULTIPLE
+                    else if ($DatosDetalle[$i]['iEndosoMultiple'] == 1){
+                         #CONSULTAR DETALLE DEL ENDOSO:
+                         $query = "SELECT A.sNombre, iConsecutivoOperador, B.iNumLicencia, DATE_FORMAT(B.dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(B.dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, B.iExperienciaYear, B.eTipoLicencia, ".
+                                  "(CASE WHEN A.eAccion = 'ADDSWAP' THEN 'ADD SWAP' WHEN A.eAccion = 'DELETESWAP' THEN 'DELETE SWAP' ELSE A.eAccion END) AS eAccion ".
+                                  "FROM cb_endoso_operador      AS A ".
+                                  "LEFT JOIN ct_operadores      AS B ON A.iConsecutivoOperador = B.iConsecutivo ".
+                                  "WHERE A.iConsecutivoEndoso = '".$DatosDetalle[$i]['iConsecutivo']."' ORDER BY sNombre ASC";
+                         $r     = $conexion->query($query);
+                         
+                         while($item = $r->fetch_assoc()){ 
+                             
+                             $row++;
+                             $objPHPExcel->getActiveSheet()
+                                ->setCellValue('A'.$row, strtoupper($item['sNombre']))
+                                ->setCellValue('B'.$row, $item['dFechaNacimiento'])
+                                ->setCellValue('C'.$row, $item['iNumLicencia'])
+                                ->setCellValue('D'.$row, $item['dFechaExpiracionLicencia'])
+                                ->setCellValue('E'.$row, $item['iExperienciaYear'])
+                                ->setCellValue('F'.$row, $item['eAccion']);
+                         }
+                           
+                    }
+                    
+                    //polizas:
                     if(!(in_array($DatosDetalle[$i]['sNumeroPoliza']."|".$DatosDetalle[$i]['inceptionDate']."|".$DatosDetalle[$i]['expirationDate'],$NoPolizas))){
                        array_push($NoPolizas,$DatosDetalle[$i]['sNumeroPoliza']."|".$DatosDetalle[$i]['inceptionDate']."|".$DatosDetalle[$i]['expirationDate']); 
                     }

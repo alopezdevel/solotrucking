@@ -52,7 +52,7 @@
                         <li><a href="endorsement_request">Drivers</a></li>
                         <li><a href="endorsement_request_units">Vehicles</a></li>
                         <li><a href="endorsement_request_adds">Loss Payee or Additional Insured</a></li>
-                        <li style="display: none;"><a href="endorsement_month">Monthly Report to CRC</a></li>
+                        <li><a href="endorsement_month">Monthly Report to CRC</a></li>
                         <li><a href="endorsement_files">Admin Files</a></li>  
                         <li><a href="brokers">Brokers to send endorsements</a></li>
                     </ul>
@@ -102,7 +102,7 @@
                         <li><a  href="endorsement_request">New for Drivers</a></li>
                         <li><a  href="endorsement_request_units">New for Units</a></li>
                         <li><a href="endorsement_request_adds" title="New for Loss Payee or Additional Insured">Loss Payee or Additional Insured</a></li>
-                        <li style="display: none;"><a href="endorsement_month">Monthly Report to CRC</a></li>
+                        <li><a href="endorsement_month">Monthly Report to CRC</a></li>
                         <li><a href="endorsement_files">Admin Files</a></li>
                         <li><a href="brokers">Configure e-mails for Brokers</a></li>
                         <li style="display: none;"><a href="endorsements">New Endorsement like a company</a></li> 
@@ -144,7 +144,7 @@
                         <li><a href="endorsement_request">New for Drivers</a></li>
                         <li><a href="endorsement_request_units">New for Units</a></li>
                         <li><a href="endorsement_request_adds" title="New for Loss Payee or Additional Insured">Loss Payee or Additional Insured</a></li>
-                        <li style="display: none;"><a href="endorsement_month">Monthly Report to CRC</a></li>
+                        <li><a href="endorsement_month">Monthly Report to CRC</a></li>
                         <li><a href="endorsement_files">Admin Files</a></li>
                         <li><a href="brokers">Configure e-mails for Brokers</a></li>
                         <li style="display: none;"><a href="endorsements">New Endorsement like a company</a></li> 

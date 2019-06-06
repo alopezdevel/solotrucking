@@ -678,10 +678,12 @@ var fn_endosos = {
                     <table class="popup-datagrid" style="margin-bottom: 10px;" cellpadding="0" cellspacing="0">
                         <thead>
                             <tr id="grid-head2">
-                                <td class="etiqueta_grid txt-c" style="width: 115px;">Application Date</td>
-                                <td class="etiqueta_grid" style="width: 200px;">Policy No.</td>
+                                <td class="etiqueta_grid txt-c" style="width: 80px;">App Date</td>
+                                <td class="etiqueta_grid" style="width: 100px;">Policy No.</td>
                                 <td class="etiqueta_grid">Descripcion</td>
-                                <td class="etiqueta_grid" style="width: 80px;text-align: center;"></td>
+                                <td class="etiqueta_grid" style="width: 80px;text-align: center;">
+                                    <div class="btn-icon edit btn-left" title="Update Endorsement List" onclick="" style="width: auto;"><i class="fa fa-refresh"></i><span style="margin-left:5px;font-size: 10px!important;">Update list</span></div>
+                                </td>
                             </tr>
                         </thead>
                         <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
@@ -816,8 +818,8 @@ var fn_endosos = {
                     <table class="popup-datagrid" style="margin-bottom: 10px;" cellpadding="0" cellspacing="0">
                         <thead>
                             <tr id="grid-head2">
-                                <td class="etiqueta_grid txt-c" style="width: 115px;">App Date</td>
-                                <td class="etiqueta_grid" style="width: 200px;">Policy No.</td>
+                                <td class="etiqueta_grid txt-c" style="width: 80px;">App Date</td>
+                                <td class="etiqueta_grid" style="width: 100px;">Policy No.</td>
                                 <td class="etiqueta_grid">Descripcion</td>
                                 <td class="etiqueta_grid" style="width: 80px;text-align: center;"></td>
                             </tr>

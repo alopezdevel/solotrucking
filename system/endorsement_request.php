@@ -66,7 +66,41 @@
                         $(this).dialog('close');
                     }
                 }
-            });    
+            }); 
+            $('#dialog_mark_email').dialog({
+                modal: true,
+                autoOpen: false,
+                width : 420,
+                height : 200,
+                resizable : false,
+                buttons : {
+                    'YES' : function() {
+                        $(this).dialog('close');
+                        fn_endorsement.email.mark_sent();             
+                    },
+                    'NO' : function(){
+                        $(this).dialog('close');
+                    }
+                }
+            }); 
+            $('#dialog_delete_endorsement_driver').dialog({
+                modal: true,
+                autoOpen: false,
+                width : 300,
+                height : 200,
+                resizable : false,
+                buttons : {
+                    'YES' : function() {
+                        clave = $('#dialog_delete_endorsement_driver input[name=iConsecutivo]').val();
+                        $(this).dialog('close');
+                        
+                        fn_endorsement.delete_endorsement(clave);             
+                    },
+                     'NO' : function(){
+                        $(this).dialog('close');
+                    }
+                }
+            });   
     }  
     function validapantalla(usuario){if(usuario == ""  || usuario == null){location.href= "login.php";}  }                   
     var fn_endorsement = {
@@ -137,6 +171,7 @@
                         fn_endorsement.edit();
                         fn_endorsement.edit_estatus();
                         fn_endorsement.change_estatus();
+                        fn_endorsement.delete_confirm();
                         //fn_solotrucking.btn_tooltip();
                     }
                 }); 
@@ -313,6 +348,23 @@
                   }); 
                }
                else{fn_solotrucking.mensaje('<p>Please check the following::</p><ul>'+msj+'</ul>');}
+            },
+            delete_confirm : function(){
+              $(fn_endorsement.data_grid + " tbody .btn_delete").bind("click",function(){
+                   var clave    = $(this).parent().parent().find("td:eq(0)").prop('id');
+                       clave    = clave.split('_');
+                       clave    = clave[1];
+                   $('#dialog_delete_endorsement_driver input[name=iConsecutivo]').val(clave);
+                   $('#dialog_delete_endorsement_driver').dialog( 'open' );
+                   return false;
+               });  
+            },
+            delete_endorsement : function(id){
+              $.post("funciones_endorsement_request.php",{accion:"delete_endorsement", 'clave': id},
+               function(data){
+                    fn_solotrucking.mensaje(data.msj);
+                    fn_endorsement.filtraInformacion();
+               },"json");  
             },
             //new functions:
             files : {
@@ -658,7 +710,29 @@
                 },
                 send_confirm : function(){
                    $('#dialog_send_email').dialog('open');   
-                }, 
+                },
+                mark_sent_confirm : function(){
+                   $('#dialog_mark_email').dialog('open');    
+                },
+                mark_sent : function(){
+                    var iConsecutivo  = $('#form_estatus #iConsecutivoEndoso').val();
+                    fn_endorsement.email.save(true);
+                    $.ajax({             
+                        type:"POST", 
+                        url:"funciones_endorsement_request.php", 
+                        data:{'accion' : 'mark_email_sent','iConsecutivoEndoso' : iConsecutivo},
+                        async : true,
+                        dataType : "json",
+                        success : function(data){ 
+                            fn_solotrucking.mensaje(data.msj);                              
+                            if(data.error == '0'){
+                                  fn_endorsement.fillgrid();
+                                  fn_popups.cerrar_ventana('form_estatus');
+                            }
+                            
+                        }
+                    });      
+                }
             },  
             change_estatus : function(){
                     $(fn_endorsement.data_grid + " tbody td .btn_change_status").bind("click",function(){
@@ -945,7 +1019,7 @@
                         <option value="P">IN PROGRESS</option>
                         <option value="A">APPROVED</option> 
                     </select></td>  
-                <td style='width:110px;'>
+                <td style='width:120px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_endorsement.filtraInformacion();"><i class="fa fa-search"></i></div>
                     <div class="btn-icon-2 btn-left" title="New Endorsement +"  onclick="fn_endorsement.add();"><i class="fa fa-plus"></i></div>
                 </td> 
@@ -1228,10 +1302,11 @@
                 </tr>
                 </table>
             </fieldset> 
-            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_estatus');" style="margin-right:10px;background:#e8051b;">CLOSE</button>  
-            <button type="button" class="btn-1" onclick="fn_endorsement.email.send_confirm();" style="margin-right:10px;background: #87c540;width: 140px;">SEND E-MAIL</button>
-            <button type="button" class="btn-1" onclick="fn_endorsement.email.preview();" style="margin-right:10px;background:#5ec2d4;width: 140px;">PREVIEW E-MAIL</button> 
-            <button type="button" class="btn-1" onclick="fn_endorsement.email.save();" style="margin-right:10px;">SAVE</button>  
+            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_estatus');" style="margin-right:10px;background:#e8051b;" title="Close">CLOSE</button> 
+            <button type="button" class="btn-1" onclick="fn_endorsement.email.mark_sent_confirm();" style="margin-right:10px;background: #e8b813;width: 140px;">MARK AS SENT</button> 
+            <button type="button" class="btn-1" onclick="fn_endorsement.email.send_confirm();" style="margin-right:10px;background: #87c540;width: 140px;" title="Send E-mail to the Brokers">SEND E-MAIL</button>
+            <button type="button" class="btn-1" onclick="fn_endorsement.email.preview();" style="margin-right:10px;background:#5ec2d4;width: 140px;" title="Preview E-mail before send">PREVIEW E-MAIL</button> 
+            <button type="button" class="btn-1" onclick="fn_endorsement.email.save();" style="margin-right:10px;" title="Save data without send">SAVE</button>  
         </form> 
     </div>
     </div>
@@ -1401,6 +1476,15 @@
 <div id="dialog_send_email" title="SYSTEM ALERT" style="display:none;">
     <p>Are you sure that want to send the endorsement to the broker(s)?</p>
 </div>
+<div id="dialog_mark_email" title="SYSTEM ALERT" style="display:none;">
+    <p>Are you sure that want to mark as sent the endorsement?</p>
+</div>
+<div id="dialog_delete_endorsement_driver" title="SYSTEM ALERT" style="display:none;">
+    <p>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
+    <form id="elimina" method="post">
+           <input type="hidden" name="iConsecutivo" value="">
+    </form>  
+</div> 
 <!-- FOOTER -->
 <?php include("footer.php"); ?> 
 

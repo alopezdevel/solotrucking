@@ -1,4 +1,5 @@
 <?php
+  session_set_cookie_params(86400); ini_set('session.gc_maxlifetime', 86400);   
   session_start();
   // Generic functions lib 
   include("functiones_genericas.php"); 
@@ -77,7 +78,8 @@
                         $titleEstatus= "The data can be edited only by the employees of Solo-Trucking.";
                         $class       = "class = \"blue\"";
                         $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"View and Edit Endorsement Status\"><i class=\"fa fa-pencil-square-o\"></i></div>".
-                                       "<div class=\"btn_edit_estatus btn-icon send-email btn-left\" title=\"Send e-mail to the brokers\"><i class=\"fa fa-envelope\"></i></div>"; 
+                                       "<div class=\"btn_edit_estatus btn-icon send-email btn-left\" title=\"Send e-mail to the brokers\"><i class=\"fa fa-envelope\"></i></div>".
+                                       "<div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete Endorsement\"><i class=\"fa fa-trash\"></i> <span></span></div>"; 
                      break;
                      case 'A': 
                         $estado      = '<i class="fa fa-check-circle status-success icon-estatus " aria-hidden=\"true\"></i><span style="font-size: 10px;">APPROVED</span>';
@@ -388,6 +390,48 @@
       $respuesta = "[".$respuesta."]";
       echo $respuesta;    
   }
+  function delete_endorsement(){
+      
+      //Conexion:
+      include("cn_usuarios.php"); 
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $success= true;
+      $clave  = $_POST['clave'];
+      $error  = '0';  
+      $msj    = ""; 
+      $clave  = trim($_POST['clave']); 
+      
+      //Revisar que tipo de endoso es para verrificar si hay que borrar otros datos antes:
+      $query  = "SELECT iConsecutivoTipoEndoso, iReeferYear, iTrailerExchange, iConsecutivoOperador, iConsecutivoUnidad FROM cb_endoso WHERE iConsecutivo = '$clave'"; 
+      $result = $conexion->query($query); 
+      $rows   = $result->num_rows;
+      if($rows > 0 ){$endoso = $result->fetch_assoc();}else{$error = '1';}
+      
+      //BORRAMOS ENDOSO.
+      if($error == '0'){
+          
+          // Lo marcamos como eliminado mas no se elimina fisicamente de la BDD.
+          $query = "UPDATE cb_endoso SET iDeleted='1' WHERE iConsecutivo = '$clave'"; 
+          $conexion->query($query);
+          $conexion->affected_rows ? $transaccion_exitosa = true : $transaccion_exitosa = false;
+      }
+      else{$msj = "Error: Descriptions in Endorsement are not found.";$transaccion_exitosa = false;} 
+      
+      if($transaccion_exitosa){
+        $conexion->commit();
+        $conexion->close();
+        $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data has been deleted succesfully!</p>';
+      }else{
+        $conexion->rollback();
+        $conexion->close();
+        $msj = "A general system error ocurred : internal error";
+        $error = "1";
+      }
+        
+      $response = array("msj"=>"$msj","error"=>"$error");   
+      echo json_encode($response);
+      
+  }
   
   #DETALLE 
   function detalle_save(){
@@ -418,7 +462,7 @@
          $items  = $result->fetch_assoc();
          //Tomamos el consecutivo de la unidad ya existente:
          $iConsecutivoOperador           = trim($items['iConsecutivo']);
-         $_POST['$iConsecutivoOperador'] = $iConsecutivoOperador; 
+         $_POST['iConsecutivoOperador'] = $iConsecutivoOperador; 
       }
   
       if($iConsecutivoOperador!= ""){
@@ -434,12 +478,13 @@
             if($campo != "accion" && $campo != "edit_mode"){ //Estos campos no se insertan a la tabla
                 #CAMPOS QUE SE GUARDAN A NIVEL CATALOGO
                 if($campo != "iConsecutivoOperador" && $campo != "iConsecutivoCompania" && $campo != "iNumLicencia" && $campo != "eAccion" && $campo != "iConsecutivoEndoso" && $campo != "sNombre"){
-                    
-                    //Campos para fechas:
-                    if($campo == 'dFechaNacimiento' || $campo == 'dFechaExpiracionLicencia'){$valor = date('Y-m-d',strtotime(trim($valor)));}
-                    else{$valor = strtoupper(trim($valor));}
-                    
-                    array_push($valorCatalogo,"$campo='".$valor."'"); 
+                    if($valor != ""){
+                        //Campos para fechas:
+                        if($campo == 'dFechaNacimiento' || $campo == 'dFechaExpiracionLicencia'){$valor = date('Y-m-d',strtotime(trim($valor)));}
+                        else{$valor = strtoupper(trim($valor));}
+                        
+                        array_push($valorCatalogo,"$campo='".$valor."'"); 
+                    }
                 }
                 #CAMPOS QUE DE GUARDAN A NIVEL DETALLE ENDOSO:
                 if($campo == "sNombre" || $campo == "iConsecutivoEndoso" || $campo == "iNumLicencia" || $campo == "eAccion" || $campo == "iConsecutivoOperador"){
@@ -465,7 +510,7 @@
          
           $query   = "UPDATE ct_operadores SET ".implode(",",$valorCatalogo)." WHERE iConsecutivo='$iConsecutivoOperador' AND iConsecutivoCompania = '$iConsecutivoCompania'"; 
           $success = $conexion->query($query);
-          if(!($success)){$mensaje = "Error: The data of driver has not been saved successfully, please try again.";$error = "1";} 
+          if(!($success)){$mensaje = "Error: The data of driver has not been saved successfully, please try again.";$error = "1";$error_mysql = "Error: ".$conexion->error;} 
                   
       }
       else{
@@ -476,12 +521,12 @@
                 
                 #CAMPOS QUE SE GUARDAN PARA UNA UNIDAD NUEVA
                 if($campo != "iConsecutivoOperador" && $campo != "eAccion" && $campo != "iConsecutivoEndoso"){
-                   
-                   //Campos para fechas:
-                   if($campo == 'dFechaNacimiento' || $campo == 'dFechaExpiracionLicencia'){$valor = date('Y-m-d',strtotime(trim($valor)));}
-                   else{$valor = strtoupper(trim($valor));}
-                     
                    if($valor != ""){
+                   
+                       //Campos para fechas:
+                       if($campo == 'dFechaNacimiento' || $campo == 'dFechaExpiracionLicencia'){$valor = date('Y-m-d',strtotime(trim($valor)));}
+                       else{$valor = strtoupper(trim($valor));}
+                     
                        array_push($campoCatalogo ,$campo);
                        array_push($valorCatalogo, strtoupper(trim($valor)));
                    }
@@ -509,7 +554,7 @@
              array_push($campoDetalle ,"iConsecutivoOperador");
              array_push($valorDetalle, $iConsecutivoOperador);
          }
-         else{$mensaje = "Error: The data of driver has not been saved successfully, please try again.";$error = "1";}
+         else{$mensaje = "Error: The data of driver has not been saved successfully, please try again.";$error = "1"; $error_mysql = "Error: ".$conexion->error;}
       
       }
       
@@ -523,13 +568,13 @@
             $mensaje = "The data was saved successfully.";
          }
          $success = $conexion->query($query);
-         if(!($success)){$mensaje = "Error: The data of driver/endorsement has not been saved successfully, please try again.";$error = "1";}
+         if(!($success)){$mensaje = "Error: The data of driver/endorsement has not been saved successfully, please try again.";$error = "1";$error_mysql = "Error: ".$conexion->error;}
          
       }
       
       $success && $error == '0' ? $conexion->commit() : $conexion->rollback();
       $conexion->close();
-      $response = array("error"=>"$error","msj"=>"$mensaje");
+      $response = array("error"=>"$error","msj"=>"$mensaje","errmysql"=>$error_mysql);
       echo json_encode($response);
   }
   function detalle_datagrid(){
@@ -541,7 +586,7 @@
       if($iConsecutivo != ""){
           
            //Filtros de informacion //
-           $filtroQuery = " WHERE iConsecutivoEndoso = '".$iConsecutivo."' AND B.iDeleted='0'";
+           $filtroQuery = " WHERE iConsecutivoEndoso = '".$iConsecutivo."'";
             
           #CONTAR REGISTROS                                                                                                              
           $sql    = "SELECT COUNT(iConsecutivoEndoso) AS total ".
@@ -2071,6 +2116,32 @@
       $error != "" ? $Emails['error'] = $mensaje : $Emails['error'] = "0";
       $conexion->close(); 
       return $Emails;
+  }
+  function mark_email_sent(){
+      
+      $clave = trim($_POST['iConsecutivoEndoso']);
+      $error = 0;
+       
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);
+      
+      //Actualizar Estatus:
+      $query   = "UPDATE cb_endoso_estatus SET iEnviadoFuera='1', eStatus='SB' WHERE iConsecutivoEndoso='$clave'"; 
+      $success = $conexion->query($query); 
+      
+      if($conexion->affected_rows > 0){
+          //Actualizar endoso general:
+          $query   = "UPDATE cb_endoso SET eStatus='SB' WHERE iConsecutivo='$clave'"; 
+          $success = $conexion->query($query);
+          
+          if($conexion->affected_rows > 0){$mensaje = "The data was updated successfully!";}else{$error = 1;$mensaje = "Error to update the endorsement status data, please try again.";}
+      }else{$error = 1; $mensaje = "Error to update the policy/endorsement status data, please try again.";}  
+      
+      $error == 0 ? $conexion->commit() : $conexion->rollback(); 
+      $conexion->close();
+      
+      $response = array("msj"=>$mensaje,"error"=>"$error");   
+      echo json_encode($response);  
   }
 
   #FUNCION PARA APLICAR ACCION DEL ENDOSO EN UNIDAD/POLIZA:
