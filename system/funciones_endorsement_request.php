@@ -1281,19 +1281,45 @@
               $endosoFields .= "<tr>";
               
               //COLUMNA 1
-              $endosoFields .= "<td style=\"vertical-align:top;\">";
-              $endosoFields .= "<div $div>".
+              $endosoFields .= "<td style=\"vertical-align:top;\">".
+                               "<div $div>".
                                     "<label $label>Endorsement No:</label>".
-                                    "<input $input type=\"text\" maxlength=\"15\" name=\"sNumeroEndosoBroker\" title=\"This number is the one granted by the broker for the endorsement.\" placeholder=\"Endorsement No:\">".
+                                    "<input $input class=\"end-num txt-uppercase\" type=\"text\" maxlength=\"15\" name=\"sNumeroEndosoBroker\" title=\"This number is the one granted by the broker for the endorsement.\" placeholder=\"Endorsement No:\">".
+                               "</div>".
+                               "</td>";
+              // COLUMNA 2
+              $endosoFields .= "<td style=\"vertical-align:top;\">".
+                               "<div $div>".
+                                    "<label $label>Amount:</label>".
+                                    "<input $input type=\"text\" name=\"rImporteEndosoBroker\" title=\"Endorsement Amount \$\" placeholder=\"\$ 0000.00\" class=\"decimals\">".
+                               "</div>".
+                               "</td>";
+              //COLUMNA 3
+              $endosoFields .= "<td style=\"vertical-align:top;\">".
+                               "<div $div>".
+                                    "<label $label>Comments to Accounting:</label>".
+                                    "<textarea $textar id=\"sComentarios_".$data['iConsecutivoPoliza']."\" name=\"sComentarios\" maxlength=\"1000\" title=\"Max. 1000 characters.\"></textarea>".
+                                    "<select id=\"eStatus_".$data['iConsecutivoPoliza']."\"  name=\"eStatus\" style=\"display:none;\" >".
+                                    "<option value=\"SB\">SENT TO BROKERS</option>".
+                                    "<option value=\"P\">IN PROCESS</option>".
+                                    "<option value=\"A\">APPROVED</option>".
+                                    "<option value=\"D\">CANCELED/DENIED</option>".
+                                    "</select>".
+                               "</div>".
+                               "</td>";
+              
+              /*$endosoFields .= "<div $div>".
+                                    "<label $label>Endorsement No:</label>".
+                                    "<input $input class=\"num\" type=\"text\" maxlength=\"15\" name=\"sNumeroEndosoBroker\" title=\"This number is the one granted by the broker for the endorsement.\" placeholder=\"Endorsement No:\">".
                                "</div>";
               $endosoFields .= "<div $div>".
                                     "<label $label>Amount \$:</label>".
                                     "<input $input type=\"text\" name=\"rImporteEndosoBroker\" title=\"Endorsement Amount \$\" placeholder=\"\$ 0000.00\" class=\"decimals\">".
                                "</div>";
-              $endosoFields .= "</td>";
+              $endosoFields .= "</td>";*/
               
               //COLUMNA 2
-              $endosoFields .= "<td style=\"vertical-align:top;\">";
+              /*$endosoFields .= "<td style=\"vertical-align:top;\">";
               $endosoFields .= "<div $div>".
                                     "<label $label>Status:</label>".
                                     "<select $select id=\"eStatus_".$data['iConsecutivoPoliza']."\"  name=\"eStatus\">".
@@ -1302,17 +1328,22 @@
                                     "<option value=\"A\">APPROVED</option>".
                                     "<option value=\"D\">CANCELED/DENIED</option>".
                                     "</select>".
-                               "</div>";
-              $endosoFields .= "<div $div>".
-                                    "<label $label>Comments:</label>".
+                               "</div>"; */
+              /*$endosoFields .= "<div $div>".
+                                    "<label $label>Comments to Accounting:</label>".
                                     "<textarea $textar id=\"sComentarios_".$data['iConsecutivoPoliza']."\" name=\"sComentarios\" maxlength=\"1000\" title=\"Max. 1000 characters.\"></textarea>".
-                               "</div>";
-              $endosoFields .= "</td>";
+                               "</div>";*/
+              //$endosoFields .= "</td>";
               $endosoFields .= "</tr>";
-              $endosoFields .= "</table>"; 
+              $endosoFields .= "</table>";
               
-              $html .= '<h3>'.$sNumPoliza.' / '.$sDescPoliza.' / '.$sBroker.'</h3>';
-              $html .= '<div id="dataPolicy_'.$data['iConsecutivoPoliza'].'" class="data_policy" style="height:150px!important;">'.$endosoFields.'</div>'; 
+              $html .= '<h3>';
+              $html .= "<span style='display: -webkit-inline-box;width: 20%;'>".$sNumPoliza."</span>";
+              $html .= "<span style='display: -webkit-inline-box;width: 30%;'>".$sDescPoliza."</span>";
+              $html .= "<span style='display: -webkit-inline-box;width: 40%;'>".$sBroker."</span>";
+              $html .= '</h3>';
+              $html .= '<div id="dataPolicy_'.$data['iConsecutivoPoliza'].'" class="data_policy" style="height:80px!important;padding:5px!important;">'.$endosoFields.'</div>'; 
+              
              
               /*$fechaActualizacion = "<span>Last updated: ".$data['dFechaActualizacion']."</span>";
               $label  = "style=\"display: block;float: left;width: 18%;margin: 2px 0px;padding:5px 0px;\"";

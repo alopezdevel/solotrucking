@@ -807,10 +807,10 @@
       $sql    = "SELECT iConsecutivoEndoso,iConsecutivoPoliza,A.eStatus, B.sNumeroPoliza,B.iTipoPoliza,D.sDescripcion AS sTipoPoliza,C.iConsecutivo AS iConsecutivoBroker,C.sName AS sBrokerName,".
                 "C.bEndosoMensual,A.sComentarios,A.sNumeroEndosoBroker,A.rImporteEndosoBroker,DATE_FORMAT(A.dFechaActualizacion,'%m/%d/%Y %H:%i') AS dFechaActualizacion, ".
                 "DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y %H:%i') AS dFechaAplicacion ".
-                "FROM cb_endoso_estatus AS A ".
-                "LEFT JOIN ct_polizas AS B ON A.iConsecutivoPoliza = B.iConsecutivo ".
-                "LEFT JOIN ct_tipo_poliza AS D ON B.iTipoPoliza = D.iConsecutivo ".
-                "LEFT JOIN ct_brokers AS C ON B.iConsecutivoBrokers = C.iConsecutivo ".
+                "FROM      cb_endoso_estatus AS A ".
+                "LEFT JOIN ct_polizas        AS B ON A.iConsecutivoPoliza = B.iConsecutivo ".
+                "LEFT JOIN ct_tipo_poliza    AS D ON B.iTipoPoliza = D.iConsecutivo ".
+                "LEFT JOIN ct_brokers        AS C ON B.iConsecutivoBrokers = C.iConsecutivo ".
                 "WHERE iConsecutivoEndoso = '$clave' ";
       $result = $conexion->query($sql); 
       $rows   = $result->num_rows; 
@@ -845,7 +845,7 @@
               $endosoFields .= "<td style=\"vertical-align:top;\">".
                                "<div $div>".
                                     "<label $label>Endorsement No:</label>".
-                                    "<input $input class=\"num\" type=\"text\" maxlength=\"15\" name=\"sNumeroEndosoBroker\" title=\"This number is the one granted by the broker for the endorsement.\" placeholder=\"Endorsement No:\">".
+                                    "<input $input class=\"end-num txt-uppercase\" type=\"text\" maxlength=\"15\" name=\"sNumeroEndosoBroker\" title=\"This number is the one granted by the broker for the endorsement.\" placeholder=\"Endorsement No:\">".
                                "</div>".
                                "</td>";
               // COLUMNA 2
@@ -969,7 +969,7 @@
           $rows   = $result->num_rows;
           if($rows > 0){
             $data    = $result->fetch_assoc();
-            $fields .= "\$('#$domroot :input[name=sComentariosEndoso]').val('".utf8_decode($data['sComentarios'])."');\n"; 
+            $fields .= "\$('#$domroot :input[name=sComentarios]').val('".utf8_decode($data['sComentarios'])."');\n"; 
             $fields .= "\$('#$domroot :input[name=iConsecutivoEndoso]').val('".$data['iConsecutivoEndoso']."');\n";  
             $fields .= "\$('#$domroot :input[name=eStatusEndoso]').val('".utf8_decode($data['eStatus'])."');\n"; 
             
@@ -1065,7 +1065,7 @@
   function save_estatus_info(){
       $error          = '0';  
       $mensaje        = ""; 
-      $Comentarios    = trim($_POST['sMensaje']);
+      $Comentarios    = trim($_POST['sComentarios']);
       $iConsecutivo   = trim($_POST['iConsecutivoEndoso']);
       $PolizasEstatus = trim($_POST['polizas']);
       $eStatus        = trim($_POST['eStatusEndoso']);
@@ -1102,7 +1102,7 @@
               
               $actualiza .= " eStatus='$eStatusP' "; 
               $actualiza != "" ? $actualiza .= ", sComentarios='".utf8_encode(trim($poliza[2]))."'" : $actualiza = "sComentarios='".utf8_encode(trim($poliza[2]))."'";
-              $actualiza != "" ? $actualiza .= ", sNumeroEndosoBroker='".trim($poliza[3])."'"       : $actualiza = "sNumeroEndosoBroker='".trim($poliza[3])."'"; 
+              $actualiza != "" ? $actualiza .= ", sNumeroEndosoBroker='".strtoupper(trim($poliza[3]))."'"       : $actualiza = "sNumeroEndosoBroker='".strtoupper(trim($poliza[3]))."'"; 
               $actualiza != "" ? $actualiza .= ", rImporteEndosoBroker='".trim($poliza[4])."'"      : $actualiza = "rImporteEndosoBroker='".trim($poliza[4])."'"; 
               
               if($actualiza != "" && $polizaID != ""){

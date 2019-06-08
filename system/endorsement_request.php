@@ -806,7 +806,7 @@
                      var dataForm   = new FormData();
                      var other_data = $(form).serializeArray();
                      dataForm.append('accion','save_estatus_info');
-                     $.each($(form+' input[type=file]')[0].files,function(i, file){dataForm.append('file-'+i, file);});
+                     //$.each($(form+' input[type=file]')[0].files,function(i, file){dataForm.append('file-'+i, file);});
                      $.each(other_data,function(key,input){dataForm.append(input.name,input.value);}); 
                       
                      $.ajax({             
@@ -1250,7 +1250,7 @@
                 <tr>
                     <td colspan="100%" class="general_information">
                     <div class="field_item">
-                        <label>General Comments for this Endorsement: <span style="color: #5e8bd4;;">(These comments are those that will be shown to the client.)</span></label> 
+                        <label>General Comments for this Endorsement: <span style="color: #5e8bd4;;">(These comments are only for solo-trucking users)</span></label> 
                         <textarea tabindex="13" id="sComentarios" name ="sComentarios" style="resize:none;height:30px!important;"></textarea>
                     </div>
                     </td>
@@ -1357,15 +1357,15 @@
             <table style="width: 100%;">
             <tr class="claim_estatus">
                 <td colspan="2">
-                <div class="field_item"> 
+                <!--<div class="field_item"> 
                     <label class="required-field">File to upload the endorsement broker file:</label>
                     <div class="file-container" onclick="fn_endorsement.files.active_file_form('#form_change_estatus','fileselect2');">
                         <input id="fileselect2" name="fileselect" type="file"/>
                         <div class="file-message"></div>
                     </div>
-                </div> 
+                </div>--> 
                 <div class="field_item">
-                    <label>General Comments for this Endorsement: <span style="color: #5e8bd4;;">(These comments are those that will be shown to the client.)</span></label>
+                    <label>General Comments for this Endorsement: <span style="color: #5e8bd4;;">(These comments are only for solo-trucking users)</span></label>
                     <textarea id="sComentariosEndoso" name ="sComentariosEndoso" style="resize:none;height:50px!important;"></textarea> 
                 </div> 
                 <div class="field_item">
@@ -1453,12 +1453,13 @@
         <input name="iConsecutivoEndoso" type="hidden" value="">
         <div>
             <label>File Category <span style="color:#ff0000;">*</span>: </label>
-            <Select name="eArchivo" style="height: 27px!important;">
+            <select name="eArchivo" style="height: 27px!important;" class="txt-uppercase">
                 <option value="OTHERS">Other</option>
                 <option value="LICENSE">License</option>
                 <option value="LONGTERM">Longterm</option>   
                 <option value="PSP">PSP</option>   
-                <option value="MVR">MVR</option>   
+                <option value="MVR">MVR</option>  
+                <option value="ENDORSEMENT">ENDORSEMENT</option>  
             </select> 
         </div>
         <div class="field_item"> 
