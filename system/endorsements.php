@@ -410,7 +410,7 @@
                         fn_endorsement_co.delete_confirm();
                         //fn_endorsement_co.quote_confirmation();
                         fn_endorsement_co.endorsement_resend_email();
-                        fn_solotrucking.btn_tooltip();
+                        //fn_solotrucking.btn_tooltip();
                     }
                 }); 
             },

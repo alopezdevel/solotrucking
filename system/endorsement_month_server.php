@@ -102,8 +102,7 @@
                  
                  $class = " class=\"$class $redlist_class\"";
                  $htmlTabla .= "<tr$class>".
-                 "<td>".$items['iConsecutivo']."</td>".
-                 "<td>".$redlist_icon.$items['sNombreCompania']."</td>".
+                 "<td id=\"iCve_".$items['iConsecutivo']."\">".$redlist_icon.$items['sNombreCompania']."</td>".
                  "<td>".$txtTipo."</td>".
                  "<td class=\"txt-c\">".$items['dFechaInicio']."</td>".
                  "<td class=\"txt-c\">".$items['dFechaFin']."</td>".
@@ -151,7 +150,7 @@
     }
     $conexion->rollback();
     $conexion->close(); 
-    $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields");   
+    $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields","idPoliza"=>$drivers['iConsecutivoPoliza']);   
     echo json_encode($response);
   }
   function save_data(){
@@ -199,7 +198,7 @@
       }
       #UPDATE
       else if($edit_mode == "true"){
-          $sql     = "UPDATE cb_endoso_mensual SET sComentarios=$sComentarios,sEmail='$sEmail',sMensajeEmail=$sMensajeEmail, dFechaActualizacion='$dFechaActual',sIP='$IP',sUsuarioActualizacion='$sUsuario',iRatePercent='$iRatePercent' ".
+          $sql     = "UPDATE cb_endoso_mensual SET sComentarios=$sComentarios,sEmail='$sEmail',sMensajeEmail=$sMensajeEmail, dFechaActualizacion='$dFechaActual',sIP='$IP',sUsuarioActualizacion='$sUsuario',iRatePercent='$iRatePercent', dFechaInicio='$fecha_inicial',dFechaFin='$fecha_final' ".
                      "WHERE iConsecutivo='$iConsecutivo' AND iConsecutivoCompania='$iConsecutivoCompania' ";
           $success = $conexion->query($sql);
           if(!($success)){$transaccion_exitosa = false; $msj = "Error: The data of report has not been save successfully, please try again.";}
@@ -274,6 +273,38 @@
      $conexion->close();
      $htmlTabla = utf8_encode($htmlTabla);  
      echo $htmlTabla; 
+  }
+  
+  function actualiza_detalle(){
+    #VARIABLES
+    $estatus = 'OK';
+    $msj     = "";
+    $clave   = trim($_POST['iConsecutivo']);
+    $tipo    = trim($_POST['iTipoReporte']);
+  
+    include("cn_usuarios.php");
+    $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+    $transaccion_exitosa = true;
+    $sql    = "SELECT iConsecutivo,iConsecutivoCompania,iConsecutivoBroker,iConsecutivoPoliza, eStatus,iRatePercent,sComentarios,sEmail,sMensajeEmail,iTipoReporte, ".
+              "DATE_FORMAT(dFechaInicio,'%Y-%m-%d') AS dFechaInicio,DATE_FORMAT(dFechaFin,'%Y-%m-%d') AS dFechaFin ".
+              "FROM cb_endoso_mensual WHERE iConsecutivo = '$clave'";
+    $result = $conexion->query($sql);
+    $items  = $result->num_rows;   
+    if ($items > 0) {     
+        $endoso       = $result->fetch_assoc();
+        $idCompania   = $endoso['iConsecutivoCompania'];
+        $idBroker     = $endoso['iConsecutivoBroker'];
+        $idPoliza     = $endoso['iConsecutivoPoliza'];
+        $fechaIni     = $endoso['dFechaInicio'];
+        $fechaFin     = $endoso['dFechaFin'];
+        $add_endosos  = set_endosos_data($tipo,$clave,$idCompania,$idBroker,$idPoliza,$fechaIni,$fechaFin,false,$conexion); 
+        if(!($add_endosos)){$transaccion_exitosa = false; $estatus = 'ERROR'; $msj = "The endorsements does not updated correctly, please try again.";}
+    }
+    
+    $transaccion_exitosa ? $conexion->commit() : $conexion->rollback();
+    $conexion->close(); 
+    $response = array("mensaje"=>"$msj","estatus"=>"$estatus");   
+    echo json_encode($response);
   }
   
   #CARGAR DATOS DE ENDOSOS:
@@ -511,7 +542,7 @@
     
     $conexion->rollback();
     $conexion->close();   
-    $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla","iConsecutivoPoliza"=>"$iConsecutivoPoliza");   
+    $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla","iConsecutivoPoliza"=>"$iConsecutivoPoliza","total_endosos"=>$registros);   
     echo json_encode($response); 
   }
   function detalle_delete_data(){

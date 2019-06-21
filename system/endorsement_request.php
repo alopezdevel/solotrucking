@@ -1066,7 +1066,7 @@
     </div>
 </div>
 <!-- FORMULARIOS -->
-<div id="endorsements_edit_form" class="popup-form" style="width: 1100px;">
+<div id="endorsements_edit_form" class="popup-form" style="width: 98%;">
     <div class="p-header">
         <h2>ENDORSEMENTS</h2>
         <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('endorsements_edit_form');fn_endorsement.filtraInformacion();"><i class="fa fa-times"></i></div>
@@ -1190,7 +1190,7 @@
                         <thead>
                             <tr id="grid-head2">
                                 <td class="etiqueta_grid">Action</td>
-                                <td class="etiqueta_grid" style="width:150px;">Name</td>
+                                <td class="etiqueta_grid" style="width:40%;">Name</td>
                                 <td class="etiqueta_grid">DOB</td>
                                 <td class="etiqueta_grid">License Number</td>
                                 <td class="etiqueta_grid">License Type</td> 

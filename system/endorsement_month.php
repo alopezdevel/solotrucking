@@ -127,7 +127,9 @@ var fn_endosos = {
         },
         edit : function (){
             $(fn_endosos.data_grid + " tbody td .btn_edit").bind("click",function(){
-                var clave = $(this).parent().parent().find("td:eq(0)").html();
+                var clave    = $(this).parent().parent().find("td:eq(0)").prop('id');
+                    clave    = clave.split('_');
+                    clave    = clave[1];
                 fn_endosos.get_data(clave);
           });  
         },
@@ -138,12 +140,12 @@ var fn_endosos = {
                     if(data.error == '0'){
                         $('#frm_edit_new :text, #frm_edit_new select,#frm_edit_new input ').val('').removeClass('error');
                         //Deshabilitar campos:
-                        $('#dFechaInicio, #dFechaFin').addClass('readonly').prop('readonly','readonly');
+                        //$('#dFechaInicio, #dFechaFin').addClass('readonly').prop('readonly','readonly');
                         $('#frm_edit_new select[name=iConsecutivoCompania], #frm_edit_new select[name=iConsecutivoBroker],#frm_edit_new select[name=iTipoReporte], #frm_edit_new select[name=iConsecutivoPoliza]').prop('disabled','disabled').addClass('readonly');
-                        $("#frm_edit_new input[name=dFechaInicio], #frm_edit_new input[name=dFechaFin]" ).datepicker( "option", "disabled", true );
-                        eval(data.fields);
+                        //$("#frm_edit_new input[name=dFechaInicio], #frm_edit_new input[name=dFechaFin]" ).datepicker( "option", "disabled", true );
                         $('#frm_edit_new #data_grid_detalle, #frm_edit_new .btns_only_edit').show();
-                        fn_endosos.get_policies_co("#frm_edit_new");
+                        eval(data.fields);
+                        fn_endosos.get_policies_co("#frm_edit_new",data.idPoliza);  
                         fn_endosos.detalle.iConsecutivo = clave;
                         fn_endosos.detalle.fillgrid(); 
                         fn_popups.resaltar_ventana('frm_edit_new');
@@ -231,7 +233,7 @@ var fn_endosos = {
         filtraInformacion : function(){
             fn_endosos.pagina_actual = 0;
             fn_endosos.filtro = "";
-            if($(fn_endosos.data_grid+" .flt_id").val() != ""){ fn_endosos.filtro += "A.iConsecutivo|"+$(fn_endosos.data_grid+" .flt_id").val()+","}
+            //if($(fn_endosos.data_grid+" .flt_id").val() != ""){ fn_endosos.filtro += "A.iConsecutivo|"+$(fn_endosos.data_grid+" .flt_id").val()+","}
             if($(fn_endosos.data_grid+" .flt_name").val() != ""){ fn_endosos.filtro += "B.sNombreCompania|"+$(fn_endosos.data_grid+" .flt_name").val()+","} 
             if($(fn_endosos.data_grid+" .flt_tipo").val() != ""){ fn_endosos.filtro += "iTipoReporte|"+$(fn_endosos.data_grid+" .flt_tipo").val()+","} 
             if($(fn_endosos.data_grid+" .flt_datefrom").val() != ""){ fn_endosos.filtro += "dFechaInicio|"+$(fn_endosos.data_grid+" .flt_datefrom").val()+","} 
@@ -243,8 +245,10 @@ var fn_endosos = {
         },  
         delete_confirm : function(){
           $(fn_endosos.data_grid + " tbody .btn_delete").bind("click",function(){
-               var clave = $(this).parent().parent().find("td:eq(0)").html();
-               var name  = $(this).parent().parent().find("td:eq(1)").text();
+               var clave    = $(this).parent().parent().find("td:eq(0)").prop('id');
+                   clave    = clave.split('_');
+                   clave    = clave[1];
+               var name  = $(this).parent().parent().find("td:eq(0)").text();
                $('#dialog_delete input[name=iConsecutivo]').val(clave);
                $('#dialog_delete .name').empty().html(name);
                $('#dialog_delete').dialog( 'open' );
@@ -281,11 +285,12 @@ var fn_endosos = {
                 type:"POST", 
                 url:"endorsement_month_server.php", 
                 data:{accion:"get_policies_data","iConsecutivoBroker":broker,"iConsecutivoCompania":compania},
-                async : true,
+                async : false,
                 dataType : "text",
                 success : function(data){
                     $(form+" select[name=iConsecutivoPoliza").empty().append(data);
-                    if(poliza != ""){$("#frm_edit_estatus select[name=iConsecutivoPoliza]").val(poliza);}
+                    
+                    if(poliza != ""){$(form+" select[name=iConsecutivoPoliza]").val(poliza);}
                 }
            });  
              
@@ -322,10 +327,11 @@ var fn_endosos = {
                             $(fn_endosos.detalle.data_grid+" tbody").empty().append(data.tabla);
                             $(fn_endosos.detalle.data_grid+" tbody tr:even").addClass('gray');
                             $(fn_endosos.detalle.data_grid+" tbody tr:odd").addClass('white');
-                            $(fn_endosos.detalle.data_grid+" tfoot .paginas_total").val(data.total);
-                            $(fn_endosos.detalle.data_grid+" tfoot .pagina_actual").val(data.pagina);
+                            $(fn_endosos.detalle.data_grid+" tfoot .total_endosos").empty().text(data.total_endosos);
+                            //$(fn_endosos.detalle.data_grid+" tfoot .paginas_total").val(data.total);
+                            //$(fn_endosos.detalle.data_grid+" tfoot .pagina_actual").val(data.pagina);
                             fn_endosos.detalle.pagina_actual = data.pagina;
-                            $("#frm_edit_new select[name=iConsecutivoPoliza").val(data.iConsecutivoPoliza); 
+                            //$("#frm_edit_new select[name=iConsecutivoPoliza").val(data.iConsecutivoPoliza); 
                             fn_endosos.detalle.borrar();
                             fn_solotrucking.btn_tooltip();
                         }
@@ -367,7 +373,24 @@ var fn_endosos = {
                         fn_endosos.detalle.fillgrid();
                    },"json"); 
                });  
-            },  
+            }, 
+            actualiza : function(){
+                $.ajax({             
+                    type:"POST", 
+                    url:"endorsement_month_server.php", 
+                    data:{
+                        accion               : "actualiza_detalle",
+                        iConsecutivo         : fn_endosos.detalle.iConsecutivo,
+                        iTipoReporte         : fn_endosos.detalle.iTipo,
+                    },
+                    async : true,
+                    dataType : "json",
+                    success : function(data){                               
+                        if(data.estatus == 'OK'){fn_endosos.detalle.fillgrid();}
+                        else{fn_solotrucking.mensaje(data.mensaje);}
+                    }
+                });    
+            } 
         },
         download_excel : function(iConsecutivoReporte){
            if(iConsecutivoReporte != ""){
@@ -401,7 +424,9 @@ var fn_endosos = {
         //Estatus:
         estatus_edit : function(){
             $(fn_endosos.data_grid + " tbody td .btn_change_status").bind("click",function(){
-                var clave = $(this).parent().parent().find("td:eq(0)").html();
+                var clave    = $(this).parent().parent().find("td:eq(0)").prop('id');
+                    clave    = clave.split('_');
+                    clave    = clave[1];
                 $.post("endorsement_month_server.php",{accion:"estatus_get_data", clave: clave, domroot : "frm_edit_estatus"},
                 function(data){
                     if(data.error == '0'){
@@ -523,8 +548,7 @@ var fn_endosos = {
         <table id="data_grid_endosos" class="data_grid">
         <thead>
             <tr id="grid-head1">
-                <td style='width:45px;'><input class="flt_id" class="numeros" type="text" placeholder="ID:"></td>
-                <td><input class="flt_name" type="text" placeholder="Company Name:"></td>
+                <td style="min-width:400px;"><input class="flt_name" type="text" placeholder="Company Name:"></td>
                 <td>
                 <select class="flt_tipo">
                     <option value="">All</option>
@@ -532,12 +556,12 @@ var fn_endosos = {
                     <option value="">Vehicles</option>
                 </select>
                 </td>
-                <td><input class="flt_datefrom" type="text" placeholder="MM/DD/YYYY"></td> 
-                <td><input class="flt_dateto" type="text" placeholder="MM/DD/YYYY"></td> 
-                <td><input class="flt_broker" type="text" placeholder="Broker Name:"></td> 
+                <td style="width: 85px;"><input class="flt_datefrom" type="text" placeholder="MM/DD/YYYY"></td> 
+                <td style="width: 85px;"><input class="flt_dateto" type="text" placeholder="MM/DD/YYYY"></td> 
+                <td style="min-width: 300px;"><input class="flt_broker" type="text" placeholder="Broker Name:"></td> 
                 <td><input class="flt_email" type="text" placeholder="E-mails:"></td> 
-                <td><input class="flt_date" type="text" placeholder="MM/DD/YYYY"></td> 
-                <td style='width:80px;'>
+                <td style="width: 85px;"><input class="flt_date" type="text" placeholder="MM/DD/YYYY"></td> 
+                <td style='width: 90px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_endosos.filtraInformacion();"><i class="fa fa-search"></i></div>
                     <div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_endosos.add();"><i class="fa fa-plus"></i></div>
                 </td> 
@@ -550,9 +574,8 @@ var fn_endosos = {
                 </td>
             </tr>-->
             <tr id="grid-head2">
-                <td class="etiqueta_grid down" onclick="fn_endosos.ordenamiento('iConsecutivo',this.cellIndex);">ID</td>
                 <td class="etiqueta_grid"      onclick="fn_endosos.ordenamiento('sNombreCompania',this.cellIndex);">Company</td>
-                <td class="etiqueta_grid"      onclick="fn_endosos.ordenamiento('iTipoReporte',this.cellIndex);">Report Type</td>
+                <td class="etiqueta_grid"      onclick="fn_endosos.ordenamiento('iTipoReporte',this.cellIndex);">Type</td>
                 <td class="etiqueta_grid"      onclick="fn_endosos.ordenamiento('dFechaInicio',this.cellIndex);">Date from</td>
                 <td class="etiqueta_grid"      onclick="fn_endosos.ordenamiento('dFechaFin',this.cellIndex);">Date To</td>
                 <td class="etiqueta_grid"      onclick="fn_endosos.ordenamiento('sNombreBroker',this.cellIndex);">Broker</td>
@@ -681,12 +704,19 @@ var fn_endosos = {
                                 <td class="etiqueta_grid txt-c" style="width: 80px;">App Date</td>
                                 <td class="etiqueta_grid" style="width: 100px;">Policy No.</td>
                                 <td class="etiqueta_grid">Descripcion</td>
-                                <td class="etiqueta_grid" style="width: 80px;text-align: center;">
-                                    <div class="btn-icon edit btn-left" title="Update Endorsement List" onclick="" style="width: auto;"><i class="fa fa-refresh"></i><span style="margin-left:5px;font-size: 10px!important;">Update list</span></div>
+                                <td class="etiqueta_grid" style="width: 90px;text-align: center;">
+                                    <div class="btn-icon edit btn-left" title="Update Endorsement List" onclick="fn_endosos.detalle.actualiza();" style="width: auto!important;"><i class="fa fa-refresh"></i><span style="margin-left:5px;font-size: 10px!important;">Update list</span></div>
                                 </td>
                             </tr>
                         </thead>
                         <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="100%" style="padding-top: 3px;">
+                                    <label> Endorsements Total: </label><span class="total_endosos"></span>
+                                </td>
+                            </tr>
+                        </tfoot>
                         <!--<tfoot>
                             <tr>
                                 <td colspan="100%">
@@ -710,7 +740,7 @@ var fn_endosos = {
                         </tfoot>-->
                     </table>
                     </td>
-                </tr>
+                </tr> 
                 </table> 
                 <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('frm_edit_new');fn_endosos.fillgrid();" style="margin-right:10px;background:#e8051b;" title="Close">CLOSE</button>
                 <button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.save(true);fn_solotrucking.mensaje('The data has been sent!, please check the account customerservice@solo-trucking.com to receive the response from the brokers.');window.open('endorsement_month_xlsx.php?idReport='+$('#frm_edit_new input[name=iConsecutivo]').val()+'&mail=1');" style="margin-right:10px;background: #87c540;width: 140px;" title="Send report to the broker">SEND E-MAIL</button>

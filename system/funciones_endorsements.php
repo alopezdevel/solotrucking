@@ -24,15 +24,15 @@
   //Funciones Generales.
   function get_endorsements(){
         include("cn_usuarios.php");
-        $company = $_SESSION['company'];
-        $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
-        $transaccion_exitosa = true;
+        $conexion->autocommit(FALSE); 
+        $company              = $_SESSION['company'];                                                                                                                                                                                                                                     
+        $transaccion_exitosa  = true; 
         $registros_por_pagina = $_POST["registros_por_pagina"];
-        $pagina_actual = (isset($_POST["pagina_actual"]) && $_POST["pagina_actual"] != '' ? $_POST["pagina_actual"] : 1);
+        $pagina_actual        = (isset($_POST["pagina_actual"]) && $_POST["pagina_actual"] != '' ? $_POST["pagina_actual"] : 1);
         $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
             
         //Filtros de informacion //
-        $filtroQuery = " WHERE A.iConsecutivoCompania = '".$company."'";
+        $filtroQuery   = " WHERE A.iConsecutivoCompania = '".$company."'";
         $array_filtros = explode(",",$_POST["filtroInformacion"]);
         foreach($array_filtros as $key => $valor){
             if($array_filtros[$key] != ""){
@@ -44,11 +44,11 @@
         $ordenQuery = " ORDER BY dFechaAplicacion = '', ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"];
 
         //contando registros // 
-        $query_rows = "SELECT COUNT(A.iConsecutivo) AS total FROM  cb_endoso A ". 
-                      "LEFT JOIN ct_operadores C ON A.iConsecutivoOperador = C.iConsecutivo ".
-                      "LEFT JOIN ct_unidades D ON A.iConsecutivoUnidad = D.iConsecutivo ".$filtroQuery;
-        $Result = $conexion->query($query_rows);
-        $items = $Result->fetch_assoc();
+        $query_rows= "SELECT COUNT(A.iConsecutivo) AS total FROM  cb_endoso A ". 
+                     "LEFT JOIN ct_operadores C ON A.iConsecutivoOperador = C.iConsecutivo ".
+                     "LEFT JOIN ct_unidades D ON A.iConsecutivoUnidad = D.iConsecutivo ".$filtroQuery;
+        $Result    = $conexion->query($query_rows);
+        $items     = $Result->fetch_assoc();
         $registros = $items["total"];
         if($registros == "0"){$pagina_actual = 0;}
         $paginas_total = ceil($registros / $registros_por_pagina);
@@ -57,14 +57,15 @@
             $limite_superior = 0;
             $limite_inferior = 0;
             $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";
-        }else{
+        }
+        else{
           $pagina_actual == "0" ? $pagina_actual = 1 : false;
           $limite_superior = $registros_por_pagina;
           $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;  
-          $sql = "SELECT A.iConsecutivo,iConsecutivoTipoEndoso AS Tipo,iConsecutivoOperador,iConsecutivoUnidad, DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, A.iConsecutivoTipoEndoso AS categoria, A.eStatus, eAccion, sNombre, sVIN, sNombreOperador, sVINUnidad, iEndosoMultiple ". 
-                 "FROM cb_endoso A ".
-                 "LEFT JOIN ct_operadores  C ON A.iConsecutivoOperador = C.iConsecutivo ".
-                 "LEFT JOIN ct_unidades    D ON A.iConsecutivoUnidad = D.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
+          $sql    = "SELECT A.iConsecutivo,iConsecutivoTipoEndoso AS Tipo,iConsecutivoOperador,iConsecutivoUnidad, DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, A.iConsecutivoTipoEndoso AS categoria, A.eStatus, eAccion, sNombre, sVIN, sNombreOperador, sVINUnidad, iEndosoMultiple ". 
+                    "FROM cb_endoso A ".
+                    "LEFT JOIN ct_operadores  C ON A.iConsecutivoOperador = C.iConsecutivo ".
+                    "LEFT JOIN ct_unidades    D ON A.iConsecutivoUnidad = D.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
           $result = $conexion->query($sql);
           $rows   = $result->num_rows; 
              
@@ -246,7 +247,15 @@
             } 
             else { $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}
           }
-          $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
+          
+          $htmlTabla = utf8_decode($htmlTabla);
+          
+          $response = array(
+            "total"  => "$paginas_total",
+            "pagina" => "$pagina_actual",
+            "tabla"  => "$htmlTabla",
+            "mensaje"=> "$mensaje",
+            "error"  => "$error");   
           echo json_encode($response); 
   }
   function validate_policies(){
@@ -2481,8 +2490,13 @@
                       $sContenido           = $conexion->real_escape_string($fileContent);
                       $eArchivo             = trim($_POST['eArchivo']); 
                       $iConsecutivoEndoso   = trim($_POST['iConsecutivoEndoso']);
-                      if($eArchivo != "OTHERS"){$fileName = strtolower($eArchivo).'.'.$fileExten;} //Si la categoria existe renombramos el archivo.
-                      
+                      if($eArchivo != "OTHERS" && $eArchivo != 'ENDORSEMENT'){$fileName = strtolower($eArchivo).'.'.$fileExten;} //Si la categoria existe renombramos el archivo.
+                      else if($eArchivo == 'ENDORSEMENT'){
+                          
+                          $fileName = explode(".",$fileName);
+                          $fileName = str_replace(" ","_",$fileName[0]);
+                          $fileName = $fileName.'.'.$fileExten;
+                      }
                       #UPDATE
                       if($edit_mode){
                          $sql = "UPDATE cb_endoso_files SET sNombreArchivo ='$fileName', sTipoArchivo ='$fileType', iTamanioArchivo ='$fileSize', ".

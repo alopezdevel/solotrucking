@@ -219,6 +219,8 @@
              
           if ($rows > 0) {    
                 while ($items = $result->fetch_assoc()) { 
+                    
+                     $type = 'endoso';
                      if($items['sTipoArchivo'] == 'application/pdf'){$btnIcon = "fa-file-pdf-o";}else if($items['sTipoArchivo'] == 'image/jpeg'){$btnIcon = "fa-file-image-o";} 
                      $htmlTabla .= "<tr>".
                                    "<td id=\"".$items['iConsecutivo']."\">".$items['sNombreArchivo']."</td>".

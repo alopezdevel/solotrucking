@@ -1271,7 +1271,7 @@
               //Revisamos si el endoso aplica para envio mensual... (no debe aparecer aqui.)
               $endosoFields = "";
               
-              $label  = "style=\"display: block;float: left;width: 18%;margin: 2px 0px;padding:5px 0px;\"";
+              $label  = "style=\"display: block;float: left;margin: 2px 0px;padding:5px 0px;\"";
               $input  = "style=\"float: right;width: 99%;clear: none;margin: 2px!important;height: 20px!important;resize: none;\"";
               $textar = "style=\"float: right;width: 99%;clear: none;margin: 2px!important;height:22px!important;resize: none;padding-top: 0px!important;\"";
               $select = "style=\"float: right;width: 100%!important;clear: none;margin: 2px!important;height:25px!important;\"";

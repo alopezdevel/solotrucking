@@ -148,15 +148,17 @@
           }else{
              foreach($_POST as $campo => $valor){
                 if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo" ){ //Estos campos no se insertan a la tabla
-                    array_push($valores,"$campo='".trim($valor)."'");
+                    if($valor != ""){array_push($valores,"$campo='".trim($valor)."'");}
                 }
              }   
           }
       }else if($_POST["edit_mode"] != 'true'){
          foreach($_POST as $campo => $valor){
            if($campo != "accion" and $campo != "edit_mode"){ //Estos campos no se insertan a la tabla
-                array_push($campos ,$campo); 
-                array_push($valores, trim($valor));
+                if($valor != ""){
+                   array_push($campos ,$campo); 
+                   array_push($valores, trim($valor)); 
+                }
            }
          }  
       }
@@ -180,18 +182,18 @@
           }
           $conexion->query($sql);
           $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
-          if($transaccion_exitosa){
-                    $conexion->commit();
-                    $conexion->close();
-          }else{
-                    $conexion->rollback();
-                    $conexion->close();
-                    $msj = "A general system error ocurred : internal error";
-                    $error = "1";
+          
+          if($transaccion_exitosa){$conexion->commit();$conexion->close();}
+          else{
+            $msj   = "A general system error ocurred : internal error";
+            $error = "1";
+            $mysqlError = $conexion->error;
+            $conexion->rollback();
+            $conexion->close();
           }
           if($transaccion_exitosa)$msj = "The data has been saved successfully."; 
       }
-      $response = array("error"=>"$error","msj"=>"$msj");
+      $response = array("error"=>"$error","msj"=>"$msj", 'err_db'=>$mysqlError);
       echo json_encode($response);
   }  
   function delete_company(){
