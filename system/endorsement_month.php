@@ -458,11 +458,13 @@ var fn_endosos = {
              if($('#data_general_estatus input[name=iConsecutivo]').val() != ''){struct_data_post.edit_mode = "true";}else{struct_data_post.edit_mode = "false";}  
  
                 $.post("endorsement_month_server.php",{
-                    'accion'       : "estatus_save_data",
-                    'iConsecutivo' : $('#data_general_estatus input[name=iConsecutivo]').val(),
-                    'eStatus'      : $("#data_general_estatus select[name=eStatus]").val(),
-                    'sComentarios' : $("#data_general_estatus textarea[name=sComentarios]").val(),
+                    'accion'             : "estatus_save_data",
+                    'iConsecutivo'       : $('#data_general_estatus input[name=iConsecutivo]').val(),
+                    'eStatus'            : $("#data_general_estatus select[name=eStatus]").val(),
+                    'sComentarios'       : $("#data_general_estatus textarea[name=sComentarios]").val(),
                     'iConsecutivoPoliza' : $("#frm_edit_estatus select[name=iConsecutivoPoliza]").val(),
+                    'iConsecutivoBroker' : $("#frm_edit_estatus select[name=iConsecutivoBroker]").val(),
+                    'iTipoReporte'       : $("#frm_edit_estatus select[name=iTipoReporte]").val(),
                 },
                 function(data){
                     fn_solotrucking.mensaje(data.msj);

@@ -75,7 +75,8 @@
                         $titleEstatus= "The data can be edited only by the employees of Solo-Trucking.";
                         $class       = "class = \"blue\"";
                         $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"View and Edit Endorsement Status\"><i class=\"fa fa-pencil-square-o\"></i></div>".
-                                       "<div class=\"btn_edit_estatus btn-icon send-email btn-left\" title=\"Send e-mail to the brokers\"><i class=\"fa fa-envelope\"></i></div>"; 
+                                       "<div class=\"btn_edit_estatus btn-icon send-email btn-left\" title=\"Send e-mail to the brokers\"><i class=\"fa fa-envelope\"></i></div>". 
+                                       "<div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete Endorsement\"><i class=\"fa fa-trash\"></i> <span></span></div>";
                      break;
                      case 'A': 
                         $estado      = '<i class="fa fa-check-circle status-success icon-estatus " aria-hidden=\"true\"></i><span style="font-size: 10px;">APPROVED</span>';
@@ -295,6 +296,40 @@
       $response = array("error"=>"$error","msj"=>"$mensaje","iConsecutivo"=>"$iConsecutivo");
       echo json_encode($response);
   }
+  function delete_endorsement(){
+      //Conexion:
+      include("cn_usuarios.php"); 
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $success= true;
+      $clave  = $_POST['clave'];
+      $error  = '0';  
+      $msj    = ""; 
+      $clave  = trim($_POST['clave']); 
+      
+
+      //BORRAMOS ENDOSO.
+      if($error == '0'){
+          // Lo marcamos como eliminado mas no se elimina fisicamente de la BDD.
+          $query = "UPDATE cb_endoso_adicional SET iDeleted='1' WHERE iConsecutivo = '$clave'"; 
+          $conexion->query($query);
+          $conexion->affected_rows ? $transaccion_exitosa = true : $transaccion_exitosa = false;
+      }
+      else{$msj = "Error: Descriptions in Endorsement are not found.";$transaccion_exitosa = false;} 
+      
+      if($transaccion_exitosa){
+        $conexion->commit();
+        $conexion->close();
+        $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data has been deleted succesfully!</p>';
+      }else{
+        $conexion->rollback();
+        $conexion->close();
+        $msj = "A general system error ocurred : internal error";
+        $error = "1";
+      }
+        
+      $response = array("msj"=>"$msj","error"=>"$error");   
+      echo json_encode($response);
+  }
   
   // DETALLE
   function detalle_datagrid(){
@@ -365,11 +400,12 @@
       $sIP                  = $_SERVER['REMOTE_ADDR'];
       $sUsuario             = $_SESSION['usuario_actual'];
       $dFecha               = date("Y-m-d H:i:s");
+      $_POST['sNombreCompania'] = fix_string($_POST['sNombreCompania']);
       
       if($edit_mode == "true"){
           foreach($_POST as $campo => $valor){
             if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivoDetalle" && $campo != "iConsecutivoEndoso" && $campo != "sComentarios"){ //Estos campos no se insertan a la tabla
-                array_push($valores,"$campo='". strtoupper($valor)."'"); 
+                array_push($valores,"$campo='". trim(strtoupper($valor))."'"); 
             }
           }
           
@@ -380,7 +416,7 @@
           foreach($_POST as $campo => $valor){
             if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivoDetalle" && $campo != "sComentarios"){ //Estos campos no se insertan a la tabla
                 array_push($campos ,$campo);
-                array_push($valores,strtoupper($valor)); 
+                array_push($valores,trim(strtoupper($valor))); 
             }
           }
           
@@ -417,6 +453,7 @@
           $datos   = $data; 
             
           foreach($datos as $i => $b){ 
+            if($i == 'sNombreCompania'){$datos[$i] = utf8_decode($datos[$i]);}  
             $fields .= "\$('$domroot [name=".$i."]').val('".$datos[$i]."');";   
           }  
             

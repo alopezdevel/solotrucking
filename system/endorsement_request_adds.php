@@ -66,7 +66,26 @@
                         $(this).dialog('close');
                     }
                 }
-            });    
+            }); 
+            
+            $('#dialog_delete_endorsement_add').dialog({
+                modal: true,
+                autoOpen: false,
+                width : 300,
+                height : 200,
+                resizable : false,
+                buttons : {
+                    'YES' : function() {
+                        clave = $('#dialog_delete_endorsement_add input[name=iConsecutivo]').val();
+                        $(this).dialog('close');
+                        
+                        fn_endorsement.delete_endorsement(clave);             
+                    },
+                     'NO' : function(){
+                        $(this).dialog('close');
+                    }
+                }
+            });      
     }  
     function validapantalla(usuario){if(usuario == ""  || usuario == null){location.href= "login.php";}  }                   
     var fn_endorsement = {
@@ -143,6 +162,7 @@
                         fn_endorsement.edit();
                         fn_endorsement.edit_estatus();
                         fn_endorsement.change_estatus();
+                        fn_endorsement.delete_confirm();
                         fn_solotrucking.btn_tooltip();
                     }
                 }); 
@@ -150,10 +170,15 @@
             add : function(){
                $('#endorsements_edit_form input, #endorsements_edit_form select, #endorsements_edit_form textarea').val('');
                $("#frm_endorsement_information .required-field").removeClass("error");
+               $("#endorsements_edit_form .general_information #iConsecutivoCompania").removeClass('readonly').removeProp('disabled');
                $("#info_policies").hide();//ocultar grid de archivos...
                $("#info_policies tbody").empty();
                fn_solotrucking.get_date("#dFechaAplicacion.fecha");
-               //fn_solotrucking.get_time("#dFechaAplicacionHora");
+               //DETALLE:
+               fn_endorsement.detalle.iConsecutivoEndoso = "";
+               fn_endorsement.detalle.add();
+               fn_endorsement.detalle.fillgrid();
+               
                fn_popups.resaltar_ventana('endorsements_edit_form'); 
             },
             edit : function (){
@@ -166,6 +191,23 @@
                     fn_endorsement.detalle.add();
                     fn_endorsement.get_data(clave); 
               });  
+            },
+            delete_confirm : function(){
+              $(fn_endorsement.data_grid + " tbody .btn_delete").bind("click",function(){
+                   var clave    = $(this).parent().parent().find("td:eq(0)").prop('id');
+                       clave    = clave.split('_');
+                       clave    = clave[1];
+                   $('#dialog_delete_endorsement_add input[name=iConsecutivo]').val(clave);
+                   $('#dialog_delete_endorsement_add').dialog( 'open' );
+                   return false;
+               });  
+            },
+            delete_endorsement : function(id){
+              $.post("endorsement_request_adds_server.php",{accion:"delete_endorsement", 'clave': id},
+               function(data){
+                    fn_solotrucking.mensaje(data.msj);
+                    fn_endorsement.filtraInformacion();
+               },"json");  
             },
             firstPage : function(){
                 if($(fn_endorsement.data_grid+" #pagina_actual").val() != "1"){
@@ -905,7 +947,7 @@
                         <option value="P">IN PROGRESS</option>
                         <option value="A">APPROVED</option> 
                     </select></td>  
-                <td style='width:80px;'>
+                <td style='width:115px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_endorsement.filtraInformacion();"><i class="fa fa-search"></i></div>
                     <div class="btn-icon-2 btn-left" title="New Endorsement +"  onclick="fn_endorsement.add();"><i class="fa fa-plus"></i></div>
                 </td> 
@@ -1282,6 +1324,12 @@
 <div id="dialog_send_email" title="SYSTEM ALERT" style="display:none;">
     <p>Are you sure that want to send the endorsement to the broker(s)?</p>
 </div>
+<div id="dialog_delete_endorsement_add" title="SYSTEM ALERT" style="display:none;">
+    <p>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
+    <form id="elimina" method="post">
+           <input type="hidden" name="iConsecutivo" value="">
+    </form>  
+</div> 
 <!-- FOOTER -->
 <?php include("footer.php"); ?> 
 

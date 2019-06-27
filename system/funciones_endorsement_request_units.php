@@ -180,7 +180,7 @@
                      
                       //Redlist:
                      $items['iOnRedList'] == '1' ? $redlist_icon = "<i class=\"fa fa-star\" style=\"color:#e8051b;margin-right:4px;\"></i>" : $redlist_icon = ""; 
-                     $htmlTabla .= "<tr>".
+                     $htmlTabla .= "<tr $class>".
                                    "<td id=\"iCve_".$items['iConsecutivo']."\">".$redlist_icon.$items['sNombreCompania']."</td>".
                                    "<td>".$detalle."</td>". 
                                    "<td>".$policies."</td>".

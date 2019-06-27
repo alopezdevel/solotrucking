@@ -259,7 +259,8 @@
      $sql    = "SELECT P.iConsecutivo, P.sNumeroPoliza, T.sAlias, T.sDescripcion ".
                "FROM ct_polizas AS P ".
                "LEFT JOIN ct_tipo_poliza AS T ON P.iTipoPoliza = T.iConsecutivo ".
-               "WHERE iConsecutivoBrokers = '$iBroker' AND iConsecutivoCompania = '$iCompan'  AND P.iDeleted='0' AND dFechaCaducidad >= CURDATE() ORDER BY P.iConsecutivo DESC";
+               "WHERE iConsecutivoBrokers = '$iBroker' AND iConsecutivoCompania = '$iCompan'  AND P.iDeleted='0' ".//"AND dFechaCaducidad >= CURDATE() ".
+               "ORDER BY P.iConsecutivo DESC";
      $result = $conexion->query($sql);
      $rows   = $result->num_rows; 
      
@@ -767,13 +768,7 @@
       $edit_mode           = trim($_POST['edit_mode']);
       $iConsecutivo        = trim($_POST['iConsecutivo']);
       $iConsecutivoBroker  = trim($_POST['iConsecutivoBroker']);
-    //$sComentarios        = $_POST['sComentarios'] != "" ? "'".utf8_decode(trim($_POST['sComentarios']))."'" : "''";
-      $sComentarios        = "''";
-      $iRatePercent        = trim($_POST['iRatePercent']);
-      $sEmail              = trim($_POST['sEmail']);  
-      $sMensajeEmail       = $_POST['sMensajeEmail'] != "" ? "'".utf8_decode(trim($_POST['sMensajeEmail']))."'" : "''";
-      $fecha_inicial       = date('Y-m-d',strtotime(trim($_POST['dFechaInicio'])));
-      $fecha_final         = date('Y-m-d',strtotime(trim($_POST['dFechaFin'])));
+      $sComentarios        = $_POST['sComentarios'] != "" ? "'".utf8_decode(trim($_POST['sComentarios']))."'" : "''";
       $dFechaActual        = date("Y-m-d H:i:s");
       $IP                  = $_SERVER['REMOTE_ADDR'];
       $sUsuario            = $_SESSION['usuario_actual'];
