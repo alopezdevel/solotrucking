@@ -54,7 +54,7 @@
       $limite_superior = $registros_por_pagina;
       $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
        
-      $sql    = "SELECT A.iConsecutivo, D.sNombreCompania,A.eStatus, DATE_FORMAT(A.dFechaAplicacion, '%m/%d/%Y') AS dFechaIngreso, D.iOnRedList ".
+      $sql    = "SELECT A.iConsecutivo, D.sNombreCompania,A.eStatus, DATE_FORMAT(A.dFechaAplicacion, '%m/%d/%Y') AS dFechaAplicacion, D.iOnRedList ".
                 "FROM cb_endoso_adicional AS A ".
                 "LEFT JOIN ct_companias   AS D ON A.iConsecutivoCompania   = D.iConsecutivo ".
                 $filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
@@ -122,27 +122,60 @@
                      
                      while($itemD = $r->fetch_assoc()){
                      
-                        $texto  = $itemD['sNombreAdicional'].'<br><span style="font-size:11px!important;">'.$itemD['sDireccion'].', '.$itemD['sCiudad'].', '.$itemD['sEstado'].', '.$itemD['sCodigoPostal'].'</span>';
+                        $texto  = $itemD['sNombreAdicional'].'<br><span style="font-size:9px!important;">'.$itemD['sDireccion'].', '.$itemD['sCiudad'].', '.$itemD['sEstado'].', '.$itemD['sCodigoPostal'].'</span>';
                         $action = $itemD['eAccion'];
                         $tipo   = $itemD['eTipoEndoso'];
 
                         $detalle.= '<tr style="background-color:transparent!important;">'.
                                    '<td style="border: 0px;width: 15%;">'.$action.'</td>'.
-                                   '<td style="border: 0px;width: 50%;">'.$texto.'</td>'.
+                                   '<td style="border: 0px;width: 50%;font-size: 12px!important;">'.$texto.'</td>'.
                                    '<td style="border: 0px;width: 30%;">'.$tipo.'</td>'.
-                                   '</tr>';
+                                   '</tr>'; 
                         
                      }
                      
                      $detalle.= '</table>';
                  }
                  
+                 //Consultar Estatus x poliza:
+                 $query = "SELECT A.iConsecutivoPoliza,P.sNumeroPoliza, T.sDescripcion AS sTipoPoliza, B.sName AS sBrokerName ,A.eStatus, A.sNumeroEndosoBroker, A.rImporteEndosoBroker, A.iEnviadoFuera  
+                            FROM       cb_endoso_adicional_estatus AS A 
+                            INNER JOIN ct_polizas                  AS P ON A.iConsecutivoPoliza = P.iConsecutivo
+                            LEFT  JOIN ct_tipo_poliza              AS T ON P.iTipoPoliza = T.iConsecutivo
+                            LEFT  JOIN ct_brokers                  AS B ON P.iConsecutivoBrokers = B.iConsecutivo
+                            WHERE A.iConsecutivoEndoso = '".$item['iConsecutivo']."' 
+                            ORDER BY iConsecutivoPoliza DESC";
+                 $r     = $conexion->query($query);
+                 
+                 if($r->num_rows > 0){
+                     $policies = "<table style=\"width:100%;padding:0!important;margin:0!important;border-collapse: collapse;border-spacing: 0;\">";
+                     while($poliza = $r->fetch_assoc()){
+                         
+                        $poliza['sNumeroEndosoBroker']  != "" ? $poliza['sNumeroEndosoBroker'] = "END# ".$poliza['sNumeroEndosoBroker'] : ""; 
+                        $poliza['rImporteEndosoBroker'] != "" && $poliza['rImporteEndosoBroker'] != 0 ? $poliza['rImporteEndosoBroker'] = "\$ ".number_format($poliza['rImporteEndosoBroker'],2,'.',',') : $poliza['rImporteEndosoBroker'] = "";
+                        
+                        $policies .= "<tr style='background: none;' title='".$poliza['sTipoPoliza']."/ ".$poliza['sBrokerName']."'>";
+                        $policies .= "<td style='border: 0;width:40%;padding: 0!important;min-height: auto!important;height:auto!important;'>".$poliza['sNumeroPoliza']."</td>"; 
+                        $policies .= "<td style='border: 0;width:30%;padding: 0!important;min-height: auto!important;height:auto!important;'>".$poliza['sNumeroEndosoBroker']."</td>";
+                        $policies .= "<td style='border: 0;width:30%;padding: 0!important;min-height: auto!important;height:auto!important;'>".$poliza['rImporteEndosoBroker']."</td>";
+                        $policies .= "</tr>"; 
+                        
+                        $iEnviadoFuera = $poliza['iEnviadoFuera'];
+                     }
+                     $policies.="</table>";
+                 }
+                 
                   //Redlist:
-                 $item['iOnRedList'] == '1' ? $redlist_icon = "<i class=\"fa fa-star\" style=\"color:#e8051b;margin-right:4px;\"></i>" : $redlist_icon = ""; 
+                 $item['iOnRedList'] == '1' ? $redlist_icon = "<i class=\"fa fa-star\" style=\"color:#e8051b;margin-right:4px;\"></i>" : $redlist_icon = "";
+                 
+                 //Revisar si esta marcado como enviado y se envio fuera del sistema:
+                 $iEnviadoFuera == 1 ? $txtFechaApp = "<span style=\"font-size:9px;display:block;\">Mark As Sent</span>".$item['dFechaAplicacion'] : $txtFechaApp = $item['dFechaAplicacion'];
+                 
                  $htmlTabla .=   "<tr $class>".
                                  "<td id=\"iCve_".$item['iConsecutivo']."\">".$redlist_icon.$item['sNombreCompania']."</td>".
-                                 "<td>".$detalle."</td>". 
-                                 "<td class=\"text-center\">".$item['dFechaIngreso']."</td>".
+                                 "<td>".$detalle."</td>".
+                                 "<td>".$policies."</td>". 
+                                 "<td class=\"text-center\">".$txtFechaApp."</td>".
                                  "<td title='$titleEstatus'>".$estado."</td>".                                                                                                                                                                                                                       
                                  "<td> $btn_confirm</td></tr>";
                   
@@ -453,7 +486,7 @@
           $datos   = $data; 
             
           foreach($datos as $i => $b){ 
-            if($i == 'sNombreCompania'){$datos[$i] = utf8_decode($datos[$i]);}  
+            if($i == 'sNombreCompania'){$datos[$i] = fix_string($datos[$i]);}  
             $fields .= "\$('$domroot [name=".$i."]').val('".$datos[$i]."');";   
           }  
             
@@ -839,12 +872,15 @@
                 if($_SERVER["HTTP_HOST"]=="stdev.websolutionsac.com"){
                   $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
                   $mail->Password   = "SL09100242";  
+                  $mail->SetFrom('systemsupport@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');
+                  
                 }else if($_SERVER["HTTP_HOST"] == "solotrucking.laredo2.net" || $_SERVER["HTTP_HOST"] == "st.websolutionsac.com" || $_SERVER["HTTP_HOST"] == "www.solo-trucking.com"){
                   $mail->Username   = "customerservice@solo-trucking.com";  // GMAIL username
-                  $mail->Password   = "SL641404tK";   
+                  $mail->Password   = "SL641404tK";
+                  $mail->SetFrom('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');     
                 }
                 
-                $mail->SetFrom('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');
+            
                 $mail->AddReplyTo('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance'); 
                 $mail->AddCC('systemsupport@solo-trucking.com','System Support Solo-Trucking Insurance');
                 
@@ -891,6 +927,31 @@
       
       $response = array("msj"=>"$msj","error"=>"$error","tabla" => "$htmlTabla");   
       echo json_encode($response);    
+  }
+  function mark_email_sent(){
+      $clave = trim($_POST['iConsecutivoEndoso']);
+      $error = 0;
+       
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);
+      
+      //Actualizar Estatus:
+      $query   = "UPDATE cb_endoso_adicional_estatus SET iEnviadoFuera='1', eStatus='SB' WHERE iConsecutivoEndoso='$clave'"; 
+      $success = $conexion->query($query); 
+      
+      if($conexion->affected_rows > 0){
+          //Actualizar endoso general:
+          $query   = "UPDATE cb_endoso_adicional SET eStatus='SB' WHERE iConsecutivo='$clave'"; 
+          $success = $conexion->query($query);
+          
+          if($conexion->affected_rows > 0){$mensaje = "The data was updated successfully!";}else{$error = 1;$mensaje = "Error to update the endorsement status data, please try again.";}
+      }else{$error = 1; $mensaje = "Error to update the policy/endorsement status data, please try again.";}  
+      
+      $error == 0 ? $conexion->commit() : $conexion->rollback(); 
+      $conexion->close();
+      
+      $response = array("msj"=>$mensaje,"error"=>"$error");   
+      echo json_encode($response);  
   }
 
   /*------FUNCIONES GENERALES DEL MODULO DE SOLICITUD DE ENDOSOS -----------------------*/

@@ -54,7 +54,7 @@
       $pagina_actual == "0" ? $pagina_actual = 1 : false;
       $limite_superior = $registros_por_pagina;
       $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-      $sql = "SELECT A.iConsecutivo,D.sNombreCompania,DATE_FORMAT( A.dFechaAplicacion, '%m/%d/%Y' ) AS dFechaIngreso,C.sDescripcion,A.eStatus,eAccion,D.iOnRedList,sVIN, A.iEndosoMultiple ".
+      $sql = "SELECT A.iConsecutivo,D.sNombreCompania,DATE_FORMAT( A.dFechaAplicacion, '%m/%d/%Y' ) AS dFechaAplicacion,C.sDescripcion,A.eStatus,eAccion,D.iOnRedList,sVIN, A.iEndosoMultiple ".
              "FROM cb_endoso AS A ".
              "LEFT JOIN ct_tipo_endoso AS C ON A.iConsecutivoTipoEndoso = C.iConsecutivo ".
              "LEFT JOIN ct_companias   AS D ON A.iConsecutivoCompania = D.iConsecutivo ".
@@ -153,7 +153,7 @@
                      }
                      
                      //Consultar Estatus x poliza:
-                     $query = "SELECT A.iConsecutivoPoliza,P.sNumeroPoliza, T.sDescripcion AS sTipoPoliza, B.sName AS sBrokerName ,A.eStatus, A.sNumeroEndosoBroker, A.rImporteEndosoBroker 
+                     $query = "SELECT A.iConsecutivoPoliza,P.sNumeroPoliza, T.sDescripcion AS sTipoPoliza, B.sName AS sBrokerName ,A.eStatus, A.sNumeroEndosoBroker, A.rImporteEndosoBroker, A.iEnviadoFuera  
                                 FROM cb_endoso_estatus AS A 
                                 INNER JOIN ct_polizas  AS P ON A.iConsecutivoPoliza = P.iConsecutivo
                                 LEFT  JOIN ct_tipo_poliza AS T ON P.iTipoPoliza = T.iConsecutivo
@@ -174,17 +174,23 @@
                             $policies .= "<td style='border: 0;width:30%;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['sNumeroEndosoBroker']."</td>";
                             $policies .= "<td style='border: 0;width:30%;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['rImporteEndosoBroker']."</td>";
                             $policies .= "</tr>"; 
+                            
+                            $iEnviadoFuera = $item['iEnviadoFuera'];
                          }
                          $policies.="</table>";
                      }
                      
                       //Redlist:
                      $items['iOnRedList'] == '1' ? $redlist_icon = "<i class=\"fa fa-star\" style=\"color:#e8051b;margin-right:4px;\"></i>" : $redlist_icon = ""; 
+                     
+                     //Revisar si esta marcado como enviado y se envio fuera del sistema:
+                     $iEnviadoFuera == 1 ? $txtFechaApp = "<span style=\"font-size:9px;display:block;\">Mark As Sent</span>".$items['dFechaAplicacion'] : $txtFechaApp = $items['dFechaAplicacion'];
+                 
                      $htmlTabla .= "<tr $class>".
                                    "<td id=\"iCve_".$items['iConsecutivo']."\">".$redlist_icon.$items['sNombreCompania']."</td>".
                                    "<td>".$detalle."</td>". 
                                    "<td>".$policies."</td>".
-                                   "<td class=\"text-center\">".$items['dFechaIngreso']."</td>". 
+                                   "<td class=\"text-center\">".$txtFechaApp."</td>". 
                                    "<td title='$titleEstatus'>".$estado."</td>".                                                                                                                                                                                                                       
                                    "<td> $btn_confirm</td></tr>";
             }
@@ -779,16 +785,16 @@
               $datos   = $data;
                   
               foreach($datos as $i => $b){ 
-                    if($i == 'sMensajeEmail'){
-                        $fields .= "\$('#$domroot :input[id=".$i."]').val('".utf8_decode(utf8_encode($datos[$i]))."');\n";
-                    }
+                    if($i == 'sMensajeEmail' && $datos[$i] != ""){ $mensajeEmail = $datos[$i];}
                     else if($i == 'sEmail'){
-                       $fields .= "\$('#$domroot :input[class=idpolicy_".$data['iConsecutivoPoliza']."]').val('".$datos[$i]."');\n"; 
+                       $fields .= "$('#$domroot [class=idpolicy_".$data['iConsecutivoPoliza']."]').val('".$datos[$i]."');"; 
                     }
-                    else if($i != "iConsecutivoPoliza" && $i != "iConsecutivoEmail" && $i != "iConsecutivoCompania"){
-                       $fields .= "\$('#$domroot :input[id=".$i."]').val('".htmlentities($datos[$i])."');\n"; 
+                    else if($i != "iConsecutivoPoliza" && $i != "iConsecutivoEmail" && $i != "iConsecutivoCompania" && $i != "iConsecutivoEndoso"){
+                       $fields .= "$('#$domroot [id=".$i."]').val('".fix_string($datos[$i])."');"; 
                     }
               }
+              $mensajeEmail != "" ? $fields .= "$('#$domroot [id=sMensajeEmail]').val('".fix_string($mensajeEmail)."');" : "";
+              $fields .= "$('#$domroot [id=iConsecutivoEndoso]').val('".$clave."');";
           }
 
       }
@@ -1203,7 +1209,7 @@
       $campos   = array();
       
       //Variables 
-      $_POST['sMensaje'] != "" ? $sMensaje = utf8_decode(trim($_POST['sMensaje'])) : $sMensaje = "";
+      $_POST['sMensaje'] != "" ? $sMensaje = trim(fix_string($_POST['sMensaje'])) : $sMensaje = "";
       $iConsecutivoEndoso = trim($_POST['iConsecutivoEndoso']);
       $sIP                = $_SERVER['REMOTE_ADDR'];
       $sUsuario           = $_SESSION['usuario_actual'];
@@ -1216,7 +1222,7 @@
       
       for($x=0;$x<$count;$x++){
           $data    = explode("|",$polizas[$x]);
-          $query   = "UPDATE cb_endoso_estatus SET sEmail='".$data[1]."', sMensajeEmail='".$sMensaje."',sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha' ".
+          $query   = "UPDATE cb_endoso_estatus SET sEmail='".trim($data[1])."', sMensajeEmail='".$sMensaje."',sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha' ".
                      "WHERE iConsecutivoEndoso='$iConsecutivoEndoso' AND iConsecutivoPoliza='".$data[0]."'";
           $success = $conexion->query($query) or die($conexion->error);
           if(!($success)){$error = '1';$mensaje = "Error to save data, please try again later.";}
@@ -1637,10 +1643,10 @@
                         $idPoliza   = $data['iConsecutivoPoliza'];
                         $tipoPoliza = get_policy_type($data['iTipoPoliza']);
                         
-                        $data['sMensajeEmail'] != "" ?  $message = $data['sMensajeEmail'] : $message = "Please do the following in vehicles from policy: ";
+                        $data['sMensajeEmail'] != "" ?  $message = fix_string($data['sMensajeEmail']) : $message = "Please do the following in vehicles from policy: ";
                         
                         #DATOS DEL CORREO:
-                        $action   = $message."$ComNombre, $sNumPoliza - $sTipoPoliza.";
+                        $action   = $message." $ComNombre, $sNumPoliza - $sTipoPoliza.";
                         $subject  = "$ComNombre//$sNumPoliza - $sTipoPoliza. Endorsement application - ".$message;
                         $bodyData = "<table cellspacing=\"0\" cellpadding=\"0\" style=\"color:#000;margin:5px auto; text-align:left;float:left;min-width:300px;\">";
                         $detalle  = "";

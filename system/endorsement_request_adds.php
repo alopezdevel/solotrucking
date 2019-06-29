@@ -85,7 +85,24 @@
                         $(this).dialog('close');
                     }
                 }
-            });      
+            });   
+            
+            $('#dialog_mark_email_add').dialog({
+                modal: true,
+                autoOpen: false,
+                width : 420,
+                height : 200,
+                resizable : false,
+                buttons : {
+                    'YES' : function() {
+                        $(this).dialog('close');
+                        fn_endorsement.email.mark_sent();             
+                    },
+                    'NO' : function(){
+                        $(this).dialog('close');
+                    }
+                }
+            });   
     }  
     function validapantalla(usuario){if(usuario == ""  || usuario == null){location.href= "login.php";}  }                   
     var fn_endorsement = {
@@ -532,7 +549,29 @@
                 },
                 send_confirm : function(){
                    $('#dialog_send_email').dialog('open');   
-                }, 
+                },
+                mark_sent_confirm : function(){
+                   $('#dialog_mark_email_add').dialog('open');    
+                },
+                mark_sent : function(){
+                    var iConsecutivo  = $('#form_estatus #iConsecutivoEndoso').val();
+                    fn_endorsement.email.save(true);
+                    $.ajax({             
+                        type:"POST", 
+                        url:"endorsement_request_adds_server.php", 
+                        data:{'accion' : 'mark_email_sent','iConsecutivoEndoso' : iConsecutivo},
+                        async : true,
+                        dataType : "json",
+                        success : function(data){ 
+                            fn_solotrucking.mensaje(data.msj);                              
+                            if(data.error == '0'){
+                                  fn_endorsement.fillgrid();
+                                  fn_popups.cerrar_ventana('form_estatus');
+                            }
+                            
+                        }
+                    });      
+                } 
             },  
             change_estatus : function(){
                     $(fn_endorsement.data_grid + " tbody td .btn_change_status").bind("click",function(){
@@ -936,9 +975,10 @@
         <thead>
             <tr id="grid-head1">
                 <td style=""><input class="flt_company" type="text" placeholder="Company:"></td>
-                <td></td>
+                <td style="width: 470px;"></td>
+                <td style="width: 370px;"></td>
                 <td style="width: 100px;"><input class="flt_date" type="text" placeholder="DD/MM/YYYY"></td> 
-                <td>
+                <td style="width: 110px;">
                     <select class="flt_status" onblur="fn_endorsement.filtraInformacion();">
                         <option value="">Select an option...</option>
                         <option value="S">NEW APLICATION</option>
@@ -955,6 +995,11 @@
             <tr id="grid-head2">
                 <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('D.sNombreCompania',this.cellIndex);">COMPANY</td>
                 <td class="etiqueta_grid">Description</td>
+                <td class="etiqueta_grid"      onclick="//fn_endorsement.ordenamiento('sVIN',this.cellIndex);">
+                    <span style="display: -webkit-inline-box;width: 40%;">Policy</span>
+                    <span style="display: -webkit-inline-box;width: 29%;">END No.</span>
+                    <span style="display: -webkit-inline-box;width: 29%;">Amount</span>
+                </td>
                 <!--<td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('sNombre',this.cellIndex);">TYPE</td>
                 <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('eAccion',this.cellIndex);">ACTION</td>-->
                 <td class="etiqueta_grid up"   onclick="fn_endorsement.ordenamiento('A.dFechaAplicacion',this.cellIndex);">APP DATE</td> 
@@ -1178,7 +1223,8 @@
                 </tr>
                 </table>
             </fieldset> 
-            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_estatus');" style="margin-right:10px;background:#e8051b;">CLOSE</button>  
+            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_estatus');" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
+            <button type="button" class="btn-1" onclick="fn_endorsement.email.mark_sent_confirm();" style="margin-right:10px;background: #e8b813;width: 140px;">MARK AS SENT</button>  
             <button type="button" class="btn-1" onclick="fn_endorsement.email.send_confirm();" style="margin-right:10px;background: #87c540;width: 140px;">SEND E-MAIL</button>
             <button type="button" class="btn-1" onclick="fn_endorsement.email.preview();" style="margin-right:10px;background:#5ec2d4;width: 140px;">PREVIEW E-MAIL</button> 
             <button type="button" class="btn-1" onclick="fn_endorsement.email.save();" style="margin-right:10px;">SAVE</button>  
@@ -1330,6 +1376,9 @@
            <input type="hidden" name="iConsecutivo" value="">
     </form>  
 </div> 
+<div id="dialog_mark_email_add" title="SYSTEM ALERT" style="display:none;">
+    <p>Are you sure that want to mark as sent the endorsement?</p>
+</div>
 <!-- FOOTER -->
 <?php include("footer.php"); ?> 
 

@@ -50,7 +50,7 @@
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
         
-        $sql    = "SELECT A.iConsecutivo, B.sNombreCompania, C.sName AS sNombreBroker,iTipoReporte, DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion,B.iOnRedList,A.sEmail, A.eStatus, DATE_FORMAT(A.dFechaInicio,'%m/%d/%Y') AS dFechaInicio, DATE_FORMAT(A.dFechaFin,'%m/%d/%Y') AS dFechaFin ".
+        $sql    = "SELECT A.iConsecutivo, B.sNombreCompania, C.sName AS sNombreBroker,iTipoReporte, DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion,B.iOnRedList,A.sEmail, A.eStatus, DATE_FORMAT(A.dFechaInicio,'%m/%d/%Y') AS dFechaInicio, DATE_FORMAT(A.dFechaFin,'%m/%d/%Y') AS dFechaFin, iEnviadoFuera ".
                   "FROM cb_endoso_mensual  AS A ".
                   "INNER JOIN ct_companias AS B ON A.iConsecutivoCompania = B.iConsecutivo ".
                   "LEFT JOIN ct_brokers    AS C ON A.iConsecutivoBroker = C.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
@@ -98,7 +98,8 @@
                  if($items['iOnRedList'] == '1'){$redlist_class = "row_red";$redlist_icon  = "<i class=\"fa fa-star\" style=\"color:#e8051b;margin-right:4px;\"></i>";}
                  else{$redlist_icon = ""; $redlist_class = "";}
                  
-                 $items['iTipoReporte'] == 1 ? $txtTipo = "VEHICLES" : $txtTipo = "DRIVERS";
+                 $items['iTipoReporte']  == 1 ? $txtTipo     = "VEHICLES" : $txtTipo = "DRIVERS";
+                 $items['iEnviadoFuera'] == 1 ? $txtFechaApp = "<span style=\"font-size:9px;display:block;\">Mark As Sent</span>".$items['dFechaAplicacion'] : $txtFechaApp = $items['dFechaAplicacion']; 
                  
                  $class = " class=\"$class $redlist_class\"";
                  $htmlTabla .= "<tr$class>".
@@ -108,7 +109,7 @@
                  "<td class=\"txt-c\">".$items['dFechaFin']."</td>".
                  "<td>".$items['sNombreBroker']."</td>". 
                  "<td>".$items['sEmail']."</td>".
-                 "<td class=\"txt-c\">".$items['dFechaAplicacion']."</td>".
+                 "<td class=\"txt-c\">".$txtFechaApp."</td>".
                  "<td>$btn_confirm</td></tr>";
             }
         
@@ -801,5 +802,27 @@
       $conexion->close();
       $response = array("error"=>"$error","msj"=>"$msj","iConsecutivo"=>"$iConsecutivo");
       echo json_encode($response);
+  }
+  
+  #E-MAIL FUNCIONES:
+  function mark_email_sent(){
+      $clave = trim($_POST['iConsecutivoEndoso']);
+      $error = 0;
+       
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);
+      
+      //Actualizar Estatus:
+      $query   = "UPDATE cb_endoso_mensual SET iEnviadoFuera='1', eStatus='SB', dFechaAplicacion = NOW() WHERE iConsecutivo='$clave'"; 
+      $success = $conexion->query($query); 
+      
+      if($conexion->affected_rows > 0){$mensaje = "The data was updated successfully!";}
+      else{$error = 1; $mensaje = "Error to update the endorsement status data, please try again.";}  
+      
+      $error == 0 ? $conexion->commit() : $conexion->rollback(); 
+      $conexion->close();
+      
+      $response = array("msj"=>$mensaje,"error"=>"$error");   
+      echo json_encode($response);      
   }
 ?>

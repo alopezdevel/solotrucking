@@ -31,6 +31,23 @@ function inicio(){
                 'CANCEL' : function(){$(this).dialog('close');}
             }
         });
+        
+        $('#dialog_mark_email_month').dialog({
+            modal: true,
+            autoOpen: false,
+            width : 420,
+            height : 200,
+            resizable : false,
+            buttons : {
+                'YES' : function() {
+                    $(this).dialog('close');
+                    fn_endosos.email.mark_sent();             
+                },
+                'NO' : function(){
+                    $(this).dialog('close');
+                }
+            }
+        });
 }  
 function validapantalla(usuario){if(usuario == ""  || usuario == null){location.href= "login.php";}}                   
 var fn_endosos = {
@@ -420,6 +437,28 @@ var fn_endosos = {
             send_confirm : function(){
                $('#dialog_send_email').dialog('open');   
             }, 
+            mark_sent_confirm : function(){
+               $('#dialog_mark_email_month').dialog('open');    
+            },
+            mark_sent : function(){
+                var iConsecutivo  = $('#data_general input[name=iConsecutivo]').val();
+                fn_endosos.save(true);
+                $.ajax({             
+                    type:"POST", 
+                    url:"endorsement_month_server.php", 
+                    data:{'accion' : 'mark_email_sent','iConsecutivoEndoso' : iConsecutivo},
+                    async : true,
+                    dataType : "json",
+                    success : function(data){ 
+                        fn_solotrucking.mensaje(data.msj);                              
+                        if(data.error == '0'){
+                              fn_endosos.fillgrid();
+                              fn_popups.cerrar_ventana('frm_edit_new');
+                        }
+                        
+                    }
+                });      
+                }
         }, 
         //Estatus:
         estatus_edit : function(){
@@ -745,6 +784,7 @@ var fn_endosos = {
                 </tr> 
                 </table> 
                 <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('frm_edit_new');fn_endosos.fillgrid();" style="margin-right:10px;background:#e8051b;" title="Close">CLOSE</button>
+                <button type="button" class="btn-1" onclick="fn_endosos.email.mark_sent_confirm();" style="margin-right:10px;background: #e8b813;width: 140px;">MARK AS SENT</button> 
                 <button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.save(true);fn_solotrucking.mensaje('The data has been sent!, please check the account customerservice@solo-trucking.com to receive the response from the brokers.');window.open('endorsement_month_xlsx.php?idReport='+$('#frm_edit_new input[name=iConsecutivo]').val()+'&mail=1');" style="margin-right:10px;background: #87c540;width: 140px;" title="Send report to the broker">SEND E-MAIL</button>
                 <!--<button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.email.preview();" style="margin-right:10px;background:#5ec2d4;width: 140px;">PREVIEW E-MAIL</button>--> 
                 <button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.download_excel($('#frm_edit_new input[name=iConsecutivo]').val());" style="margin-right:10px;background: #87c540;width: 180px;" title="Download report without send">DOWNLOAD EXCEL FILE</button> 
@@ -894,6 +934,9 @@ var fn_endosos = {
 <div id="dialog_delete" title="Delete" style="display:none;">
   <p><span class="ui-icon ui-icon-alert" ></span> Are you sure you want to delete the report for company? <br><span class="name" style="color:#0a87c1;font-weight:600;padding-left:20px;"></span></p>
   <form><div><input type="hidden" name="iConsecutivo" /></div></form>  
+</div>
+<div id="dialog_mark_email_month" title="SYSTEM ALERT" style="display:none;">
+    <p>Are you sure that want to mark as sent the endorsement?</p>
 </div>
 <!-- FOOTER -->
 <?php include("footer.php"); ?> 
