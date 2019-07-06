@@ -702,22 +702,39 @@
                 },
                 send : function(){
                   var iConsecutivo  = $('#form_estatus #iConsecutivoEndoso').val();
-                  fn_endorsement.email.save(true);
-                  $.ajax({             
-                    type:"POST", 
-                    url:"funciones_endorsement_request_units.php", 
-                    data:{'accion' : 'send_email','iConsecutivoEndoso' : iConsecutivo},
-                    async : true,
-                    dataType : "json",
-                    success : function(data){                               
-                        if(data.error == '0'){
-                              fn_solotrucking.mensaje(data.msj);
-                              fn_endorsement.fillgrid();
-                              fn_popups.cerrar_ventana('form_estatus');
+                  var valid         = true;
+                  var mensaje       = "";
+                  
+                  $('#form_estatus input').removeClass('error');
+                  
+                  //validar direcciones de email:
+                  $("#form_estatus .company_policies tbody input[type=text]").each(function(){
+                      var clase = $(this).prop("class").split("_");
+                      if(clase[0] == "idpolicy" && $(this).val() == "" || $(this).val() == null){
+                          mensaje = "<li>One or more required fields are empty.</li>";
+                          valid   = false;
+                          $(this).addClass('error'); 
+                      }
+                  });
+                  if(valid){
+                      fn_endorsement.email.save(true);
+                      $.ajax({             
+                        type:"POST", 
+                        url:"funciones_endorsement_request_units.php", 
+                        data:{'accion' : 'send_email','iConsecutivoEndoso' : iConsecutivo},
+                        async : true,
+                        dataType : "json",
+                        success : function(data){                               
+                            if(data.error == '0'){
+                                  fn_solotrucking.mensaje(data.msj);
+                                  fn_endorsement.fillgrid();
+                                  fn_popups.cerrar_ventana('form_estatus');
+                            }
+                            
                         }
-                        
-                    }
-                  });    
+                      });       
+                  }
+                  else{fn_solotrucking.mensaje('<p>Please check the following:</p><ul>'+mensaje+'</ul>');}  
                 },
                 send_confirm : function(){
                    $('#dialog_send_email').dialog('open');   

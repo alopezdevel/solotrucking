@@ -489,7 +489,7 @@ var fn_policies = {
                     $(fn_policies.data_grid + ' .btn-icon.expired_policies').removeClass('active');
                     $(fn_policies.data_grid + ' .btn-icon.active_policies').addClass('active');
                     fn_policies.filtro_table = 'active';
-                    fn_solotrucking.btn_tooltip();
+                    //fn_solotrucking.btn_tooltip();
                 }
             }); 
         }, 
@@ -668,17 +668,26 @@ var fn_policies = {
             return false;
         }, 
         filtraInformacion : function(){
-            fn_policies.pagina_actual = 0;
-            fn_policies.filtro = "";
-            if($(fn_policies.data_grid+" .flt_pid").val() != ""){ fn_policies.filtro += "A.iConsecutivo|"+$(fn_policies.data_grid+" .flt_pid").val()+","}
-            if($(fn_policies.data_grid+" .flt_pcompany").val() != ""){ fn_policies.filtro += "sNombreCompania|"+$(fn_policies.data_grid+" .flt_pcompany").val()+","} 
-            if($(fn_policies.data_grid+" .flt_policynumber").val() != ""){ fn_policies.filtro += "sNumeroPoliza|"+$(fn_policies.data_grid+" .flt_policynumber").val()+","} 
-            //if($(fn_policies.data_grid+" .flt_pbroker").val() != ""){ fn_policies.filtro += "sName|"+$(fn_policies.data_grid+" .flt_pbroker").val()+","}  
-            if($(fn_policies.data_grid+" .flt_policytype").val() != ""){ fn_policies.filtro += "sDescripcion|"+$(fn_policies.data_grid+" .flt_policytype").val()+","} 
-            if($(fn_policies.data_grid+" .flt_policystartdate").val() != ""){ fn_policies.filtro += "dFechaInicio|"+$(fn_policies.data_grid+" .flt_policystartdate").val()+","} 
-            if($(fn_policies.data_grid+" .flt_policyexpdate").val() != ""){ fn_policies.filtro += "dFechaCaducidad|"+$(fn_policies.data_grid+" .flt_policyexpdate").val()+","}    
+        
+            var filtro = "";
             
-            if(fn_policies.filtro_table == 'active'){fn_policies.fillgrid();}else if(fn_policies.filtro_table == 'expired'){fn_policies.fillgrid_expired();}
+            if($(fn_policies.data_grid+" .flt_pid").val() != "")         { filtro += "A.iConsecutivo|"+$(fn_policies.data_grid+" .flt_pid").val()+","}
+            if($(fn_policies.data_grid+" .flt_pcompany").val() != "")    { filtro += "sNombreCompania|"+$(fn_policies.data_grid+" .flt_pcompany").val()+","} 
+            if($(fn_policies.data_grid+" .flt_policynumber").val() != ""){ filtro += "sNumeroPoliza|"+$(fn_policies.data_grid+" .flt_policynumber").val()+","} 
+            //if($(fn_policies.data_grid+" .flt_pbroker").val() != ""){ filtro += "sName|"+$(fn_policies.data_grid+" .flt_pbroker").val()+","}  
+            if($(fn_policies.data_grid+" .flt_policytype").val() != "")  { filtro += "sDescripcion|"+$(fn_policies.data_grid+" .flt_policytype").val()+","} 
+            if($(fn_policies.data_grid+" .flt_policystartdate").val() != ""){ filtro += "dFechaInicio|"+$(fn_policies.data_grid+" .flt_policystartdate").val()+","} 
+            if($(fn_policies.data_grid+" .flt_policyexpdate").val() != "")  { filtro += "dFechaCaducidad|"+$(fn_policies.data_grid+" .flt_policyexpdate").val()+","}    
+            
+            if(fn_policies.filtro_table == 'active'){
+                fn_policies.pagina_actual = 0;
+                fn_policies.filtro        = filtro;
+                fn_policies.fillgrid();
+            }else if(fn_policies.filtro_table == 'expired'){
+                fn_policies.pagina_actual_exp = 0;
+                fn_policies.filtro_exp        = filtro;
+                fn_policies.fillgrid_expired();
+            }
             
         }, 
         valida_tipo_poliza : function(edit){
