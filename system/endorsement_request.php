@@ -100,7 +100,44 @@
                         $(this).dialog('close');
                     }
                 }
-            });   
+            });  
+            $('#dialog_report_endorsements').dialog({
+                modal: true,
+                autoOpen: false,
+                width : 650,
+                height : 510,
+                resizable : false,
+                buttons : {
+                    /*'DOWNLOAD EXCEL FILE' : function() {
+                       //Parametros:
+                       var company   = $("#dialog_report_endorsements .flt_company").val();
+                       var broker    = $("#dialog_report_endorsements .flt_broker").val(); 
+                       var insurance = $("#dialog_report_endorsements .flt_insurance").val(); 
+                       var politype  = $("#dialog_report_endorsements .flt_type").val();  
+                       var dExp_init = $("#dialog_report_endorsements #flt_dateFrom").val(); 
+                       var dExp_endi = $("#dialog_report_endorsements #flt_dateTo").val();   
+                       
+                       if(dExp_init != "" && dExp_endi != ""){
+                            window.open('xlsx_policies_report.php?company='+company+'&broker='+broker+'&insurance='+insurance+'&policytype='+politype+'&dExp_init='+dExp_init+'&dExp_endi='+dExp_endi);
+                       }else{fn_solotrucking.mensaje("Please select before a valid dates."); }             
+                    },*/
+                    'OK' : function(){
+                           //Parametros:
+                           var company   = $("#dialog_report_endorsements .flt_company").val();
+                           var broker    = $("#dialog_report_endorsements .flt_broker").val(); 
+                           var insurance = $("#dialog_report_endorsements .flt_insurance").val(); 
+                           var politype  = $("#dialog_report_endorsements .flt_type").val();  
+                           var dExp_init = $("#dialog_report_endorsements #flt_dateFrom").val(); 
+                           var dExp_endi = $("#dialog_report_endorsements #flt_dateTo").val(); 
+                       
+                           fn_endorsement.report.open();
+                           $(this).dialog('close');
+                    },
+                    'CANCEL' : function(){
+                        $(this).dialog('close');
+                    }
+                }
+            }); 
     }  
     function validapantalla(usuario){if(usuario == ""  || usuario == null){location.href= "login.php";}  }                   
     var fn_endorsement = {
@@ -1012,6 +1049,26 @@
                   });  
                 },
             },
+            
+            //FUNCIONES PARA REPORTE DE POLIZAS:
+            dialog_report_open : function(){
+                $("#dialog_report_endorsements :text, #dialog_report_endorsements select").val("");
+                var fechas = fn_solotrucking.obtener_fechas();
+                $("#dialog_report_endorsements #flt_dateFrom").val(fechas[1]); 
+                $("#dialog_report_endorsements #flt_dateTo").val(fechas[2]); 
+                $("#dialog_report_endorsements").dialog('open'); 
+            },
+            report : {
+                company : "",
+                broker  : "",
+                policy  : "",
+                date_in : "",
+                date_end: "",
+                open : function(){
+                    
+                },
+                      
+            }
                 
     }    
 </script> 
@@ -1041,6 +1098,13 @@
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_endorsement.filtraInformacion();"><i class="fa fa-search"></i></div>
                     <div class="btn-icon-2 btn-left" title="New Endorsement +"  onclick="fn_endorsement.add();"><i class="fa fa-plus"></i></div>
                 </td> 
+            </tr>
+             <tr id="grid-head-tools">
+                <td colspan="100%">
+                    <ul>
+                        <li><div class="btn-icon report btn-left" title="Report of Endorsements" onclick="fn_endorsement.dialog_report_open();" style="width:auto!important;"><i class="fa fa-folder-open"></i><span style="margin-left:5px;font-size: 10px!important;">Report of Endorsements</span></div></li>  
+                    </ul>
+                </td>
             </tr>
             <tr id="grid-head2">
                 <td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('D.sNombreCompania',this.cellIndex);">COMPANY</td>

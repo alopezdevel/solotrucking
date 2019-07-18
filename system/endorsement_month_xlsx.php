@@ -89,7 +89,7 @@
                   "AND D.iConsecutivoPoliza = A.iConsecutivoPoliza ".
                   "INNER JOIN ct_polizas                 AS E ON D.iConsecutivoPoliza = E.iConsecutivo AND E.iDeleted = '0' AND A.iConsecutivoBroker = E.iConsecutivoBrokers  ".
                   "INNER JOIN ct_tipo_poliza             AS F ON E.iTipoPoliza        = F.iConsecutivo  ".$flt_join.
-                  "WHERE A.iConsecutivo='$iConsecutivoReporte' ORDER BY A.dFechaAplicacion DESC"; 
+                  "WHERE A.iConsecutivo='$iConsecutivoReporte' ORDER BY A.dFechaAplicacion DESC";  
         $r      = $conexion->query($sql);
         $rows   = $r->num_rows; 
         
@@ -169,14 +169,15 @@
                 ->setCellValue('D'.$row, 'VIN')
                 ->setCellValue('E'.$row, 'Value')
                 ->setCellValue('F'.$row, 'Type')
-                ->setCellValue('G'.$row, 'Action');
+                ->setCellValue('G'.$row, 'Action')
+                ->setCellValue('H'.$row, 'App Date');
                 /*->setCellValue('G'.$row, 'Leinholder Name')
                 ->setCellValue('H'.$row, 'Leinholder Address')
                 ->setCellValue('I'.$row, 'GVW')
                 ->setCellValue('J'.$row, 'Additional Vehicle Detail')
                 ->setCellValue('K'.$row, 'Garaging Location')
                 ->setCellValue('L'.$row, 'Garaging State');*/
-                $limitCol = "G";
+                $limitCol = "H";
   
             }
             #DRIVERS
@@ -187,8 +188,9 @@
                 ->setCellValue('C'.$row, 'License Number')
                 ->setCellValue('D'.$row, 'License Expiration Date')
                 ->setCellValue('E'.$row, 'Experience Years')
-                ->setCellValue('F'.$row, 'Action');
-                $limitCol = "F";
+                ->setCellValue('F'.$row, 'Action')
+                ->setCellValue('G'.$row, 'App Date');
+                $limitCol = "G";
             } 
             
             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloEncabezado, "A".$row.":".$limitCol.$row);
@@ -218,7 +220,8 @@
                         ->setCellValue('D'.$row, $DatosDetalle[$i]['sVIN'])
                         ->setCellValue('E'.$row, $DatosDetalle[$i]['iPDAmount'])
                         ->setCellValue('F'.$row, ucfirst(strtolower($DatosDetalle[$i]['sTipo'])))
-                        ->setCellValue('G'.$row, $DatosDetalle[$i]['eAccion']);
+                        ->setCellValue('G'.$row, $DatosDetalle[$i]['eAccion'])
+                        ->setCellValue('H'.$row, $DatosDetalle[$i]['dFechaAplicacion']);
                     }
                     // ENDOSO MULTIPLE
                     else if ($DatosDetalle[$i]['iEndosoMultiple'] == 1){
@@ -247,8 +250,9 @@
                              ->setCellValue('D'.$row, strtoupper($item['sVIN']))
                              ->setCellValue('E'.$row, $item['iTotalPremiumPD'])
                              ->setCellValue('F'.$row, ucfirst(strtolower($item['sTipo'])))
-                             ->setCellValue('G'.$row, $item['eAccion']);
-                         }
+                             ->setCellValue('G'.$row, $item['eAccion'])
+                             ->setCellValue('H'.$row, $DatosDetalle[$i]['dFechaAplicacion']);
+                         }  
                     }
                     
                     
@@ -272,7 +276,8 @@
                         ->setCellValue('C'.$row, $DatosDetalle[$i]['iNumLicencia'])
                         ->setCellValue('D'.$row, $DatosDetalle[$i]['dFechaExpiracionLicencia'])
                         ->setCellValue('E'.$row, $DatosDetalle[$i]['iExperienciaYear'])
-                        ->setCellValue('F'.$row, $DatosDetalle[$i]['eAccion']);
+                        ->setCellValue('F'.$row, $DatosDetalle[$i]['eAccion'])
+                        ->setCellValue('G'.$row, $DatosDetalle[$i]['dFechaAplicacion']);
                     }
                     // ENDOSO MULTIPLE
                     else if ($DatosDetalle[$i]['iEndosoMultiple'] == 1){
@@ -293,7 +298,8 @@
                                 ->setCellValue('C'.$row, $item['iNumLicencia'])
                                 ->setCellValue('D'.$row, $item['dFechaExpiracionLicencia'])
                                 ->setCellValue('E'.$row, $item['iExperienciaYear'])
-                                ->setCellValue('F'.$row, $item['eAccion']);
+                                ->setCellValue('F'.$row, $item['eAccion'])
+                                ->setCellValue('G'.$row, $DatosDetalle[$i]['dFechaAplicacion']);
                          }
                            
                     }
@@ -327,7 +333,7 @@
             $objPHPExcel->getActiveSheet()->setCellValue('B1', $DatosReporte['sNombreCompania']);
             
             //Policy #
-            $count = count($NoPolizas[0]);
+            $count = count($NoPolizas[0]); 
             $poliza= "";
             $inDate= "";
             $exDate= "";
@@ -337,7 +343,7 @@
                 $inDate == "" ? $inDate = $valorp[1] : $inDate .= ",".$valorp[1];
                 $exDate == "" ? $exDate = $valorp[2] : $exDate .= ",".$valorp[2];
             }
-            
+          
             $objPHPExcel->getActiveSheet()->setCellValue('A2', 'Policy #/UMR'); 
             $objPHPExcel->getActiveSheet()->setCellValue('B2', $poliza);
             
@@ -356,7 +362,7 @@
             $objPHPExcel->getActiveSheet()->setCellValue('A5', 'Rate'); 
             $objPHPExcel->getActiveSheet()->setCellValue('B5', $iRatePercent);
             
-            if($DatosReporte['iTipoReporte'] == "1"){
+            /*if($DatosReporte['iTipoReporte'] == "1"){
                 
                 $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloBorderRight, "C13:C25"); 
                 //Current Values:
@@ -455,8 +461,9 @@
                 $objPHPExcel->getActiveSheet()->setCellValue('A'.$row,'http://www.autocheck.com/vehiclehistory/autocheck/en/');
                 $objPHPExcel->getActiveSheet()->getCell('A'.$row)->getHyperlink()->setUrl("http://www.autocheck.com/vehiclehistory/autocheck/en/");   
             }
-            else{$row = 12;}
+            else{$row = 12;} */
             
+            $row = 12;
             $row+=1;
             $objPHPExcel->getActiveSheet()->mergeCells("A".$row.":C".$row);
             $objPHPExcel->getActiveSheet()->setSharedStyle($EstiloBorderTopRightB, "A".$row.":C".$row);
@@ -542,7 +549,7 @@
                     }
                     
                     $mail->AddReplyTo('customerservice@solo-trucking.com','Customer service Solo-Trucking');
-                    $mail->AddCC('systemsupport@solo-trucking.com','System Support Solo-Trucking Insurance');
+                    $mail->AddAddress('systemsupport@solo-trucking.com','System Support Solo-Trucking Insurance');
                     
                     $mail->Subject    = $subject;
                     $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test

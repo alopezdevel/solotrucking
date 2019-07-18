@@ -610,7 +610,7 @@
       $campos   = array();
       
       //Variables 
-      $_POST['sMensaje'] != "" ? $sMensaje = utf8_decode(trim($_POST['sMensaje'])) : $sMensaje = "";
+      $_POST['sMensaje'] != "" ? $sMensaje = trim(fix_string($_POST['sMensaje'])) : $sMensaje = "";
       $iConsecutivoEndoso = trim($_POST['iConsecutivoEndoso']);
       $sIP                = $_SERVER['REMOTE_ADDR'];
       $sUsuario           = $_SESSION['usuario_actual'];
@@ -735,7 +735,7 @@
                     $idPoliza   = $data['iConsecutivoPoliza'];
                     $tipoPoliza = get_policy_type($data['iTipoPoliza']);
                     
-                    $data['sMensajeEmail'] != "" ?  $message = $data['sMensajeEmail'] : $message = "Please create new endorsement for the following insured. ";
+                    $data['sMensajeEmail'] != "" ?  $message = htmlspecialchars($data['sMensajeEmail']) : $message = "Please create new endorsement for the following insured. ";
                     
                     #DATOS DEL CORREO:
                     $action   = $message."<br>$ComNombre, $sNumPoliza - $sTipoPoliza.";
@@ -881,9 +881,8 @@
                   $mail->SetFrom('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');     
                 }
                 
-            
                 $mail->AddReplyTo('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance'); 
-                $mail->AddCC('systemsupport@solo-trucking.com','System Support Solo-Trucking Insurance');
+                $mail->AddAddress('systemsupport@solo-trucking.com','System Support Solo-Trucking Insurance');
                 
                 $mail->Subject    = $Emails[$x]['subject'];
                 $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test

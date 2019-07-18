@@ -31,7 +31,9 @@
       			<li class="submenu"><a href="#">ADMINISTRATOR</a>
                     <ul>
                         <li><a href="ourcompany">Our Company</a></li> 
-                        <li><a href="users">Users</a></li>  
+                        <li><a href="users">Users</a></li> 
+                        <li><a href="brokers">Brokers</a></li>
+                        <li><a href="insurances">Insurances</a></li>  
                     </ul>
                 </li>
                 <li class="submenu"><a href="#">COMPANIES</a>
@@ -48,13 +50,13 @@
                 </li>
                 <li class="submenu"><a href="#">Endorsements</a>
                    <ul>
-                        <li><a href="endorsements">New Endorsement (like company)</a></li> 
+                        <li><a href="endorsements">New Endorsement</a></li> 
                         <li><a href="endorsement_request">Drivers</a></li>
                         <li><a href="endorsement_request_units">Vehicles</a></li>
                         <li><a href="endorsement_request_adds">Loss Payee or Additional Insured</a></li>
                         <li><a href="endorsement_month">Monthly Report to CRC</a></li>
+                        <li><a href="endorsement_accounting">Accounting</a></li> 
                         <li><a href="endorsement_files">Admin Files</a></li>  
-                        <li><a href="brokers">Brokers to send endorsements</a></li>
                     </ul>
                 </li>
                 <li class="submenu"><a href="#">CLAIMS</a>
@@ -92,7 +94,8 @@
                         <?php if($_SESSION["usuario_actual"] == "customerservice@solo-trucking.com"){?> 
                             <li><a href="list_admin">Administrator drivers/vehicles</a></li>
                         <?php }?>
-                        
+                        <li><a href="brokers">Brokers</a></li>
+                        <li><a href="insurances">Insurances</a></li> 
                     </ul>
                   </li>
                   <li class="submenu"><a href="certificate_request_pdf_upload">CERTIFICATES</a></li>
@@ -101,10 +104,9 @@
                    <ul>
                         <li><a  href="endorsement_request">New for Drivers</a></li>
                         <li><a  href="endorsement_request_units">New for Units</a></li>
-                        <li><a href="endorsement_request_adds" title="New for Loss Payee or Additional Insured">Loss Payee or Additional Insured</a></li>
-                        <li><a href="endorsement_month">Monthly Report to CRC</a></li>
-                        <li><a href="endorsement_files">Admin Files</a></li>
-                        <li><a href="brokers">Configure e-mails for Brokers</a></li>
+                        <li><a  href="endorsement_request_adds" title="New for Loss Payee or Additional Insured">Loss Payee or Additional Insured</a></li>
+                        <li><a  href="endorsement_month">Monthly Report to CRC</a></li>
+                        <li><a  href="endorsement_files">Admin Files</a></li>
                         <li style="display: none;"><a href="endorsements">New Endorsement like a company</a></li> 
                    </ul>
                  </li>
@@ -113,7 +115,6 @@
                     <ul>
                         <li><a href="claims">New Claim</a></li>
                         <li><a href="claims_requests">Applications for Claims</a></li>
-                        <li><a href="insurances">Configure e-mails for Insurances</a></li> 
                     </ul>
                  </li>  
                  <li class="submenu"><a href="#">QUOTES</a>
@@ -146,7 +147,6 @@
                         <li><a href="endorsement_request_adds" title="New for Loss Payee or Additional Insured">Loss Payee or Additional Insured</a></li>
                         <li><a href="endorsement_month">Monthly Report to CRC</a></li>
                         <li><a href="endorsement_files">Admin Files</a></li>
-                        <li><a href="brokers">Configure e-mails for Brokers</a></li>
                         <li style="display: none;"><a href="endorsements">New Endorsement like a company</a></li> 
                    </ul> 
                   </li>

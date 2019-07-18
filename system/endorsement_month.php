@@ -923,7 +923,7 @@ var fn_endosos = {
                 </tr>
                 </table> 
                 <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('frm_edit_estatus');fn_endosos.fillgrid();" style="margin-right:10px;background:#e8051b;" title="Close">CLOSE</button>
-                <!--<button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.download_excel($('#frm_edit_estatus input[name=iConsecutivo]').val());" style="margin-right:10px;background: #87c540;width: 180px;" title="Download Excel file without send">DOWNLOAD EXCEL FILE</button>-->
+                <button type="button" class="btn-1 btns_only_edit" onclick="fn_endosos.download_excel($('#frm_edit_estatus input[name=iConsecutivo]').val());" style="margin-right:10px;background: #87c540;width: 180px;" title="Download Excel file without send">DOWNLOAD EXCEL FILE</button>
                 <button type="button" class="btn-1" onclick="fn_endosos.estatus_save();" style="margin-right:10px;" title="Save status">SAVE</button> 
             </fieldset>
         </form>
