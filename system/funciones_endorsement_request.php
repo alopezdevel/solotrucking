@@ -2382,4 +2382,139 @@
       
   }
   
+  #REPORTES
+  function genera_reporte(){ 
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);
+      
+      // Variables //
+      $flt_tipo     = trim($_POST['reporte_tipo']); 
+      $fecha_inicio = trim($_POST['flt_dateFrom']);
+      $fecha_fin    = trim($_POST['flt_dateTo']);
+      $fecha_inicio = substr($fecha_inicio,6,4).'-'.substr($fecha_inicio,0,2).'-'.substr($fecha_inicio,3,2); 
+      $fecha_fin    = substr($fecha_fin,6,4).'-'.substr($fecha_fin,0,2).'-'.substr($fecha_fin,3,2);
+      $error        = 0;
+      
+      // Filtros de informacion //
+      $filtroQuery   = "WHERE A.eStatus != 'E' AND iConsecutivoTipoEndoso = '2' AND A.iDeleted='0' ";
+      $filtroJoin    = ""; 
+      
+      // X COMPANIA
+      if($flt_tipo == 'company'){ 
+        #FILTRO X COMPANIA  
+        if(trim($_POST['reporte_company']) != ""){
+            $filtroQuery .= "AND A.iConsecutivoCompania='".trim($_POST['reporte_company'])."' ";
+        } 
+        #FILTRO X POLIZA
+        if(trim($_POST['reporte_policy'])  != ""){
+            $filtroJoin  .= "LEFT JOIN cb_endoso_estatus AS B ON A.iConsecutivo = B.iConsecutivoEndoso ";
+            $filtroQuery .= "AND B.iConsecutivoPoliza='".trim($_POST['reporte_policy'])."' ";
+        }   
+      }
+      // X BROKER
+      else if($flt_tipo == 'broker'){
+         #FILTRO X BROKER:
+         if(trim($_POST['reporte_broker'])  != ""){
+            $filtroJoin  .= "LEFT JOIN cb_endoso_estatus AS B ON A.iConsecutivo       = B.iConsecutivoEndoso ".
+                            "LEFT JOIN ct_polizas        AS C ON B.iConsecutivoPoliza = C.iConsecutivo ";
+            $filtroQuery .= "AND C.iConsecutivoBrokers='".trim($_POST['reporte_broker'])."' ";
+         }     
+      }
+      
+      $filtroQuery .= "AND A.dFechaAplicacion BETWEEN '$fecha_inicio' AND '$fecha_fin' ";
+      
+      // ordenamiento//
+      $ordenQuery = " ORDER BY A.dFechaAplicacion DESC ";
+      
+      // Contando Registros //
+      $query = "SELECT A.iConsecutivo, DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion FROM cb_endoso AS A ".$filtroJoin.$filtroQuery.$ordenQuery;
+      $result= $conexion->query($query);   
+      $rows  = $result->num_rows;
+
+      if($rows == 0){$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}
+      else{
+            #DATOS DEL DETALLE DEL REPORTE
+            $total          = $rows; 
+            $filtro_detalle = "";
+            
+            //Revisamos si hay que filtrar por broker a nivel polizas:
+            if($flt_tipo == 'broker'){
+                 #FILTRO X BROKER:
+                 if(trim($_POST['reporte_broker'])  != ""){
+                    $filtro_detalle .= "AND B.iConsecutivoBrokers='".trim($_POST['reporte_broker'])."' ";
+                 }     
+            }
+            else if($flt_tipo == 'company'){ 
+                #FILTRO X POLIZA
+                if(trim($_POST['reporte_policy'])  != ""){
+                    $filtro_detalle .= "AND A.iConsecutivoPoliza='".trim($_POST['reporte_policy'])."' ";
+                }   
+            }
+            
+            
+            while ($endoso = $result->fetch_assoc()) {
+             
+                $iConsecutivo = $endoso['iConsecutivo'];
+                $polizas      = "";
+                
+                #CONSULTAR DATOS DE LA POLIZA(S)
+                $query = "SELECT  A.iConsecutivoPoliza, B.sNumeroPoliza, D.sAlias, C.sName AS 'sBroker', A.dFechaAplicacion
+                          FROM      cb_endoso_estatus AS A
+                          LEFT JOIN ct_polizas        AS B ON A.iConsecutivoPoliza   = B.iConsecutivo AND B.iDeleted = '0'
+                          LEFT JOIN ct_brokers        AS C ON B.iConsecutivoBrokers  = C.iConsecutivo
+                          LEFT JOIN ct_tipo_poliza    AS D ON B.iTipoPoliza          = D.iConsecutivo
+                          WHERE A.iConsecutivoEndoso = '$iConsecutivo' ".$filtro_detalle;
+                $r     = $conexion->query($query);
+                
+                if($r->num_rows > 0){
+                    $polizas  = '<table style="width: 100%;text-transform: uppercase;border-collapse: collapse;">';
+                    while ($poli = $r->fetch_assoc()){
+                       
+                        $polizas .= "<tr>";
+                        $polizas .= "<td style=\"width:35%;\">".$poli['sNumeroPoliza']." (".$poli['sAlias'].")</td>";
+                        $polizas .= "<td style=\"width:50%;\">".$poli['sBroker']."</td>";
+                        $polizas .= "<td style=\"width:15%;\">".$endoso['dFechaAplicacion']."</td>";
+                        $polizas .= "</tr>";
+                    }
+                    $polizas .= "</table>"; 
+                    
+                    #CONSULTAR DATOS DEL OPERADOR/UNIDAD
+                    $query  = "SELECT C.iConsecutivo AS iConsecutivoCompania, C.sNombreCompania, iConsecutivoOperador, eAccion, A.sNombre,DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS DOB, 
+                               A.iNumLicencia, B.eTipoLicencia, DATE_FORMAT(B.dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracion, B.iExperienciaYear
+                               FROM      cb_endoso_operador AS A
+                               LEFT JOIN ct_operadores      AS B ON A.iConsecutivoOperador = B.iConsecutivo
+                               LEFT JOIN ct_companias       AS C ON B.iConsecutivoCompania = C.iConsecutivo AND C.iDeleted ='0' 
+                               WHERE A.iConsecutivoEndoso = '$iConsecutivo'";
+                    $r      = $conexion->query($query); 
+                    $rows   = $result->num_rows; 
+                    
+                    if($rows > 0){
+                        
+                        while ($detalle = $r->fetch_assoc()) {
+                            $htmlTabla .= "<tr>".
+                                       "<td id=\"idCo_".$detalle['iConsecutivoCompania']."\">".$detalle['sNombreCompania']."</td>".
+                                       "<td>".$detalle['eAccion']."</td>".
+                                       "<td id=\"idDe_".$detalle['iConsecutivoOperador']."\">".$detalle['sNombre']."</td>".
+                                       "<td class=\"txt-c\">".$detalle['DOB']."</td>". 
+                                       "<td>".$detalle['iNumLicencia']."</td>". 
+                                       "<td class=\"txt-c\">".$detalle['eTipoLicencia']."</td>".
+                                       "<td class=\"txt-c\">".$detalle['dFechaExpiracion']."</td>".  
+                                       "<td class=\"txt-c\">".$detalle['iExperienciaYear']."</td>".
+                                       "<td style=\"padding: 0px!important;\">$polizas</td>".                                                                                                                                                                                                                   
+                                       "</tr>";      
+                        } 
+                           
+                    }    
+                }
+                //else{$total--;}   
+            }
+              
+      }
+      
+      $conexion->close();
+      $response = array("total"=>"$total","html"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error");   
+      echo json_encode($response); 
+               
+  }
+  
 ?>

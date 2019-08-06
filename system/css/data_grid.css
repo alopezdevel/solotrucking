@@ -493,8 +493,9 @@ table.popup-datagrid > tbody > tr:last-child > td{border-bottom:1px solid #c6c6c
     text-transform:none!important;
     font-weight:bold;
     text-shadow:1px 2px 3px #daeaf6;
-    padding: 3px 0px 5px 5px!important;
+    padding: 3px 5px 5px 5px!important;
 }
+.popup-datagrid #grid-head2 .etiqueta_grid table thead td{font-size: 11px!important;color: #1a8ded;}
 .popup-datagrid tbody td{
     
     font-size: 11px!important;
@@ -504,6 +505,10 @@ table.popup-datagrid > tbody > tr:last-child > td{border-bottom:1px solid #c6c6c
     height: 22px;
     font-family: Arial, Helvetica, sans-serif!important;
 }
+.popup-datagrid > tbody > tr:nth-child(odd){background: rgb(247, 247, 247)!important;}
+.popup-datagrid > tbody > tr:nth-child(even){background: rgb(255, 255, 255)!important;}
+.popup-datagrid > tbody > tr:hover{background-color: rgb(251, 253, 208)!important;cursor:pointer;}
+
 .popup-datagrid .btn-icon{width:15px!important;}
 .popup-datagrid .btn-icon i{font-size: 15px!important;}
 input.fecha{max-width: 96%;margin-right: 5px!important;}

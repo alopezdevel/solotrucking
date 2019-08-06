@@ -272,7 +272,7 @@
              "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
              "LEFT JOIN ct_aseguranzas E ON A.iConsecutivoAseguranza = E.iConsecutivo ".
              "WHERE iConsecutivoCompania = '".$company."' ".
-             "AND  A.iDeleted = '0' AND dFechaCaducidad >= CURDATE() AND (D.iConsecutivo = '1' OR D.iConsecutivo = '3' OR D.iConsecutivo = '5' OR D.iConsecutivo = '2') ".
+             "AND  A.iDeleted = '0' AND dFechaCaducidad >= CURDATE() AND (D.iConsecutivo != '4' AND D.iConsecutivo != '6' AND D.iConsecutivo != '7' AND D.iConsecutivo != '8' AND D.iConsecutivo != '9') ".
              "ORDER BY sNumeroPoliza ASC";  
       $result = $conexion->query($sql);
       $rows = $result->num_rows;
@@ -1584,7 +1584,7 @@
              "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
              "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
              "WHERE iConsecutivoCompania = '".$company."' ".
-             "AND  A.iDeleted = '0' AND dFechaCaducidad >= CURDATE() AND (D.iConsecutivo = '1' OR D.iConsecutivo = '3' OR D.iConsecutivo = '5' OR D.iConsecutivo = '2') ".
+             "AND  A.iDeleted = '0' AND dFechaCaducidad >= CURDATE() AND (D.iConsecutivo != '4' AND D.iConsecutivo != '6' AND D.iConsecutivo != '7' AND D.iConsecutivo != '8' AND D.iConsecutivo != '9') ".
              "ORDER BY sNumeroPoliza ASC";  
       $result = $conexion->query($sql);
       $rows = $result->num_rows;
