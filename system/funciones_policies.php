@@ -27,10 +27,12 @@
     $ordenQuery = " ORDER BY ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"];
     
     //contando registros // 
-    $query_rows = "SELECT COUNT(A.iConsecutivo) AS total FROM ct_polizas A 
-                   LEFT JOIN ct_companias B ON A.iConsecutivoCompania = B.iConsecutivo
-                   LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo
-                   LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".$filtroQuery;
+    $query_rows = "SELECT COUNT(A.iConsecutivo) AS total 
+                   FROM ct_polizas          AS A 
+                   LEFT JOIN ct_companias   AS B ON A.iConsecutivoCompania   = B.iConsecutivo
+                   LEFT JOIN ct_brokers     AS C ON A.iConsecutivoBrokers    = C.iConsecutivo
+                   LEFT JOIN ct_tipo_poliza AS D ON A.iTipoPoliza            = D.iConsecutivo 
+                   LEFT JOIN ct_aseguranzas AS E ON A.iConsecutivoAseguranza = E.iConsecutivo ".$filtroQuery;
     $Result = $conexion->query($query_rows);
     $items = $Result->fetch_assoc();
     $registros = $items["total"];
@@ -44,11 +46,12 @@
         $pagina_actual == "0" ? $pagina_actual = 1 : false;
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-        $sql = "SELECT A.iConsecutivo AS clave, sNumeroPoliza, sNombreCompania, sName, sDescripcion, iOnRedList, DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio, DATE_FORMAT(dFechaCaducidad,'%m/%d/%Y') AS dFechaCaducidad, iConsecutivoArchivo,A.iConsecutivoCompania, iTipoPoliza, iConsecutivoArchivoPFA ".
-               "FROM ct_polizas A ".
-               "LEFT JOIN ct_companias B ON A.iConsecutivoCompania = B.iConsecutivo ".
-               "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
-               "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
+        $sql = "SELECT A.iConsecutivo AS clave, sNumeroPoliza, sNombreCompania, C.sName AS sBroker, E.sName AS sInsurance , D.sDescripcion, iOnRedList, DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio, DATE_FORMAT(dFechaCaducidad,'%m/%d/%Y') AS dFechaCaducidad, iConsecutivoArchivo,A.iConsecutivoCompania, iTipoPoliza, iConsecutivoArchivoPFA ".
+               "FROM      ct_polizas     AS A 
+                LEFT JOIN ct_companias   AS B ON A.iConsecutivoCompania   = B.iConsecutivo
+                LEFT JOIN ct_brokers     AS C ON A.iConsecutivoBrokers    = C.iConsecutivo
+                LEFT JOIN ct_tipo_poliza AS D ON A.iTipoPoliza            = D.iConsecutivo 
+                LEFT JOIN ct_aseguranzas AS E ON A.iConsecutivoAseguranza = E.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
         $result = $conexion->query($sql);
         $rows = $result->num_rows;   
         if ($rows > 0) {    
@@ -85,12 +88,23 @@
                          if($dias >= 0){
                             $iConsecutivoPoliza = $items['clave'];
                             //$btn_drivers  = "<div class=\"btn-icon view btn-left\" title=\"View list of Drivers & Units\" onclick=\"fn_policies.get_list_description('$iConsecutivoPoliza','".$items['iConsecutivoCompania']."','".$items['sNumeroPoliza']."');\"><i class=\"fa fa-list-alt\"></i> <span></span></div>"; 
-         
+                            $insurance = strtoupper(utf8_decode($items['sInsurance']));
+                            if(strlen($insurance) > 15){
+                                $insurance = substr($insurance,0,15)."... ";
+                            }
+                            
+                            $broker = strtoupper(utf8_decode($items['sBroker']));
+                            if(strlen($broker) > 15){
+                                $broker = substr($broker,0,15)."... ";
+                            }
+                            
                             $htmlTabla .= "<tr $EstatusPoliza >
                                             <td>".$items['clave']."</td>".
                                            "<td>".$redlist_icon.$items['sNombreCompania']."</td>".
                                            "<td>".$items['sNumeroPoliza']."</td>".
-                                           "<td>".$items['sDescripcion']."</td>".  
+                                           "<td>".$items['sDescripcion']."</td>". 
+                                           "<td title=\"".strtoupper(utf8_decode($items['sBroker']))."\">".$broker."</td>".
+                                           "<td title=\"".strtoupper(utf8_decode($items['sInsurance']))."\">".$insurance."</td>". 
                                            "<td>".$items['dFechaInicio']."</td>".
                                            "<td>".$items['dFechaCaducidad']."</td>".                                                                                                                                                                                                                     
                                            "<td>

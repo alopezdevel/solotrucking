@@ -124,7 +124,7 @@ var fn_endosos = {
                     fn_endosos.edit();
                     fn_endosos.estatus_edit();
                     fn_endosos.delete_confirm();
-                    fn_solotrucking.btn_tooltip();
+                    //fn_solotrucking.btn_tooltip();
                 }
             }); 
         },

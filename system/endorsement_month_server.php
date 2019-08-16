@@ -745,7 +745,7 @@
         $llaves  = array_keys($data);
         $datos   = $data;
         foreach($datos as $i => $b){
-             $fields .= "\$('#$domroot :input[name=".$i."]').val('".$datos[$i]."');"; 
+             $fields .= "\$('#$domroot :input[name=".$i."]').val('".fix_string($datos[$i])."');"; 
         } 
         $poliza = $data['iConsecutivoPoliza']; 
     }

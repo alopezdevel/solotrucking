@@ -2271,17 +2271,20 @@
           else if($data['iEndosoMultiple']==1){
               //Consultamos las unidades relacionadas al endoso:
               $query  = "SELECT * FROM cb_endoso_operador WHERE iConsecutivoEndoso = '$iConsecutivoEndoso' "; 
-              $result = $conexion->query($query); 
-              $rows   = $result->num_rows; 
+              $res    = $conexion->query($query); 
+              $rows   = $res->num_rows; 
               if($rows > 0){
+                  
                   //Recorremos resultado:
-                  while ($item = $result->fetch_assoc()) { 
+                  while ($item = $res->fetch_assoc()){ 
+
                       //Tomamos variables:
                       $eAccion   = $item['eAccion'];
                       $idDetalle = $item['iConsecutivoOperador']; 
                       
-                      //verificamos si ya existe el registro en la tabla:
-                      $query = "SELECT COUNT(iConsecutivoOperador) AS total FROM cb_poliza_operador WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoOperador='$idDetalle'";
+                      //verificamos si ya existe el registro en la tabla que haya sido agregado por ENDOSO
+                      $query = "SELECT COUNT(iConsecutivoOperador) AS total FROM cb_poliza_operador ".
+                               "WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoOperador='$idDetalle' AND eModoIngreso='ENDORSEMENT'";
                       $result= $conexion->query($query) or die($conexion->error);
                       $valida= $result->fetch_assoc();
                       
@@ -2316,6 +2319,13 @@
                         }    
                       }
                       if(!($success)){$transaccion_exitosa = false;}
+                      else{
+                          //ACTUALIZAMOS LA TABLA DE cb_poliza_operador POR SI HABIA ALGUN REGISTRO REPETIDO PERO EN EL BIND:
+                          $query   = "UPDATE cb_poliza_operador SET iDeleted='1',dFechaActualizacion=NOW(),sIPActualizacion='".$_SERVER['REMOTE_ADDR']."',sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
+                                     "WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoOperador='$idDetalle' AND eModoIngreso='AMIC' ";
+                          $success = $conexion->query($query);
+                          if(!($success)){$transaccion_exitosa = false;} 
+                      }
                       
                       // Actualizamos el registro general del operador como "no eliminado".
                       if($eAccion == "ADD" || $eAccion == "ADDSWAP"){
@@ -2326,7 +2336,8 @@
                       else if($eAccion == "DELETE" || $eAccion == "DELETESWAP"){
                           //CONSULTAMOS, SI EL OPERADOR NO ESTA ACTUALMENTE EN NINGUNA POLIZA, LO MARCAREMOS COMO ELIMINADA EN EL CATALOGO:
                           $query = "SELECT COUNT(A.iConsecutivo) AS total ".
-                                   "FROM ct_operadores AS A INNER JOIN cb_poliza_operador AS B ON A.iConsecutivo = B.iConsecutivoOperador ".
+                                   "FROM       ct_operadores      AS A ".
+                                   "INNER JOIN cb_poliza_operador AS B ON A.iConsecutivo = B.iConsecutivoOperador AND B.iDeleted = '0' ".
                                    "WHERE A.iConsecutivo = '$idDetalle'";
                           $r     = $conexion->query($query);
                           $valid = $r->fetch_assoc();
@@ -2338,39 +2349,6 @@
                             if(!($success)){$error = '1'; $mensaje = "Error to try update data, please try again later.";}
                           }
                       }
-                      
-                      //Revisamos Action:
-                      /*if($eAccion == "ADD" || $eAccion == "ADDSWAP"){
-                          
-                         //Agregamos a la poliza la unidad: 
-                         $query   = "INSERT INTO cb_poliza_operador (iConsecutivoPoliza,iConsecutivoOperador,eModoIngreso,dFechaIngreso,sIPIngreso,sUsuarioIngreso) ".
-                                    "VALUES('$iConsecutivoPoliza','$idDetalle','ENDORSEMENT','$dFechaEndoso','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
-                         $success = $conexion->query($query); 
-                        
-                      }
-                      if($eAccion == "DELETE" || $eAccion == "DELETESWAP"){
-                          //Marcar como eliminado de la poliza la unidad:
-                          $query   = "UPDATE cb_poliza_operador SET iDeleted='1',dFechaActualizacion='$dFechaEndoso',sIPActualizacion='".$_SERVER['REMOTE_ADDR']."',sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
-                                     "WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoOperador='$idDetalle' AND iDeleted='0'";
-                          $success = $conexion->query($query); 
-                          if(!($success)){$transaccion_exitosa = false;}
-                          else{
-                              //CONSULTAMOS, SI EL OPERADOR NO ESTA ACTUALMENTE EN NINGUNA POLIZA, LO MARCAREMOS COMO ELIMINADA EN EL CATALOGO:
-                              $query = "SELECT COUNT(A.iConsecutivo) AS total ".
-                                       "FROM ct_operadores AS A INNER JOIN cb_poliza_operador AS B ON A.iConsecutivo = B.iConsecutivoOperador ".
-                                       "WHERE A.iConsecutivo = '$idDetalle'";
-                              $r     = $conexion->query($query);
-                              $valid = $r->fetch_assoc();
-                              $valid['total'] > 0 ? $iElimina = false : $iElimina = true;
-                              
-                              if($iElimina){
-                                $query   = "UPDATE ct_operadores SET iDeleted = '1' WHERE iConsecutivo='$idDetalle'";
-                                $success = $conexion->query($query); 
-                                if(!($success)){$error = '1'; $mensaje = "Error to try update data, please try again later.";}
-                              }
-                          }
-                      } */
-                       
                   }
               }
               else{$transaccion_exitosa = false;}
@@ -2491,9 +2469,14 @@
                     if($rows > 0){
                         
                         while ($detalle = $r->fetch_assoc()) {
+                            
+                            if($detalle['eAccion'] == "ADDSWAP"){$action = "ADD SWAP";}else
+                            if($detalle['eAccion'] == "DELETESWAP"){$action = "DELETE SWAP";}
+                            else{$action = $detalle['eAccion'];}
+                            
                             $htmlTabla .= "<tr>".
                                        "<td id=\"idCo_".$detalle['iConsecutivoCompania']."\">".$detalle['sNombreCompania']."</td>".
-                                       "<td>".$detalle['eAccion']."</td>".
+                                       "<td>".$action."</td>".
                                        "<td id=\"idDe_".$detalle['iConsecutivoOperador']."\">".$detalle['sNombre']."</td>".
                                        "<td class=\"txt-c\">".$detalle['DOB']."</td>". 
                                        "<td>".$detalle['iNumLicencia']."</td>". 

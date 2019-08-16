@@ -1150,7 +1150,7 @@
                          $.ajax({             
                             type:"POST", 
                             url:"catalogos_generales.php", 
-                            data:{'accion':"get_policies",'iConsecutivoCompania':company},
+                            data:{'accion':"get_endorsement_policies",'iConsecutivoCompania':company},
                             async : true,
                             dataType : "json",
                             success : function(data){
@@ -1199,7 +1199,7 @@
                     <div class="btn-icon-2 btn-left" title="New Endorsement +"  onclick="fn_endorsement.add();"><i class="fa fa-plus"></i></div>
                 </td> 
             </tr>
-             <tr id="grid-head-tools">
+            <tr id="grid-head-tools">
                 <td colspan="100%">
                     <ul>
                         <li><div class="btn-icon report btn-left" title="Report of Endorsements" onclick="fn_endorsement.dialog_report_open();" style="width:auto!important;"><i class="fa fa-folder-open"></i><span style="margin-left:5px;font-size: 10px!important;">Report of Endorsements</span></div></li>  

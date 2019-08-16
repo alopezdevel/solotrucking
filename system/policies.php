@@ -619,13 +619,13 @@ var fn_policies = {
             if($(fn_policies.data_grid+" #pagina_actual").val() != "1"){
                 //POLIZAS ACTUALES
                 if(fn_policies.filtro_table == 'active'){
-                    fn_policies.fillgrid();
                     fn_policies.pagina_actual = "";
+                    fn_policies.fillgrid();
                 }
                 // POLIZAS VENCIDAS
                 else if(fn_policies.filtro_table == 'expired'){
-                    fn_policies.fillgrid_expired();
                     fn_policies.pagina_actual_exp = "";
+                    fn_policies.fillgrid_expired();
                 }
             }
         },
@@ -674,7 +674,8 @@ var fn_policies = {
             if($(fn_policies.data_grid+" .flt_pid").val() != "")         { filtro += "A.iConsecutivo|"+$(fn_policies.data_grid+" .flt_pid").val()+","}
             if($(fn_policies.data_grid+" .flt_pcompany").val() != "")    { filtro += "sNombreCompania|"+$(fn_policies.data_grid+" .flt_pcompany").val()+","} 
             if($(fn_policies.data_grid+" .flt_policynumber").val() != ""){ filtro += "sNumeroPoliza|"+$(fn_policies.data_grid+" .flt_policynumber").val()+","} 
-            //if($(fn_policies.data_grid+" .flt_pbroker").val() != ""){ filtro += "sName|"+$(fn_policies.data_grid+" .flt_pbroker").val()+","}  
+            if($(fn_policies.data_grid+" .flt_pbroker").val() != "")     { filtro += "C.sName|"+$(fn_policies.data_grid+" .flt_pbroker").val()+","}  
+            if($(fn_policies.data_grid+" .flt_pinsurance").val() != "")  { filtro += "E.sName|"+$(fn_policies.data_grid+" .flt_pinsurance").val()+","}  
             if($(fn_policies.data_grid+" .flt_policytype").val() != "")  { filtro += "sDescripcion|"+$(fn_policies.data_grid+" .flt_policytype").val()+","} 
             if($(fn_policies.data_grid+" .flt_policystartdate").val() != ""){ filtro += "dFechaInicio|"+$(fn_policies.data_grid+" .flt_policystartdate").val()+","} 
             if($(fn_policies.data_grid+" .flt_policyexpdate").val() != "")  { filtro += "dFechaCaducidad|"+$(fn_policies.data_grid+" .flt_policyexpdate").val()+","}    
@@ -1297,10 +1298,12 @@ var fn_certificate = {
             <tr class="grid-head1">
                 <td style="width:50px!important;"><input class="flt_pid" type="text" placeholder="ID:"></td> 
                 <td style="width:350px;"><input class="flt_pcompany" type="text" placeholder="Company:"></td>
-                <td><input class="flt_policynumber" type="text" placeholder="Policy Numer:"></td>
-                <td><input class="flt_policytype" type="text" placeholder="Policy Type:"></td> 
-                <td><input class="flt_policystartdate" type="text" placeholder="MM/DD/YY"></td> 
-                <td><input class="flt_policyexpdate" type="text" placeholder="MM/DD/YY"></td>  
+                <td><input class="flt_policynumber"    type="text" placeholder="Policy Numer:"></td>
+                <td><input class="flt_policytype"      type="text" placeholder="Policy Type:"></td> 
+                <td><input class="flt_pbroker"         type="text" placeholder="Broker:"></td>
+                <td><input class="flt_pinsurance"      type="text" placeholder="Insurance:"></td>
+                <td style="width: 70px;"><input class="flt_policystartdate" type="text" placeholder="MM/DD/YY"></td> 
+                <td style="width: 70px;"><input class="flt_policyexpdate"   type="text" placeholder="MM/DD/YY"></td>  
                 <td style='width:145px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_policies.filtraInformacion();"><i class="fa fa-search"></i></div>
                     <div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_policies.add();"><i class="fa fa-plus"></i></div>
@@ -1322,8 +1325,10 @@ var fn_certificate = {
                 <td class="etiqueta_grid"      onclick="fn_policies.ordenamiento('sNombreCompania',this.cellIndex);">Company Name</td> 
                 <td class="etiqueta_grid"      onclick="fn_policies.ordenamiento('sNumeroPoliza',this.cellIndex);">Policy Number</td>
                 <td class="etiqueta_grid"      onclick="fn_policies.ordenamiento('sDescripcion',this.cellIndex);">Type</td>
-                <td class="etiqueta_grid"      onclick="fn_policies.ordenamiento('dFechaInicio',this.cellIndex);">EFFECTIVE DATE </td> 
-                <td class="etiqueta_grid"      onclick="fn_policies.ordenamiento('dFechaCaducidad',this.cellIndex);">EXPIRE Date</td> 
+                <td class="etiqueta_grid"      onclick="fn_policies.ordenamiento('C.sName',this.cellIndex);">Broker</td>
+                <td class="etiqueta_grid"      onclick="fn_policies.ordenamiento('E.sName',this.cellIndex);">Insurance</td>
+                <td class="etiqueta_grid"      onclick="fn_policies.ordenamiento('dFechaInicio',this.cellIndex);">EFF DATE </td> 
+                <td class="etiqueta_grid"      onclick="fn_policies.ordenamiento('dFechaCaducidad',this.cellIndex);">EXP Date</td> 
                 <td class="etiqueta_grid"></td>
             </tr>
         </thead>

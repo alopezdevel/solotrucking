@@ -237,7 +237,7 @@
                 if($i != 'eStatus' && $i != 'sComentarios' && $i != 'iConsecutivoPoliza' && $i != 'iConsecutivoTipoEndoso'){
                   $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');";  
                 }else if($i == 'sComentarios'){
-                  $comentarios = utf8_decode($datos[$i]);  
+                  $comentarios = fix_string($datos[$i]);  
                 }    
             }
             
@@ -358,7 +358,8 @@
       //VARIABLES POST:
       $iConsecutivo         = trim($_POST['iConsecutivo']); 
       $iConsecutivoCompania = trim($_POST['iConsecutivoCompania']);
-      $sComentarios         = $_POST['sComentarios'] != "" ? "'".utf8_decode(trim($_POST['sComentarios']))."'" : "''";
+      //$sComentarios         = $_POST['sComentarios'] != "" ? "'".utf8_decode(trim($_POST['sComentarios']))."'" : "''";
+      $_POST['sComentarios'] != "" ? $sComentarios = trim(fix_string($_POST['sComentarios'])) : $sComentarios = "''";
       $sIP                  = $_SERVER['REMOTE_ADDR'];
       $sUsuario             = $_SESSION['usuario_actual'];
       $dFecha               = date("Y-m-d H:i:s");
@@ -965,7 +966,7 @@
                       
               foreach($datos as $i => $b){
                     if($i == "sComentarios" || $i == "eStatus" || $i == "sNumeroEndosoBroker" || $i == "rImporteEndosoBroker"){
-                      if($i == 'sComentarios'){$value = utf8_decode(utf8_encode($datos[$i]));}else{$value = $datos[$i];}
+                      if($i == 'sComentarios'){$value = (fix_string($datos[$i]));}else{$value = $datos[$i];}
                       $fields .= "\$('#$domroot #dataPolicy_".$data['iConsecutivoPoliza']." :input[name=".$i."]').val('$value');\n";  
                     }
               }
@@ -1927,17 +1928,18 @@
           else if($data['iEndosoMultiple']==1){
               //Consultamos las unidades relacionadas al endoso:
               $query  = "SELECT * FROM cb_endoso_unidad WHERE iConsecutivoEndoso = '$iConsecutivoEndoso' "; 
-              $result = $conexion->query($query); 
-              $rows   = $result->num_rows; 
+              $res    = $conexion->query($query); 
+              $rows   = $res->num_rows; 
               if($rows > 0){
                   //Recorremos resultado:
-                  while ($item = $result->fetch_assoc()) { 
+                  while ($item = $res->fetch_assoc()) { 
                       //Tomamos variables:
                       $eAccion   = $item['eAccion'];
                       $idDetalle = $item['iConsecutivoUnidad']; 
                       
                       //verificamos si ya existe el registro en la tabla:
-                      $query = "SELECT COUNT(iConsecutivoUnidad) AS total FROM cb_poliza_unidad WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoUnidad='$idDetalle'";
+                      $query = "SELECT COUNT(iConsecutivoUnidad) AS total FROM cb_poliza_unidad ".
+                               "WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoUnidad='$idDetalle' AND eModoIngreso='ENDORSEMENT'";
                       $result= $conexion->query($query) or die($conexion->error);
                       $valida= $result->fetch_assoc();
                       
@@ -1971,7 +1973,15 @@
                             $success = $conexion->query($query);     
                         }       
                       }
+                      
                       if(!($success)){$transaccion_exitosa = false;}
+                      else{
+                          //ACTUALIZAMOS LA TABLA DE cb_poliza_operador POR SI HABIA ALGUN REGISTRO REPETIDO PERO EN EL BIND:
+                          $query   = "UPDATE cb_poliza_unidad SET iDeleted='1',dFechaActualizacion=NOW(),sIPActualizacion='".$_SERVER['REMOTE_ADDR']."',sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
+                                     "WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoUnidad='$idDetalle' AND eModoIngreso='AMIC' ";
+                          $success = $conexion->query($query);
+                          if(!($success)){$transaccion_exitosa = false;} 
+                      }
                       
                       // Actualizamos el registro general del vehiculo como "no eliminado".
                       if($eAccion == "ADD" || $eAccion == "ADDSWAP"){
@@ -1982,7 +1992,8 @@
                       else if($eAccion == "DELETE" || $eAccion == "DELETESWAP"){
                           //CONSULTAMOS, SI EL VEHICULO NO ESTA ACTUALMENTE EN NINGUNA POLIZA, LO MARCAREMOS COMO ELIMINADA EN EL CATALOGO:
                           $query = "SELECT COUNT(A.iConsecutivo) AS total ".
-                                   "FROM ct_unidades AS A INNER JOIN cb_poliza_unidad AS B ON A.iConsecutivo = B.iConsecutivoUnidad ".
+                                   "FROM       ct_unidades      AS A ".
+                                   "INNER JOIN cb_poliza_unidad AS B ON A.iConsecutivo = B.iConsecutivoUnidad AND B.iDeleted = '0' ".
                                    "WHERE A.iConsecutivo = '$idDetalle'";
                           $r     = $conexion->query($query);
                           $valid = $r->fetch_assoc();
@@ -2004,6 +2015,149 @@
    
       return $transaccion_exitosa;
       
+  }
+  
+  #REPORTES
+  function genera_reporte(){ 
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);
+      
+      // Variables //
+      $flt_tipo     = trim($_POST['reporte_tipo']); 
+      $fecha_inicio = trim($_POST['flt_dateFrom']);
+      $fecha_fin    = trim($_POST['flt_dateTo']);
+      $fecha_inicio = substr($fecha_inicio,6,4).'-'.substr($fecha_inicio,0,2).'-'.substr($fecha_inicio,3,2); 
+      $fecha_fin    = substr($fecha_fin,6,4).'-'.substr($fecha_fin,0,2).'-'.substr($fecha_fin,3,2);
+      $error        = 0;
+      
+      // Filtros de informacion //
+      $filtroQuery   = "WHERE A.eStatus != 'E' AND iConsecutivoTipoEndoso = '1' AND A.iDeleted='0' ";
+      $filtroJoin    = ""; 
+      
+      // X COMPANIA
+      if($flt_tipo == 'company'){ 
+        #FILTRO X COMPANIA  
+        if(trim($_POST['reporte_company']) != ""){
+            $filtroQuery .= "AND A.iConsecutivoCompania='".trim($_POST['reporte_company'])."' ";
+        } 
+        #FILTRO X POLIZA
+        if(trim($_POST['reporte_policy'])  != ""){
+            $filtroJoin  .= "LEFT JOIN cb_endoso_estatus AS B ON A.iConsecutivo = B.iConsecutivoEndoso ";
+            $filtroQuery .= "AND B.iConsecutivoPoliza='".trim($_POST['reporte_policy'])."' ";
+        }   
+      }
+      // X BROKER
+      else if($flt_tipo == 'broker'){
+         #FILTRO X BROKER:
+         if(trim($_POST['reporte_broker'])  != ""){
+            $filtroJoin  .= "LEFT JOIN cb_endoso_estatus AS B ON A.iConsecutivo       = B.iConsecutivoEndoso ".
+                            "LEFT JOIN ct_polizas        AS C ON B.iConsecutivoPoliza = C.iConsecutivo ";
+            $filtroQuery .= "AND C.iConsecutivoBrokers='".trim($_POST['reporte_broker'])."' ";
+         }     
+      }
+      
+      $filtroQuery .= "AND A.dFechaAplicacion BETWEEN '$fecha_inicio' AND '$fecha_fin' ";
+      
+      // ordenamiento//
+      $ordenQuery = " ORDER BY A.dFechaAplicacion DESC ";
+      
+      // Contando Registros //
+      $query = "SELECT A.iConsecutivo, DATE_FORMAT(A.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion FROM cb_endoso AS A ".$filtroJoin.$filtroQuery.$ordenQuery;
+      $result= $conexion->query($query);   
+      $rows  = $result->num_rows;
+
+      if($rows == 0){$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}
+      else{
+            #DATOS DEL DETALLE DEL REPORTE
+            $total          = $rows; 
+            $filtro_detalle = "";
+            
+            //Revisamos si hay que filtrar por broker a nivel polizas:
+            if($flt_tipo == 'broker'){
+                 #FILTRO X BROKER:
+                 if(trim($_POST['reporte_broker'])  != ""){
+                    $filtro_detalle .= "AND B.iConsecutivoBrokers='".trim($_POST['reporte_broker'])."' ";
+                 }     
+            }
+            else if($flt_tipo == 'company'){ 
+                #FILTRO X POLIZA
+                if(trim($_POST['reporte_policy'])  != ""){
+                    $filtro_detalle .= "AND A.iConsecutivoPoliza='".trim($_POST['reporte_policy'])."' ";
+                }   
+            }
+            
+            
+            while ($endoso = $result->fetch_assoc()) {
+             
+                $iConsecutivo = $endoso['iConsecutivo'];
+                $polizas      = "";
+                
+                #CONSULTAR DATOS DE LA POLIZA(S)
+                $query = "SELECT  A.iConsecutivoPoliza, B.sNumeroPoliza, D.sAlias, C.sName AS 'sBroker', A.dFechaAplicacion
+                          FROM      cb_endoso_estatus AS A
+                          LEFT JOIN ct_polizas        AS B ON A.iConsecutivoPoliza   = B.iConsecutivo AND B.iDeleted = '0'
+                          LEFT JOIN ct_brokers        AS C ON B.iConsecutivoBrokers  = C.iConsecutivo
+                          LEFT JOIN ct_tipo_poliza    AS D ON B.iTipoPoliza          = D.iConsecutivo
+                          WHERE A.iConsecutivoEndoso = '$iConsecutivo' ".$filtro_detalle;
+                $r     = $conexion->query($query);
+                
+                if($r->num_rows > 0){
+                    $polizas  = '<table style="width: 100%;text-transform: uppercase;border-collapse: collapse;">';
+                    while ($poli = $r->fetch_assoc()){
+                       
+                        $polizas .= "<tr>";
+                        $polizas .= "<td style=\"width:35%;\">".$poli['sNumeroPoliza']." (".$poli['sAlias'].")</td>";
+                        $polizas .= "<td style=\"width:50%;\">".$poli['sBroker']."</td>";
+                        $polizas .= "<td style=\"width:15%;\">".$endoso['dFechaAplicacion']."</td>";
+                        $polizas .= "</tr>";
+                    }
+                    $polizas .= "</table>"; 
+                    
+                    #CONSULTAR DATOS DEL OPERADOR/UNIDAD
+                    $query  = "SELECT C.iConsecutivo AS iConsecutivoCompania, C.sNombreCompania, iConsecutivoUnidad, eAccion, B.sVIN, D.sDescripcion AS sRadio, 
+                               A.iTotalPremiumPD, B.iYear, E.sAlias AS sModelo, B.sTipo, B.sPeso
+                               FROM      cb_endoso_unidad   AS A
+                               LEFT JOIN ct_unidades        AS B ON A.iConsecutivoUnidad   = B.iConsecutivo
+                               LEFT JOIN ct_companias       AS C ON B.iConsecutivoCompania = C.iConsecutivo AND C.iDeleted ='0'
+                               LEFT JOIN ct_unidad_radio    AS D ON A.iConsecutivoRadio    = D.iConsecutivo
+                               LEFT JOIN ct_unidad_modelo   AS E ON B.iModelo              = E.iConsecutivo 
+                               WHERE A.iConsecutivoEndoso = '$iConsecutivo'";
+                    $r      = $conexion->query($query); 
+                    $rows   = $result->num_rows; 
+                    
+                    if($rows > 0){
+                        
+                        while ($detalle = $r->fetch_assoc()) {
+                            
+                            $detalle['iTotalPremiumPD'] > 0 ? $value = "\$ ".number_format($detalle['iTotalPremiumPD'],2,'.',',') : $value = ""; 
+                            if($detalle['eAccion'] == "ADDSWAP"){$action = "ADD SWAP";}else
+                            if($detalle['eAccion'] == "DELETESWAP"){$action = "DELETE SWAP";}
+                            else{$action = $detalle['eAccion'];}
+                 
+                            $htmlTabla .= "<tr>".
+                                       "<td id=\"idCo_".$detalle['iConsecutivoCompania']."\">".$detalle['sNombreCompania']."</td>".
+                                       "<td>".$action."</td>".
+                                       "<td id=\"idDe_".$detalle['iConsecutivoUnidad']."\" class=\"txt-c\">".$detalle['iYear']."</td>".
+                                       "<td class=\"txt-c\">".$detalle['sModelo']."</td>". 
+                                       "<td class=\"txt-l\">".$detalle['sVIN']."</td>". 
+                                       "<td class=\"txt-c\">".$detalle['sRadio']."</td>".
+                                       "<td class=\"txt-c\">".$detalle['sPeso']."</td>".  
+                                       "<td class=\"txt-c\">".$detalle['sTipo']."</td>".
+                                       "<td class=\"txt-c\">".$value."</td>".
+                                       "<td style=\"padding: 0px!important;\">$polizas</td>".                                                                                                                                                                                                                   
+                                       "</tr>";      
+                        } 
+                           
+                    }    
+                }
+            }
+              
+      }
+      
+      $conexion->close();
+      $response = array("total"=>"$total","html"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error");   
+      echo json_encode($response); 
+               
   }
   
 ?>

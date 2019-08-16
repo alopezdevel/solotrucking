@@ -356,7 +356,7 @@
                                           if($existe == "0"){array_push($campos,"iNumLicencia");array_push($valores,trim($iLicense));}
                                         
                                         }else{$error = 1;$mensaje = "Error: Please verify the LICENSE $iLicense on the column ".($col+1)." and row $row from Excel file.";}      
-                                    }else{$error = 1; $mensaje = "Error: Please verify the LICENSE $iLicense on the row $col from Excel file."; $success = false;} 
+                                    }else{$error = 1; $mensaje = "Error: Please verify the LICENSE $iLicense on the row ".($row)." from Excel file.";} 
                                 }else
                                 if($header == "YOE"){
                                     $YOE = $value; 
@@ -441,7 +441,7 @@
                                     }
                                }
                                
-                               #ACTUALIZAR TABLA DE POLIZAS/UNIDADES:
+                               #ACTUALIZAR TABLA DE POLIZAS/OPERADORES:
                                if($error == 0){
                                    for($p=0;$p<$count;$p++){
                                        
@@ -1211,7 +1211,7 @@
             }
       }  
       $conexion->close();
-      $response = array("mensaje"=>"$mensaje","error"=>"$error", "name_file" => "$fileName"); 
+      $response = array("mensaje"=>"$mensaje","error"=>"$error", "name_file" => "$fileName","query"=>"$query"); 
       echo json_encode($response); 
       
   }

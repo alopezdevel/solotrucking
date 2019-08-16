@@ -100,6 +100,36 @@
                     }
                 }
             }); 
+            
+            $('#dialog_report_endorsements').dialog({
+                modal: true,
+                autoOpen: false,
+                width : 650,
+                height : 510,
+                resizable : false,
+                buttons : {
+                    'DOWNLOAD EXCEL FILE' : function() { fn_endorsement.report.open(true);},
+                    'OK' : function(){fn_endorsement.report.open(false);},
+                    'CANCEL' : function(){
+                        $(this).dialog('close');
+                    }
+                }
+            }); 
+            
+            //DATEPICKERS
+            var dates_rp = $( "#flt_dateFrom, #flt_dateTo" ).datepicker({
+                changeMonth: true,
+                dateFormat: 'mm/dd/yy',
+                onSelect: function( selectedDate ) {
+                    var option = this.id == "flt_dateFrom" ? "minDate" : "maxDate",
+                    instance = $( this ).data( "datepicker" );
+                    date = $.datepicker.parseDate(
+                    instance.settings.dateFormat ||
+                    $.datepicker._defaults.dateFormat,
+                    selectedDate, instance.settings );
+                    dates_rp.not( this ).datepicker( "option", option, date );
+                },
+            });
                
     }  
     function validapantalla(usuario){if(usuario == ""  || usuario == null){location.href= "login.php";}  }                   
@@ -145,6 +175,10 @@
                     dataType : "json",
                     success : function(data){
                         $("#frm_endorsement_information select[name=iConsecutivoCompania").empty().append(data.select);
+                        
+                        //Reportes Select:
+                        $("#dialog_report_endorsements .flt_company").empty().append(data.select);
+                        $("#dialog_report_endorsements .flt_company option:first-child").text('All'); 
                     }
                 }); 
                 //Cargar Modelos para unidades:
@@ -183,6 +217,22 @@
                          
                     }
                 });
+                
+                //Brokers
+                $.ajax({             
+                    type:"POST", 
+                    url:"catalogos_generales.php", 
+                    data:{accion:"get_brokers"},
+                    async : true,
+                    dataType : "json",
+                    success : function(data){
+                        
+                        //Reportes Select:
+                        $("#dialog_report_endorsements .flt_broker").empty().append(data.select);
+                        $("#dialog_report_endorsements .flt_broker option:first-child").text('All'); 
+                    }
+                });
+                
                 $("#sUnitTrailer").autocomplete();
             },
             fillgrid: function(){
@@ -1032,6 +1082,114 @@
                   });  
                 },
             },
+            //FUNCIONES PARA REPORTE DE POLIZAS:
+            dialog_report_open : function(){
+                $("#dialog_report_endorsements :text, #dialog_report_endorsements select").val("");
+                $("#dialog_report_endorsements .flt_type").prop('disabled','disabled');
+                $("#dialog_report_endorsements .flt_co, #dialog_report_endorsements .flt_br").hide();
+            
+                var fechas = fn_solotrucking.obtener_fechas();
+                $("#dialog_report_endorsements #flt_dateFrom").val(fechas[1]); 
+                $("#dialog_report_endorsements #flt_dateTo").val(fechas[2]); 
+                $("#dialog_report_endorsements").dialog('open'); 
+            },
+            report : {
+                open : function(xlsx){
+                    var valid = true;
+                    var msj   = ""; 
+                    var form  = "#dialog_report_endorsements";
+                    var filtro= $(form+" .flt_by").val();  
+                    $(form+" select, "+form+" text").removeClass( "error" );
+                    
+                    //Revisamos si es COMPANY:
+                    if(filtro == ''){ 
+                        valid = false; 
+                        msj   = "<li>first select a filter.</li>";
+                        $(form+" .flt_by").addClass('error');
+                    }
+                    
+                    //Validamos Rango de fechas:
+                    if($(form+" #flt_dateFrom").val() == "" || $(form+" #flt_dateTo").val() == ""){
+                        valid = false;
+                        msj   = "<li>You must capture the dates for the report.</li>";    
+                    }
+                    
+                    if(!(valid)){fn_solotrucking.mensaje("<p>Please check the follow:</p><ul>"+msj+"</ul>");}
+                    else{
+                         if(!(xlsx)){
+                             struct_data_post.action ="genera_reporte";
+                             struct_data_post.domroot= form; 
+                             $.post("funciones_endorsement_request_units.php",struct_data_post.parse(),
+                             function(data){
+                                    switch(data.error){
+                                     case '0':
+                                      $("#endorsements_frm_report .popup-datagrid tbody").empty().append(data.html);
+                                      $(form).dialog('close'); 
+                                      fn_popups.resaltar_ventana('endorsements_frm_report');  
+                                     break;
+                                     case '1': fn_solotrucking.mensaje(data.msj); break;
+                                    }
+                             },"json");     
+                         }
+                         else{
+                            //Parametros:
+                            var reporte_tipo    = $(form+" .flt_by").val();
+                            var reporte_company = $(form+" .flt_company").val();
+                            var reporte_policy  = $(form+" .flt_type").val();
+                            var reporte_broker  = $(form+" .flt_broker").val();
+                            var flt_dateFrom    = $(form+" #flt_dateFrom").val();   
+                            var flt_dateTo      = $(form+" #flt_dateTo").val();
+                            
+                            if(reporte_tipo == 'company' && reporte_company != ""){var name = $(form+" .flt_company option:selected").text();}
+                            else if(reporte_tipo == 'broker' && reporte_broker != ""){var name = $(form+" .flt_broker option:selected").text();}
+                            
+                    
+                            window.open('endorsement_request_units_xlsx.php?reporte_tipo='+reporte_tipo+'&reporte_company='+reporte_company+'&reporte_policy='+reporte_policy+'&reporte_broker='+reporte_broker+'&flt_dateFrom='+flt_dateFrom+'&flt_dateTo='+flt_dateTo+'&name='+name);
+                                
+                         }
+                    } 
+                },
+                valida : function(parametro){
+                    
+                    $("#dialog_report_endorsements .flt_type").prop('disabled','disabled');
+                    $("#dialog_report_endorsements .flt_co, #dialog_report_endorsements .flt_br").hide();
+                            
+                    switch(parametro){
+                        case 'broker'  : 
+                            $("#dialog_report_endorsements .flt_br select").val(""); 
+                            $("#dialog_report_endorsements .flt_br").show(); 
+                        break;
+                        case 'company' : 
+                            $("#dialog_report_endorsements .flt_co select").val(""); 
+                            $("#dialog_report_endorsements .flt_type").empty().append("<option value=''>All</option>").prop('disabled','disabled');
+                            $("#dialog_report_endorsements .flt_co").show(); 
+                        break;
+                    }
+                },
+                cargar_polizas : function(company){
+                    if(company != ""){
+                         $.ajax({             
+                            type:"POST", 
+                            url:"catalogos_generales.php", 
+                            data:{'accion':"get_endorsement_policies",'iConsecutivoCompania':company},
+                            async : true,
+                            dataType : "json",
+                            success : function(data){
+                                
+                                if(data.error == 0 && data.select != ""){
+                                   //Reportes Select:
+                                   $("#dialog_report_endorsements .flt_type").empty().append(data.select).removeProp('disabled');
+                                   $("#dialog_report_endorsements .flt_type option:first-child").text('All'); 
+                                }
+                                else{
+                                   $("#dialog_report_endorsements .flt_type").empty().append("<option value=''>All</option>").prop('disabled','disabled'); 
+                                }
+                                 
+                            }
+                         });    
+                    }else{$("#dialog_report_endorsements .flt_type").empty().append("<option value=''>All</option>").prop('disabled','disabled');}
+                }
+            },
             
     }    
 </script> 
@@ -1069,6 +1227,13 @@
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_endorsement.filtraInformacion();"><i class="fa fa-search"></i></div>
                     <div class="btn-icon-2 btn-left" title="New Endorsement +"  onclick="fn_endorsement.add();"><i class="fa fa-plus"></i></div>
                 </td> 
+            </tr>
+            <tr id="grid-head-tools">
+                <td colspan="100%">
+                    <ul>
+                        <li><div class="btn-icon report btn-left" title="Report of Endorsements" onclick="fn_endorsement.dialog_report_open();" style="width:auto!important;"><i class="fa fa-folder-open"></i><span style="margin-left:5px;font-size: 10px!important;">Report of Endorsements</span></div></li>  
+                    </ul>
+                </td>
             </tr>
             <tr id="grid-head2">
                 <!--<td class="etiqueta_grid"      onclick="fn_endorsement.ordenamiento('A.iConsecutivo',this.cellIndex);">ID</td>-->
@@ -1529,15 +1694,97 @@
 <div id="dialog_send_email" title="SYSTEM ALERT" style="display:none;">
     <p>Are you sure that want to send the endorsement to the broker(s)?</p>
 </div> 
-<div id="dialog_mark_email_unit" title="SYSTEM ALERT" style="display:none;">
-    <p>Are you sure that want to mark as sent the endorsement?</p>
-</div>
+<div id="dialog_mark_email_unit" title="SYSTEM ALERT" style="display:none;"><p>Are you sure that want to mark as sent the endorsement?</p></div>
 <div id="dialog_delete_endorsement" title="SYSTEM ALERT" style="display:none;">
     <p>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
     <form id="elimina" method="post">
            <input type="hidden" name="iConsecutivo" value="">
     </form>  
 </div> 
+<!-- REPORTE -->
+<div id="dialog_report_endorsements" title="REPORT OF ENDORSEMENTS" style="display:none;" >
+    <p>Please select the parameters to generate a report:</p>
+    <form id="frm_report_policies" method="post">
+        <fieldset>
+        <div class="field_item"> 
+            <label>Filter by: </label>
+            <select id="reporte_tipo" class="flt_by" onblur="fn_endorsement.report.valida(this.value);">
+                <option value="">Select an option...</option>
+                <option value="company">Company</option>
+                <option value="broker">Broker</option>
+            </select>
+        </div>
+        <div class="field_item flt_co"> 
+            <label>Company: </label>
+            <select id="reporte_company" class="flt_company" onblur="fn_endorsement.report.cargar_polizas(this.value);"><option>All</option></select>
+        </div>
+        <div class="field_item flt_br"> 
+            <label>Broker: </label>
+            <select id="reporte_broker" class="flt_broker"><option>All</option></select>
+        </div> 
+        <div class="field_item flt_co"> 
+            <label>Policy Number: </label>
+            <select id="reporte_policy" class="flt_type" disabled="disabled"><option>All</option></select>
+        </div> 
+        <div class="field_item"> 
+            <label>App Date: </label>
+            <div>
+                <label class="check-label" style="position: relative;top: 0px;">From</label><input id="flt_dateFrom" type="text"  placeholder="MM/DD/YY" style="width: 140px;">
+                <label class="check-label" style="position: relative;top: 0px;">To</label><input   id="flt_dateTo"   type="text"  placeholder="MM/DD/YY" style="width: 140px;">
+            </div>
+        </div> 
+        </fieldset>
+    </form>  
+</div>
+<!-- FORM REPORTE -->
+<div id="endorsements_frm_report" class="popup-form" style="width: 98%;">
+    <div class="p-header">
+        <h2>ENDORSEMENTS</h2>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('endorsements_frm_report');"><i class="fa fa-times"></i></div>
+    </div>
+    <div class="p-container">
+    <div>
+        <form method="post" autocomplete="off">
+            <fieldset style="padding-bottom: 0;">
+                <legend>RESULT OF REPORT</legend>
+                <table style="width:100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                    <td colspan="100%">
+                    <table class="popup-datagrid" style="width: 100%;margin-top: 10px;margin-bottom: 10px;" cellpadding="0" cellspacing="0">
+                        <thead>
+                            <tr id="grid-head2">
+                                <td class="etiqueta_grid" style="width: 250px;">Company</td>
+                                <td class="etiqueta_grid" style="width: 90px;">Action</td>
+                                <td class="etiqueta_grid" style="width: 80px;">Year</td>
+                                <td class="etiqueta_grid" style="width: 100px;">Make</td>
+                                <td class="etiqueta_grid" style="width: 150px;">VIN</td>
+                                <td class="etiqueta_grid" style="width: 80px;">Radius</td> 
+                                <td class="etiqueta_grid" style="width: 80px;">Weight</td> 
+                                <td class="etiqueta_grid" style="width: 100px;">Type</td> 
+                                <td class="etiqueta_grid" style="width: 100px;">PD Amount</td> 
+                                <td class="etiqueta_grid" style="padding: 3px 0px 0px!important;width:450px;">
+                                    <span style="display: block;padding: 0px 3px;text-align: center;">POLICIES</span>
+                                    <table style="width: 100%;text-transform: uppercase;">
+                                    <thead><tr>
+                                        <td style="width:35%;">No. / Type</td>
+                                        <td style="width:50%">Broker</td>
+                                        <td style="width:15%">App Date</td>
+                                    </tr></thead></table>
+                                </td>
+                            </tr>
+                        </thead>
+                        <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
+                    </table>
+                    </td>
+                    </tr>
+                </table>
+            </fieldset>
+            <button type="button" class="btn-1 btns_only_edit" onclick="" style="margin-right:10px;background: #87c540;width: 180px; display: none;">DOWNLOAD EXCEL</button>
+            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('endorsements_frm_report');" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
+        </form> 
+    </div>
+    </div>
+</div>
 <!-- FOOTER -->
 <?php include("footer.php"); ?> 
 </body>
