@@ -388,6 +388,9 @@
                                 if($header == "TYPE" || $header == "LICENSETYPE"){
                                    $Type = strtoupper($value); 
                                    if($Type != ""){
+                                       
+                                       if($Type == "FEDERAL"    || $Type == "F" || $Type == "FEDERAL / B1"){$Type = "FEDERAL/B1";}else
+                                       if($Type == "COMMERCIAL" || $Type == "C" || $Type == "COMMERCIAL / CDL-A"){$Type = "COMMERCIAL/CDL-A";}
                                        //UPDATE 
                                        array_push($update,"eTipoLicencia='$Type'"); 
                                        //INSERT 

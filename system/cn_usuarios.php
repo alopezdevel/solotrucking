@@ -2,7 +2,7 @@
   
   if($_SERVER["HTTP_HOST"]=="stdev.websolutionsac.com"){
         #DESARROLLO:
-        $mysql_host = "31.22.4.142";
+        $mysql_host     = "51.89.173.232";
         $mysql_database = "websolu2_stdev";
         $mysql_username = "websolu2_celina";
         $mysql_password = "w3bs0lut10n5"; 
@@ -13,7 +13,7 @@
         $mysql_database = "laredone_solotrucking";
         $mysql_username = "laredone_wcenter";
         $mysql_password = "05100248abc";*/
-        $mysql_host = "31.22.4.142";
+        $mysql_host     = "51.89.173.232";
         $mysql_database = "websolu2_st";
         $mysql_username = "websolu2_st";
         $mysql_password = "sL1906TrcK";
