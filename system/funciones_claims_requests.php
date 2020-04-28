@@ -3,7 +3,10 @@
       header('content-type: text/html; charset: UTF-8');
       // Generic functions lib 
       include("functiones_genericas.php"); 
-      $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accion"],array()) : ""; 
+      #Ejecutar Funciones POST/GET
+      isset($_POST["accion"]) &&  $_POST["accion"]!= "" ? call_user_func_array($_POST["accion"],array()) : "";
+      isset($_GET["accion"])  &&  $_GET["accion"] != "" ? call_user_func_array($_GET["accion"],array())  : "";
+      
       define('USER',$_SESSION['usuario_actual']); // Constante UserId 
       
       function get_data_grid(){
@@ -16,7 +19,7 @@
         $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
             
         //Filtros de informacion //
-        $filtroQuery = " WHERE eStatus != 'EDITABLE' ";
+        $filtroQuery = " WHERE eStatus != 'EDITABLE' AND bEliminado='0' ";
         $array_filtros = explode(",",$_POST["filtroInformacion"]);
         foreach($array_filtros as $key => $valor){
             if($array_filtros[$key] != ""){
@@ -43,8 +46,8 @@
           $pagina_actual == "0" ? $pagina_actual = 1 : false;
           $limite_superior = $registros_por_pagina;
           $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-          $sql = "SELECT A.iConsecutivo, DATE_FORMAT(dFechaIncidente,'%m/%d/%Y') AS dFechaIncidente, ".
-                 "DATE_FORMAT(dHoraIncidente,'%h:%i %p') AS dHoraIncidente, DATE_FORMAT(dFechaAplicacion,'%m/%d/%Y %H:%i') AS dFechaAplicacion, ".
+          $sql = "SELECT A.iConsecutivo,A.iConsecutivoCompania, DATE_FORMAT(dFechaIncidente,'%m/%d/%Y') AS dFechaIncidente, ".
+                 "DATE_FORMAT(dHoraIncidente,'%h:%i %p') AS dHoraIncidente, DATE_FORMAT(dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
                  "A.sEstado, A.sCiudad, eCategoria, sMensaje, eStatus, sNombreCompania ".
                  "FROM cb_claims A LEFT JOIN ct_companias B ON A.iConsecutivoCompania = B.iConsecutivo".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
           $result = $conexion->query($sql);
@@ -59,11 +62,14 @@
                              case 'SENT': 
                                 $statusTitle = "SENT TO SOLO-TRUCKING: The data can be edited by you or by the employees of just-trucking.";
                                 $class       = "class = \"blue\""; 
+                                $estado      = '<i class="fa fa-circle-o icon-estatus " aria-hidden=\"true\"></i><span style="font-size: 10px;">NEW</span>';
                                 $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Data\"><i class=\"fa fa-pencil-square-o\"></i><span></span></div>".
-                                               "<div class=\"btn_send_claim btn-icon send-email btn-left\" title=\"Send Claim by E-mail\"><i class=\"fa fa-envelope\"></i><span></span></div>";  
+                                               "<div class=\"btn_send_claim btn-icon send-email btn-left\" title=\"Send Claim by E-mail\"><i class=\"fa fa-envelope\"></i><span></span></div>".
+                                               "<div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete Claim\"><i class=\"fa fa-trash\"></i> <span></span></div>";   
                              break;
                              case 'INPROCESS': 
                                 $statusTitle  = "INPROCESS: Your claim has been sent to the insurers and is in process."; 
+                                 $estado      = '<i class="fa fa-share-square-o status-process icon-estatus " aria-hidden=\"true\"></i><span style="font-size: 10px;">SENT TO BROKERS</span>';
                                 $class        = "class = \"yellow\""; 
                                 $btn_confirm  = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of claim\"><i class=\"fa fa-pencil-square-o\"></i><span></span></div>";
                                 $btn_confirm .= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_claims.preview_email('".$items['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i><span></span></div>";  
@@ -71,27 +77,28 @@
                              case 'APPROVED':
                                 $statusTitle  = "APPROVED: Your claim has been approved successfully.";    
                                 $class        = "class = \"green\"";
+                                $estado      = '<i class="fa fa-check-circle status-success icon-estatus " aria-hidden=\"true\"></i><span style="font-size: 10px;">APPROVED</span>';
                                 $btn_confirm  = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of claim\"><i class=\"fa fa-pencil-square-o\"></i><span></span></div>"; 
                                 $btn_confirm .= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_claims.preview_email('".$items['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i><span></span></div>";
                                 break;
                              case 'CANCELED': 
                                 $statusTitle  = "CANCELED: Your claim has been approved canceled, please see the reasons on the edit button.";
+                                $estado      = '<i class="fa fa-times status-error icon-estatus " aria-hidden=\"true\"></i><span style="font-size: 10px;">CANCELED</span>';
                                 $class        = "class = \"red\"";
                                 $btn_confirm  = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of claim\"><i class=\"fa fa-pencil-square-o\"></i><span></span></div>"; 
                                 $btn_confirm .= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_claims.preview_email('".$items['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i><span></span></div>";    
                              break;
                          }
 
-                         $htmlTabla .= "<tr $class>
-                                        <td>".$items['iConsecutivo']."</td>".
-                                        "<td>".$items['sNombreCompania']."</td>".
-                                        "<td>".$items['eCategoria']."</td>".
-                                        "<td>".$items['dFechaIncidente']."</td>". 
-                                        "<td>".$items['dHoraIncidente']."</td>".  
+                         $htmlTabla .= "<tr $class>".
+                                        "<td id=\"idClaim_".$items['iConsecutivo']."\">".$items['sNombreCompania']."</td>".
+                                        "<td id=\"idComp_".$items['iConsecutivoCompania']."\">".$items['eCategoria']."</td>".
+                                        "<td class=\"text-center\">".$items['dFechaIncidente']."</td>". 
+                                        "<td >".$items['dHoraIncidente']."</td>".  
                                         "<td>".$items['sCiudad']."</td>".
                                         "<td>".$items['sEstado']."</td>".
-                                        "<td title=\"$statusTitle\">".$items['eStatus']."</td>".
-                                        "<td>".$items['dFechaAplicacion']."</td>".                                                                                                                                                                                                                     
+                                        "<td title=\"$statusTitle\">".$estado."</td>".
+                                        "<td class=\"text-center\">".$items['dFechaAplicacion']."</td>".                                                                                                                                                                                                                     
                                         "<td>$btn_confirm</td></tr>";  
                                            
                      }else{                                                                                                                                                                                                        
@@ -111,10 +118,10 @@
           echo json_encode($response); 
   } 
       function edit_claim(){
-          $error = '0';
-          $msj = "";
-          $fields = "";
-          $clave = trim($_POST['clave']);
+          $error   = '0';
+          $msj     = "";
+          $fields  = "";
+          $clave   = trim($_POST['clave']);
           $domroot = $_POST['domroot'];
           include("cn_usuarios.php");
           $conexion->autocommit(FALSE);
@@ -122,10 +129,10 @@
           $sql = "SELECT A.iConsecutivo,A.iConsecutivoCompania,eDanoMercancia,eDanoTerceros,eDanoFisico,sMensaje,sDescripcionSuceso, ".
                  "DATE_FORMAT(dHoraIncidente,'%H:%i') AS dHoraIncidente, DATE_FORMAT(dFechaIncidente,'%m/%d/%Y') AS dFechaIncidente,sCiudad,sEstado,".
                  "IF(B.iConsecutivo != '',CONCAT(B.iConsecutivo, '-', sNombre),A.sNombreOperador) AS sDriver,".
-                 "IF(C.iConsecutivo != '', CONCAT(C.iConsecutivo, '-', sVIN), A.sVINUnidad) AS sUnitTrailer ".
-                 "FROM cb_claims A ".
-                 "LEFT JOIN ct_operadores B ON A.iConsecutivoOperador = B.iConsecutivo ".
-                 "LEFT JOIN ct_unidades C ON A.iConsecutivoUnidad = C.iConsecutivo ".
+                 "IF(C.iConsecutivo != '', CONCAT(C.iConsecutivo, '-', sVIN), A.sVINUnidad) AS sUnitTrailer, iConsecutivoOperador, iConsecutivoUnidad, C.sVIN AS sVINUnidad, B.sNombre AS sNombreOperador, B.iNumLicencia ".
+                 "FROM      cb_claims     AS A ".
+                 "LEFT JOIN ct_operadores AS B ON A.iConsecutivoOperador = B.iConsecutivo ".
+                 "LEFT JOIN ct_unidades   AS C ON A.iConsecutivoUnidad   = C.iConsecutivo ".
                  "WHERE A.iConsecutivo = '$clave'";
           $result = $conexion->query($sql); 
           $rows = $result->num_rows; 
@@ -138,52 +145,25 @@
                    $descripcion = utf8_decode(utf8_encode($datos[$i])); 
                 }else{
                    $fields .= "\$('#$domroot :input[id=".$i."]').val('".htmlentities($datos[$i])."');\n"; 
-                   
-                   if($i == "eDanoTerceros" && $datos[$i] == "YES"){
-                       $fields.= "\$('#edit_form .company_policies input[type=checkbox].AL').prop('checked',true);";
-                   }else if($i == "eDanoMercancia" && $datos[$i] == "YES"){
-                       $fields.= "\$('#edit_form .company_policies input[type=checkbox].MTC').prop('checked',true);";
-                   }else if($i == "eDanoFisico" && $datos[$i] == "YES"){
-                       $fields.= "\$('#edit_form .company_policies input[type=checkbox].PD').prop('checked',true);"; 
-                   }
                 }
             }
             
+            $check_items    = "";
+            $polizas_select = "";
             
             //Cargar polizas y marcar en las que aplica la poliza:
-            $query  = "SELECT A.iConsecutivo, sNumeroPoliza, C.sName AS BrokerName,D.iConsecutivo AS iTipoPoliza, sDescripcion, E.sName AS InsuranceName ".
-                      "FROM ct_polizas          AS A ".
-                      "LEFT JOIN ct_brokers     AS C ON A.iConsecutivoBrokers = C.iConsecutivo ". 
-                      "LEFT JOIN ct_tipo_poliza AS D ON A.iTipoPoliza = D.iConsecutivo ".
-                      "LEFT JOIN ct_aseguranzas AS E ON A.iConsecutivoAseguranza = E.iConsecutivo ".
-                      "WHERE A.iConsecutivoCompania = '".$data['iConsecutivoCompania']."' AND A.iDeleted = '0' AND dFechaCaducidad >= CURDATE()";
+            $query  = "SELECT iConsecutivoPoliza FROM cb_claim_poliza WHERE iConsecutivoClaim = '".$clave."'";
             $result = $conexion->query($query);
             $rows   = $result->num_rows; 
             
             if($rows > 0){ 
                 while ($items = $result->fetch_assoc()){
-                   switch($items['iTipoPoliza']){
-                       case '1' : 
-                            $tipoPoliza = "PD";
-                            $fields    .= "\$('#$domroot #eDanoFisico').removeProp('disabled').removeClass('readonly');"; 
-                       break;
-                       case '2' : 
-                            $tipoPoliza = "MTC";
-                            $fields    .= "\$('#$domroot #eDanoMercancia').removeProp('disabled').removeClass('readonly');"; 
-                       break;
-                       case '3' : 
-                            $tipoPoliza = "AL"; 
-                            $fields    .= "\$('#$domroot #eDanoTerceros').removeProp('disabled').removeClass('readonly');";
-                       break;
-                       case '5' : 
-                            $tipoPoliza = "MTC"; 
-                            $fields    .= "\$('#$domroot #eDanoMercancia').removeProp('disabled').removeClass('readonly');";
-                       break;
-                   } 
-                   #checkbox
-                   $check_items .= "<input class=\"num_policies $tipoPoliza\" type=\"checkbox\" value=\"".$items['iConsecutivo']."\">".
-                                   "<label class=\"check-label\"> ".$items['sNumeroPoliza']." / ".$items['sDescripcion']."</label><br>"; 
+                    $check_items .= "\$('#$domroot #info_policies :input[value=".$items['iConsecutivoPoliza']."]').prop('checked',true);"; 
+                    
+                    $polizas_select == "" ? $polizas_select = $items['iConsecutivoPoliza'] : $polizas_select += "|".$items['iConsecutivoPoliza'];  
                 }
+                
+                $fields .= "\$('#$domroot :input[id=iConsecutivoPolizas]').val('".$polizas_select."');\n";
             }
           }
           $conexion->rollback();
@@ -192,8 +172,10 @@
           echo json_encode($response);
       }
       function save_claim(){
-          $error = '0';  
-          $msj = "";  
+          
+          $error             = '0';  
+          $mensaje           = "";
+          $iConsecutivoClaim = "";  
           
           //Conexion:
           include("cn_usuarios.php");  
@@ -205,15 +187,162 @@
           $campos  = array();
           
           //Convertir campos de ciudades, drivers, etc a mayusculas.
-          $_POST['sDriver']         = strtoupper(trim($_POST['sDriver']));
-          $_POST['sUnitTrailer']    = strtoupper(trim($_POST['sUnitTrailer']));
+          $_POST['sNombreOperador'] = strtoupper(trim($_POST['sNombreOperador']));
+          $_POST['sVINUnidad']      = strtoupper(trim($_POST['sVINUnidad']));
           $_POST['sCiudad']         = strtoupper(trim($_POST['sCiudad']));
           $_POS['sMensaje']         = utf8_encode(trim($_POST['sMensaje']));
           $_POST['dFechaIncidente'] = format_date(trim($_POST['dFechaIncidente']));
+          $_POST['dFechaAplicacion']= format_date(trim($_POST['dFechaAplicacion']));
+          
+          #REVISAR DRIVER: Si no existe hay que agregarlo primero.
+          if($_POST['iConsecutivoOperador'] == ""){
+              if($_POST['iNumLicencia'] == ''){$error = '1'; $mensaje = "Please check de license number from the driver.";}
+              else{
+                  //Verificamos si ya existe algun driver con el mismo numero de licencia:
+                  $query = "SELECT iConsecutivo,sNombre FROM ct_operadores WHERE iNumLicencia='".$_POST['iNumLicencia']."' AND iConsecutivoCompania='".$_POST['iConsecutivoCompania']."'";
+                  $result= $conexion->query($query);
+                  $rows  = $result->num_rows;
+                  if($rows > 0 ){
+                      $driver = $result->fetch_assoc();
+                      $_POST['iConsecutivoOperador'] = $driver['iConsecutivo'];
+                      $_POST['sNombreOperador']      = $driver['sNombre'];
+                  }
+                  else{
+                      //Si no existe lo registramos:
+                      $query   = "INSERT INTO ct_operadores (sNombre, iConsecutivoCompania, iNumLicencia) VALUES('".trim($_POST['sNombreOperador'])."','".$_POST['iConsecutivoCompania']."','".trim($_POST['iNumLicencia'])."')";
+                      $success = $conexion->query($query);
+                      if(!($success)){$error = '1'; $mensaje = "Error to save the driver data, please try again.";}
+                      else{
+                         $_POST['iConsecutivoOperador'] = $conexion->insert_id;
+                      }
+                  }
+              }
+          }
+          
+          #REVISAR VEHICLE: Si no existe hay que agregarlo primero.
+          if($_POST['iConsecutivoUnidad'] == ""){
+              
+              //Verificamos si ya existe algun driver con el mismo numero de licencia:
+              $query = "SELECT iConsecutivo,sVIN FROM ct_unidades WHERE sVIN='".$_POST['sVINUnidad']."' AND iConsecutivoCompania='".$_POST['iConsecutivoCompania']."'";
+              $result= $conexion->query($query);
+              $rows  = $result->num_rows;
+              if($rows > 0 ){
+                  $unidad = $result->fetch_assoc();
+                  $_POST['iConsecutivoUnidad'] = $unidad['iConsecutivo'];
+                  $_POST['sVINUnidad']         = $unidad['sVIN'];
+              }
+              else{
+                  //Si no existe lo registramos:
+                  $query   = "INSERT INTO ct_unidades (sVIN, iConsecutivoCompania) VALUES('".trim($_POST['sVINUnidad'])."','".trim($_POST['iConsecutivoCompania'])."')";
+                  $success = $conexion->query($query);
+                  if(!($success)){$error = '1'; $mensaje = "Error to save the vehicle data, please try again.";}
+                  else{
+                     $_POST['iConsecutivoUnidad'] = $conexion->insert_id;
+                  }
+              }
+              
+          }
+          
+          if($error == '0'){
+            #UPDATE:  
+            if($_POST['edit_mode'] == 'true'){
+                foreach($_POST as $campo => $valor){
+                    if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo" and $campo != "iNumLicencia" && $campo != "iConsecutivoPolizas"){ //Estos campos no se insertan a la tabla
+                        if($campo == 'sDescripcionSuceso'){
+                            $valor = trim(fix_string($valor));
+                        }
+                        array_push($valores,"$campo='".trim($valor)."'"); 
+                    }
+                }
+                
+                #ACTUALIZA DATOS: 
+                array_push($valores ,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
+                array_push($valores ,"sIP='".$_SERVER['REMOTE_ADDR']."'");
+                array_push($valores ,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'");
+                
+            
+                #Categoria del Claim:
+                if($_POST['iConsecutivoOperador'] != ""  && $_POST['iConsecutivoUnidad'] != ""){array_push($valores ,"eCategoria='BOTH'");}
+                else if($_POST['iConsecutivoOperador'] != "")                                  {array_push($valores ,"eCategoria='DRIVER'");}
+                else if($_POST['iConsecutivoUnidad'])                                          {array_push($valores ,"eCategoria='UNIT/TRAILER'");} 
+                
+                $sql     = "UPDATE cb_claims SET ".implode(",",$valores)." WHERE iConsecutivo = '".trim($_POST['iConsecutivo'])."'";
+                $mensaje = "The data was updated successfully.";
+                
+            }
+            #INSERT
+            else{
+                #INSERT DATA:
+                foreach($_POST as $campo => $valor){
+                    if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo" and $campo != "iNumLicencia" && $campo != "iConsecutivoPolizas"){ //Estos campos no se insertan a la tabla
+                        
+                        if($campo == 'sDescripcionSuceso'){
+                            $valor = trim(fix_string($valor));
+                        }
+                        array_push($campos,$campo); 
+                        array_push($valores,trim($valor));
+                    }   
+                }
+                #INSERTAR DATOS:
+                array_push($campos,"dFechaIngreso");
+                array_push($valores,date("Y-m-d H:i:s"));
+                array_push($campos,"sIP");
+                array_push($valores,$_SERVER['REMOTE_ADDR']);
+                array_push($campos,"sUsuarioIngreso");
+                array_push($valores,$_SESSION['usuario_actual']);
+                array_push($campos,"eStatus");
+                array_push($valores,'SENT');
+                
+                #Categoria Claim:
+                if($_POST['iConsecutivoOperador'] != ""  && $_POST['iConsecutivoUnidad'] != ""){array_push($campos,"eCategoria"); array_push($valores,'BOTH');}else 
+                if($_POST['iConsecutivoOperador'] != ""){array_push($campos,"eCategoria"); array_push($valores,'DRIVER');}else 
+                if($_POST['iConsecutivoUnidad'])        {array_push($campos,"eCategoria"); array_push($valores,'UNIT/TRAILER');} 
+                
+                $sql     = "INSERT INTO cb_claims (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
+                $mensaje = "The data was saved successfully.";  
+              }   
+              
+            #POLIZAS
+            if($sql != ""){
+              $success = $conexion->query($sql); 
+              if($success){ 
+              
+                  $_POST['edit_mode'] != 'true' ? $iConsecutivoClaim = $conexion->insert_id :  $iConsecutivoClaim = trim($_POST['iConsecutivo']);
+                  
+                  //Actualizar tabla de polizas:
+                  if($_POST['iConsecutivoPolizas'] != ""){
+                      
+                      if($_POST['edit_mode'] == 'true'){ 
+                          $query   = "DELETE FROM cb_claim_poliza WHERE iConsecutivoClaim = '$iConsecutivoClaim'";
+                          $success = $conexion->query($query);
+                          if(!($success)){$transaccion_exitosa = false;}
+                      }  
+                      if($transaccion_exitosa){ 
+                          $polizas = explode("|",$_POST['iConsecutivoPolizas']);
+                          $count   = count($polizas);
+                          
+                          for($x=0;$x < $count;$x++){
+                              $query   = "INSERT INTO cb_claim_poliza (iConsecutivoClaim,iConsecutivoPoliza) ".
+                                         "VALUES('$iConsecutivoClaim','".$polizas[$x]."')";     
+                              $success = $conexion->query($query);
+                              if(!($success)){$transaccion_exitosa = false;}
+                          }
+                      }
+                  }    
+                  
+
+              }else{$error = "1";$mensaje = "The claim data was not saved properly, please try again.";}
+            }
+            else{$error = '1';$mensaje = "Error: Please try again later.";  }    
+          }
           
           
-          #PASO 1 REVISAR SI EL DRIVER EXISTE o SE ALMACENA SOLO EL NOMBRE    
-          if($_POST['sDriver'] != ''){  
+          
+          ////
+          
+          
+          #PASO 1 REVISAR SI EL DRIVER EXISTE o SE ALMACENA    
+          /*if($_POST['sDriver'] != ''){  
               
                 //Si la cadena tiene un - quiere decir que fue de la lista del autocomplete.
                 if(strpos($_POST['sDriver'],"-") > 0){
@@ -296,7 +425,8 @@
                 $sql     = "UPDATE cb_claims SET ".implode(",",$valores)." WHERE iConsecutivo = '".trim($_POST['iConsecutivo'])."'";
                 $mensaje = "The data was updated successfully.";
                 
-              }else{
+              }
+              else{
                 #INSERT DATA:
                 foreach($_POST as $campo => $valor){
                     if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo" and $campo != "sDriver" and $campo != "sUnitTrailer" && $campo != "iConsecutivoPolizas"){ //Estos campos no se insertan a la tabla
@@ -363,14 +493,44 @@
                   }else{$error = "1";$mensaje = "The data was not saved properly, please try again.";}
               }else{$error = '1';$mensaje = "Error: Please try again later.";  }   
           }
-          else{$error = '1';$mensaje = "Error: Please select a driver or unit/trailer of your lists.";}
+          else{$error = '1';$mensaje = "Error: Please select a driver or unit/trailer of your lists.";} */
           
           if($transaccion_exitosa && $error == "0"){$conexion->commit();$conexion->close();}
           else{$conexion->rollback();$conexion->close();}
       
-          $response = array("error"=>"$error","msj"=>"$mensaje");
+          $response = array("error"=>"$error","msj"=>"$mensaje","idClaim"=>"$iConsecutivoClaim");
           echo json_encode($response);
           
+      }
+      function delete_claim(){
+          //Conexion:
+          include("cn_usuarios.php"); 
+          $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+          $success= true;
+          $error  = '0';  
+          $msj    = ""; 
+          $clave  = trim($_POST['clave']); 
+          
+  
+          //BORRAMOS CLAIM.
+          //Lo marcamos como eliminado mas no se elimina fisicamente de la BDD.
+          $query = "UPDATE cb_claims SET bEliminado='1' WHERE iConsecutivo = '$clave'"; 
+          $conexion->query($query);
+          $conexion->affected_rows ? $transaccion_exitosa = true : $transaccion_exitosa = false;
+         
+          if($transaccion_exitosa){
+            $conexion->commit();
+            $conexion->close();
+            $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data has been deleted succesfully!</p>';
+          }else{
+            $conexion->rollback();
+            $conexion->close();
+            $msj = "A general system error ocurred : internal error";
+            $error = "1";
+          }
+            
+          $response = array("msj"=>"$msj","error"=>"$error");   
+          echo json_encode($response);
       }
       
       /*---- ARCHIVOS ----*/
@@ -385,7 +545,7 @@
           $sContenido = $conexion->real_escape_string($sContenido);
           $iConsecutivoClaim = trim($_POST['iConsecutivoClaim']);
           //Revisamos el tamaño del archivo:
-          if($_FILES['userfile']["size"] <= 921600 && $iConsecutivoClaim != ''){  //900 KB
+          if($_FILES['userfile']["size"] <= 4294967296 && $iConsecutivoClaim != ''){  //900 KB
           
             $name_file = $_FILES['userfile']["name"];
             $type_file = $_FILES['userfile']["type"];
@@ -404,7 +564,7 @@
                 $error = "1";
             }       
           }else{             
-             $mensaje = "Error: The file you are trying to upload exceeds the maximum size (900KB) allowed by the system, please check it and try again.";
+             $mensaje = "Error: The file you are trying to upload exceeds the maximum size (5MB) allowed by the system, please check it and try again.";
              $error = "1"; 
           }
           
@@ -545,9 +705,9 @@
                                  "<td colspan=\"100%\" class=\"etiqueta_grid\" style=\"font-size:11px!important;padding: 5px;\">".
                                  "<table style=\"width:100%\">".
                                  "<tr>".
-                                 "<td style=\"width: 33%;border:0px!important;\">"."<span style=\"$style\">Policy No: </span>$sNumPoliza"."</td>".
-                                 "<td style=\"width: 33%;border:0px!important;\">"."<span style=\"$style\">Policy Type:</span> $sDescPoliza"."</td>".  
-                                 "<td style=\"width: 33%;border:0px!important;\">"."<span style=\"$style\">Insurance:</span> $insurance". "</td>".  
+                                 "<td style=\"width: 25%;border:0px!important;\">"."<span style=\"$style\">Policy No: </span>$sNumPoliza"."</td>".
+                                 "<td style=\"width: 50%;border:0px!important;\">"."<span style=\"$style\">Policy Type:</span> $sDescPoliza"."</td>".  
+                                 "<td style=\"width: 25%;border:0px!important;\">"."<span style=\"$style\">Insurance:</span> $insurance". "</td>".  
                                  "</tr>".
                                  "</table>".
                                  "</td>".
@@ -559,14 +719,10 @@
                                  "<td $encabezado2>CLAIM DATA</td>".
                                  "<td $encabezado2>ADJUSTER DATA</td>". 
                                  "</tr>";
-                                 
-                   
-                   
-                   
-                    
+   
                    $label  = "style=\"display: block;float: left;width: 18%;margin: 2px 0px;padding: 8px 0px;\"";
                    $input  = "style=\"float: right;width: 80%;clear: none;margin: 2px!important;height: 25px!important;resize: none;\"";
-                   $select = "style=\"float: right;width: 490px!important;clear: none;margin: 2px!important;height: 30px!important;\"";
+                   $select = "style=\"float: right;width: 553px!important;clear: none;margin: 2px!important;height: 30px!important;\"";
                    $phone  = "style=\"float: left;width:350px;clear: none;margin: 2px!important;height: 25px;resize: none;\"";
                    $ext    = "style=\"float: right;width:120px;clear: none;margin: 2px!important;height: 25px;resize: none;\"";
                    $div    = "style=\"clear:both;height:30px;\""; 
@@ -689,11 +845,21 @@
                   }
                   
               }  
-          }
+          }  
           
           if($transaccion_exitosa){
+              
               $actualiza = "";
-              if($ComentariosClaim != ""){$actualiza = "sMensaje='".utf8_encode($ComentariosClaim)."'";}
+              
+              #Verificamos si hay que actualizar el estatus general:
+              $query  = "SELECT COUNT(iConsecutivoClaim) AS total FROM cb_claim_poliza ".
+                        "WHERE iConsecutivoClaim ='".$iConsecutivoClaim."' AND eStatus='APPROVED'";
+              $result = $conexion->query($query);
+              $claimSt= $result->fetch_assoc();
+              
+              if($claimSt['total'] == $count){$actualiza .= "eStatus='APPROVED', ";}
+          
+              if($ComentariosClaim != ""){$actualiza .= "sMensaje='".utf8_encode($ComentariosClaim)."'";}
               
               if($actualiza != ""){
                   $query   = "UPDATE cb_claims SET $actualiza WHERE iConsecutivo = '$iConsecutivoClaim'"; 
@@ -707,7 +873,8 @@
                 $conexion->commit();
                 $conexion->close();
                 $mensaje = "The data has been saved successfully, Thank you!";
-          }else{
+          }
+          else{
                 $conexion->rollback();
                 $conexion->close(); 
                 $error = "1";
@@ -718,7 +885,66 @@
           
       }
       
-      /*--- E-MAILS ---*/
+      # E-MAILS
+      function get_claim_policies_email(){
+          
+          include("cn_usuarios.php");
+          $conexion->autocommit(FALSE);
+          
+          $error          = '0';
+          $pd_information = "false";
+          $company        = trim($_POST['iConsecutivoCompania']);
+          $clave          = trim($_POST['clave']); 
+          $domroot        = trim($_POST['domroot']); 
+          $fields         = "\$('#$domroot :input[name=iConsecutivoClaim]').val('".$clave."');\n"; 
+           
+          $sql = "SELECT A.iConsecutivo, sNumeroPoliza, C.sName AS sInsuranceName, sDescripcion, D.iConsecutivo AS TipoPoliza, D.sAlias, C.sEmailClaims AS sEmail, B.sEmail AS sEmailClaim,sMensajeEmail, sEmailAjustador ".
+                 "FROM      cb_claim_poliza AS B
+                  LEFT JOIN ct_polizas      AS A ON B.iConsecutivoPoliza     = A.iConsecutivo
+                  LEFT JOIN ct_aseguranzas  AS C ON A.iConsecutivoAseguranza = C.iConsecutivo 
+                  LEFT JOIN ct_tipo_poliza  AS D ON A.iTipoPoliza            = D.iConsecutivo ".
+                 "WHERE iConsecutivoCompania = '".$company."' AND B.iConsecutivoClaim ='".$clave."'".
+                 "AND A.iDeleted = '0' AND dFechaCaducidad >= CURDATE() AND (D.iConsecutivo != '4' AND D.iConsecutivo != '6' AND D.iConsecutivo != '7' AND D.iConsecutivo != '8' AND D.iConsecutivo != '9') ".
+                    "ORDER BY sNumeroPoliza ASC";
+          $result = $conexion->query($sql);
+          $rows   = $result->num_rows;
+          
+          if($rows > 0) {  
+                 
+                while ($items = $result->fetch_assoc()) { 
+                   
+                   // polizas a las que aplica PD 
+                   if($items['TipoPoliza'] == '1' || $items['TipoPoliza'] == '11' || $items['TipoPoliza'] == '12' || $items['TipoPoliza'] == '14' || $items['TipoPoliza'] == '17'){
+                        $pd_information = 'true'; 
+                   }
+                   $tipoPoliza = ($items['sAlias']); 
+                   $htmlTabla .= "<tr>".
+                                 "<td style=\"border: 1px solid #dedede;\">".$items['sNumeroPoliza']."</td>".
+                                 "<td style=\"border: 1px solid #dedede;\">".$items['sDescripcion']."</td>". 
+                                 "<td style=\"border: 1px solid #dedede;\">".$items['sInsuranceName']."</td>".
+                                 "<td style=\"border: 1px solid #dedede;\"><input class=\"idpolicy_".$items['iConsecutivo']."\" id=\"epolicy_".$tipoPoliza."_".$items['sNumeroPoliza']."\" type=\"text\" value=\"".$items['sEmail']."\" text=\"".$items['sEmail']."\" style=\"width: 94%;\" title=\"If you need to write more than one email, please separate them by comma symbol (,).\"/></td>".
+                                 "</tr>";
+                                 
+                                 
+                   if($items['sEmailClaim'] != ""){
+                     $fields .= "\$('#$domroot :input[id=epolicy_".$tipoPoliza."_".$items['sNumeroPoliza']."]').val('".$items['sEmailClaim']."');\n";    
+                   }
+          
+                   if($items['sMensajeEmail'] != ""){
+                     $fields .= "\$('#$domroot :input[name=sMensajeEmail]').val('".$items['sMensajeEmail']."');\n";    
+                   }
+                        
+                } 
+                                                                                                                                                                                      
+          }
+          else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}
+          
+          $conexion->rollback();
+          $conexion->close();
+          $response = array("mensaje"=>"$mensaje","error"=>"$error", "policies_information"=>"$htmlTabla","pd_data"=>"$pd_information","fields"=>"$fields");   
+          echo json_encode($response);
+          
+      }       
       function preview_email(){
           
           $error              = '0';
@@ -730,35 +956,31 @@
           if($openMode != "openemail"){
               $insurances_policy  = trim($_POST['insurances_policy']);
               $sMensaje           = trim(utf8_decode($_POST['sMensaje']));
-          }else{
+          }
+          else{
               
               $insurances_policy = "";
               //Conexion:
               include("cn_usuarios.php");
-              $query = "SELECT iConsecutivoPoliza, iConsecutivoEmail, eStatus, sEmail, sMensajeEmail, C.iTipoPoliza, C.sNumeroPoliza ".
-                       "FROM cb_claim_poliza AS A ".
-                       "LEFT JOIN cb_claims_email AS B ON A.iConsecutivoEmail = B.iConsecutivo ".
+              $query = "SELECT iConsecutivoPoliza, eStatus, sEmail, sMensajeEmail, C.iTipoPoliza, C.sNumeroPoliza,B.sAlias ".
+                       "FROM      cb_claim_poliza AS A ".
                        "LEFT JOIN ct_polizas      AS C ON A.iConsecutivoPoliza = C.iConsecutivo ".
-                       "WHERE A.iConsecutivoClaim = '$iConsecutivoClaim'";
+                       "LEFT JOIN ct_tipo_poliza  AS B ON C.iTipoPoliza        = B.iConsecutivo ".
+                       "WHERE A.iConsecutivoClaim = '$iConsecutivoClaim' AND C.iDeleted = '0' AND dFechaCaducidad >= CURDATE() ";
               $result = $conexion->query($query); 
  
               while ($data = $result->fetch_assoc()){ 
                   $sMensaje   = $data['sMensajeEmail'];
                   $sNumPoliza = $data['sNumeroPoliza'];
                   $sEmails    = $data['sEmail'];
-                  
-                  switch($data['iTipoPoliza']){
-                       case '1' : $tipoPoliza = "PD"; break;
-                       case '2' : $tipoPoliza = "MTC"; break;
-                       case '3' : $tipoPoliza = "AL"; break;
-                       case '5' : $tipoPoliza = "MTC"; break;
-                  }
+                  $tipoPoliza = $data['sAlias'];
                   
                   $insurances_policy .= $tipoPoliza."|".$sNumPoliza."|".$sEmails.";"; 
               }
                   
           } 
-          $Emails             = get_email_data($iConsecutivoClaim,$sMensaje,$insurances_policy,$openMode);
+          
+          $Emails             = get_email_data($iConsecutivoClaim,$sMensaje,$insurances_policy,$openMode); 
           $count              = count($Emails);
           $htmlTabla          = "";
           
@@ -770,6 +992,28 @@
                   $htmlTabla  .= "<tr><td><b>To: </b>".$Emails[$x]['emails']."</td></tr>"; 
                   $htmlTabla .= "<tr><td><hr></td></tr>"; 
                   $htmlTabla .= "<tr><td>".$Emails[$x]['html']."</td></tr>"; 
+                  
+                  //Atachments:
+                  $files = $Emails[$x]['files'];
+                  if($files != ""){
+                      
+                      $htmlTabla .= "<tr><td>".
+                                    "<table style=\"font-size:12px;border-top:1px solid #dedede;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">";
+                      $htmlTabla .= "<tr><td colspan=\"100%;\"><h3>Attachments</h3><td></tr>";
+                      
+                      $countFiles = count($files);
+                      for($f=0; $f < $countFiles; $f++){
+                            $htmlTabla .= "<tr>".
+                                          "<td>".$files[$f]['name']."</td>".
+                                          "<td>".$files[$f]['type']."</td>".
+                                          "<td>".$files[$f]['size']."</td>". 
+                                          "<td>".
+                                          "<div class=\"btn-icon edit btn-left\" title=\"Open file in a new window\" onclick=\"window.open('open_pdf.php?idfile=".$files[$f]['id']."&type=claims');\"><i class=\"fa fa-external-link\"></i><span></span></div>". 
+                                          "</td></tr>";    
+                      }
+                      
+                      $htmlTabla .= "</table></td></tr>";
+                  }
                   $htmlTabla  .= "</table>";
               } 
           }
@@ -787,8 +1031,7 @@
           $policies = trim($_POST['policies']);   
           $sMensaje = trim(utf8_decode($_POST['sMensaje']));
           $Emails   = get_email_data($clave,$sMensaje,$emails); 
-          
-
+  
           if($Emails['error'] == "0"){
              
              include("cn_usuarios.php");  
@@ -822,9 +1065,18 @@
                 $mail->SMTPSecure = "TLS";                 // sets the prefix to the servier
                 $mail->Host       = "smtp.gmail.com";      // sets GMAIL as the SMTP server
                 $mail->Port       = 587;                   // set the SMTP port for the GMAIL server
-                $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
-                $mail->Password   = "SL09100242"; 
-                $mail->SetFrom('systemsupport@solo-trucking.com', 'Solo-Trucking Insurance');
+                
+                #VERIFICAR SERVIDOR DONDE SE ENVIAN CORREOS:
+                if($_SERVER["HTTP_HOST"]=="stdev.websolutionsac.com" || $_SERVER["HTTP_HOST"]=="www.stdev.websolutionsac.com"){
+                  $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
+                  $mail->Password   = "SL09100242";  
+                  $mail->SetFrom('systemsupport@solo-trucking.com', 'Claims Solo-Trucking Insurance');
+                }else if($_SERVER["HTTP_HOST"] == "solotrucking.laredo2.net" || $_SERVER["HTTP_HOST"] == "st.websolutionsac.com" || $_SERVER["HTTP_HOST"] == "www.solo-trucking.com"){
+                  $mail->Username   = "claims@solo-trucking.com";  // GMAIL username
+                  $mail->Password   = "1104W3bSTruck";
+                  $mail->SetFrom('claims@solo-trucking.com', 'Claims Solo-Trucking Insurance');   
+                }
+                
                 $mail->AddReplyTo($Replyto,'Claims Solo-Trucking Insurance');
                 $mail->Subject    = $subject;
                 $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
@@ -837,26 +1089,29 @@
                 for($i=0; $i < $cEmail; $i++){$mail->AddAddress(trim($sEmail[$i]));}
                 
                 #Revisar si se necesitan enviar archivos adjuntos:
+                //Atachments:
+                $files        = $Emails[$x]['files'];
+                $delete_files = "";
                 
-                $select_files = "SELECT * FROM cb_claims_files WHERE iConsecutivoClaim ='$clave'";
-                $result       = $conexion->query($select_files);
-                $rows         = $result->num_rows;
-                
-                if ($rows > 0) {    
-                    while ($files = $result->fetch_assoc()) { 
-                       if($files['sNombreArchivo'] != ""){ 
-                            $file_tmp = fopen('tmp/'.$files["sNombreArchivo"],"w") or die("Error when creating the file. Please check."); 
-                            fwrite($file_tmp,$files["hContenidoDocumentoDigitalizado"]); 
-                            fclose($file_tmp);     
-                            $archivo = "tmp/".$files["sNombreArchivo"];  
-                            $mail->AddAttachment($archivo);
-                            $delete_files .= "unlink(\"tmp/\".".$files["sNombreArchivo"].");"; 
-                       }    
-                    }                                                                                                                                                                      
-                }
+                if($files != ""){
+                   $countFiles = count($files);
+                   for($f=0; $f < $countFiles; $f++){
+                       
+                       //Revisamos si es PDF:
+                       include("./lib/fpdf153/fpdf.php");//libreria fpdf
+                       
+                       $file_tmp = fopen('tmp/'.$files[$f]["name"],"w") or die("Error when creating the file. Please check."); 
+                       fwrite($file_tmp,$files[$f]["content"]); 
+                       fclose($file_tmp);     
+                       $archivo = "tmp/".$files[$f]["name"];  
+                       $mail->AddAttachment($archivo);
+                       $delete_files .= "unlink('".$archivo."');";
+                   
+                   } 
+                } 
                 
                 $mail_error = false;
-                if(!$mail->Send()){$mail_error = true; $mail->ClearAddresses();}
+                if(!$mail->Send()){$mail_error = true; $mail->ClearAddresses();$error = '1';}
                 if(!$mail_error){$msj = "Mail confirmation to the user $usuario was successfully sent.";}
                 else{$msj = "Error: The e-mail cannot be sent.";$error = "1";}
                 
@@ -864,6 +1119,17 @@
                 $mail->ClearAttachments();
                 eval($delete_files);
              
+                #VERIFICAR SI SE ENVIARON LOS CORREOS CORRECTAMENTE PARA ACTUALIZAR EL STATUS DEL CLAIM:
+                if($error == '0'){
+              
+                    $idPoliza = $Emails[$x]['policy_id'];
+                        
+                    #ACTUALIZAR TABLA DE:
+                    $query   = "UPDATE cb_claim_poliza SET eStatus='INPROCESS' WHERE iConsecutivoPoliza ='$idPoliza' AND iConsecutivoClaim='$clave'";
+                    $success = $conexion->query($query); 
+                    if(!($success)){$transaccion_exitosa = false;$mensaje = "Error updating claim data, please try again.";} 
+
+                }
                  
              }//end for...
           }
@@ -871,49 +1137,13 @@
              $error = "1";
              $mensaje = "Please check that the follow email address are valid: ".$Emails['error']; 
           }
-
-          #VERIFICAR SI SE ENVIARON LOS CORREOS CORRECTAMENTE PARA ACTUALIZAR EL STATUS DEL CLAIM:
+          
           if($error == '0'){
-      
-            $sql     = "UPDATE cb_claims SET eStatus = 'INPROCESS',dFechaAplicacion='".date("Y-m-d H:i:s")."', dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
-                       "WHERE iConsecutivo = '$clave'";
-            $success = $conexion->query($sql); 
-      
-            if($success){
-                
-                  #DELETE OTROS CORREOS GUARDADOS PARA ESE CLAIM:
-                  $query   = "DELETE FROM cb_claims_email WHERE iConsecutivoClaim = '$clave'";
-                  $success = $conexion->query($query);
-                  
-                  if(!($success)){$transaccion_exitosa = false;$mensaje = "The data was not saved properly, please try again."; }
-                  else{
-                      $emailstosave = explode(";",$policies);
-                      $count        = (count($emailstosave)-1);
-                      
-                      for($x=0;$x<$count;$x++){
-                          $datos    = explode("|",$emailstosave[$x]);
-                          $idPoliza = $datos[0];
-                          $sEmails  = strtolower($datos[1]);
-                          
-                          #INSERTAR A TABLA DE CORREOS:
-                          $query   = "INSERT INTO cb_claims_email (iConsecutivoClaim,sMensajeEmail,sEmail,sIPIngreso,sUsuarioIngreso) ".
-                                     "VALUES('$clave','$sMensaje','$sEmails','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
-                          $success = $conexion->query($query); 
-                          
-                          if(!($success)){$transaccion_exitosa = false;$mensaje = "Error updating mail data, please try again."; }
-                          else{
-                              $idEmail = $conexion->insert_id;
-                              #INSERTAR A TABLA DE POLIZAS - CLAIMS:
-                              $query   = "UPDATE cb_claim_poliza SET iConsecutivoEmail = '$idEmail', eStatus='INPROCESS' ".
-                                         "WHERE iConsecutivoPoliza ='$idPoliza' AND iConsecutivoClaim='$clave'";
-                              $success = $conexion->query($query); 
-                              if(!($success)){$transaccion_exitosa = false;$mensaje = "Error updating claim data, please try again.";}             
-                          }
-                      }
-                  } 
-            }
-            else{$error = '1';$msj = "The data of claim was not updated properly, please try again.";} 
-
+              $sql     = "UPDATE cb_claims SET eStatus = 'INPROCESS',dFechaAplicacion='".date("Y-m-d H:i:s")."', dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
+                         "WHERE iConsecutivo = '$clave'";
+              $success = $conexion->query($sql); 
+              
+              if(!($success)){$error = '1';$msj = "The data of claim was not updated properly, please try again.";}
           }
           
           if($error == '0'){$conexion->commit();$msj = "The claim was sent successfully, please check your email (".trim($_SESSION['usuario_actual']).") waiting for their response.";}else{$conexion->rollback();}
@@ -938,47 +1168,27 @@
           $transaccion_exitosa = true;
           
           //arrays para guardar campos:
-          $valores = array();
-          $campos  = array();
-          
-          
-          #DELETE OTROS CORREOS GUARDADOS PARA ESE CLAIM:
-          $query   = "DELETE FROM cb_claims_email WHERE iConsecutivoClaim = '$iConsecutivoClaim'";
-          $success = $conexion->query($query);
-          
-          if(!($success)){$transaccion_exitosa = false;$mensaje = "The data was not saved properly, please try again."; }
-          else{
-              $emailstosave = explode(";",$insurances_policy);
-              $count        = (count($emailstosave)-1);
+          $valores      = array();
+          $campos       = array();
+          $emailstosave = explode(";",$insurances_policy);
+          $count        = (count($emailstosave)-1);
               
-              for($x=0;$x<$count;$x++){
-                  $datos    = explode("|",$emailstosave[$x]);
-                  $idPoliza = $datos[0];
-                  $sEmails  = strtolower($datos[1]);
-                  
-                  #INSERTAR A TABLA DE CORREOS:
-                  $query   = "INSERT INTO cb_claims_email (iConsecutivoClaim,sMensajeEmail,sEmail,sIPIngreso,sUsuarioIngreso) ".
-                             "VALUES('$iConsecutivoClaim','$sMensaje','$sEmails','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
-                  $success = $conexion->query($query); 
-                  
-                  if(!($success)){$transaccion_exitosa = false;$mensaje = "Error updating mail data, please try again."; }
-                  else{
-                      $idEmail = $conexion->insert_id;
-                      
-                      $eStatus != "" ? $updateEstatus = ",eStatus='$eStatus'" : $updateEstatus = "";
-                      #INSERTAR A TABLA DE POLIZAS - CLAIMS:
-                      $query   = "UPDATE cb_claim_poliza SET iConsecutivoEmail = '$idEmail' $updateEstatus ".
-                                 "WHERE iConsecutivoPoliza ='$idPoliza' AND iConsecutivoClaim='$iConsecutivoClaim'";
-                      $success = $conexion->query($query); 
-                      if(!($success)){$transaccion_exitosa = false;$mensaje = "Error updating claim data, please try again.";}
-                      else{
-                          $mensaje = "The data was saved successfully."; 
-                      }             
-                  }
+          for($x=0;$x<$count;$x++){
+              $datos    = explode("|",$emailstosave[$x]);
+              $idPoliza = $datos[0];
+              $sEmails  = strtolower($datos[1]);
+              
+              #INSERTAR A TABLA DE CORREOS:
+              $query   = "UPDATE cb_claim_poliza SET sMensajeEmail='".utf8_encode($_POST['sMensaje'])."', sEmail='".trim($sEmails)."' ".
+                         "WHERE iConsecutivoClaim='".$iConsecutivoClaim."' AND iConsecutivoPoliza='".$idPoliza."'";
+              $success = $conexion->query($query); 
+              
+              if(!($success)){$transaccion_exitosa = false;$mensaje = "Error updating mail data, please try again."; }
+              else{
+                  $mensaje = "The data was saved successfully."; 
               }
           }
-          
-           
+
           
           //TRANSACTION...
           if(!($transaccion_exitosa)){$error = "1";}
@@ -997,9 +1207,10 @@
           $error  = "";
           
           #DATA OF CLAIM:
-          $sql    = "SELECT A.iConsecutivo,A.iConsecutivoCompania,sMensaje,DATE_FORMAT(dHoraIncidente,'%h:%i %p') AS dHoraIncidente, DATE_FORMAT(dFechaIncidente,'%m/%d/%Y') AS dFechaIncidente,sNombre AS sDriver, sVIN AS sUnitTrailer, ".
-                    "iYear AS UnitYear, sTipo AS UnitType, E.sDescripcion AS UnitMake, iNumLicencia, (CASE WHEN eTipoLicencia = '1' THEN 'Federal/B1' WHEN eTipoLicencia = '2' THEN 'Commercial/CDL - A' END) AS eTipoLicencia, ".
-                    "B.siConsecutivosPolizas AS polizas_operador, C.siConsecutivosPolizas AS polizas_unidad, sNombreCompania, A.sEstado, A.sCiudad, eCategoria, sMensaje, eStatus, sDescripcionSuceso, sVINUnidad, sNombreOperador ".
+          $sql    = "SELECT A.iConsecutivo,A.iConsecutivoCompania,sMensaje,DATE_FORMAT(dHoraIncidente,'%h:%i %p') AS dHoraIncidente, DATE_FORMAT(dFechaIncidente,'%m/%d/%Y') AS dFechaIncidente, ".
+                    "A.sNombreOperador AS sDriver, A.sVINUnidad AS sUnitTrailer, iYear AS UnitYear, sTipo AS UnitType, E.sDescripcion AS UnitMake, iNumLicencia, ".
+                    "(CASE WHEN eTipoLicencia = '1' THEN 'Federal/B1' WHEN eTipoLicencia = '2' THEN 'Commercial/CDL - A' END) AS eTipoLicencia, sNombreCompania, A.sEstado, A.sCiudad, eCategoria, ".
+                    "sMensaje, eStatus, sDescripcionSuceso, sVINUnidad, sNombreOperador  ".
                     "FROM cb_claims A ".
                     "LEFT JOIN ct_operadores B ON A.iConsecutivoOperador = B.iConsecutivo ".
                     "LEFT JOIN ct_unidades   C ON A.iConsecutivoUnidad   = C.iConsecutivo ".
@@ -1023,9 +1234,12 @@
               
               $email         = array();
               $insurancedata = explode("|",$insurances[$x]);
+              $PolicyID      = $insurancedata[3];
               $PolicyType    = $insurancedata[0];
               $PolicyNumber  = $insurancedata[1];
               $PolicyEmail   = $insurancedata[2];
+              
+              $email["policy_id"] = $PolicyID;
   
               #SUBJECT
               $email["subject"] = "$CompanyName - $PolicyNumber - $PolicyType - $DateofLoss"; 
@@ -1048,11 +1262,10 @@
                  $email["error"]   = "1"; 
               }
               
-              switch($PolicyType){
-                  case 'AL'  : $PolicyTypeDesc = "Auto-Liability";    break;
-                  case 'PD'  : $PolicyTypeDesc = "Physical Damage";   break; 
-                  case 'MTC' : $PolicyTypeDesc = "Motor Truck Cargo"; break; 
-              }
+              $queryP         = "SELECT * FROM ct_tipo_poliza WHERE sAlias='".$PolicyType."'";
+              $result         = $conexion->query($queryP);
+              $polizaType     = $result->fetch_assoc(); 
+              $PolicyTypeDesc = $polizaType['sDescripcion'];
               
               //Email:
               $htmlTabla  = "<table style=\"width:100%;font-family: Arial, Helvetica, sans-serif!important; \">";
@@ -1158,14 +1371,65 @@
               
               $email['html'] = $htmlTabla;
               
+              #CONSULTAR ARCHIVOS:
+              $file = array();
+              //Buscamos archivos
+              $query  = "SELECT iConsecutivo, sNombreArchivo, hContenidoDocumentoDigitalizado, sTipoArchivo,iConsecutivoPoliza, iTamanioArchivo ".
+                        "FROM cb_claims_files WHERE iConsecutivoClaim = '$iConecutivoClaim'"; 
+              $result = $conexion->query($query) or die($conexion->error);
+              $rows   = $result->num_rows; 
+              if($rows > 0){
+                    while ($files = $result->fetch_assoc()){
+                       #Here will constructed the temporary files: 
+                       if($files['sNombreArchivo'] != ""){ 
+                         $archivo['id']     = $files['iConsecutivo'];
+                         $archivo['name']   = $files['sNombreArchivo'];
+                         $archivo['content']= $files['hContenidoDocumentoDigitalizado'];
+                         $archivo['size']   = $files['iTamanioArchivo'];
+                         $archivo['type']   = $files['sTipoArchivo'];
+                         array_push($file,$archivo);
+                       }
+                    }
+              }
+              if(count($file)==0){$file="";} 
+              
+              $email['files'] = $file;
+              
               $Emails[$x] = $email;
               if($email["error"] == "1"){$error .= $email["emails"];}
               
           }//end for...
+                 
           $error != "" ? $Emails['error'] = $error : $Emails['error'] = "0";
           $conexion->close(); 
           return $Emails;
           
+      }
+      function mark_email_sent(){
+          
+          $clave = trim($_POST['iConsecutivoClaim']);
+          $error = 0;
+           
+          include("cn_usuarios.php");
+          $conexion->autocommit(FALSE);
+          
+          //Actualizar Estatus:
+          $query   = "UPDATE cb_claim_poliza SET iEnviadoFuera='1', eStatus='INPROCESS' WHERE iConsecutivoClaim='$clave'"; 
+          $success = $conexion->query($query); 
+          
+          if($conexion->affected_rows > 0){
+              //Actualizar endoso general:
+              $query   = "UPDATE cb_claims SET eStatus='INPROCESS' WHERE iConsecutivo='$clave'"; 
+              $success = $conexion->query($query);
+              
+              if($conexion->affected_rows > 0){$mensaje = "The data was updated successfully!";}else{$error = 1;$mensaje = "Error to update the status data, please try again.";}
+          }else{$error = 1; $mensaje = "Error to update the policy/claim status data, please try again.";}  
+          
+          $error == 0 ? $conexion->commit() : $conexion->rollback(); 
+          $conexion->close();
+          
+          $response = array("msj"=>$mensaje,"error"=>"$error");   
+          echo json_encode($response);      
       }
       
       /*--- EXTRAS ---*/  
@@ -1185,7 +1449,7 @@
                  "LEFT JOIN ct_unidades C ON A.iConsecutivoUnidad = C.iConsecutivo ".
                  "WHERE A.iConsecutivo = '$clave'";
           $result = $conexion->query($sql); 
-          $rows = $result->num_rows; 
+          $rows   = $result->num_rows; 
           if($rows > 0){ 
             $data = $result->fetch_assoc();
             if($data['eCategoria'] == 'DRIVER'){$polizas = explode(',',$data['polizas_operador']);}
@@ -1227,77 +1491,111 @@
       }
       function get_company_policies(){
           
-          include("cn_usuarios.php");     
-          $error       = "0";
-          $mensaje     = "";
-          $check_items = "";
-          $clave       = trim($_POST['clave']);
-          $domroot     = trim($_POST['domroot']);
+          include("cn_usuarios.php");
+          $conexion->autocommit(FALSE);
+          $error          = '0';
+          $pd_information = "false";
+          $clave          = trim($_POST['iConsecutivoCompania']);
           
-          #CONSULTAR DATOS DEL CLAIM Y COMPANIA
-          $sql    = "SELECT A.iConsecutivo AS iConsecutivoClaim, A.iConsecutivoCompania,C.iConsecutivoPoliza, B.sMensajeEmail, B.iConsecutivo AS iConsecutivoEmail, B.sEmail ".
-                    "FROM cb_claims            AS A ".
-                    "LEFT JOIN cb_claim_poliza AS C ON A.iConsecutivo      = C.iConsecutivoClaim ".
-                    "LEFT JOIN cb_claims_email AS B ON C.iConsecutivoEmail = B.iConsecutivo WHERE A.iConsecutivo = '$clave'";
-          $result = $conexion->query($sql); 
-          $rows   = $result->num_rows; 
+          $sql = "SELECT A.iConsecutivo, sNumeroPoliza, C.sName AS BrokerName, sDescripcion, D.iConsecutivo AS TipoPoliza, D.sAlias ".
+                 "FROM      ct_polizas      AS A
+                  LEFT JOIN ct_brokers      AS C ON A.iConsecutivoBrokers = C.iConsecutivo 
+                  LEFT JOIN ct_tipo_poliza  AS D ON A.iTipoPoliza         = D.iConsecutivo ".
+                 "WHERE iConsecutivoCompania = '".$clave."' ".
+                 "AND A.iDeleted = '0' AND dFechaCaducidad >= CURDATE() AND (D.iConsecutivo != '4' AND D.iConsecutivo != '6' AND D.iConsecutivo != '7' AND D.iConsecutivo != '8' AND D.iConsecutivo != '9') ".
+                 "ORDER BY sNumeroPoliza ASC"; 
+          $result = $conexion->query($sql);
+          $rows   = $result->num_rows;
           
-          if($rows > 0){ 
-              
-              while ($data = $result->fetch_assoc()){
-                  if($data['iConsecutivoEmail'] != ""){
-                  
-                      $llaves  = array_keys($data);
-                      $datos   = $data;
-                      
-                      foreach($datos as $i => $b){ 
-                        if($i == 'sMensajeEmail'){
-                            $fields .= "\$('#$domroot :input[id=".$i."]').val('".utf8_decode(utf8_encode($datos[$i]))."');\n";
-                        }
-                        else if($i == 'sEmail'){
-                           $fields .= "\$('#$domroot :input[class=idpolicy_".$data['iConsecutivoPoliza']."]').val('".$datos[$i]."');\n"; 
-                        }
-                        else if($i != "iConsecutivoPoliza" && $i != "iConsecutivoEmail" && $i != "iConsecutivoCompania"){
-                           $fields .= "\$('#$domroot :input[id=".$i."]').val('".htmlentities($datos[$i])."');\n"; 
-                        }
-                      }
-                      
-                  }
-                  $iConsecutivoCompania = $data['iConsecutivoCompania'];
-              }
-
-              $query  = "SELECT iConsecutivoPoliza, sNumeroPoliza, iTipoPoliza, sDescripcion, sName AS InsuranceName, sEmailClaims ".
-                        "FROM       cb_claim_poliza AS A ".
-                        "INNER JOIN ct_polizas      AS B ON A.iConsecutivoPoliza = B.iConsecutivo ".
-                        "LEFT JOIN  ct_tipo_poliza  AS C ON B.iTipoPoliza = C.iConsecutivo ".
-                        "LEFT JOIN  ct_aseguranzas  AS D ON B.iConsecutivoAseguranza = D.iConsecutivo ".
-                        "WHERE A.iConsecutivoClaim = '$clave' AND B.iConsecutivoCompania = '$iConsecutivoCompania' AND B.iDeleted = '0' AND B.dFechaCaducidad >= CURDATE()";
-              $result = $conexion->query($query);
-              $rows   = $result->num_rows;   
-              
-              if($rows > 0){    
-                while ($items = $result->fetch_assoc()){
-                     
-                   #table
-                   if($items["sNumeroPoliza"] != ""){
+          if($rows > 0) {   
+                while ($items = $result->fetch_assoc()) { 
+                   
+                   // polizas a las que aplica PD 
+                   if($items['TipoPoliza'] == '1' || $items['TipoPoliza'] == '11' || $items['TipoPoliza'] == '12' || $items['TipoPoliza'] == '14' || $items['TipoPoliza'] == '17'){
+                        $pd_information = 'true'; 
+                   }
+                   
+                   $htmlTabla .= "<tr>".
+                                 "<td style=\"border: 1px solid #dedede;\">".
+                                 "<input id=\"chk_policies_".$items['iConsecutivo']."\" name=\"chk_policies\" type=\"checkbox\" value=\"".$items['iConsecutivo']."\" class=\"".$items['sAlias']."\" onchange=\"fn_claims.revisar_tipos_polizas();\"/>".
+                                 "<label class=\"check-label\">".$items['sNumeroPoliza']."</label>".
+                                 "</td>".
+                                 "<td style=\"border: 1px solid #dedede;\">".$items['BrokerName']."</td>". 
+                                 "<td style=\"border: 1px solid #dedede;\">".$items['sDescripcion']."</td>".
+                                 "</tr>";
+          
                         
-                       $tipoPoliza = get_policy_type($items['iTipoPoliza']); 
-                       $htmlTabla .= "<tr>".
-                                       "<td style=\"border: 1px solid #dedede;\">".$items['sNumeroPoliza']."</td>".
-                                       "<td style=\"border: 1px solid #dedede;\">".$items['sDescripcion']."</td>".
-                                       "<td style=\"border: 1px solid #dedede;\">".$items['InsuranceName']."</td>". 
-                                       "<td style=\"border: 1px solid #dedede;\"><input class=\"idpolicy_".$items['iConsecutivoPoliza']."\" id=\"epolicy_".$tipoPoliza."_".$items['sNumeroPoliza']."\" type=\"text\" value=\"".$items['sEmailClaims']."\" text=\"".$items['sEmailClaims']."\" style=\"width: 94%;\" title=\"If you need to write more than one email, please separate them by comma symbol (,).\"/></td>".
-                                       "</tr>";
-                                           
-                   }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}    
-                }
-              }else{
-                  $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";
-              }
-          } 
-
-          $response = array("checkboxes"=>"$check_items","fields"=>"$fields","error"=>"$error","policies_information"=>"$htmlTabla");   
+                }                                                                                                                                                                       
+          }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}
+          
+          $conexion->rollback();
+          $conexion->close();
+          $response = array("mensaje"=>"$mensaje","error"=>"$error", "policies_information"=>"$htmlTabla","pd_data"=>"$pd_information",);   
           echo json_encode($response);
           
+      }   
+      
+      function get_drivers(){
+          
+          include("cn_usuarios.php");
+          $conexion->autocommit(FALSE);
+      
+          $iConsecutivoCompania = urldecode($_GET['iConsecutivoCompania']);
+          $term                 = urldecode($_GET['term']);
+          $term                 = utf8_decode(trim($term));
+          
+          $query    = "SELECT DISTINCT A.iConsecutivo AS id, A.sNombre AS nombre, A.iNumLicencia AS clave, iConsecutivoCompania, B.iConsecutivoPoliza AS poliza ".
+                      "FROM      ct_operadores      AS A ".
+                      "LEFT JOIN cb_poliza_operador AS B ON A.iConsecutivo = B.iConsecutivoOperador ".  
+                      "WHERE  A.iDeleted='0' AND iConsecutivoCompania = '".$iConsecutivoCompania."' ".
+                      "AND (sNombre LIKE '%" . $term . "%' OR iNumLicencia LIKE '%" . $term . "%') ".
+                      "GROUP BY iConsecutivoOperador ORDER BY sNombre LIMIT 25 ";
+          $result   = $conexion->query($query) or die($conexion->error);
+          $rows     = $result->num_rows; 
+          $respuesta= array();
+          
+          if($rows > 0){  
+            $r = 0;
+            while ($response = $result->fetch_assoc()){ 
+                  $respuesta[$r]["id"]     = $response["id"];
+                  $respuesta[$r]["clave"]  = $response["clave"];
+                  $respuesta[$r]["nombre"] = utf8_encode($response["nombre"]);
+                  $r++;
+            }
+          }
+          $conexion->rollback();
+          $conexion->close();
+          echo json_encode($respuesta);
+      }
+      
+      function get_vehicles(){
+          include("cn_usuarios.php");
+          $conexion->autocommit(FALSE);
+      
+          $iConsecutivoCompania = urldecode($_GET['iConsecutivoCompania']);
+          $term                 = urldecode($_GET['term']);
+          $term                 = utf8_decode(trim($term));
+          
+          $query    = "SELECT DISTINCT A.iConsecutivo AS id, A.sVIN AS nombre, iConsecutivoCompania, B.iConsecutivoPoliza AS poliza  ".
+                      "FROM      ct_unidades        AS A ".
+                      "LEFT JOIN cb_poliza_unidad   AS B ON A.iConsecutivo = B.iConsecutivoUnidad  ".  
+                      "WHERE  A.iDeleted='0' AND iConsecutivoCompania = '".$iConsecutivoCompania."' ".
+                      "AND sVIN LIKE '%".$term."%' ".
+                      "GROUP BY iConsecutivoUnidad ORDER BY sVIN LIMIT 25 ";
+          $result   = $conexion->query($query) or die($conexion->error);
+          $rows     = $result->num_rows; 
+          $respuesta= array();
+          
+          if($rows > 0){  
+            $r = 0;
+            while ($response = $result->fetch_assoc()){ 
+                  $respuesta[$r]["id"]     = $response["id"];
+                  $respuesta[$r]["nombre"] = utf8_encode($response["nombre"]);
+                  $r++;
+            }
+          }
+          $conexion->rollback();
+          $conexion->close();
+          echo json_encode($respuesta);    
       }
 ?>

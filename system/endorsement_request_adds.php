@@ -111,7 +111,7 @@
             filtro : "",
             pagina_actual : "",
             sort : "DESC",
-            orden : "A.dFechaAplicacion",
+            orden : "LEFT(A.dFechaAplicacion,10)",
             init : function(){
                 
                 $('.num').keydown(fn_solotrucking.inputnumero); 
@@ -149,11 +149,6 @@
                     }
                 }); 
                 
-                //llenando select de estados:     
-                $.post("catalogos_generales.php", { "accion": "get_country", "country": "USA"},
-                function(data){ $("#frm_endorsement_information select[name=sEstado]").empty().append(data.tabla).removeAttr('disabled').removeClass('readonly');},"json");
-            
-                //$("#frm_driver_information #sNombre").autocomplete();
             },
             fillgrid: function(){
                    $.ajax({             
@@ -188,7 +183,7 @@
                $('#endorsements_edit_form input, #endorsements_edit_form select, #endorsements_edit_form textarea').val('');
                $("#frm_endorsement_information .required-field").removeClass("error");
                $("#endorsements_edit_form .general_information #iConsecutivoCompania").removeClass('readonly').removeProp('disabled');
-               $("#info_policies").hide();//ocultar grid de archivos...
+               $("#files_datagrid, #info_policies").hide();//ocultar grid de archivos...
                $("#info_policies tbody").empty();
                fn_solotrucking.get_date("#dFechaAplicacion.fecha");
                //DETALLE:
@@ -290,7 +285,7 @@
                },
                function(data){
                     if(data.error == '0'){
-                       $("#info_policies").show();//mostrar grid de archivos... 
+                       $("#files_datagrid, #info_policies").show();//mostrar grid de archivos... 
                        $('#endorsements_edit_form .general_information input, #endorsements_edit_form .general_information select, #endorsements_edit_form .general_information textarea').val('');
                        $("#frm_endorsement_information .required-field").removeClass("error");
                        $("#endorsements_edit_form #info_policies table tbody").empty().append(data.policies);   
@@ -301,8 +296,9 @@
                        $('#endorsements_edit_form #sComentarios').val(data.sComentarios);
     
                        //CONSULTAR ARCHIVOS:
-                       /*fn_endorsement.files.iConsecutivoEndoso = $('#endorsements_edit_form input[name=iConsecutivo]').val();
-                       fn_endorsement.files.fillgrid(); */
+                       fn_endorsement.files.iConsecutivoEndoso = $('#endorsements_edit_form input[name=iConsecutivo]').val();
+                       fn_endorsement.files.form_father        = "endorsements_edit_form";
+                       fn_endorsement.files.fillgrid();
                        
                        //CONSULTAR DETALLE:
                        fn_endorsement.detalle.iConsecutivoEndoso = $('#endorsements_edit_form input[name=iConsecutivo]').val();
@@ -376,7 +372,7 @@
               if($("#frm_endorsement_information #iConsecutivoCompania").val() != ""){  
                   $.ajax({             
                         type:"POST", 
-                        url:"funciones_endorsement_request_units.php", 
+                        url:"endorsement_request_adds_server.php", 
                         data:{accion:"get_policies",'iConsecutivoCompania':$("#frm_endorsement_information #iConsecutivoCompania").val()},
                         async : false,
                         dataType : "json",
@@ -615,12 +611,14 @@
                                       eval(data.fields); 
                                       $('.decimals').keydown(fn_solotrucking.inputdecimals);
                                       $("#form_change_estatus .file-message").html("");
-                                      //$("#form_change_estatus #fileselect2").removeClass("fileupload");
                                       
                                       $("#form_change_estatus .company_policies").accordion({
                                            heightStyle: "content",
                                       });
+                                      
+                                      //ARCHIVOS:
                                       fn_endorsement.files.iConsecutivoEndoso = clave;
+                                      fn_endorsement.files.form_father        = "form_change_estatus";
                                       fn_endorsement.files.fillgrid();
                                     
                                       fn_popups.resaltar_ventana('form_change_estatus'); 
@@ -656,7 +654,7 @@
                      var dataForm   = new FormData();
                      var other_data = $(form).serializeArray();
                      dataForm.append('accion','save_estatus_info');
-                     $.each($(form+' input[type=file]')[0].files,function(i, file){dataForm.append('file-'+i, file);});
+                     //$.each($(form+' input[type=file]')[0].files,function(i, file){dataForm.append('file-'+i, file);});
                      $.each(other_data,function(key,input){dataForm.append(input.name,input.value);}); 
                       
                      $.ajax({             
@@ -833,6 +831,7 @@
                sort : "ASC",
                orden : "iConsecutivo",
                iConsecutivoEndoso : "",
+               form_father : "",
                datagrid : "#files_datagrid",
                form     : "#dialog_upload_files",
                fillgrid: function(){
@@ -846,6 +845,7 @@
                             pagina_actual        : fn_endorsement.files.pagina_actual,   
                             ordenInformacion     : fn_endorsement.files.orden,
                             sortInformacion      : fn_endorsement.files.sort,
+                            //form_father          : fn_endorsement.files.form_father,
                         },
                         async : true,
                         dataType : "json",
@@ -916,19 +916,21 @@
                     return false;
                 }, 
                add : function(){
+                   
+                   /*if(fn_endorsement.files.form_father == 'form_change_estatus'){
+                       //ocultar campo para enviar a brokers.
+                       $(fn_endorsement.files.form+" select[name=iEnviarArchivoEmail]").val('0');
+                       $(fn_endorsement.files.form+" .field-sent-to-brokers").hide();
+                   }
+                   else{$(fn_endorsement.files.form+" .field-sent-to-brokers").show();} */
+                   
                    $(fn_endorsement.files.form+" input[name=iConsecutivoEndoso]").val(fn_endorsement.files.iConsecutivoEndoso);
                    $(fn_endorsement.files.form+" .file-message").html("");
+                   $(fn_endorsement.files.form+" #fileselect").val(null);
                    $(fn_endorsement.files.form+" #fileselect").removeClass("fileupload");
                    $(fn_endorsement.files.form).dialog("open");
                    
                    fn_endorsement.files.active_file_form('#dialog_upload_files','fileselect');
-                   
-                   //Archivos:
-                   /*if(window.File && window.FileList && window.FileReader) {
-                      fn_solotrucking.files.form      = "#dialog_upload_files";
-                      fn_solotrucking.files.fileinput = "fileselect";
-                      fn_solotrucking.files.add();
-                   }*/ 
                },
                save : function(){
                    var valid   = true;
@@ -1159,8 +1161,9 @@
                                     </td>
                                     <td>
                                     <div class="field_item">
-                                        <label>State <span class="add_field" style="color:#ff0000;">*</span>:</label>  
-                                        <select tabindex="8" id="sEstado" name="sEstado" class="required-field-add" style="height: 26px!important;"></select>
+                                        <label>State <span class="add_field" style="color:#ff0000;">*</span>:</label> 
+                                        <input tabindex="8" id="sEstadoTexto" type="text" maxlength="100" name="sEstadoTexto" class="required-field-add txt-uppercase"> 
+                                        <!--<select tabindex="8" id="sEstado" name="sEstado" class="required-field-add" style="height: 26px!important;"></select>-->
                                     </div>
                                     </td>
                                 </tr>
@@ -1193,6 +1196,49 @@
                     </div>
                     </td>
                     </tr>
+                </table>
+                <!--FILES-->
+                <table style="width: 100%;" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td colspan="2">
+                    <table id="files_datagrid" class="popup-datagrid" style="width: 100%;margin-top: 10px;margin-bottom: 10px;" cellpadding="0" cellspacing="0">
+                        <thead>
+                            <tr id="grid-head2">
+                                <td class="etiqueta_grid">File Name</td>
+                                <td class="etiqueta_grid">Category</td>
+                                <td class="etiqueta_grid">Type</td>
+                                <td class="etiqueta_grid">Size</td>
+                                <td class="etiqueta_grid">Send to brokers</td>
+                                <td class="etiqueta_grid" style="width: 100px;text-align: center;">
+                                    <div class="btn-icon edit btn-left" title="Upload files" onclick="fn_endorsement.files.add();" style="width: auto!important;"><i class="fa fa-upload"></i><span style="    padding-left: 5px;font-size: 0.8em;text-transform: uppercase;">upload</span></div>
+                                </td>
+                            </tr>
+                        </thead>
+                        <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No uploaded files.</td></tr></tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="100%">
+                                    <div class="datagrid-pages" style="display: none;">
+                                        <input class="pagina_actual" type="text" readonly="readonly" size="3">
+                                        <label> / </label>
+                                        <input class="paginas_total" type="text" readonly="readonly" size="3">
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="100%">
+                                    <div class="datagrid-menu-pages" style="display: none;">
+                                        <button class="pgn-inicio"    onclick="fn_endorsement.files.firstPage();" title="First page"><span></span></button>
+                                        <button class="pgn-anterior"  onclick="fn_endorsement.files.previousPage();" title="Previous"><span></span></button>
+                                        <button class="pgn-siguiente" onclick="fn_endorsement.files.nextPage();" title="Next"><span></span></button>
+                                        <button class="pgn-final"     onclick="fn_endorsement.files.lastPage();" title="Last Page"><span></span></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    </td>
+                </tr>
                 </table>
             </fieldset>
             <button type="button" class="btn-1" onclick="fn_endorsement.save();">SAVE</button>
@@ -1312,6 +1358,7 @@
                         <td class="etiqueta_grid">Category</td>
                         <td class="etiqueta_grid">Type</td>
                         <td class="etiqueta_grid">Size</td>
+                        <td class="etiqueta_grid">Send to brokers</td>
                         <td class="etiqueta_grid" style="width: 100px;text-align: center;">
                             <div class="btn-icon edit btn-left" title="Upload files" onclick="fn_endorsement.files.add();" style="width: auto!important;"><i class="fa fa-upload"></i><span style="    padding-left: 5px;font-size: 0.8em;text-transform: uppercase;">upload</span></div>
                         </td>
@@ -1372,6 +1419,13 @@
             <Select name="eArchivo" style="height: 27px!important;">
                 <option value="OTHERS">Other</option>
                 <option value="ENDORSEMENT">Endorsement</option>
+            </select> 
+        </div>
+        <div class="field-sent-to-brokers">
+            <label>Send this file by email to the broker? <span style="color:#ff0000;">*</span> </label>
+            <Select name="iEnviarArchivoEmail" style="height: 27px!important;">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
             </select> 
         </div>
         <div class="field_item"> 

@@ -135,6 +135,7 @@
                          $query = "SELECT A.sVIN, (CASE 
                                     WHEN A.eAccion = 'ADDSWAP'    THEN 'ADD SWAP'
                                     WHEN A.eAccion = 'DELETESWAP' THEN 'DELETE SWAP'
+                                    WHEN A.eAccion = 'CHANGEPD'   THEN 'CHANGE PD'
                                     ELSE A.eAccion
                                     END) AS eAccion FROM cb_endoso_unidad AS A WHERE A.iConsecutivoEndoso = '".$items['iConsecutivo']."' ORDER BY sVIN ASC";
                          $r     = $conexion->query($query);
@@ -298,26 +299,28 @@
       $error          = '0';
       $pd_information = "false";
       
-      $sql = "SELECT A.iConsecutivo, sNumeroPoliza, C.sName AS BrokerName, sDescripcion, D.iConsecutivo AS TipoPoliza ".
-             "FROM ct_polizas A ".
-             "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
-             "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
+      $sql = "SELECT A.iConsecutivo, sNumeroPoliza, C.sName AS BrokerName, sDescripcion, D.iConsecutivo AS TipoPoliza, D.sAlias ".
+             "FROM      ct_polizas     AS A ".
+             "LEFT JOIN ct_brokers     AS C ON A.iConsecutivoBrokers = C.iConsecutivo ".
+             "LEFT JOIN ct_tipo_poliza AS D ON A.iTipoPoliza = D.iConsecutivo ".
              "WHERE iConsecutivoCompania = '".$company."' ".
-             "AND  A.iDeleted = '0' AND dFechaCaducidad >= CURDATE() AND (D.iConsecutivo != '4' AND D.iConsecutivo != '6' AND D.iConsecutivo != '7' AND D.iConsecutivo != '8' AND D.iConsecutivo != '9') ".
+             "AND  A.iDeleted = '0' AND dFechaCaducidad >= CURDATE() AND (D.iConsecutivo != '4' AND D.iConsecutivo != '6' AND D.iConsecutivo != '7' AND D.iConsecutivo != '9') ".
              "ORDER BY sNumeroPoliza ASC";  
       $result = $conexion->query($sql);
       $rows = $result->num_rows;
       
       if($rows > 0) {   
             while ($items = $result->fetch_assoc()) { 
-                $pdvalid = "";
-                switch($items['TipoPoliza']){
-                     case '1' : 
-                        $pd_information = 'true'; 
-                        $pdvalid = "onchange=\"if(\$(this).prop('checked')){\$('#frm_endorsement_information input[name=iPDAmount]').removeProp('readonly').removeClass('readonly');}".
-                                   "else{\$('#frm_endorsement_information input[name=iPDAmount]').prop('readonly','readonly').addClass('readonly');}\"";
-                     break;
-                }
+               $pdvalid = "";  
+               $findPD  = "PD";
+               $posPD   = strpos($items['sAlias'], $findPD);
+               // polizas a las que aplica PD 
+               //if($items['TipoPoliza'] == '1' || $items['TipoPoliza'] == '11' || $items['TipoPoliza'] == '12' || $items['TipoPoliza'] == '14'){
+               if(!($posPD === false)){
+                    $pd_information = 'true'; 
+                    $pdvalid = "onchange=\"if(\$(this).prop('checked')){\$('#frm_endorsement_information input[name=iPDAmount]').removeProp('readonly').removeClass('readonly');}".
+                               "else{\$('#frm_endorsement_information input[name=iPDAmount]').prop('readonly','readonly').addClass('readonly');}\"";     
+               }
                
                $htmlTabla .= "<tr>".
                              "<td style=\"border: 1px solid #dedede;\">".
@@ -628,7 +631,8 @@
                 
                  $items['iTotalPremiumPD'] > 0 ? $value = "\$ ".number_format($items['iTotalPremiumPD'],2,'.',',') : $value = ""; 
                  if($items['eAccion'] == "ADDSWAP"){$action = "ADD SWAP";}else
-                 if($items['eAccion'] == "DELETESWAP"){$action = "DELETE SWAP";}
+                 if($items['eAccion'] == "DELETESWAP"){$action = "DELETE SWAP";}else
+                 if($items['eAccion'] == "CHANGEPD") {$action = "CHANGE PD AMOUNT";}
                  else{$action = $items['eAccion'];}
                
                  $htmlTabla .= "<tr>".
@@ -1268,16 +1272,22 @@
                   //Atachments:
                   $files = $Emails[$x]['files'];
                   if($files != ""){
+                      
                       $htmlTabla .= "<tr><td>".
                                     "<table style=\"font-size:12px;border-top:1px solid #dedede;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">";
                       $htmlTabla .= "<tr><td colspan=\"100%;\"><h3>Attachments</h3><td></tr>";
-                      $htmlTabla .= "<tr>".
-                                    "<td>".$files['name']."</td>".
-                                    "<td>".$files['type']."</td>".
-                                    "<td>".$files['size']."</td>". 
-                                    "<td>".
-                                       "<div class=\"btn-icon edit btn-left\" title=\"Open file in a new window\" onclick=\"window.open('open_pdf.php?idfile=".$files['id']."&type=endoso');\"><i class=\"fa fa-external-link\"></i><span></span></div>". 
-                                    "</td></tr>";
+                      
+                      $countFiles = count($files);
+                      for($f=0; $f < $countFiles; $f++){
+                            $htmlTabla .= "<tr>".
+                                          "<td>".$files[$f]['name']."</td>".
+                                          "<td>".$files[$f]['type']."</td>".
+                                          "<td>".$files[$f]['size']."</td>". 
+                                          "<td>".
+                                          "<div class=\"btn-icon edit btn-left\" title=\"Open file in a new window\" onclick=\"window.open('open_pdf.php?idfile=".$files[$f]['id']."&type=endoso');\"><i class=\"fa fa-external-link\"></i><span></span></div>". 
+                                          "</td></tr>";    
+                      }
+                      
                       $htmlTabla .= "</table></td></tr>";
                   }
                   $htmlTabla  .= "</table>";
@@ -1359,7 +1369,7 @@
                       $mail->SetFrom('systemsupport@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');
                     }else if($_SERVER["HTTP_HOST"] == "solotrucking.laredo2.net" || $_SERVER["HTTP_HOST"] == "st.websolutionsac.com" || $_SERVER["HTTP_HOST"] == "www.solo-trucking.com"){
                       $mail->Username   = "customerservice@solo-trucking.com";  // GMAIL username
-                      $mail->Password   = "SL641404tK";
+                      $mail->Password   = "1101W3bSTruck";
                       $mail->SetFrom('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');   
                     }
                     
@@ -1381,15 +1391,23 @@
                     //Atachments:
                     $files        = $Emails[$x]['files'];
                     $delete_files = "";
+                    
                     if($files != ""){
-                       include("./lib/fpdf153/fpdf.php");//libreria fpdf
-                       $file_tmp = fopen('tmp/'.$files["name"],"w") or die("Error when creating the file. Please check."); 
-                       fwrite($file_tmp,$files["content"]); 
-                       fclose($file_tmp);     
-                       $archivo = "tmp/".$files["name"];  
-                       $mail->AddAttachment($archivo);
-                       $delete_files .= "unlink('tmp/.".$files["name"]."');"; 
-                    }
+                       $countFiles = count($files);
+                       for($f=0; $f < $countFiles; $f++){
+                           
+                           //Revisamos si es PDF:
+                           include("./lib/fpdf153/fpdf.php");//libreria fpdf
+                           
+                           $file_tmp = fopen('tmp/'.$files[$f]["name"],"w") or die("Error when creating the file. Please check."); 
+                           fwrite($file_tmp,$files[$f]["content"]); 
+                           fclose($file_tmp);     
+                           $archivo = "tmp/".$files[$f]["name"];  
+                           $mail->AddAttachment($archivo);
+                           $delete_files .= "unlink('".$archivo."');";
+                       
+                       } 
+                    } 
                     
                     $mail_error = false;
                     if(!$mail->Send()){$mail_error = true; $mail->ClearAddresses();}
@@ -1469,34 +1487,19 @@
                         while ($files = $result->fetch_assoc()){
                            #Here will constructed the temporary files: 
                            if($files['sNombreArchivo'] != ""){ 
-                             $file['id']     = $files['iConsecutivo'];
-                             $file['name']   = $files['sNombreArchivo'];
-                             $file['tipo']   = $files['eArchivo'];
-                             $file['content']= $files['hContenidoDocumentoDigitalizado'];
-                             $file['size']   = $files['iTamanioArchivo'];
-                             $file['type']   = $files['sTipoArchivo'];
+                             $archivo['id']     = $files['iConsecutivo'];
+                             $archivo['name']   = $files['sNombreArchivo'];
+                             $archivo['tipo']   = $files['eArchivo'];
+                             $archivo['content']= $files['hContenidoDocumentoDigitalizado'];
+                             $archivo['size']   = $files['iTamanioArchivo'];
+                             $archivo['type']   = $files['sTipoArchivo'];
+                             
+                             array_push($file,$archivo);
                            }
                         }
                  }
-                 /*else{
-                     //Buscamos archivos por unidad
-                     $query  = "SELECT iConsecutivo, sNombreArchivo, eArchivo, hContenidoDocumentoDigitalizado, sTipoArchivo, iTamanioArchivo ".
-                               "FROM cb_unidad_files WHERE  iConsecutivoUnidad = '".$Endoso['iConsecutivoUnidad']."' $filtroArchivo "; 
-                     $result = $conexion->query($query) or die($conexion->error);
-                     $rows   = $result->num_rows;
-                     if($rows > 0){
-                        while ($files = $result->fetch_assoc()){
-                           #Here will constructed the temporary files: 
-                           if($files['sNombreArchivo'] != ""){ 
-                             $file['id']     = $files['iConsecutivo'];
-                             $file['nombre'] = $files['sNombreArchivo'];
-                             $file['tipo']   = $files['eArchivo'];
-                           }
-                        }
-                     }
-                 }*/
                  if(count($file)==0){$file="";} 
-                 /**************/ 
+               
                  
                  #CONSULTAMOS POLIZAS DEL ENDOSO E INFO DE LOS EMAILS:
                  $query  = "SELECT iConsecutivoEndoso,iConsecutivoPoliza,B.sNumeroPoliza,B.iTipoPoliza,D.sDescripcion AS sTipoPoliza, sMensajeEmail, A.sEmail, C.iConsecutivo AS iConsecutivoBroker, C.sName AS sBrokerName, C.bEndosoMensual ".
@@ -1591,7 +1594,7 @@
                        "LEFT JOIN ct_unidades      AS B ON A.iConsecutivoUnidad = B.iConsecutivo ".
                        "LEFT JOIN ct_unidad_radio  AS C ON A.iConsecutivoRadio = C.iConsecutivo ".
                        "LEFT JOIN ct_unidad_modelo AS D ON B.iModelo = D.iConsecutivo ".
-                       "WHERE A.iConsecutivoEndoso = '$iConsecutivo'";
+                       "WHERE A.iConsecutivoEndoso = '$iConsecutivo'";  
              $result = $conexion->query($query) or die($conexion->error);
              $rows   = $result->num_rows; 
              
@@ -1602,33 +1605,39 @@
                  $countD  = count($Detalle);
                  
                  #CONSULTAR ARCHIVOS:
-                 $file = array();
-                 $Endoso["eAccion"] == 'A' ? $filtroArchivo = " AND (eArchivo ='TITLE' OR eArchivo='OTHERS')" : $filtroArchivo = " AND (eArchivo='DA' OR eArchivo='BS' OR eArchivo='NOR' OR eArchivo='PTL' OR eArchivo='OTHERS')";
+                 $file          = array();
+                 $filtroArchivo = " AND iEnviarArchivoEmail='1'";
+                 
+                 //$Endoso["eAccion"] == 'A' ? $filtroArchivo = " AND (eArchivo ='TITLE' OR eArchivo='OTHERS')" : $filtroArchivo = " AND (eArchivo='DA' OR eArchivo='BS' OR eArchivo='NOR' OR eArchivo='PTL' OR eArchivo='OTHERS')";
                  //Buscamos archivos por endoso
                  $query  = "SELECT iConsecutivo, sNombreArchivo, eArchivo, hContenidoDocumentoDigitalizado, sTipoArchivo, iTamanioArchivo ".
                            "FROM cb_endoso_files WHERE iConsecutivoEndoso = '$iConsecutivo' $filtroArchivo"; 
                  $result = $conexion->query($query) or die($conexion->error);
                  $rows   = $result->num_rows;
                  
-                 while ($files = $result->fetch_assoc()){
-                   #Here will constructed the temporary files: 
-                   if($files['sNombreArchivo'] != ""){ 
-                     $file['id']     = $files['iConsecutivo'];
-                     $file['name']   = $files['sNombreArchivo'];
-                     $file['tipo']   = $files['eArchivo'];
-                     $file['content']= $files['hContenidoDocumentoDigitalizado'];
-                     $file['size']   = $files['iTamanioArchivo'];
-                     $file['type']   = $files['sTipoArchivo'];
-                   }
+                 if($rows > 0){
+                      while ($files = $result->fetch_assoc()){
+                       #Here will constructed the temporary files: 
+                       if($files['sNombreArchivo'] != ""){ 
+                         $archivo['id']     = $files['iConsecutivo'];
+                         $archivo['name']   = $files['sNombreArchivo'];
+                         $archivo['tipo']   = $files['eArchivo'];
+                         $archivo['content']= $files['hContenidoDocumentoDigitalizado'];
+                         $archivo['size']   = $files['iTamanioArchivo'];
+                         $archivo['type']   = $files['sTipoArchivo'];
+                         
+                         array_push($file,$archivo);
+                       }
+                      }
                  }
                  if(count($file)==0){$file="";} 
                  
                  #CONSULTAMOS POLIZAS DEL ENDOSO E INFO DE LOS EMAILS:
-                 $query  = "SELECT iConsecutivoEndoso,iConsecutivoPoliza,B.sNumeroPoliza,B.iTipoPoliza,D.sDescripcion AS sTipoPoliza, sMensajeEmail, A.sEmail, C.iConsecutivo AS iConsecutivoBroker, C.sName AS sBrokerName, C.bEndosoMensual ".
-                           "FROM cb_endoso_estatus   AS A ".
-                           "LEFT JOIN ct_polizas     AS B ON A.iConsecutivoPoliza  = B.iConsecutivo ".
-                           "LEFT JOIN ct_tipo_poliza AS D ON B.iTipoPoliza = D.iConsecutivo ".
-                           "LEFT JOIN ct_brokers     AS C ON B.iConsecutivoBrokers = C.iConsecutivo ".
+                 $query  = "SELECT iConsecutivoEndoso,iConsecutivoPoliza,B.sNumeroPoliza,D.sAlias,B.iTipoPoliza,D.sDescripcion AS sTipoPoliza, sMensajeEmail, A.sEmail, C.iConsecutivo AS iConsecutivoBroker, C.sName AS sBrokerName, C.bEndosoMensual ".
+                           "FROM      cb_endoso_estatus AS A ".
+                           "LEFT JOIN ct_polizas        AS B ON A.iConsecutivoPoliza  = B.iConsecutivo ".
+                           "LEFT JOIN ct_tipo_poliza    AS D ON B.iTipoPoliza = D.iConsecutivo ".
+                           "LEFT JOIN ct_brokers        AS C ON B.iConsecutivoBrokers = C.iConsecutivo ".
                            "WHERE A.iConsecutivoEndoso = '$iConsecutivo'";//" AND C.bEndosoMensual='0'"; 
                  $result = $conexion->query($query) or die($conexion->error);
                  $rows   = $result->num_rows;
@@ -1657,15 +1666,20 @@
                      
                              if($Detalle[$x]['eAccion'] == "ADDSWAP"){$Detalle[$x]['eAccion'] = "ADD SWAP";}
                              if($Detalle[$x]['eAccion'] == "DELETESWAP"){$Detalle[$x]['eAccion'] = "DELETE SWAP";}
+                             if($Detalle[$x]['eAccion'] == "CHANGEPD"){$Detalle[$x]['eAccion'] = "CHANGE PD AMOUNT";}
                              
                              $Acti = $Detalle[$x]['eAccion'];
                              $Year = " ".$Detalle[$x]['iYear'];
                              $Detalle[$x]['sAliasModelo'] != '' ? $Make = " ".$Detalle[$x]['sAliasModelo'] : $Make = " ".$Detalle[$x]['sModelo']; 
                              $VIN  = " ".$Detalle[$x]['sVIN'];
                              $Detalle[$x]['sRadio'] !=  '' ? $Radius = " ".$Detalle[$x]['sRadio'] : $Radius = "";
-                             $Peso = " ".$Detalle['sPeso'];
+                             $Peso = " ".$Detalle[$x]['sPeso'];
                              
-                             $data['iTipoPoliza'] == '1' && $Detalle[$x]["iTotalPremiumPD"] > 0 ? $PDAmount = number_format($Detalle[$x]["iTotalPremiumPD"],2,'.','') : $PDAmount = "";
+                             //Revisar Tipo de Polizas PD:
+                             $findPD  = "PD";
+                             $posPD   = strpos($data['sAlias'], $findPD);
+             
+                             !($posPD === false) && $Detalle[$x]["iTotalPremiumPD"] > 0 ? $PDAmount = number_format($Detalle[$x]["iTotalPremiumPD"],2,'.','') : $PDAmount = "";
                              
                              $detalle .= "<tr>";
                              $detalle .= "<td style=\"padding:1px 3px;border:0px;\">$Acti</td>";
@@ -1786,10 +1800,10 @@
         $ordenQuery = " ORDER BY ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"];
         
         #VERIFICAMOS, SI ES UN ADD, VERIFICAMOS TABLA DE ARCHIVOS X UNIDAD:
-        if($endoso['eAccion'] == 'A' && $endoso['iConsecutivoUnidad'] != ""){
+        /*if($endoso['eAccion'] == 'A' && $endoso['iConsecutivoUnidad'] != ""){
           $query_union = " UNION ".
                          "(SELECT iConsecutivo, sTipoArchivo, sNombreArchivo, iTamanioArchivo,eArchivo FROM cb_unidad_files WHERE iConsecutivoUnidad = '".$endoso['iConsecutivoUnidad']."' $ordenQuery)";    
-        }
+        }*/
 
         //contando registros // 
         /*$query_rows = "(SELECT COUNT(iConsecutivo) AS total FROM cb_endoso_files ".$filtroQuery.")";
@@ -1810,7 +1824,7 @@
           $limite_superior = $registros_por_pagina;
           $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
           
-          $sql    = "(SELECT iConsecutivo, sTipoArchivo,sNombreArchivo,iTamanioArchivo,eArchivo FROM cb_endoso_files ".$filtroQuery.$ordenQuery.")".$query_union;
+          $sql    = "(SELECT iConsecutivo, sTipoArchivo,sNombreArchivo,iTamanioArchivo,eArchivo, IF(iEnviarArchivoEmail = 1, 'YES','NO') AS iEnviarArchivoEmail FROM cb_endoso_files ".$filtroQuery.$ordenQuery.")".$query_union;
           $result = $conexion->query($sql);
           $rows   = $result->num_rows; 
              
@@ -1823,6 +1837,7 @@
                                        "<td>".$items['eArchivo']."</td>".
                                        "<td>".$items['sTipoArchivo']."</td>".
                                        "<td>".$items['iTamanioArchivo']."</td>". 
+                                       "<td>".$items['iEnviarArchivoEmail']."</td>".
                                        "<td>".
                                             "<div class=\"btn-icon edit btn-left\" title=\"Open file in a new window\" onclick=\"window.open('open_pdf.php?idfile=".$items['iConsecutivo']."&type=endoso');\"><i class=\"fa fa-external-link\"></i><span></span></div>". 
                                             "<div class=\"btn_delete_file btn-icon trash btn-left\" title=\"Delete file\"><i class=\"fa fa-trash\"></i><span></span></div>".

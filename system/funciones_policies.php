@@ -108,7 +108,8 @@
                                            "<td>".$items['dFechaInicio']."</td>".
                                            "<td>".$items['dFechaCaducidad']."</td>".                                                                                                                                                                                                                     
                                            "<td>
-                                                <div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Policy\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>
+                                                <div class=\"btn_edit   btn-icon edit btn-left\" title=\"Edit Policy\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>
+                                                <div class=\"btn_files  btn-icon view btn-left\" title=\"Policy Files\"><i class=\"fa fa-folder\" aria-hidden=\"true\"></i> <span></span></div>
                                                 <div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete or Cancel Policy\"><i class=\"fa fa-trash\"></i> <span></span></div>
                                                 $btn_pdf 
                                                 $btn_drivers
@@ -1098,17 +1099,19 @@
       
       $iConsecutivoPoliza   = trim($_POST['iConsecutivoPoliza']);
       $iConsecutivoCompania = trim($_POST['iConsecutivoCompania']);
+      
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
       $transaccion_exitosa = true;
     
-      $registros_por_pagina = $_POST["registros_por_pagina"];
-      $pagina_actual = (isset($_POST["pagina_actual"]) && $_POST["pagina_actual"] != '' ? $_POST["pagina_actual"] : 1);
+      $registros_por_pagina  = $_POST["registros_por_pagina"];
+      $pagina_actual         = (isset($_POST["pagina_actual"]) && $_POST["pagina_actual"] != '' ? $_POST["pagina_actual"] : 1);
       $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
         
       //Filtros de informacion //
-      $filtroQuery = " WHERE  iConsecutivoCompania = '$iConsecutivoCompania' AND iDeleted='0' ";
+      $filtroQuery   = " WHERE  iConsecutivoCompania = '$iConsecutivoCompania' AND iDeleted='0' ";
       $array_filtros = explode(",",$_POST["filtroInformacion"]);
+      
       foreach($array_filtros as $key => $valor){
         if($array_filtros[$key] != ""){
             $campo_valor = explode("|",$array_filtros[$key]);
@@ -1120,16 +1123,18 @@
     
     //contando registros // 
     $query_rows = "SELECT COUNT(iConsecutivo) AS total FROM ct_operadores ".$filtroQuery;
-    $Result = $conexion->query($query_rows);
-    $items = $Result->fetch_assoc();
-    $registros = $items["total"];
+    $Result     = $conexion->query($query_rows);
+    $items      = $Result->fetch_assoc();
+    $registros  = $items["total"];
+    
     if($registros == "0"){$pagina_actual = 0;}
     $paginas_total = ceil($registros / $registros_por_pagina);
     if($registros == "0"){
         $limite_superior = 0;
         $limite_inferior = 0;
         $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";
-    }else{
+    }
+    else{
         $pagina_actual == "0" ? $pagina_actual = 1 : false;
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
@@ -1165,7 +1170,7 @@
                     }
                     
                      $htmlTabla .= "<tr>".
-                                   "<td id=\"".$items['iConsecutivo']."\" >".$items['sNombre']."</td>".
+                                   "<td id=\"".$items['iConsecutivo']."\" >".utf8_encode($items['sNombre'])."</td>".
                                    "<td class=\"txt-c\">".$items['dFechaNacimiento']."</td>".
                                    "<td>".$items['iNumLicencia']."</td>". 
                                    "<td>".$items['TipoLicencia']."</td>".
@@ -1807,5 +1812,189 @@
       $response = array("mensaje"=>"$mensaje","error"=>"$error", "name_file" => "$fileName","reporte"=>"$htmlTabla"); 
       echo json_encode($response); 
       
+  }
+  
+  #FUNCIONES FILES:
+  function get_files(){
+        
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa  = true;
+      $iConsecutivo         = trim($_POST['iConsecutivo']);
+      $registros_por_pagina = $_POST["registros_por_pagina"];
+      $pagina_actual        = (isset($_POST["pagina_actual"]) && $_POST["pagina_actual"] != '' ? $_POST["pagina_actual"] : 1);
+      $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
+      
+      
+      $query = "SELECT iConsecutivoCompania FROM ct_polizas WHERE iConsecutivo='".$iConsecutivo."'";
+      $result= $conexion->query($query);  
+      $compan= $result->fetch_assoc();
+      $idComp= $compan['iConsecutivoCompania'];
+      
+      
+      //Filtros de informacion //
+      $filtroQuery = "WHERE iConsecutivoPoliza='".$iConsecutivo."'";
+      
+      // ordenamiento//
+      $ordenQuery = " ORDER BY ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"];
+  
+      #CONSULTA ARCHVOS:
+      $query = "SELECT COUNT(iConsecutivo) AS total FROM cb_poliza_files ".$filtroQuery;
+      $result= $conexion->query($query);
+      $rows  = $result->num_rows;
+      
+      if($rows == 0){$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}
+      else{
+          
+          $items         = $result->fetch_assoc();
+          $registros     = $items["total"];
+          if($registros == "0"){$pagina_actual = 0;}
+          $paginas_total = ceil($registros / $registros_por_pagina);
+          
+          if($registros == "0"){
+            $limite_superior = 0;
+            $limite_inferior = 0;
+            $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";
+          }
+          else{
+            $pagina_actual == "0" ? $pagina_actual = 1 : false;
+            $limite_superior = $registros_por_pagina;
+            $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
+            $sql    = "SELECT iConsecutivo,sNombreArchivo,eArchivo,iTamanioArchivo,eArchivoOther,iDisponibleCompania,sTipoArchivo ".
+                      "FROM cb_poliza_files ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
+            $result = $conexion->query($sql);
+            $rows   = $result->num_rows; 
+             
+            if ($rows > 0) { 
+                while ($items = $result->fetch_assoc()) { 
+                   
+                     $items['iDisponibleCompania'] == 0 ? $items['iDisponibleCompania'] = 'NO' : $items['iDisponibleCompania'] = 'YES';
+                     $items['eArchivo']  == 'OTHER' ? $otherCat = $items['eArchivo']." - ".$items['eArchivoOther'] : $otherCat = $items['eArchivo'];
+                     $htmlTabla .= "<tr>".
+                                   "<td id=\"idFile_".$items['iConsecutivo']."\">".$items['sNombreArchivo']."</td>".
+                                   "<td>".$otherCat."</td>".
+                                   "<td>".$items['sTipoArchivo']."</td>".
+                                   "<td>".$items['iTamanioArchivo']."</td>". 
+                                   "<td>".$items['iDisponibleCompania']."</td>".
+                                   "<td>".
+                                        "<div class=\"btn-icon edit btn-left\" title=\"Open file in a new window\" onclick=\"window.open('open_pdf.php?idfile=".$items['iConsecutivo']."&type=poliza');\"><i class=\"fa fa-external-link\"></i><span></span></div>". 
+                                        "<div class=\"btn_delete_file btn-icon trash btn-left\" title=\"Delete file\"><i class=\"fa fa-trash\"></i><span></span></div>".
+                                   "</td></tr>";  
+                }    
+                
+            } 
+          }
+      
+          $conexion->rollback();
+          $conexion->close();
+      }
+       
+      $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","id"=>"$idComp");   
+      echo json_encode($response); 
+  }
+  function guarda_archivo_poliza(){
+      
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);
+      //Variables:
+      $error              = 0;                                                                                                                                                                                                                                    
+      $transaccion_exitosa= true; 
+      $campos             = array();
+      $valores            = array();
+      isset($_POST['iConsecutivo']) != "" ? $edit_mode = true : $edit_mode = false;
+      
+      if(isset($_FILES['file-0'])){
+          $file        = fopen($_FILES['file-0']["tmp_name"], 'r'); 
+          $fileContent = fread($file, filesize($_FILES['file-0']["tmp_name"]));
+          $fileName    = $_FILES['file-0']['name'];
+          $fileType    = $_FILES['file-0']['type']; 
+          $fileTmpName = $_FILES['file-0']['tmp_name']; 
+          $fileSize    = $_FILES['file-0']['size']; 
+          $fileError   = $_FILES['file-0']['error'];
+          $fileExten   = explode(".",$fileName);
+      }
+      else{$error = 1; $mensaje= "Error to read the file data, please try again.";}
+      
+      #REVISAMOS ERRORES:
+      if($error == "0"){
+          //Validando nombre del archivo sin puntos...
+          if(count($fileExten) != 2){$error = 1;$mensaje = "Error: Please check that the name of the file should not contain points.";}
+          else{
+              //Extension Valida:
+              $fileExten = strtolower($fileExten[1]);
+              if($fileExten != "pdf" && $fileExten != "jpg" && $fileExten != "jpeg" && $fileExten != "png" && $fileExten != "doc" && $fileExten != "docx" && $fileExten != "xlsx" && $fileExten != "xls" && $fileExten != "mp3" && $fileExten != "mp4" && $fileExten != "key" && $fileExten != "cer" && $fileExten != "zip" && $fileExten != "ppt" && $fileExten != "pptx"){
+                  $error = 1; $mensaje="Error: The file extension is not valid, please check it.";
+              }
+              else{
+                  //Verificar Tamaño:
+                  if($fileSize > 0  && $fileError == 0){
+                      
+                      #INSERT
+                      if(!($edit_mode)){
+                          
+                          #CONVERT FILE VAR TO POST ARRAY:
+                          $_POST['hContenidoDocumentoDigitalizado'] = $conexion->real_escape_string($fileContent); //Contenido del archivo 
+                          $_POST['sTipoArchivo']    = $fileType;
+                          $_POST['iTamanioArchivo'] = $fileSize;
+                          $_POST['sNombreArchivo']  = $fileName;
+                          
+                          //POST ARRAY:
+                          foreach($_POST as $campo => $valor){
+                            if($campo != "accion"){
+                                if($valor != ""){
+                                   if($campo == 'eArchivoOther'){$valor = strtoupper($valor);} 
+                                   array_push($campos ,$campo);
+                                   array_push($valores, trim($valor));
+                                }    
+                            }
+                          } 
+                      }
+ 
+                      //Campos de control:
+                      array_push($campos,"sUsuarioActualizacion"); array_push($valores,USER);
+                      array_push($campos,"sIP");                   array_push($valores,$_SERVER['REMOTE_ADDR']);
+                      array_push($campos,"dFechaActualizacion");   array_push($valores,date("Y-m-d H:i:s"));
+ 
+                      $query   = "INSERT INTO cb_poliza_files (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
+                      $success = $conexion->query($query);
+                      if(!($success)){$mensaje = "Error: The data of file has not been saved successfully, please try again.";$error = 1;} 
+                         
+                  }
+                  else{$error = 1;$mensaje = "Error: The file you are trying to upload is empty or corrupt, please check it and try again.";}
+              }
+          }
+      }
+      
+      $error == 0 ? $conexion->commit() : $conexion->rollback();
+      
+      $response = array("mensaje"=>"$mensaje","error"=>"$error"); 
+      echo json_encode($response); 
+  }
+  function elimina_archivo_poliza(){
+      
+      $iConsecutivo = trim($_POST['iConsecutivo']);
+      $error        = '0';   
+      //Conexion:
+      include("cn_usuarios.php"); 
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      
+      #borrar archivos de unidades si un id de unidad asignado
+      $query = "DELETE FROM cb_poliza_files WHERE iConsecutivo = '$iConsecutivo'"; 
+      if($conexion->query($query)){$transaccion_exitosa = true;}else{$transaccion_exitosa = false;}
+
+      if($transaccion_exitosa){
+        $conexion->commit();
+        $conexion->close();
+        $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The files has been deleted succesfully!</p>';
+      }else{
+        $conexion->rollback();
+        $conexion->close();
+        $msj   = "A general system error ocurred : internal error";
+        $error = "1";
+      }
+        
+      $response = array("msj"=>"$msj","error"=>"$error");   
+      echo json_encode($response);    
   }
 ?>

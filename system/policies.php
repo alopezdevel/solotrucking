@@ -124,6 +124,22 @@ function inicio(){
                 dates_rp.not( this ).datepicker( "option", option, date );
             },
         });
+        
+        $('#dialog_upload_files').dialog({
+            modal: true,
+            autoOpen: false,
+            width : 500,
+            height : 410,
+            resizable : false,
+            buttons : {
+                'SAVE DATA' : function() {
+                    fn_policies.files.save();
+                },
+                 'CANCEL' : function(){
+                    $(this).dialog('close');
+                }
+            }
+        });
     
 }  
 function validapantalla(usuario){if(usuario == ""  || usuario == null){location.href= "login.php";}}                   
@@ -238,7 +254,7 @@ var fn_policies = {
             $(".fecha,.flt_fecha").mask("99/99/9999");
             
             //FILES
-            new AjaxUpload('#btnPolicyJacker', {
+            /*new AjaxUpload('#btnPolicyJacker', {
                     action: 'funciones_policies.php',
                     onSubmit : function(file , ext){
                         if (!(ext && (/^(pdf)$/i.test(ext))  )){
@@ -276,9 +292,9 @@ var fn_policies = {
                             break;
                         }   
                     }        
-            }); 
+            }); */
             //PFA
-            new AjaxUpload('#btnPolicyPFA', {
+            /*new AjaxUpload('#btnPolicyPFA', {
                     action: 'funciones_policies.php',
                     onSubmit : function(file , ext){
                         if (!(ext && (/^(pdf)$/i.test(ext))  )){
@@ -316,7 +332,7 @@ var fn_policies = {
                             break;
                         }   
                     }        
-            }); 
+            });*/ 
             
             /*----- DRIVER UNIT -------*/
             new AjaxUpload('#btnFile', {
@@ -511,7 +527,14 @@ var fn_policies = {
             $(fn_policies.data_grid + " tbody td .edit").bind("click",function(){
                 var clave = $(this).parent().parent().find("td:eq(0)").html();
                 fn_policies.get_data(clave);
-          });  
+            });  
+            
+            $(fn_policies.data_grid + " tbody td .btn_files").bind("click",function(){
+                fn_policies.files.iConsecutivoPoliza = $(this).parent().parent().find("td:eq(0)").html(); 
+                $("#policies_files_form .popup-gridtit b:first-child").empty().append($(this).parent().parent().find("td:eq(2)").html());
+                $("#policies_files_form .popup-gridtit b:last-child").empty().append($(this).parent().parent().find("td:eq(3)").html());
+                fn_policies.files.fillgrid();  
+            }); 
         },
         get_data : function(clave){
             $.ajax({
@@ -1188,6 +1211,164 @@ var fn_policies = {
                 }
             }); 
         }, 
+        files : {
+           pagina_actual : "",
+           sort : "ASC",
+           orden : "iConsecutivo",
+           iConsecutivoPoliza : "", 
+           iConsecutivoCompania : "",
+           fillgrid: function(){
+                $.ajax({             
+                    type:"POST", 
+                    url:"funciones_policies.php", 
+                    data:{
+                        accion               : "get_files",
+                        iConsecutivo         : fn_policies.files.iConsecutivoPoliza,
+                        registros_por_pagina : "15", 
+                        pagina_actual        : fn_policies.files.pagina_actual,   
+                        ordenInformacion     : fn_policies.files.orden,
+                        sortInformacion      : fn_policies.files.sort,
+                    },
+                    async : true,
+                    dataType : "json",
+                    success : function(data){                               
+                        $("#policies_files_form #files_datagrid tbody").empty().append(data.tabla);
+                        $("#policies_files_form #files_datagrid tbody tr:even").addClass('gray');
+                        $("#policies_files_form #files_datagrid tbody tr:odd").addClass('white');
+                        $("#policies_files_form #files_datagrid tfoot .paginas_total").val(data.total);
+                        $("#policies_files_form #files_datagrid tfoot .pagina_actual").val(data.pagina);
+                        fn_policies.files.pagina_actual = data.pagina;
+                        fn_policies.files.delete_file();
+                        fn_policies.files.iConsecutivoCompania = data.id;
+                        fn_popups.resaltar_ventana('policies_files_form');
+                        
+                        //Archivos:
+                        /*if(window.File && window.FileList && window.FileReader) {
+                              fn_solotrucking.files.form      = "#dialog_upload_files";
+                              fn_solotrucking.files.fileinput = "fileselect";
+                              fn_solotrucking.files.add();
+                        }*/
+                    }
+                }); 
+           },
+           delete_file : function(){
+              $("#policies_files_form #files_datagrid tbody td .trash").bind("click",function(){
+                    var clave = $(this).parent().parent().find("td:eq(0)").attr('id');
+                        clave = clave.split("idFile_");
+                        clave = clave[1];
+                    $.post("funciones_policies.php",{accion:"elimina_archivo_poliza", "iConsecutivo": clave},
+                    function(data){
+                        fn_solotrucking.mensaje(data.msj);
+                        if(data.error == '0'){fn_policies.files.fillgrid();}      
+              },"json");
+              });  
+            },
+           firstPage : function(){
+                if($("#policies_files_form #files_datagrid .pagina_actual").val() != "1"){
+                    fn_policies.files.pagina_actual = "";
+                    fn_policies.files.fillgrid();
+                }
+            },
+           previousPage : function(){
+                if($("#policies_files_form #files_datagrid .pagina_actual").val() != "1"){
+                    fn_policies.files.pagina_actual = (parseInt($("#policies_files_form #files_datagrid .pagina_actual").val()) - 1) + "";
+                    fn_policies.files.fillgrid();
+                }
+            },
+           nextPage : function(){
+                if($("#policies_files_form #files_datagrid .pagina_actual").val() != $("#policies_files_form #files_datagrid .paginas_total").val()){
+                    fn_policies.files.pagina_actual = (parseInt($("#policies_files_form #files_datagrid .pagina_actual").val()) + 1) + "";
+                    fn_policies.files.fillgrid();
+                }
+            },
+           lastPage : function(){
+                if($("#policies_files_form #files_datagrid .pagina_actual").val() != $("#policies_files_form #files_datagrid .paginas_total").val()){
+                    fn_policies.files.pagina_actual = $("#policies_files_form #files_datagrid .paginas_total").val();
+                    fn_policies.files.fillgrid();
+                }
+            }, 
+           ordenamiento : function(campo,objeto){
+                $("#policies_files_form #files_datagrid #grid-head2 td").removeClass('down').removeClass('up');
+                if(campo == fn_policies.files.orden){
+                    if(fn_policies.files.sort == "ASC"){
+                        fn_policies.files.sort = "DESC";
+                        $("#policies_files_form #files_datagrid #grid-head2 td:eq("+objeto+")").addClass('up');
+                    }else{
+                        fn_policies.files.sort = "ASC";
+                        $("#policies_files_form #files_datagrid #grid-head2 td:eq("+objeto+")").addClass('down');
+                    }
+                }else{
+                    fn_policies.files.sort = "ASC";
+                    fn_policies.files.orden = campo;
+                    $("#policies_files_form #files_datagrid #grid-head2 td:eq("+objeto+")").addClass('down');
+                }
+                fn_policies.files.fillgrid();
+                return false;
+            }, 
+           add : function(){
+               $("#dialog_upload_files input[name=iConsecutivoPoliza]").val(fn_policies.files.iConsecutivoPoliza);
+               $("#dialog_upload_files input[name=iConsecutivoCompania]").val(fn_policies.files.iConsecutivoCompania);
+               $("#dialog_upload_files .file-message").html("");
+               $("#dialog_upload_files #fileselect").val(null);
+               $("#dialog_upload_files #fileselect").removeClass("fileupload");
+               fn_policies.files.active_file_form('#dialog_upload_files','fileselect');
+               fn_policies.files.valida_archivo();
+               $('#dialog_upload_files').dialog("open"); 
+           },
+           save : function(){
+               var valid   = true;
+               var mensaje = "";
+                  
+              //Validar campo para archivo:
+               if($("#dialog_upload_files #fileselect").val() == ""){
+                  mensaje += '<li>No file has been loaded.</li>';
+                  valid    = false;
+                  $("#dialog_upload_files #fileselect").addClass('error'); 
+               }
+                  
+              if(valid){
+                  var form       = "#dialog_upload_files form";
+                  var dataForm   = new FormData();
+                  var other_data = $(form).serializeArray();
+                  dataForm.append('accion','guarda_archivo_poliza');
+                  $.each($(form+' input[type=file]')[0].files,function(i, file){dataForm.append('file-'+i, file);});
+                  $.each(other_data,function(key,input){dataForm.append(input.name,input.value);});
+                      
+                  $.ajax({
+                      type: "POST",
+                      url : "funciones_policies.php",
+                      data: dataForm,
+                      cache: false,
+                      contentType: false,
+                      processData: false,
+                      type: 'POST',
+                      dataType : "json",
+                      success : function(data){ 
+                          fn_solotrucking.mensaje(data.mensaje);
+                          if(data.error == "0"){
+                              $("#dialog_upload_files").dialog('close');
+                              fn_policies.files.fillgrid();
+                          }
+                      }
+                  });        
+              }else{
+                  fn_solotrucking.mensaje('<p>Favor de revisar lo siguiente:</p><ul>'+mensaje+'</ul>'); 
+              } 
+           },
+           active_file_form : function(datagrid,fileinput){
+              //inicializar archivo:
+              if(window.File && window.FileList && window.FileReader) {
+                  fn_solotrucking.files.form      = datagrid;
+                  fn_solotrucking.files.fileinput = fileinput;
+                  fn_solotrucking.files.add(); 
+              }
+           },
+           valida_archivo : function(){
+               var file = $("#dialog_upload_files select[name=eArchivo]").val();
+               if(file != 'OTHER'){$("#dialog_upload_files input[name=eArchivoOther]").val('').hide();}
+               else{$("#dialog_upload_files input[name=eArchivoOther]").show();}
+           },
+        },
 } 
 
 var fn_certificate = {
@@ -1394,13 +1575,13 @@ var fn_certificate = {
                         </td>
                     </tr>
                     <tr>
-                        <td>
+                        <td style="width:50%;">
                             <div class="field_item"> 
                                 <label>Effective Date <span style="color:#ff0000;">*</span>: </label>
                                 <input tabindex="4" id="dFechaInicio" type="text" class="txt-uppercase fecha" style="width: 92%;">
                             </div>
                         </td>
-                        <td>
+                        <td style="width:50%;">
                         <div class="field_item"> 
                             <label>Expiration Date <span style="color:#ff0000;">*</span>: </label>
                             <input tabindex="5" id="dFechaCaducidad" type="text" class="txt-uppercase fecha" style="width: 92%;">
@@ -1526,10 +1707,10 @@ var fn_certificate = {
                         </td>
                     </tr>
                 </table>
-                <div class="policy_jacker_file" style="display:none;height: 45px;">
-                    <!--<legend>POLICY FILES</legend>-->
+                <!--<div class="policy_jacker_file" style="display:none;height: 45px;">
+                    <legend>POLICY FILES</legend>
                     <div class="file_certificate files policyJackerField" style="width: 50%;float: left;"> 
-                        <label>Policy Jacker: <span style="color:#9e2e2e;">Please upload the policy jacker in PDF format.</span></label> 
+                        <label>Policy Bind: <span style="color:#9e2e2e;">Please upload the policy BIND in PDF format.</span></label> 
                         <input  id="txtPolicyJacker" type="text" readonly="readonly" value="" size="40" style="width:55%;float: left;" />
                         <button id="btnPolicyJacker" type="button" style="top: 5px!important;float: left;margin-left: 5px;">Upload file</button>
                         <div class="btn-icon trash btn-left active" title="Delete Policy Jacker" onclick="fn_policies.delete_file('policy_jacker');" style="padding: 3px 5px;position: relative;top: 3px;"><i class="fa fa-trash"></i></div>
@@ -1542,13 +1723,13 @@ var fn_certificate = {
                         <input  id="txtPolicyPFA" type="text" readonly="readonly" value="" size="40" style="width:55%;float: right;clear: none;" />
                         <input  id="iConsecutivoArchivoPFA" type="hidden">
                     </div>
-                </div>
+                </div> -->
                 <br> 
                 <button type="button" class="btn-1" onclick="fn_policies.save();" style="width: 130px;">SAVE POLICY</button> 
                 <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('policies_edit_form');fn_policies.fillgrid();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
             </fieldset>
             <div id="certificate_edit_form">
-            <fieldset class="fieldset-certificates">
+            <fieldset class="fieldset-certificates" style="padding-bottom: 0px;">
                 <legend>GENERAL DATA FOR CERTIFICATE</legend>
                  <table style="width: 100%;border-collapse: collapse;">
                     <tr><td colspan="100%"><p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p></td></tr>
@@ -1603,8 +1784,6 @@ var fn_certificate = {
                 <button type="button" class="btn-1 campos-database" onclick="fn_popups.cerrar_ventana('policies_edit_form');fn_policies.fillgrid();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
             </fieldset>
             <fieldset class="campos-layout">
-                <legend>UPLOAD PDF LAYOUT FROM INSURED HUB</legend>
-                <p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p>
                 <table style="width: 100%;border-collapse: collapse;">
                     <tr>
                         <td colspan="100%">
@@ -2039,6 +2218,89 @@ var fn_certificate = {
         </fieldset>
     </form>  
 </div>
+
+<!-- FILES -->
+<div id="policies_files_form" class="popup-form" style="width: 1300px;">
+    <div class="p-header">
+        <h2>POLICIES - Files administrator</h2>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('policies_files_form');"><i class="fa fa-times"></i></div>
+    </div>
+    <div class="p-container">
+        <div>
+            <h3 class="popup-gridtit" style="width: 99.8%;padding: 10px 0px 0px 0px;"><span style="padding: 5px;">Files of Policy: <b style="color:#FFF;"></b> - <b style="color:#FFF;"></b></span></h3>
+            <table id="files_datagrid" class="popup-datagrid" style="width: 100%;margin-bottom: 10px;" cellpadding="0" cellspacing="0">
+                <thead>
+                    <tr id="grid-head2">
+                        <td class="etiqueta_grid">File Name</td>
+                        <td class="etiqueta_grid">Category</td>
+                        <td class="etiqueta_grid">Type</td>
+                        <td class="etiqueta_grid">Size</td>
+                        <td class="etiqueta_grid">Visible to Company</td>
+                        <td class="etiqueta_grid" style="width: 100px;text-align: center;">
+                            <div class="btn-icon edit btn-left" title="Upload files" onclick="fn_policies.files.add();" style="width: auto!important;"><i class="fa fa-upload"></i><span style="    padding-left: 5px;font-size: 0.8em;text-transform: uppercase;">upload</span></div>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No uploaded files.</td></tr></tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="100%">
+                            <div class="datagrid-pages" style="display: none;">
+                                <input class="pagina_actual" type="text" readonly="readonly" size="3">
+                                <label> / </label>
+                                <input class="paginas_total" type="text" readonly="readonly" size="3">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="100%">
+                            <div class="datagrid-menu-pages" style="display: none;">
+                                <button class="pgn-inicio"    onclick="fn_policies.files.firstPage();" title="First page"><span></span></button>
+                                <button class="pgn-anterior"  onclick="fn_policies.files.previousPage();" title="Previous"><span></span></button>
+                                <button class="pgn-siguiente" onclick="fn_policies.files.nextPage();" title="Next"><span></span></button>
+                                <button class="pgn-final"     onclick="fn_policies.files.lastPage();" title="Last Page"><span></span></button>
+                            </div>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+<div id="dialog_upload_files" title="Upload files to Policy" style="display:none;padding: .5em 1em .5em 0em!important;">
+    <form class="frm_upload_files" action="" method="POST" enctype="multipart/form-data">
+        <fieldset>
+        <input name="iConsecutivoPoliza"   type="hidden" value="">
+        <input name="iConsecutivoCompania" type="hidden" value="">
+        <div>
+            <label>File Category <span style="color:#ff0000;">*</span>: </label>
+            <Select name="eArchivo" style="height: 27px!important;" class="txt-uppercase" onchange="fn_policies.files.valida_archivo();">
+                <option value="OTHER">Other</option>
+                <option value="BIND">Bind Request</option>
+                <option value="ACCEPTANCE REPORT">Acceptance Report</option>   
+                <option value="QUOTE">Quote</option> 
+                <option value="POLICY JACKER">Policy Jacker</option>   
+                <option value="PFA">PFA</option>   
+            </select> 
+            <input name="eArchivoOther" type="text" class="txt-uppercase" value="" style="display: none;height: 27px!important;width:98.5%;" placeholder="Other Category:">
+        </div>
+        <div class="field-sent-to-brokers">
+            <label>Show File to Company?? <span style="color:#ff0000;">*</span> </label>
+            <Select name="iDisponibleCompania" style="height: 27px!important;">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+            </select> 
+        </div>
+        <div class="field_item"> 
+            <label class="required-field">File to upload:</label>
+            <div class="file-container">
+                <input id="fileselect" name="fileselect" type="file"/>
+                <div class="file-message"></div>
+            </div>
+        </div> 
+        </fieldset>
+    </form>   
+</div> 
 <!-- FOOTER -->
 <?php include("footer.php"); ?> 
 

@@ -154,7 +154,7 @@
      $conexion->autocommit(FALSE);
       
      $sql = "SELECT iConsecutivo AS clave, sDescripcion AS descripcion 
-             FROM ct_tipo_poliza ORDER BY iConsecutivo ASC";
+             FROM ct_tipo_poliza ORDER BY sDescripcion ASC";
      $result = $conexion->query($sql);
      $tipos = $result->num_rows;  
         if($tipos > 0){

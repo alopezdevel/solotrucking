@@ -42,7 +42,8 @@
           $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
           $sql = "SELECT iConsecutivo, sNombre, IF (dFechaNacimiento != '' AND dFechaNacimiento != '0000-00-00' , DATE_FORMAT(dFechaNacimiento ,'%m/%d/%Y'), '') AS dFechaNacimiento, ".
                  "iNumLicencia, IF (dFechaExpiracionLicencia != '' AND dFechaExpiracionLicencia != '0000-00-00' , DATE_FORMAT(dFechaExpiracionLicencia ,'%m/%d/%Y'), '') AS dFechaExpiracionLicencia, ".
-                 "eTipoLicencia, inPoliza,iExperienciaYear FROM ct_operadores ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
+                 "eTipoLicencia,iExperienciaYear ".
+                 "FROM ct_operadores ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
           $result = $conexion->query($sql);
           $rows = $result->num_rows; 
              

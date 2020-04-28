@@ -113,7 +113,7 @@
                  <?php }?>
                  <li class="submenu"><a href="#">CLAIMS</a>
                     <ul>
-                        <li><a href="claims">New Claim</a></li>
+                        <!--<li><a href="claims">New Claim</a></li>-->
                         <li><a href="claims_requests">Applications for Claims</a></li>
                     </ul>
                  </li>  

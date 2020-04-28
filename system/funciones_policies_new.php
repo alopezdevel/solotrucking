@@ -32,6 +32,7 @@
       $sIP                  = $_SERVER['REMOTE_ADDR'];
       $sUsuario             = $_SESSION['usuario_actual'];
       $dFecha               = date("Y-m-d H:i:s");
+      $query                = "";
       
       //Crear archivo fisico en el Temporal:
       $fp      = fopen($tmpName, 'r'); 
@@ -91,11 +92,17 @@
                         $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
                         $success = true;
                         
-                        #ELIMINAR UNIDADES DE LAS POLIZAS:
+                        #ELIMINAR UNIDADES DE LAS POLIZAS Y MARCAR POLIZA COMO BIND LISTO:
                         for($p=0;$p<$count;$p++){
                             $query  = "DELETE FROM cb_poliza_unidad WHERE iConsecutivoPoliza='".$iConsecutivoPolizas[$p]."'";
                             $success= $conexion->query($query);
                             if(!($success)){$error = 1; $mensaje = "Failed to restart the policies data of units, please try again.";}
+                            else{
+                                //Actualizar poliza:
+                                $query = "UPDATE ct_polizas SET iBindListUpload ='1' WHERE iConsecutivo ='".$iConsecutivoPolizas[$p]."'"; 
+                                $success= $conexion->query($query);  
+                                if(!($success)){$error = 1; $mensaje = "Failed to check in the policy bind.";}
+                            }
                         }
             
                         // Recorrer sheet por RENGLONES:
@@ -289,6 +296,12 @@
                             $query  = "DELETE FROM cb_poliza_operador WHERE iConsecutivoPoliza='".$iConsecutivoPolizas[$p]."'";
                             $success= $conexion->query($query);
                             if(!($success)){$error = 1; $mensaje = "Failed to restart the policies data of drivers, please try again.";}
+                            else{
+                                //Actualizar poliza:
+                                $query = "UPDATE ct_polizas SET iBindListUpload ='1' WHERE iConsecutivo ='".$iConsecutivoPolizas[$p]."'"; 
+                                $success= $conexion->query($query);  
+                                if(!($success)){$error = 1; $mensaje = "Failed to check in the policy bind.";}
+                            }
                         }
                         
                         // Recorrer sheet por RENGLONES:
@@ -1204,7 +1217,7 @@
                         if($success && $error == 0){$conexion->commit(); $mensaje .= "The data of $success_unit vehicle endorsements has been updated/added successfully, please verify the data in the company policies.<br><br>";}
                         else{$conexion->rollback();}   
                     }
-                    
+                                        
                     // Verificar en caso que suban un sheet con un nombre invalido:
                     if($title != 'UNITS' && $title != 'DRIVERS'){
                         $error = 1; $mensaje = "Error: The title of sheet '$title' is not valid, please upload the file with the layout format and try again.";

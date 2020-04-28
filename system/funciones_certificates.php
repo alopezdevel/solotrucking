@@ -3,7 +3,7 @@
   // Generic functions lib 
   include("functiones_genericas.php"); 
   $_POST["accion"] and  $_POST["accion"]!= "" ? call_user_func_array($_POST["accion"],array()) : ""; 
-  define('USER',$_SESSION['usuario_actual']); // Constante UserId 
+  define('USER',strtolower($_SESSION['usuario_actual'])); // Constante UserId 
   
   function get_company_certificate(){
     include("cn_usuarios.php");

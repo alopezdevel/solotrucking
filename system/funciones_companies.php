@@ -136,7 +136,7 @@
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
       $transaccion_exitosa = true;
       
-      $query = "SELECT COUNT(iConsecutivo) AS total FROM ct_companias WHERE sUsdot ='".$_POST['sUsdot']."'";
+      $query = "SELECT COUNT(iConsecutivo) AS total FROM ct_companias WHERE sUsdot ='".$_POST['sUsdot']."' AND sUsdot != 'NA'";
       $result = $conexion->query($query);
       $valida = $result->fetch_assoc();
       
@@ -145,32 +145,35 @@
               $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
                       Error: The company trying to add already exists. Please verify the data.</p>';
               $error = '1';
-          }else{
+          }
+      } 
+      
+      if($error == '0'){
+          if($_POST["edit_mode"] == 'true'){
+            
              foreach($_POST as $campo => $valor){
                 if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo" ){ //Estos campos no se insertan a la tabla
                     if($valor != ""){array_push($valores,"$campo='".trim($valor)."'");}
                 }
-             }   
-          }
-      }else if($_POST["edit_mode"] != 'true'){
-         foreach($_POST as $campo => $valor){
-           if($campo != "accion" and $campo != "edit_mode"){ //Estos campos no se insertan a la tabla
-                if($valor != ""){
-                   array_push($campos ,$campo); 
-                   array_push($valores, trim($valor)); 
-                }
-           }
-         }  
-      }
-      
-      if($error == '0'){
-          if($_POST["edit_mode"] == 'true'){
+             }     
+              
+              
             array_push($valores ,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
             array_push($valores ,"sIP='".$_SERVER['REMOTE_ADDR']."'");
             array_push($valores ,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'");
             $sql = "UPDATE ct_companias SET ".implode(",",$valores)." WHERE iConsecutivo = '".$_POST['iConsecutivo']."'";
             $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The data has been updated successfully.</p>'; 
-          }else{
+          }
+          else{
+            foreach($_POST as $campo => $valor){
+               if($campo != "accion" and $campo != "edit_mode"){ //Estos campos no se insertan a la tabla
+                    if($valor != ""){
+                       array_push($campos ,$campo); 
+                       array_push($valores, trim($valor)); 
+                    }
+               }
+            }  
+           
             array_push($campos ,"dFechaIngreso");
             array_push($valores ,date("Y-m-d H:i:s"));
             array_push($campos ,"sIP");

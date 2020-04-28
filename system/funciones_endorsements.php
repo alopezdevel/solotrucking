@@ -2490,8 +2490,15 @@
                       $sContenido           = $conexion->real_escape_string($fileContent);
                       $eArchivo             = trim($_POST['eArchivo']); 
                       $iConsecutivoEndoso   = trim($_POST['iConsecutivoEndoso']);
-                      if($eArchivo != "OTHERS" && $eArchivo != 'ENDORSEMENT'){$fileName = strtolower($eArchivo).'.'.$fileExten;} //Si la categoria existe renombramos el archivo.
-                      else if($eArchivo == 'ENDORSEMENT'){
+                      
+                      if(isset($_POST['iEnviarArchivoEmail']) != ""){
+                        $iEnviaEmail = trim($_POST['iEnviarArchivoEmail']);    
+                      }
+                      else{$iEnviaEmail = '0';}
+                      
+                      //if($eArchivo != "OTHERS" && $eArchivo != 'ENDORSEMENT'){$fileName = strtolower($eArchivo).'.'.$fileExten;} //Si la categoria existe renombramos el archivo.
+                      //else 
+                      if($eArchivo == 'ENDORSEMENT'){
                           
                           $fileName = explode(".",$fileName);
                           $fileName = str_replace(" ","_",$fileName[0]);
@@ -2500,14 +2507,14 @@
                       #UPDATE
                       if($edit_mode){
                          $sql = "UPDATE cb_endoso_files SET sNombreArchivo ='$fileName', sTipoArchivo ='$fileType', iTamanioArchivo ='$fileSize', ".
-                                "hContenidoDocumentoDigitalizado='$sContenido', eArchivo='$eArchivo', ".
+                                "hContenidoDocumentoDigitalizado='$sContenido', eArchivo='$eArchivo',iEnviarArchivoEmail ='$iEnviaEmail', ".
                                 "dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."'".
                                 "WHERE iConsecutivo ='".trim($_POST['iConsecutivo'])."'";  
                       }
                       #INSERT
                       else{
-                         $sql = "INSERT INTO cb_endoso_files (sNombreArchivo, sTipoArchivo, iTamanioArchivo, hContenidoDocumentoDigitalizado, eArchivo,iConsecutivoEndoso, dFechaIngreso, sIP, sUsuarioIngreso) ".
-                                "VALUES('$fileName','$fileType','$fileSize','$sContenido','$eArchivo','$iConsecutivoEndoso','".date("Y-m-d H:i:s")."', '".$_SERVER['REMOTE_ADDR']."', '".$_SESSION['usuario_actual']."')"; 
+                         $sql = "INSERT INTO cb_endoso_files (sNombreArchivo, sTipoArchivo, iTamanioArchivo, hContenidoDocumentoDigitalizado, eArchivo,iConsecutivoEndoso, dFechaIngreso, sIP, sUsuarioIngreso, iEnviarArchivoEmail) ".
+                                "VALUES('$fileName','$fileType','$fileSize','$sContenido','$eArchivo','$iConsecutivoEndoso','".date("Y-m-d H:i:s")."', '".$_SERVER['REMOTE_ADDR']."', '".$_SESSION['usuario_actual']."','".$iEnviaEmail."')"; 
                       }
                       
                       if($conexion->query($sql)){

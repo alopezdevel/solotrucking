@@ -139,7 +139,7 @@
             filtro : "",
             pagina_actual : "",
             sort : "DESC",
-            orden : "A.dFechaAplicacion",
+            orden : "LEFT(A.dFechaAplicacion,10)",
             init : function(){
                 
                 $('.num').keydown(fn_solotrucking.inputnumero); 
@@ -548,6 +548,7 @@
                add : function(){
                    $("#dialog_upload_files input[name=iConsecutivoEndoso]").val(fn_endorsement.files.iConsecutivoEndoso);
                    $("#dialog_upload_files .file-message").html("");
+                   $("#dialog_upload_files #fileselect").val(null);
                    $("#dialog_upload_files #fileselect").removeClass("fileupload");
                    fn_endorsement.files.active_file_form('#dialog_upload_files','fileselect');
                    $('#dialog_upload_files').dialog("open"); 
@@ -605,7 +606,7 @@
               $("#frm_unit_information input, #frm_unit_information select").val(''); 
               fn_endorsement.get_unidades();
               fn_endorsement.get_policies(); 
-              fn_endorsement.valid_action(); 
+              fn_endorsement.detalle.valid_action(); 
             },
             get_unidades : function(){
                 
@@ -912,11 +913,15 @@
                     $(fn_endorsement.detalle.form+' .delete_field, '+fn_endorsement.detalle.form+' .add_field').hide();
                     $(fn_endorsement.detalle.form+" :input[name=iTotalPremiumPD]").prop('readonly','readonly').addClass('readonly');
                     
-                    if(action == 'DELETE' || action == 'DELETESWAP'){
-                        $(fn_endorsement.detalle.form+' .delete_field').show();
-                    }else if(action == 'ADD' || action == 'ADDSWAP'){
+                    //DELETE OR DELETE SWAP
+                    if(action == 'DELETE' || action == 'DELETESWAP'){$(fn_endorsement.detalle.form+' .delete_field').show();}
+                    // ADD OR ADD SWAP
+                    else if(action == 'ADD' || action == 'ADDSWAP'){
                         $(fn_endorsement.detalle.form+' .add_field').show();
                         if(fn_endorsement.detalle.pd_valid){$(fn_endorsement.detalle.form+" :input[name=iTotalPremiumPD]").removeProp('readonly').removeClass('readonly');}
+                    }
+                    else if(action == 'CHANGEPD'){
+                        if(fn_endorsement.detalle.pd_valid){$(fn_endorsement.detalle.form+" :input[name=iTotalPremiumPD]").removeProp('readonly').removeClass('readonly');}    
                     }
                 },  
                 add : function(){
@@ -1389,6 +1394,7 @@
                                 <option value="DELETE">DELETE</option>
                                 <option value="ADDSWAP">ADD SWAP</option>
                                 <option value="DELETESWAP">DELETE SWAP</option>
+                                <option value="CHANGEPD">CHANGE PD AMOUNT</option>
                             </select>
                         </div>
                         </td>
@@ -1434,6 +1440,7 @@
                                 <td class="etiqueta_grid">Category</td>
                                 <td class="etiqueta_grid">Type</td>
                                 <td class="etiqueta_grid">Size</td>
+                                <td class="etiqueta_grid">Send to brokers</td>
                                 <td class="etiqueta_grid" style="width: 100px;text-align: center;">
                                     <div class="btn-icon edit btn-left" title="Upload files" onclick="fn_endorsement.files.add();" style="width: auto!important;"><i class="fa fa-upload"></i><span style="    padding-left: 5px;font-size: 0.8em;text-transform: uppercase;">upload</span></div>
                                 </td>
@@ -1493,6 +1500,13 @@
                 <option value="NOR">Non-Op Registration</option>   
                 <option value="PTL">Proof of Total Loss</option>  
                 <option value="ENDORSEMENT">ENDORSEMENT</option>  
+            </select> 
+        </div>
+        <div class="field-sent-to-brokers">
+            <label>Send this file by email to the broker? <span style="color:#ff0000;">*</span> </label>
+            <Select name="iEnviarArchivoEmail" style="height: 27px!important;">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
             </select> 
         </div>
         <div class="field_item"> 
@@ -1642,6 +1656,7 @@
                         <td class="etiqueta_grid">Category</td>
                         <td class="etiqueta_grid">Type</td>
                         <td class="etiqueta_grid">Size</td>
+                        <td class="etiqueta_grid">Send to brokers</td>
                         <td class="etiqueta_grid" style="width: 100px;text-align: center;">
                             <div class="btn-icon edit btn-left" title="Upload files" onclick="fn_endorsement.files.add();" style="width: auto!important;"><i class="fa fa-upload"></i><span style="    padding-left: 5px;font-size: 0.8em;text-transform: uppercase;">upload</span></div>
                         </td>

@@ -1,4 +1,4 @@
-﻿<?php session_start();    
+<?php session_start();    
 if ( !($_SESSION["acceso"] == '2'  && $_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  )  ){ //No ha iniciado session, redirecciona a la pagina de login
     header("Location: login.php");
     exit;
@@ -393,7 +393,7 @@ var fn_mypolicies = {
                         <td class="etiqueta_grid">LICENSE TYPE</td> 
                         <td class="etiqueta_grid">EXPIRE DATE</td> 
                         <td class="etiqueta_grid">EXPERIENCE YEARS</td>
-                        <td class="etiqueta_grid"></td>
+                        <td class="etiqueta_grid">APPLICATION DATE</td>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -454,7 +454,7 @@ var fn_mypolicies = {
                         <td class="etiqueta_grid">MAKE</td> 
                         <td class="etiqueta_grid">TYPE</td> 
                         <td class="etiqueta_grid">WEIGHT</td> 
-                        <td class="etiqueta_grid"></td>
+                        <td class="etiqueta_grid">APPLICATION DATE</td>
                     </tr>
                 </thead>
                 <tbody></tbody>

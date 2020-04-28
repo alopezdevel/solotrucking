@@ -139,7 +139,7 @@
             filtro : "",
             pagina_actual : "",
             sort : "DESC",
-            orden : "A.dFechaAplicacion",
+            orden : "LEFT(A.dFechaAplicacion,10)",
             init : function(){
                 $('.num').keydown(fn_solotrucking.inputnumero); 
                 $('.decimals').keydown(fn_solotrucking.inputdecimals);
@@ -508,8 +508,8 @@
                 }, 
                add : function(){
                    $("#dialog_upload_files input[name=iConsecutivoEndoso]").val(fn_endorsement.files.iConsecutivoEndoso);
-                   //$("#dialog_upload_files input[name=MAX_FILE_SIZE]").val(3000000);
                    $("#dialog_upload_files .file-message").html("");
+                   $("#dialog_upload_files #fileselect").val(null);
                    $("#dialog_upload_files #fileselect").removeClass("fileupload");
                    fn_endorsement.files.active_file_form('#dialog_upload_files','fileselect');
                    $('#dialog_upload_files').dialog("open"); 
@@ -1399,6 +1399,7 @@
                                 <td class="etiqueta_grid">Category</td>
                                 <td class="etiqueta_grid">Type</td>
                                 <td class="etiqueta_grid">Size</td>
+                                <td class="etiqueta_grid">Send to brokers</td>
                                 <td class="etiqueta_grid" style="width: 100px;text-align: center;">
                                     <div class="btn-icon edit btn-left" title="Upload files" onclick="fn_endorsement.files.add();" style="width: auto!important;"><i class="fa fa-upload"></i><span style="    padding-left: 5px;font-size: 0.8em;text-transform: uppercase;">upload</span></div>
                                 </td>
@@ -1578,6 +1579,7 @@
                                 <td class="etiqueta_grid">Category</td>
                                 <td class="etiqueta_grid">Type</td>
                                 <td class="etiqueta_grid">Size</td>
+                                <td class="etiqueta_grid">Send to brokers</td>
                                 <td class="etiqueta_grid" style="width: 100px;text-align: center;">
                                     <div class="btn-icon edit btn-left" title="Upload files" onclick="fn_endorsement.files.add();" style="width: auto!important;"><i class="fa fa-upload"></i><span style="    padding-left: 5px;font-size: 0.8em;text-transform: uppercase;">upload</span></div>
                                 </td>
@@ -1641,7 +1643,14 @@
                 <option value="LONGTERM">Longterm</option>   
                 <option value="PSP">PSP</option>   
                 <option value="MVR">MVR</option>  
-                <option value="ENDORSEMENT">ENDORSEMENT</option>  
+                <option value="ENDORSEMENT">Endorsement</option>  
+            </select> 
+        </div>
+        <div class="field-sent-to-brokers">
+            <label>Send this file by email to the broker? <span style="color:#ff0000;">*</span> </label>
+            <Select name="iEnviarArchivoEmail" style="height: 27px!important;">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
             </select> 
         </div>
         <div class="field_item"> 

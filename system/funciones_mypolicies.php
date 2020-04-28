@@ -111,7 +111,7 @@
   }
   function get_drivers_active(){
       
-      $iConsecutivoPoliza = $_POST['iConsecutivoPoliza'];
+      $iConsecutivoPoliza   = $_POST['iConsecutivoPoliza'];
       $iConsecutivoCompania = $_SESSION['company'];
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
@@ -122,7 +122,7 @@
       $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
         
       //Filtros de informacion //
-      $filtroQuery = " WHERE siConsecutivosPolizas != '' AND inPoliza = '1' AND iConsecutivoCompania = '$iConsecutivoCompania' AND siConsecutivosPolizas LIKE '%$iConsecutivoPoliza%' ";
+      $filtroQuery = " WHERE iConsecutivoCompania = '$iConsecutivoCompania' AND B.iDeleted='0' AND A.iConsecutivoPoliza='$iConsecutivoPoliza'";
       $array_filtros = explode(",",$_POST["filtroInformacion"]);
       foreach($array_filtros as $key => $valor){
         if($array_filtros[$key] != ""){
@@ -134,10 +134,12 @@
     $ordenQuery = " ORDER BY ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"];
     
     //contando registros // 
-    $query_rows = "SELECT COUNT(iConsecutivo) AS total FROM ct_operadores ".$filtroQuery;
-    $Result = $conexion->query($query_rows);
-    $items = $Result->fetch_assoc();
-    $registros = $items["total"];
+    $query_rows = "SELECT COUNT(B.iConsecutivo) AS total ".
+                  "FROM      cb_poliza_operador AS A ".
+                  "LEFT JOIN ct_operadores      AS B ON A.iConsecutivoOperador = B.iConsecutivo ".$filtroQuery;
+    $Result     = $conexion->query($query_rows);
+    $items      = $Result->fetch_assoc();
+    $registros  = $items["total"];
     if($registros == "0"){$pagina_actual = 0;}
     $paginas_total = ceil($registros / $registros_por_pagina);
     if($registros == "0"){
@@ -148,22 +150,26 @@
         $pagina_actual == "0" ? $pagina_actual = 1 : false;
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-        $sql = "SELECT iConsecutivo, sNombre, DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, iExperienciaYear, iNumLicencia, (CASE eTipoLicencia WHEN  1 THEN 'Federal / B1' WHEN  2 THEN 'Commercial / CDL - A' END) AS TipoLicencia ".
-               "FROM ct_operadores ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
+        $sql    = "SELECT B.iConsecutivo, sNombre, DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, iExperienciaYear, iNumLicencia, ".
+                  "(CASE eTipoLicencia WHEN  1 THEN 'Federal / B1' WHEN  2 THEN 'Commercial / CDL - A' END) AS TipoLicencia, A.eModoIngreso, DATE_FORMAT(A.dFechaIngreso,'%m/%d/%Y') AS AppDate ".
+                  "FROM      cb_poliza_operador AS A ".
+                  "LEFT JOIN ct_operadores      AS B ON A.iConsecutivoOperador = B.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
         $result = $conexion->query($sql);
-        $rows = $result->num_rows;   
+        $rows   = $result->num_rows;   
         if ($rows > 0) {    
                 while ($items = $result->fetch_assoc()){ 
                    if($items["sNombre"] != ""){
+                         
+                         $items['eModoIngreso'] == 'AMIC' ? $items['eModoIngreso'] = "BIND" : "";
                                    
                          $htmlTabla .= "<tr id=\"id-".$items['iConsecutivo']."\" >".
                                            "<td>".$items['sNombre']."</td>".
-                                           "<td>".$items['dFechaNacimiento']."</td>".
+                                           "<td class=\"text-center\">".$items['dFechaNacimiento']."</td>".
                                            "<td>".$items['iNumLicencia']."</td>". 
                                            "<td>".$items['TipoLicencia']."</td>".
-                                           "<td>".$items['dFechaExpiracionLicencia']."</td>".  
-                                           "<td>".$items['iExperienciaYear']."</td>".                                                                                                                                                                                                                    
-                                           "<td></td></tr>";  
+                                           "<td class=\"text-center\">".$items['dFechaExpiracionLicencia']."</td>".  
+                                           "<td class=\"text-center\">".$items['iExperienciaYear']."</td>".                                                                                                                                                                                                                    
+                                           "<td>".$items['eModoIngreso']." - ".$items['AppDate']."</td></tr>";  
                      }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}    
                 }
                 $conexion->rollback();
@@ -190,7 +196,7 @@
       $registros_por_pagina == "" ? $registros_por_pagina = 30 : false;
         
       //Filtros de informacion //
-      $filtroQuery = " WHERE siConsecutivosPolizas != '' AND inPoliza = '1' AND iConsecutivoCompania = '$iConsecutivoCompania' AND siConsecutivosPolizas LIKE '%$iConsecutivoPoliza%' ";
+      $filtroQuery = " WHERE iConsecutivoCompania = '$iConsecutivoCompania' AND A.iDeleted='0' AND D.iConsecutivoPoliza='$iConsecutivoPoliza' ";
       $array_filtros = explode(",",$_POST["filtroInformacion"]);
       foreach($array_filtros as $key => $valor){
         if($array_filtros[$key] != ""){
@@ -202,12 +208,14 @@
     $ordenQuery = " ORDER BY ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"];
     
     //contando registros // 
-    $query_rows = "SELECT COUNT(A.iConsecutivo) AS total FROM ct_unidades A ".
-                  "LEFT JOIN ct_unidad_radio B ON A.iConsecutivoRadio = B.iConsecutivo ".
-                  "LEFT JOIN ct_unidad_modelo C ON A.iModelo = C.iConsecutivo ".$filtroQuery;
-    $Result = $conexion->query($query_rows);
-    $items = $Result->fetch_assoc();
-    $registros = $items["total"];
+    $query_rows = "SELECT COUNT(A.iConsecutivo) AS total ".
+                  "FROM cb_poliza_unidad      AS D ".
+                  "LEFT JOIN ct_unidades      AS A ON D.iConsecutivoUnidad = A.iConsecutivo ".
+                  "LEFT JOIN ct_unidad_radio  AS B ON A.iConsecutivoRadio = B.iConsecutivo  ".
+                  "LEFT JOIN ct_unidad_modelo AS C ON A.iModelo = C.iConsecutivo".$filtroQuery;
+    $Result     = $conexion->query($query_rows);
+    $items      = $Result->fetch_assoc();
+    $registros  = $items["total"];
     if($registros == "0"){$pagina_actual = 0;}   
     $paginas_total = ceil($registros / $registros_por_pagina);
     if($registros == "0"){
@@ -218,25 +226,26 @@
         $pagina_actual == "0" ? $pagina_actual = 1 : false;
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-        $sql = "SELECT A.iConsecutivo, CONCAT('(',C.sAlias,')',' ',C.sDescripcion ) AS Make, B.sDescripcion AS Radio, iYear, sVIN, sPeso, sTipo, sModelo  ".
-               "FROM ct_unidades A ".
-               "LEFT JOIN ct_unidad_radio B ON A.iConsecutivoRadio = B.iConsecutivo ".
-               "LEFT JOIN ct_unidad_modelo C ON A.iModelo = C.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
+        $sql    = "SELECT A.iConsecutivo, CONCAT('(',C.sAlias,')',' ',C.sDescripcion ) AS Make, B.sDescripcion AS Radio, iYear, sVIN, sPeso, sTipo, sModelo, D.eModoIngreso, DATE_FORMAT(D.dFechaIngreso,'%m/%d/%Y') AS AppDate  ".
+                  "FROM cb_poliza_unidad      AS D ".
+                  "LEFT JOIN ct_unidades      AS A ON D.iConsecutivoUnidad = A.iConsecutivo ".
+                  "LEFT JOIN ct_unidad_radio  AS B ON A.iConsecutivoRadio = B.iConsecutivo  ".
+                  "LEFT JOIN ct_unidad_modelo AS C ON A.iModelo = C.iConsecutivo".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
         $result = $conexion->query($sql);
-        $rows = $result->num_rows;   
+        $rows   = $result->num_rows;   
         if ($rows > 0) {    
                 while ($items = $result->fetch_assoc()){ 
-                   //if($items["sVIN"] != ""){
-                                   
-                         $htmlTabla .= "<tr id=\"id-".$items['iConsecutivo']."\" >".
-                                           "<td>".$items['sVIN']."</td>".
-                                           "<td>".$items['Radio']."</td>".
-                                           "<td>".$items['iYear']."</td>". 
-                                           "<td>".$items['Make']."</td>".
-                                           "<td>".$items['sTipo']."</td>".  
-                                           "<td>".$items['sPeso']."</td>".                                                                                                                                                                                                                    
-                                           "<td></td></tr>";  
-                     //}else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}    
+                   
+                     $items['eModoIngreso'] == 'AMIC' ? $items['eModoIngreso'] = "BIND" : "";          
+                     $htmlTabla .= "<tr id=\"id-".$items['iConsecutivo']."\" >".
+                                       "<td>".$items['sVIN']."</td>".
+                                       "<td>".$items['Radio']."</td>".
+                                       "<td>".$items['iYear']."</td>". 
+                                       "<td>".$items['Make']."</td>".
+                                       "<td>".$items['sTipo']."</td>".  
+                                       "<td>".$items['sPeso']."</td>".                                                                                                                                                                                                                    
+                                       "<td>".$items['eModoIngreso']." - ".$items['AppDate']."</td></tr>";  
+                        
                 }
                 $conexion->rollback();
                 $conexion->close();                                                                                                                                                                       

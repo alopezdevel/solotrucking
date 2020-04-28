@@ -7,6 +7,7 @@
 ?>
 <!-- HEADER -->
 <?php include("header.php"); ?>  
+<script src="lib/jquery.autocomplete.pack.js" type="text/javascript"></script> 
 <script type="text/javascript"> 
     $(document).ready(inicio);
     function inicio(){  
@@ -17,6 +18,40 @@
             fn_claims.init();
             fn_claims.fillgrid();
             $.unblockUI();
+            
+            $('#dialog_mark_email_claim').dialog({
+                modal: true,
+                autoOpen: false,
+                width : 420,
+                height : 200,
+                resizable : false,
+                buttons : {
+                    'YES' : function() {
+                        $(this).dialog('close');
+                        fn_claims.mark_sent();             
+                    },
+                    'NO' : function(){
+                        $(this).dialog('close');
+                    }
+                }
+            });
+            
+            $('#dialog_delete_claim').dialog({
+                modal: true,
+                autoOpen: false,
+                width : 300,
+                height : 200,
+                resizable : false,
+                buttons : {
+                    'YES' : function() {
+                        clave = $('#dialog_delete_claim input[name=iConsecutivo]').val();
+                        $(this).dialog('close');
+                        
+                        fn_claims.delete_claim(clave);             
+                    },
+                    'NO' : function(){$(this).dialog('close');}
+                }
+            }); 
         
     }  
     function validapantalla(usuario){if(usuario == ""  || usuario == null){location.href= "login.php";}  }                   
@@ -27,6 +62,7 @@
             pagina_actual : "",
             sort : "ASC",
             orden : "A.iConsecutivo",
+            pd_valid : false,
             init : function(){
                 /*---- plugins y de mas ...*/
                 $('.num').keydown(fn_solotrucking.inputnumero); 
@@ -54,20 +90,6 @@
                        fn_claims.filtraInformacion();
                     }
                 }); 
-                
-                //GET POLICIES:
-                /*$.ajax({             
-                    type:"POST", 
-                    url:"funciones_claims_requests.php", 
-                    data:{accion:"get_company_policies"},
-                    async : true,
-                    dataType : "json",
-                    success : function(data){                               
-                        if(data.error == '0'){
-                            $("#edit_form .company_policies").empty().append(data.checkboxes); 
-                        }
-                    }
-                }); */
                 $.ajax({             
                     type:"POST", 
                     url:"catalogos_generales.php", 
@@ -93,34 +115,7 @@
                     success : function(data){$("#sEstado").empty().append(data.tabla);}
                 });  
                 /*----------- CARGANDO DRIVERS Y UNITS ----------*/
-                $.ajax({
-                    type: "POST",
-                    url : "funciones_claims.php",
-                    data: {
-                        "accion" : "get_drivers"
-                    },
-                    async : true,
-                    dataType : "text",
-                    success : function(data){
-                        var datos = eval(data); 
-                        $("#sDriver").autocomplete();
-                        $("#sDriver").autocomplete({source:datos});
-                    }
-                });
-                $.ajax({
-                    type: "POST",
-                    url : "funciones_claims.php",
-                    data: {
-                        "accion" : "get_units"
-                    },
-                    async : true,
-                    dataType : "text",
-                    success : function(data){
-                        var datos = eval(data); 
-                        $("#sUnitTrailer").autocomplete();
-                        $("#sUnitTrailer").autocomplete({source:datos});
-                    }
-                });
+                
                 $.ajax({             
                     type:"POST", 
                     url:"catalogos_generales.php", 
@@ -195,6 +190,7 @@
                         fn_claims.send();
                         fn_claims.send_claim();
                         fn_claims.edit_estatus();
+                        fn_claims.delete_confirm();
                     }
                 }); 
             },
@@ -245,7 +241,7 @@
             filtraInformacion : function(){
                     fn_claims.pagina_actual = 0;
                     fn_claims.filtro = "";
-                    if($(fn_claims.data_grid+" .flt_id").val() != ""){ fn_claims.filtro += "iConsecutivo|"+$(fn_claims.data_grid+" .flt_id").val()+","}
+                    //if($(fn_claims.data_grid+" .flt_id").val() != ""){ fn_claims.filtro += "iConsecutivo|"+$(fn_claims.data_grid+" .flt_id").val()+","}
                     if($(fn_claims.data_grid+" .flt_nombre").val() != ""){ fn_claims.filtro += "sNombreCompania|"+$(fn_claims.data_grid+" .flt_nombre").val()+","} 
                     if($(fn_claims.data_grid+" .flt_type").val() != ""){ fn_claims.filtro += "eCategoria|"+$(fn_claims.data_grid+" .flt_type").val()+","}
                     if($(fn_claims.data_grid+" .flt_dateIncident").val() != ""){ fn_claims.filtro += "dFechaIncidente|"+$(fn_claims.data_grid+" .flt_dateIncident").val()+","} 
@@ -259,11 +255,14 @@
            },
             add : function(){
               $('#edit_form :text, #edit_form select').val('').removeClass('error');
+              $("#edit_form select[name=iConsecutivoCompania]").removeProp('disabled');
               $('#edit_form .mensaje_valido').empty().append('The fields containing an (<span style="color:#ff0000;">*</span>) are required.');
               $('#edit_form .p-header h2').empty().append('CLAIMS - NEW APPLICATION');
+              fn_claims.revisar_tipos_polizas(); 
+              $("#edit_form #eDanoFisico, #edit_form #eDanoMercancia, #edit_form #eDanoTerceros").val('NOAPPLY');
               fn_solotrucking.get_date(".fecha"); 
               fn_popups.resaltar_ventana('edit_form'); 
-           },
+            },
             save : function(){
                var valid = true;
                todosloscampos = $('#edit_form :text, #edit_form select, #edit_form textarea');
@@ -301,12 +300,20 @@
                } 
                
                //Validando que por lo menos sea un driver o una unidad...
-               if($('#edit_form #sDriver').val() == '' && $('#edit_form #sUnitTrailer').val() == ''){ valid = false; $('#edit_form #sUnitTrailer, #edit_form #sDriver').addClass('error');}
+               if($('#edit_form #sNombreOperador').val() == '' && $('#edit_form #sVINUnidad').val() == ''){ 
+                   valid = false; $('#edit_form #sVINUnidad, #edit_form #sNombreOperador').addClass('error');
+               }
                if(!valid){fn_solotrucking.mensaje("Please select at least one driver or one unit from your list.");} 
+               
+               if($('#edit_form #sNombreOperador').val() != '' && $('#edit_form #iNumLicencia').val() == ''){ 
+                   valid = false; 
+                   $('#edit_form #iNumLicencia').addClass('error');
+                   fn_solotrucking.mensaje("Please check the license number from your driver.");
+               }
                
                //Revisando polizas en las que aplica:
                var polizas = "";
-               $("#edit_form .company_policies input[type=checkbox]").each(function(){
+               $("#edit_form #info_policies .popup-datagrid tbody input[type=checkbox]").each(function(){
                    if($(this).is(':checked')){
                       if(polizas != ""){polizas +="|"+$(this).val();}else{polizas = $(this).val();} 
                    }
@@ -320,13 +327,14 @@
                
                if(valid){
                    if($('#edit_form #iConsecutivo').val() != ''){struct_data_post.edit_mode = "true";}else{struct_data_post.edit_mode = "false";}         
-                   struct_data_post.action="save_claim";
-                   struct_data_post.domroot= "#edit_form #general_information"; 
+                   struct_data_post.action  = "save_claim";
+                   struct_data_post.domroot = "#edit_form #general_information"; 
                    $.post("funciones_claims_requests.php",struct_data_post.parse(),
                    function(data){
                         switch(data.error){
                          case '0':
                             fn_solotrucking.mensaje(data.msj);
+                            $('#edit_form #iConsecutivo').val(data.idClaim);
                          break;
                          case '1': fn_solotrucking.mensaje(data.msj); break;
                         }
@@ -337,7 +345,9 @@
            },
             edit: function(){
                 $(fn_claims.data_grid + " tbody td .btn_edit").bind("click",function(){
-                        var clave = $(this).parent().parent().find("td:eq(0)").html();
+                        var clave = $(this).parent().parent().find("td:eq(0)").prop('id');
+                            clave = clave.split("_");
+                            clave = clave[1];
                         $.post("funciones_claims_requests.php",
                         {
                             accion:"edit_claim", 
@@ -347,15 +357,16 @@
                         function(data){
                             if(data.error == '0'){
                                $('#edit_form input, #edit_form textarea, #edit_form select').val('').removeClass('error'); 
-                               $("#edit_form .policy_apply select").val("NOAPPLY").prop("disabled","disabled").addClass("readonly");
-                               $('#edit_form .company_policies').empty().append(data.checkbox);
                                eval(data.fields);
-                               fn_claims.revisar_tipos_polizas();  
+                               fn_claims.get_polizas();
+                               eval(data.checkbox); 
+                               
+                               fn_claims.revisar_tipos_polizas();
                                
                                //Calcular nuevamente a  que polizas aplicaria el claim:
-                               $("#edit_form .policy_apply select").each(function(){
+                               /*$("#edit_form .policy_apply select").each(function(){
                                  if($(this).val() == "YES"){fn_claims.valida_tipo_dano($(this));}
-                               });
+                               });*/
                                 
                                $('#edit_form #sDescripcionSuceso').val(data.descripcion);
                                
@@ -369,14 +380,36 @@
                 },"json");
                 });
             },
+            delete_confirm : function(){
+              $(fn_claims.data_grid + "  tbody td .btn_delete").bind("click",function(){
+                   var clave = $(this).parent().parent().find("td:eq(0)").prop('id');
+                       clave = clave.split("_");
+                       clave = clave[1];
+                   $('#dialog_delete_claim input[name=iConsecutivo]').val(clave);
+                   $('#dialog_delete_claim').dialog( 'open' );
+                   return false;
+               });  
+            },
+            delete_claim : function(id){
+              $.post("funciones_claims_requests.php",{accion:"delete_claim", 'clave': id},
+               function(data){
+                    fn_solotrucking.mensaje(data.msj);
+                    fn_claims.filtraInformacion();
+               },"json");  
+            },
             send_claim: function(){
                 $(fn_claims.data_grid + " tbody td .btn_send_claim").bind("click",function(){
-                    var clave = $(this).parent().parent().find("td:eq(0)").html();
-                    
+                    var clave   = $(this).parent().parent().find("td:eq(0)").prop('id');
+                        clave   = clave.split("_");
+                        clave   = clave[1];
+                    var company = $(this).parent().parent().find("td:eq(1)").prop('id');
+                        company = company.split("_");
+                        company = company[1];
+                        
                     $.ajax({
                         type: "POST",
                         url : "funciones_claims_requests.php",
-                        data: {"accion" : "get_company_policies", "clave" : clave, "domroot" : "form_send_claim"},
+                        data: {"accion" : "get_claim_policies_email", "clave" : clave,"iConsecutivoCompania":company, "domroot" : "form_send_claim"},
                         async : true,
                         dataType : "json",
                         success : function(data){
@@ -384,8 +417,7 @@
                                 var mensaje_default = "Please create new claim for the following insured.";
                                 $('#form_send_claim input, #form_send_claim textarea').val(mensaje_default).removeClass('error');
                                 $('#form_send_claim .company_policies tbody').empty().append(data.policies_information); 
-                                
-                                if(data.fields != ""){eval(data.fields);}else{$('#form_send_claim #iConsecutivoClaim').val(clave);}
+                                eval(data.fields);
                                 fn_popups.resaltar_ventana('form_send_claim');   
                             }else{
                                fn_solotrucking.mensaje(data.msj);  
@@ -394,7 +426,10 @@
                     });
                 });
             },
-            save_email: function(){
+            save_email: function(ghost){
+                
+                if(!(ghost)){ghost = false;}
+                
                 var valid   = true;
                 var mensaje = "";
                 $('#form_send_claim input, #form_send_claim textarea').removeClass('error');
@@ -417,16 +452,16 @@
                         url:"funciones_claims_requests.php", 
                         data:{
                             'accion'             : "save_claim_email",
-                            'iConsecutivoClaim'  : $('#form_send_claim #iConsecutivoClaim').val(),
+                            'iConsecutivoClaim'  : $('#form_send_claim input[name=iConsecutivoClaim]').val(),
                             'insurances_policy'  : insurances_policy,
-                            'sMensaje'           : $('#form_send_claim #sMensajeEmail').val(),
+                            'sMensaje'           : $('#form_send_claim textarea[name=sMensajeEmail]').val(),
                             'domroot'            : "#form_send_claim",
                         },
                         async : true,
                         dataType : "json",
                         success : function(data){                               
                             if(data.error == '0'){$('#form_send_claim #iConsecutivo').val(data.iConsecutivo);}
-                            fn_solotrucking.mensaje(data.msj); 
+                            if(!(ghost)){fn_solotrucking.mensaje(data.msj);} 
                         }
                    });             
                 }else{fn_solotrucking.mensaje(mensaje);}
@@ -539,7 +574,7 @@
             preview_email : function(iConsecutivoClaim){
 
               if(!(iConsecutivoClaim)){ 
-                  var iConsecutivoClaim  = $('#form_send_claim #iConsecutivoClaim').val();
+                  var iConsecutivoClaim  = $('#form_send_claim input[name=iConsecutivoClaim]').val();
                   var insurances_policy  = "";
                   $("#form_send_claim .company_policies input[type=text]").each(function(){
                      if($(this).val() != ""){
@@ -548,7 +583,7 @@
                      }
                      else{$(this).addClass("error");} 
                   });
-                  var sMensaje           = $('#form_send_claim #sMensajeEmail').val();
+                  var sMensaje           = $('#form_send_claim [name=sMensajeEmail]').val();
                   var mode               = "preview";
                   
               }
@@ -606,10 +641,10 @@
                     url:"funciones_claims_requests.php", 
                     data:{
                         "accion"             :"send_email",
-                        "iConsecutivoClaim"  : $('#form_send_claim #iConsecutivoClaim').val(),
+                        "iConsecutivoClaim"  : $('#form_send_claim input[name=iConsecutivoClaim]').val(),
                         "insurances_policy"  : insurances_policy,
                         "policies"           : policies,
-                        "sMensaje"           : $('#form_send_claim #sMensajeEmail').val(),
+                        "sMensaje"           : $('#form_send_claim [name=sMensajeEmail]').val(),
                     },
                     async : true,
                     dataType : "json",
@@ -626,8 +661,10 @@
             },
             edit_estatus : function(){
                $(fn_claims.data_grid + " tbody td .btn_change_status").bind("click",function(){
-                   var clave = $(this).parent().parent().find("td:eq(0)").html();
-                   var name  = $(this).parent().parent().find("td:eq(1)").html();
+                   var clave = $(this).parent().parent().find("td:eq(0)").prop('id');
+                       clave = clave.split("_");
+                       clave = clave[1];
+                   var name  = $(this).parent().parent().find("td:eq(0)").html();
                    $.ajax({             
                         type:"POST", 
                         url:"funciones_claims_requests.php", 
@@ -694,38 +731,159 @@
                  });   
               }else{fn_solotrucking.mensaje('Please first select a status before you press save.');$('#form_change_estatus #eStatus').addClass('error');}  
                
-           },  
-            //VALIDACIONES
-            revisar_tipos_polizas : function(){  
-                if($("#edit_form .company_policies input[type=checkbox]").html() != undefined){
-                    $("#edit_form .company_policies input[type=checkbox]").each(function(){
-                        if($(this).hasClass("PD")){$("#edit_form #eDanoFisico").removeProp("disabled").removeClass("readonly");}
-                        if($(this).hasClass("MTC")){$("#edit_form #eDanoMercancia").removeProp("disabled").removeClass("readonly");}  
-                        if($(this).hasClass("AL")){$("#edit_form #eDanoTerceros").removeProp("disabled").removeClass("readonly");}  
-                    });
-                }else{
-                    $("#edit_form .policy_apply select").val("NOAPPLY").prop("disabled","disabled").addClass("readonly");
-                }    
+           }, 
+            mark_sent_confirm : function(){
+               $('#dialog_mark_email_claim').dialog('open');    
             },
-            valida_tipo_dano : function(input){
-                if(input){
-                    var value = input.val();
-                    var tipo  = input.prop("id");
-                    
-                    switch(tipo){
-                        case 'eDanoTerceros' : var clase = "AL"; break;
-                        case 'eDanoMercancia': var clase = "MTC"; break;
-                        case 'eDanoFisico'   : var clase = "PD"; break;
+            mark_sent : function(){
+                var iConsecutivo  = $('#form_send_claim input[name=iConsecutivoClaim]').val();
+                fn_claims.save_email(true);
+                $.ajax({             
+                    type:"POST", 
+                    url:"funciones_claims_requests.php", 
+                    data:{'accion' : 'mark_email_sent','iConsecutivoClaim' : iConsecutivo},
+                    async : true,
+                    dataType : "json",
+                    success : function(data){ 
+                        fn_solotrucking.mensaje(data.msj);                              
+                        if(data.error == '0'){
+                              fn_claims.fillgrid();
+                              fn_popups.cerrar_ventana('form_send_claim');
+                        }
+                        
                     }
+                });      
+            }, 
+            //VALIDACIONES
+            get_polizas : function(){
+              if($("#edit_form #iConsecutivoCompania").val() != ""){  
+                  $.ajax({             
+                        type:"POST", 
+                        url:"funciones_claims_requests.php", 
+                        data:{accion:"get_company_policies",'iConsecutivoCompania':$("#edit_form #iConsecutivoCompania").val()},
+                        async : false,
+                        dataType : "json",
+                        success : function(data){                               
+                            if(data.error == '0'){
+                                //Si tiene POLIZA DE PD:
+                                if(data.pd_data == 'true'){fn_claims.pd_valid = true;}
+                                else{fn_claims.pd_valid = false;}
+                                $("#info_policies").show();//mostrar grid de archivos... 
+                                $("#info_policies table tbody").empty().append(data.policies_information);
+                                
+                                $("#edit_form #sNombreOperador").autocomplete( "funciones_claims_requests.php?accion=get_drivers&iConsecutivoCompania="+$("#edit_form #iConsecutivoCompania").val() , {
+                
+                                    dataType : 'json',
+                                    parse : function(data) {
+                                        
+                                        var rows = [];
+                                        for(var i=0; i<data.length; i++){
+                                            
+                                            rows[i] = { 
+                                                data  : data[i], 
+                                                value : data[i].nombre, 
+                                                result: data[i].nombre + ' | ' + data[i].clave + ' | ' + data[i].id
+                                            };
+                                        }
+                                        return rows;
+                                    },
+                                    minChars: 1, 
+                                    width   : 310, 
+                                    matchContains: true, 
+                                    multiple: false,
+                                    delay   : 800,
+                                    selectFirst: false,
+                                    max     : 25,
+                                    formatItem: function(row, i, max) {
+                                        return row.nombre + ' | ' + row.clave + " | " + row.id;
+                                    },
+                                    extraParams: {
+                                        q: '',
+                                        limit: '',
+                                        maxRows: 25,
+                                        term: function () { return $('#edit_form #sNombreOperador').val() }
+                                    }
+                                }); 
+                            
+                                $("#edit_form #sVINUnidad").autocomplete( "funciones_claims_requests.php?accion=get_vehicles&iConsecutivoCompania="+$("#edit_form #iConsecutivoCompania").val() , {
+                
+                                    dataType : 'json',
+                                    parse : function(data) {
+                                        
+                                        var rows = [];
+                                        for(var i=0; i<data.length; i++){
+                                            
+                                            rows[i] = { 
+                                                data  : data[i], 
+                                                value : data[i].nombre, 
+                                                result: data[i].nombre + ' | ' + data[i].id
+                                            };
+                                        }
+                                        return rows;
+                                    },
+                                    minChars: 1, 
+                                    width   : 310, 
+                                    matchContains: true, 
+                                    multiple: false,
+                                    delay   : 800,
+                                    selectFirst: false,
+                                    max     : 25,
+                                    formatItem: function(row, i, max) {
+                                        return row.nombre + ' | ' + row.id;
+                                    },
+                                    extraParams: {
+                                        q: '',
+                                        limit: '',
+                                        maxRows: 25,
+                                        term: function () { return $('#edit_form #sVINUnidad').val() }
+                                    }
+                                }); 
+                            
+                            }
+                        }
+                  });
+              }
+              else{$("#info_policies table tbody").empty().append('<tr><td style="text-align:center; font-weight: bold;" colspan="100%">Please select first the company from the list.</td></tr>');}   
+           },
+            revisar_tipos_polizas : function(){ 
+               
+               $("#edit_form #eDanoFisico, #edit_form #eDanoMercancia, #edit_form #eDanoTerceros").prop("disabled", "disabled")
+               
+               $("#edit_form #info_policies .popup-datagrid tbody input[type=checkbox]").each(function(){
+                    if($(this).is(':checked')){
+                        var tipo = $(this).prop('class');
+                        var pd   = tipo.indexOf("PD");
+                        var mtc  = tipo.indexOf("MTC");
+                        var al   = tipo.indexOf("AL");
                     
-                    if(value == "YES"){ 
-                        $("#edit_form .company_policies input[type=checkbox]."+clase).prop("checked",true);
-                    }else{
-                        $("#edit_form .company_policies input[type=checkbox]."+clase).prop("checked",false);
-                    } 
-                    
-                }
-            },                
+                        if(pd != -1 && fn_claims.pd_valid == true){$("#edit_form #eDanoFisico").removeProp("disabled").removeClass("readonly");}
+                        if(mtc != -1){$("#edit_form #eDanoMercancia").removeProp("disabled").removeClass("readonly");}
+                        if(al  != -1){$("#edit_form #eDanoTerceros").removeProp("disabled").removeClass("readonly");}
+                    }    
+               });
+               
+               if($("#edit_form #eDanoFisico").prop("disabled")){$("#edit_form #eDanoFisico").val('NOAPPLY');} 
+               if($("#edit_form #eDanoMercancia").prop("disabled")){$("#edit_form #eDanoMercancia").val('NOAPPLY');} 
+               if($("#edit_form #eDanoTerceros").prop("disabled")){$("#edit_form #eDanoTerceros").val('NOAPPLY');} 
+           },
+            set_driver : function(){
+               var driver = $("#edit_form #sNombreOperador").val();
+               if(driver != ""){
+                   driver = driver.split(" | ");
+                   $("#edit_form #sNombreOperador").val(driver[0]);
+                   $("#edit_form #iNumLicencia").val(driver[1]);
+                   $("#edit_form #iConsecutivoOperador").val(driver[2]);
+               }
+           },
+            set_vehicle : function(){
+               var data = $("#edit_form #sVINUnidad").val();
+               if(data != ""){
+                   data = data.split(" | ");
+                   $("#edit_form #sVINUnidad").val(data[0]);
+                   $("#edit_form #iConsecutivoUnidad").val(data[1]);
+               }
+           }
+                           
     }    
 </script> 
 <div id="layer_content" class="main-section">
@@ -738,7 +896,6 @@
         <table id="data_grid" class="data_grid">
         <thead>
             <tr id="grid-head1">
-                <td style="width:30px!important;"><input class="flt_id" type="text" placeholder="ID:"></td> 
                 <td style="width:300px!important;"><input class="flt_nombre" type="text" placeholder="Company:"></td> 
                 <td>
                     <select class="flt_type" onblur="fn_claims.filtraInformacion();">
@@ -763,12 +920,12 @@
                     </select>
                 </td> 
                 <td><input class="flt_dateAplication flt_fecha" type="text" placeholder="MM-DD-YY"></td> 
-                <td style='width:75px;'>
+                <td style='width: 115px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_claims.filtraInformacion();"><i class="fa fa-search"></i></div> 
+                    <div class="btn-icon-2 btn-left" title="New Endorsement +"  onclick="fn_claims.add();"><i class="fa fa-plus"></i></div>
                 </td> 
             </tr>
             <tr id="grid-head2">
-                <td class="etiqueta_grid down" onclick="fn_claims.ordenamiento('iConsecutivo',this.cellIndex);">ID</td> 
                 <td class="etiqueta_grid"      onclick="fn_claims.ordenamiento('sNombreCompania',this.cellIndex);">COMPANY</td> 
                 <td class="etiqueta_grid"      onclick="fn_claims.ordenamiento('eCategoria',this.cellIndex);">Type</td>
                 <td class="etiqueta_grid"      onclick="fn_claims.ordenamiento('dFechaIncidente',this.cellIndex);">Incident Date</td>
@@ -809,18 +966,24 @@
 <div id="edit_form" class="popup-form">
     <div class="p-header">
         <h2>CLAIMS</h2>
-        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('edit_form');"><i class="fa fa-times"></i></div>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('edit_form');fn_claims.filtraInformacion();"><i class="fa fa-times"></i></div>
     </div>
     <div class="p-container">
     <p class="mensaje_valido" style="display:none;">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p> 
     <div>
         <form>
-            <table>
+            <table style="width: 100%;">
              <tr>
              <td>
                 <div class="field_item"> 
-                    <label style="margin-left:15px;">Policies in which the claim applies<span style="color:#ff0000;">*</span>:</label> 
-                    <div class="company_policies" style="padding: 10px 10px 10px 23px;"></div>
+                    <div id="info_policies">
+                        <table class="popup-datagrid" style="margin-bottom: 10px;width: 100%;" cellpadding="0" cellspacing="0">
+                            <thead>
+                                <tr id="grid-head2"><td class="etiqueta_grid">Policy Number</td><td class="etiqueta_grid">Insurance</td><td class="etiqueta_grid">Type</td></tr>
+                            </thead>
+                            <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">Please select first the company from the list.</td></tr></tbody>
+                        </table>
+                    </div>
                 </div>
              </td>
              </tr>
@@ -829,13 +992,19 @@
                 <legend>INFORMATION FROM INCIDENT</legend>
                 <table style="width: 100%;" id="general_information"> 
                 <tr>
-                    <td colspan="2">
+                    <td>
                     <div class="field_item">
                         <label>Company <span style="color:#ff0000;">*</span>:</label>  
-                        <select id="iConsecutivoCompania"  name="iConsecutivoCompania" class="readonly" disabled="disabled" style="height: 27px!important;">
+                        <select tabindex="1" id="iConsecutivoCompania"  name="iConsecutivoCompania" disabled="disabled" style="height: 27px!important;" onchange="fn_claims.get_polizas();">
                             <option value="">Select an option...</option>
                         </select>
                     </div> 
+                    </td>
+                    <td>
+                    <div class="field_item">
+                        <label>Application Date <span style="color:#ff0000;">*</span>:</label> 
+                        <input tabindex="2" id="dFechaAplicacion" name="dFechaAplicacion" class="fecha required-field" placeholder="mm/dd/yyyy" type="text" style="width: 90%;">
+                    </div>
                     </td>
                 </tr> 
                 <tr>
@@ -844,13 +1013,13 @@
                         <input id="iConsecutivo" type="hidden" value=""> 
                         <input id="iConsecutivoPolizas" type="hidden" value=""> 
                         <label>Date: <span style="color:#ff0000;">*</span>:</label><br> 
-                        <input tabindex="1" id="dFechaIncidente" type="text" class="fecha" style="width: 85%;">
+                        <input tabindex="3" id="dFechaIncidente" type="text" class="fecha" style="width: 90%;">
                     </div>
                     </td>
                     <td style="width: 50%;">
                     <div class="field_item"> 
                         <label>Hour: <span style="color:#ff0000;">*</span>:</label><br>
-                        <input tabindex="1" id="dHoraIncidente" type="text" class="hora" title="Please capture the hour in 24/h format" style="width: 98%;">
+                        <input tabindex="4" id="dHoraIncidente" type="text" class="hora" title="Please capture the hour in 24/h format" style="width: 98%;">
                     </div>
                     </td>
                 </tr>
@@ -858,7 +1027,7 @@
                     <td colspan="100%">
                     <div class="field_item policy_apply"> 
                         <label>There was damage to third parties? (Persons and/or properties) <span style="color:#ff0000;">*</span>:</label> 
-                        <select id="eDanoTerceros" onblur="fn_claims.valida_tipo_dano($(this));" style="height: 27px!important;">
+                        <select id="eDanoTerceros" style="height: 27px!important;" tabindex="5">
                             <option value="NOAPPLY">NO APPLY</option>
                             <option value="YES">YES</option> 
                             <option value="NO">NO</option> 
@@ -870,7 +1039,7 @@
                     <td colspan="100%">
                     <div class="field_item policy_apply"> 
                         <label>There was damage to your Unit/Trailer?<span style="color:#ff0000;">*</span>:</label> 
-                        <select id="eDanoFisico" onblur="fn_claims.valida_tipo_dano($(this));" style="height: 27px!important;">
+                        <select id="eDanoFisico" style="height: 27px!important;" tabindex="6">
                             <option value="NOAPPLY">NO APPLY</option>
                             <option value="YES">YES</option> 
                             <option value="NO">NO</option> 
@@ -882,7 +1051,7 @@
                     <td colspan="100%">
                     <div class="field_item policy_apply"> 
                         <label>There was damage on your Cargo?<span style="color:#ff0000;">*</span>:</label> 
-                        <select id="eDanoMercancia" onblur="fn_claims.valida_tipo_dano($(this));" style="height: 27px!important;">
+                        <select id="eDanoMercancia" style="height: 27px!important;" tabindex="7">
                             <option value="NOAPPLY">NO APPLY</option>
                             <option value="YES">YES</option> 
                             <option value="NO">NO</option> 
@@ -894,7 +1063,7 @@
                     <td colspan="100%">
                     <div class="field_item"> 
                         <label>What happend? <span style="color:#ff0000;">*</span>:</label> 
-                        <textarea tabindex="1" id="sDescripcionSuceso" maxlenght="1000" style="resize: none;" title="please write what happend in the incident."></textarea>
+                        <textarea tabindex="8" id="sDescripcionSuceso" maxlenght="1000" style="resize: none;" title="please write what happend in the incident."></textarea>
                     </div>
                     </td>
                 </tr> 
@@ -902,27 +1071,32 @@
                     <td>
                     <div class="field_item"> 
                         <label>Where State?<span style="color:#ff0000;">*</span>:</label> 
-                        <select tabindex="1" id="sEstado" style="height: 27px!important;"><option value="">Select an opction...</option></select>
+                        <select tabindex="9" id="sEstado" style="height: 27px!important;"><option value="">Select an opction...</option></select>
                     </div>
                     </td>
                     <td>
                     <div class="field_item"> 
                         <label>What City?:</label> 
-                        <input tabindex="1" id="sCiudad" type="text" class="txt-uppercase">
+                        <input tabindex="10" id="sCiudad" type="text" class="txt-uppercase">
                     </div>
                     </td>
                 </tr>
                 <tr>
                     <td>
                     <div class="field_item"> 
-                        <label>Driver <span style="color:#ff0000;">*</span>: <br><span style="color:#ff0000;font-size:0.9em;">(Please check before that the driver is in the selected policy.)</span></label> 
-                        <input tabindex="1" id="sDriver" type="text" placeholder="Write the name or system id of your driver" style="width: 98%;" title="Please check before that the driver is in the selected policy.">
+                        <label>Driver Name / License <span style="color:#ff0000;">*</span>: <br><span style="color:#ff0000;font-size:0.9em;">(Please check before that the driver is in the selected policy.)</span></label> 
+                        <input type="hidden" value="" id="iConsecutivoOperador">
+                        <div>
+                            <input tabindex="11" class="txt-uppercase" id="sNombreOperador" type="text" title="Search by name or license of your driver" style="width: 50%;float:left;clear: none;" onblur="fn_claims.set_driver();">
+                            <input tabindex="12" class="txt-uppercase" id="iNumLicencia" type="text"    style="width: 45%;float:right;clear: none;">
+                        </div>
                     </div>
                     </td>
                     <td>
                     <div class="field_item"> 
-                        <label>Unit/Trailer <span style="color:#ff0000;">*</span>: <br><span style="color:#ff0000;font-size:0.9em;">(Please check before that the unit/trailer is in the selected policy.)</span></label>
-                        <input tabindex="1" id="sUnitTrailer" type="text" placeholder="Write the VIN or system id of your Unit or Trailer" style="width: 98%;" title="Please check before that the unit/trailer is in the selected policy.">
+                        <input type="hidden" value="" id="iConsecutivoUnidad">
+                        <label>Vehicle VIN <span style="color:#ff0000;">*</span>: <br><span style="color:#ff0000;font-size:0.9em;">(Please check before that the unit/trailer is in the selected policy.)</span></label>
+                        <input tabindex="13" class="txt-uppercase" id="sVINUnidad" type="text" title="Search by VIN of your Vehicle" style="width: 98%;" onblur="fn_claims.set_vehicle();">
                     </div>
                     </td>
                 </tr>
@@ -967,16 +1141,22 @@
                 </table>
             </fieldset>  
             <button type="button" class="btn-1" onclick="fn_claims.save();">SAVE</button>
-            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('edit_form');" style="margin-right:10px;background:#e8051b;">CLOSE</button>
+            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('edit_form');fn_claims.filtraInformacion();" style="margin-right:10px;background:#e8051b;">CLOSE</button>
         </form> 
     </div>
     </div>
 </div>
+<div id="dialog_delete_claim" title="SYSTEM ALERT" style="display:none;">
+    <p>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
+    <form id="elimina" method="post">
+           <input type="hidden" name="iConsecutivo" value="">
+    </form>  
+</div> 
 <!-- formulario send claim -->
 <div id="form_send_claim" class="popup-form" style="width: 80%;">
     <div class="p-header">
         <h2>CLAIMS</h2>
-        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('form_send_claim');"><i class="fa fa-times"></i></div>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('form_send_claim');fn_claims.filtraInformacion();"><i class="fa fa-times"></i></div>
     </div>
     <div class="p-container"> 
     <div>
@@ -999,43 +1179,28 @@
             </div>
             <fieldset>
                 <legend>INFORMATION TO SEND BY E-MAIL</legend>
-                <!--<input id="iConsecutivo" type="hidden" value="">-->
-                <input id="iConsecutivoClaim" type="hidden" value=""> 
+                <input name="iConsecutivoClaim" type="hidden" value=""> 
                 <table style="width: 100%;">
-                <!--<tr>
-                    <td colspan="100%">
-                    <div class="field_item">
-                        <label>This claim involves the following policies, please select the one you wish to send the e-mail: <span style="color:#ff0000;">*</span>:</label><br> 
-                        <select tabindex="1" id="policies_claim"><option value="">Select an option...</option></select>
-                    </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="100%">
-                    <div class="field_item">
-                        <label>Write the e-mail(s) to send the claim: <span style="color:#ff0000;">*</span>:</label><br> 
-                        <input class="required_field" tabindex="2" id="sEmail" type="text" title="If you need to write more than one email, please separate them by comma symbol (,)." placeholder="For Ex: email@domain.com,email@domain.com"> 
-                    </div>
-                    </td>
-                </tr>-->
                 <tr>
                     <td colspan="100%">
                     <div class="field_item"> 
                         <label>Message to send: (This message will be displayed before the claim information.)</label> 
-                        <textarea tabindex="1" id="sMensajeEmail" maxlenght="1000" style="resize: none;" title="Max. 1000 characters."></textarea>
+                        <textarea tabindex="1" name="sMensajeEmail" maxlenght="1000" style="resize: none;" title="Max. 1000 characters."></textarea>
                     </div>
                     </td>
                 </tr>
                 </table>
             </fieldset>  
             <button type="button" class="btn-1" onclick="fn_claims.save_email();">SAVE</button>  
-            <button type="button" class="btn-1" onclick="fn_claims.send_email();" style="margin-right:10px;background: #87c540;">SEND E-MAIL</button>
-            <button type="button" class="btn-1" onclick="fn_claims.preview_email();" style="margin-right:10px;background:#5ec2d4;">PREVIEW E-MAIL</button> 
-            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_send_claim');" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
+            <button type="button" class="btn-1" onclick="fn_claims.send_email();" style="width: 130px;margin-right:10px;background: #87c540;">SEND E-MAIL</button>
+            <button type="button" class="btn-1" onclick="fn_claims.preview_email();" style="width: 130px;margin-right:10px;background:#5ec2d4;">PREVIEW E-MAIL</button> 
+            <button type="button" class="btn-1" onclick="fn_claims.mark_sent_confirm();" style="margin-right:10px;background: #e8b813;width: 140px;">MARK AS SENT</button>
+            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_send_claim');fn_claims.filtraInformacion();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
         </form> 
     </div>
     </div>
 </div>
+<div id="dialog_mark_email_claim" title="SYSTEM ALERT" style="display:none;"><p>Are you sure that want to mark as sent the Claim?</p></div>
 <!-- preview email -->
 <div id="form_preview_email" class="popup-form" style="width: 80%;">
     <div class="p-header">
@@ -1055,7 +1220,7 @@
 <div id="form_change_estatus" class="popup-form" style="width:95%;">
     <div class="p-header">
         <h2>CLAIMS / Change the status of claim</h2>
-        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('form_change_estatus');"><i class="fa fa-times"></i></div>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('form_change_estatus');fn_claims.filtraInformacion();"><i class="fa fa-times"></i></div>
     </div>
     <div class="p-container"> 
     <form>
@@ -1096,7 +1261,7 @@
     </form>   
     <div>
         <button type="button" class="btn-1" onclick="fn_claims.save_estatus();">SAVE</button> 
-        <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_change_estatus');" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
+        <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('form_change_estatus');fn_claims.filtraInformacion();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
     </div>
     </div>
 </div>

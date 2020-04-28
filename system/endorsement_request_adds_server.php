@@ -111,7 +111,7 @@
                  } 
                  
                  #CONSULTAR DETALLE DEL ENDOSO:
-                 $query = "SELECT sNombreCompania AS sNombreAdicional, sDireccion, sEstado, sCiudad, sCodigoPostal, eTipoEndoso, ".
+                 $query = "SELECT sNombreCompania AS sNombreAdicional, sDireccion, sEstadoTexto, sCiudad, sCodigoPostal, eTipoEndoso, ".
                           "(CASE WHEN eAccion = 'ADDSWAP'    THEN 'ADD SWAP'
                                  WHEN eAccion = 'DELETESWAP' THEN 'DELETE SWAP' 
                                  ELSE eAccion ".
@@ -123,7 +123,7 @@
                      
                      while($itemD = $r->fetch_assoc()){
                      
-                        $texto  = $itemD['sNombreAdicional'].'<br><span style="font-size:9px!important;">'.$itemD['sDireccion'].', '.$itemD['sCiudad'].', '.$itemD['sEstado'].', '.$itemD['sCodigoPostal'].'</span>';
+                        $texto  = $itemD['sNombreAdicional'].'<br><span style="font-size:9px!important;">'.$itemD['sDireccion'].', '.$itemD['sCiudad'].', '.$itemD['sEstadoTexto'].', '.$itemD['sCodigoPostal'].'</span>';
                         $action = $itemD['eAccion'];
                         $tipo   = $itemD['eTipoEndoso'];
 
@@ -270,7 +270,7 @@
             foreach($_POST as $campo => $valor){
                 if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivo" && strpos($campo,"chk_policies_") === false && $campo != "dFechaAplicacionHora"){ // Estos campos no se insertan a la tabla
                     if($campo == 'dFechaAplicacion'){$valor = date('Y-m-d',strtotime(trim($valor)));}else
-                    if($campo == 'sComentarios' && $valos != ""){$valor = utf8_encode($valor);}
+                    if($campo == 'sComentarios' && $valor != ""){$valor = fix_string($valor);}
                     array_push($valores,"$campo='".$valor."'");
                 }
             }
@@ -288,8 +288,8 @@
       else{
           foreach($_POST as $campo => $valor){ 
             if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivo" && strpos($campo,"chk_policies_") === false && $campo != "dFechaAplicacionHora"){ // Estos campos no se insertan a la tabla
-                if($campo == 'dFechaAplicacion'){$valor = date('Y-m-d',strtotime(trim($valor)));}else
-                if($campo == 'sComentarios'){$valor = utf8_encode($valor);}
+                if($campo == 'dFechaAplicacion' && $valor != ""){$valor = date('Y-m-d',strtotime(trim($valor)));}else
+                if($campo == 'sComentarios' && $valor != ""){$valor = fix_string($valor);}
                 array_push($campos, $campo);
                 array_push($valores,date_to_server($valor));
             }
@@ -389,7 +389,7 @@
             $ordenQuery = " ORDER BY sNombreCompania ASC";
             
             #CONSULTA:
-            $sql    = "SELECT iConsecutivoDetalle, sNombreCompania, CONCAT(sDireccion,', ',sCiudad,', ',sEstado,' ',sCodigoPostal) AS sAddress, eAccion,eTipoEndoso   ".
+            $sql    = "SELECT iConsecutivoDetalle, sNombreCompania, CONCAT(sDireccion,', ',sCiudad,', ',sEstadoTexto,' ',sCodigoPostal) AS sAddress, eAccion,eTipoEndoso   ".
                       "FROM cb_endoso_adicional_detalle ".$filtroQuery.$ordenQuery;
             $result = $conexion->query($sql);
             
@@ -660,16 +660,22 @@
               //Atachments:
               $files = $Emails[$x]['files'];
               if($files != ""){
+                  
                   $htmlTabla .= "<tr><td>".
                                 "<table style=\"font-size:12px;border-top:1px solid #dedede;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">";
                   $htmlTabla .= "<tr><td colspan=\"100%;\"><h3>Attachments</h3><td></tr>";
-                  $htmlTabla .= "<tr>".
-                                "<td>".$files['name']."</td>".
-                                "<td>".$files['type']."</td>".
-                                "<td>".$files['size']."</td>". 
-                                "<td>".
-                                   "<div class=\"btn-icon edit btn-left\" title=\"Open file in a new window\" onclick=\"window.open('open_pdf.php?idfile=".$files['id']."&type=endoso');\"><i class=\"fa fa-external-link\"></i><span></span></div>". 
-                                "</td></tr>";
+                  
+                  $countFiles = count($files);
+                  for($f=0; $f < $countFiles; $f++){
+                        $htmlTabla .= "<tr>".
+                                      "<td>".$files[$f]['name']."</td>".
+                                      "<td>".$files[$f]['type']."</td>".
+                                      "<td>".$files[$f]['size']."</td>". 
+                                      "<td>".
+                                      "<div class=\"btn-icon edit btn-left\" title=\"Open file in a new window\" onclick=\"window.open('open_pdf.php?idfile=".$files[$f]['id']."&type=endoso_add');\"><i class=\"fa fa-external-link\"></i><span></span></div>". 
+                                      "</td></tr>";    
+                  }
+                  
                   $htmlTabla .= "</table></td></tr>";
               }
               $htmlTabla  .= "</table>";
@@ -686,7 +692,6 @@
       $Emails  = array();
       $error   = "";
       $mensaje = "";
-      $file    = "";
       
       #DATOS DEL ENDOSO:
       $query  = "SELECT A.*, B.sNombreCompania FROM cb_endoso_adicional AS A ".
@@ -711,6 +716,33 @@
               #DECLARAR ARRAY DE DETALLE:
               $Detalle = mysql_fetch_all($result);
               $countD  = count($Detalle);
+              
+              #CONSULTAR ARCHIVOS:
+              $file          = array();
+              $filtroArchivo = " AND iEnviarArchivoEmail='1'";
+      
+              //Buscamos archivos primero por endoso...
+              $query  = "SELECT iConsecutivo, sNombreArchivo, eArchivo, hContenidoDocumentoDigitalizado, sTipoArchivo, iTamanioArchivo ".
+                        "FROM cb_endoso_adicional_files WHERE iConsecutivoEndoso = '$iConsecutivo'".$filtroArchivo; 
+              $result = $conexion->query($query) or die($conexion->error);
+              $rows   = $result->num_rows; 
+              if($rows > 0){
+                    while ($files = $result->fetch_assoc()){
+                       #Here will constructed the temporary files: 
+                       if($files['sNombreArchivo'] != ""){ 
+                         $archivo['id']     = $files['iConsecutivo'];
+                         $archivo['name']   = $files['sNombreArchivo'];
+                         $archivo['tipo']   = $files['eArchivo'];
+                         $archivo['content']= $files['hContenidoDocumentoDigitalizado'];
+                         $archivo['size']   = $files['iTamanioArchivo'];
+                         $archivo['type']   = $files['sTipoArchivo'];
+                         
+                         array_push($file,$archivo);
+                       }
+                    }
+              }
+              if(count($file)==0){$file="";} 
+              /**************/ 
               
               #CONSULTAMOS POLIZAS DEL ENDOSO E INFO DE LOS EMAILS:
               $query  = "SELECT iConsecutivoEndoso,iConsecutivoPoliza,B.sNumeroPoliza,B.iTipoPoliza,D.sDescripcion AS sTipoPoliza, sMensajeEmail, A.sEmail, C.iConsecutivo AS iConsecutivoBroker, C.sName AS sBrokerName, C.bEndosoMensual ".
@@ -752,7 +784,7 @@
                          $eTipoEndoso = $Detalle[$x]['eTipoEndoso'];
                          $sCompania   = $Detalle[$x]['sNombreCompania'];
                          $sDireccion  = $Detalle[$x]['sDireccion'];
-                         $sEstado     = $Detalle[$x]['sEstado'];
+                         $sEstado     = $Detalle[$x]['sEstadoTexto'];
                          $sCiudad     = $Detalle[$x]['sCiudad'];
                          $sCodigoP    = $Detalle[$x]['sCodigoPostal'];
                          
@@ -806,6 +838,7 @@
       
       $error != "" ? $Emails['error'] = $mensaje : $Emails['error'] = "0";
       $conexion->close(); 
+
       return $Emails;
           
       }
@@ -832,7 +865,7 @@
       $conexion->autocommit(FALSE);
       
       #ACTUALIZAMOS ENDOSO A SB..
-       if($count > 0){ 
+      if($count > 0){ 
           if($Emails['error']=="0"){
               #UPDATE ENDORSEMENT DETAILS:
               $query   = "UPDATE cb_endoso_adicional SET eStatus = 'SB',dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
@@ -877,7 +910,7 @@
                   
                 }else if($_SERVER["HTTP_HOST"] == "solotrucking.laredo2.net" || $_SERVER["HTTP_HOST"] == "st.websolutionsac.com" || $_SERVER["HTTP_HOST"] == "www.solo-trucking.com"){
                   $mail->Username   = "customerservice@solo-trucking.com";  // GMAIL username
-                  $mail->Password   = "SL641404tK";
+                  $mail->Password   = "1101W3bSTruck";
                   $mail->SetFrom('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');     
                 }
                 
@@ -897,25 +930,32 @@
                 }
                   
                 //Atachments:
-                /*$files        = $Emails[$x]['files'];
+                $files        = $Emails[$x]['files'];
                 $delete_files = "";
                 if($files != ""){
-                   include("./lib/fpdf153/fpdf.php");//libreria fpdf
-                   $file_tmp = fopen('tmp/'.$files["name"],"w") or die("Error when creating the file. Please check."); 
-                   fwrite($file_tmp,$files["content"]); 
-                   fclose($file_tmp);     
-                   $archivo = "tmp/".$files["name"];  
-                   $mail->AddAttachment($archivo);
-                   $delete_files .= "unlink('tmp/.".$files["name"]."');"; 
-                } */
+                   $countFiles = count($files);
+                   for($f=0; $f < $countFiles; $f++){
+                       
+                       //Revisamos si es PDF:
+                       include("./lib/fpdf153/fpdf.php");//libreria fpdf
+                       
+                       $file_tmp = fopen('tmp/'.$files[$f]["name"],"w") or die("Error when creating the file. Please check."); 
+                       fwrite($file_tmp,$files[$f]["content"]); 
+                       fclose($file_tmp);     
+                       $archivo = "tmp/".$files[$f]["name"];  
+                       $mail->AddAttachment($archivo);
+                       $delete_files .= "unlink('".$archivo."');";
+                   
+                   } 
+                } 
                 
                 $mail_error = false;
                 if(!$mail->Send()){$mail_error = true; $mail->ClearAddresses();}
                 if(!($mail_error)){$msj = "The mail has been sent to the brokers";}
                 else{$msj = "Error: The e-mail cannot be sent.";$error = "1";}
                 
-                /*$mail->ClearAttachments(); 
-                eval($delete_files); */  
+                $mail->ClearAttachments(); 
+                eval($delete_files);   
             }    
 
           } 
@@ -1124,7 +1164,7 @@
                      $eTipoEndoso = $Detalle[$x]['eTipoEndoso'];
                      $sCompania   = $Detalle[$x]['sNombreCompania'];
                      $sDireccion  = $Detalle[$x]['sDireccion'];
-                     $sEstado     = $Detalle[$x]['sEstado'];
+                     $sEstado     = $Detalle[$x]['sEstadoTexto'];
                      $sCiudad     = $Detalle[$x]['sCiudad'];
                      $sCodigoP    = $Detalle[$x]['sCodigoPostal'];
                      
@@ -1283,7 +1323,8 @@
       $limite_superior = $registros_por_pagina;
       $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
           
-      $sql    = "SELECT iConsecutivo, sTipoArchivo,sNombreArchivo,iTamanioArchivo,eArchivo FROM cb_endoso_adicional_files ".$filtroQuery.$ordenQuery;
+      $sql    = "SELECT iConsecutivo, sTipoArchivo,sNombreArchivo,iTamanioArchivo,eArchivo,IF(iEnviarArchivoEmail = 1, 'YES','NO') AS iEnviarArchivoEmail ".
+                "FROM cb_endoso_adicional_files ".$filtroQuery.$ordenQuery;
       $result = $conexion->query($sql);
       $rows   = $result->num_rows; 
              
@@ -1293,8 +1334,11 @@
                               "<td id=\"idFile_".$items['iConsecutivo']."\">".$items['sNombreArchivo']."</td>".
                               "<td>".$items['eArchivo']."</td>".
                               "<td>".$items['sTipoArchivo']."</td>".
-                              "<td>".$items['iTamanioArchivo']."</td>". 
-                              "<td>".
+                              "<td>".$items['iTamanioArchivo']."</td>";
+                //if($_POST['form_father'] == 'endorsements_edit_form'){
+                $htmlTabla .= "<td>".$items['iEnviarArchivoEmail']."</td>";    
+                //}
+                $htmlTabla .= "<td>".
                                    "<div class=\"btn-icon edit btn-left\" title=\"Open file in a new window\" onclick=\"window.open('open_pdf.php?idfile=".$items['iConsecutivo']."&type=endoso_add');\"><i class=\"fa fa-external-link\"></i><span></span></div>". 
                                    "<div class=\"btn_delete_file btn-icon trash btn-left\" title=\"Delete file\"><i class=\"fa fa-trash\"></i><span></span></div>".
                               "</td></tr>";  
@@ -1347,19 +1391,20 @@
                       $sContenido           = $conexion->real_escape_string($fileContent);
                       $eArchivo             = trim($_POST['eArchivo']); 
                       $iConsecutivoEndoso   = trim($_POST['iConsecutivoEndoso']);
-                      if($eArchivo != "OTHERS"){$fileName = strtolower($eArchivo).'.'.$fileExten;} //Si la categoria existe renombramos el archivo.
+                      $iEnviaEmail          = trim($_POST['iEnviarArchivoEmail']);
+                      //if($eArchivo != "OTHERS"){$fileName = strtolower($eArchivo).'.'.$fileExten;} //Si la categoria existe renombramos el archivo.
                       
                       #UPDATE
                       if($edit_mode){
                          $sql = "UPDATE cb_endoso_adicional_files SET sNombreArchivo ='$fileName', sTipoArchivo ='$fileType', iTamanioArchivo ='$fileSize', ".
-                                "hContenidoDocumentoDigitalizado='$sContenido', eArchivo='$eArchivo', ".
+                                "hContenidoDocumentoDigitalizado='$sContenido', eArchivo='$eArchivo',iEnviarArchivoEmail ='$iEnviaEmail', ".
                                 "dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."'".
                                 "WHERE iConsecutivo ='".trim($_POST['iConsecutivo'])."'";  
                       }
                       #INSERT
                       else{
-                         $sql = "INSERT INTO cb_endoso_adicional_files (sNombreArchivo, sTipoArchivo, iTamanioArchivo, hContenidoDocumentoDigitalizado, eArchivo,iConsecutivoEndoso, dFechaIngreso, sIP, sUsuarioIngreso) ".
-                                "VALUES('$fileName','$fileType','$fileSize','$sContenido','$eArchivo','$iConsecutivoEndoso','".date("Y-m-d H:i:s")."', '".$_SERVER['REMOTE_ADDR']."', '".$_SESSION['usuario_actual']."')"; 
+                         $sql = "INSERT INTO cb_endoso_adicional_files (sNombreArchivo, sTipoArchivo, iTamanioArchivo, hContenidoDocumentoDigitalizado, eArchivo,iConsecutivoEndoso, dFechaIngreso, sIP, sUsuarioIngreso,iEnviarArchivoEmail) ".
+                                "VALUES('$fileName','$fileType','$fileSize','$sContenido','$eArchivo','$iConsecutivoEndoso','".date("Y-m-d H:i:s")."', '".$_SERVER['REMOTE_ADDR']."', '".$_SESSION['usuario_actual']."','".$iEnviaEmail."')"; 
                       }
                       
                       if($conexion->query($sql)){
@@ -1442,7 +1487,7 @@
                   $sNombreCo = $item['sNombreCompania'];
                   $sTipoCo   = $item['eTipoEndoso'];
                   $sDireccion= $item['sDireccion'];
-                  $sEstado   = $item['sEstado'];
+                  $sEstado   = $item['sEstadoTexto'];
                   $sCiudad   = $item['sCiudad'];
                   $sCodigoP  = $item['sCodigoPostal'];
                   $sIP       = $_SERVER['REMOTE_ADDR'];
@@ -1455,14 +1500,14 @@
                  
                   //UPDATE REGISTRO
                   if($row['iConsecutivo'] != ""){
-                     $query   = "UPDATE ct_companias_adicionales SET sNombreCompania='$sNombreCo',sDireccion='$sDireccion',sEstado='$sEstado',sCiudad='$sCiudad', ".
+                     $query   = "UPDATE ct_companias_adicionales SET sNombreCompania='$sNombreCo',sDireccion='$sDireccion',sEstadoTexto='$sEstado',sCiudad='$sCiudad', ".
                                 "sCodigoPostal='$sCodigoP',iActiva='1',eTipo='$sTipoCo',sIPIngreso='$sIP',sUsuarioIngreso='$sUsuario' WHERE iConsecutivo='$iConsecutivo'";
                      $success = $conexion->query($query);
                      $idDetalle= $row['iConsecutivo']; 
                   }
                   //INSERT REGISTRO
                   else{
-                     $query   = "INSERT INTO ct_companias_adicionales (iConsecutivoCompania,sNombreCompania,sDireccion,sEstado,sCiudad,sCodigoPostal,iActiva,eTipo,sIPIngreso,sUsuarioIngreso) ".
+                     $query   = "INSERT INTO ct_companias_adicionales (iConsecutivoCompania,sNombreCompania,sDireccion,sEstadoTexto,sCiudad,sCodigoPostal,iActiva,eTipo,sIPIngreso,sUsuarioIngreso) ".
                                 "VALUES('$iConsecutivoCompania','$sNombreCo','$sDireccion','$sEstado','$sCiudad','$sCodigoP','1','$sTipoCo','$sIP','$sUsuario')";
                      $success = $conexion->query($query); 
                      $idDetalle= $conexion->insert_id;
@@ -1519,5 +1564,59 @@
       return $transaccion_exitosa;
       
   }
+  
+  
+  #CONSULTAR LISTADO DE POLIZAS A LAS QUE APLICAN LOS ENDOSOS DE ESTE TIPO:
+  function get_policies(){
+      
+      include("cn_usuarios.php");
+      $company = trim($_POST['iConsecutivoCompania']);
+      $conexion->autocommit(FALSE);
+      $error          = '0';
+      $pd_information = "false";
+      
+      $sql = "SELECT A.iConsecutivo, sNumeroPoliza, C.sName AS BrokerName, sDescripcion, D.iConsecutivo AS TipoPoliza ".
+             "FROM ct_polizas A ".
+             "LEFT JOIN ct_brokers C ON A.iConsecutivoBrokers = C.iConsecutivo ".
+             "LEFT JOIN ct_tipo_poliza D ON A.iTipoPoliza = D.iConsecutivo ".
+             "WHERE iConsecutivoCompania = '".$company."' ".
+             "AND  A.iDeleted = '0' AND dFechaCaducidad >= CURDATE() AND (D.iConsecutivo != '4' AND D.iConsecutivo != '7' AND D.iConsecutivo != '8' AND D.iConsecutivo != '9') ".
+             "ORDER BY sNumeroPoliza ASC";  
+      $result = $conexion->query($sql);
+      $rows = $result->num_rows;
+      
+      if($rows > 0) {   
+            while ($items = $result->fetch_assoc()) { 
+                $pdvalid = "";
+                switch($items['TipoPoliza']){
+                     case '1' : 
+                        $pd_information = 'true'; 
+                        $pdvalid = "onchange=\"if(\$(this).prop('checked')){\$('#frm_endorsement_information input[name=iPDAmount]').removeProp('readonly').removeClass('readonly');}".
+                                   "else{\$('#frm_endorsement_information input[name=iPDAmount]').prop('readonly','readonly').addClass('readonly');}\"";
+                     break;
+                }
+               
+               $htmlTabla .= "<tr>".
+                             "<td style=\"border: 1px solid #dedede;\">".
+                             "<input id=\"chk_policies_".$items['iConsecutivo']."\"name=\"chk_policies_endoso\" type=\"checkbox\" value=\"".$items['iConsecutivo']."\" $pdvalid/>".
+                             "<label class=\"check-label\">".$items['sNumeroPoliza']."</label>".
+                             "</td>".
+                             "<td style=\"border: 1px solid #dedede;\">".$items['BrokerName']."</td>". 
+                             "<td style=\"border: 1px solid #dedede;\">".$items['sDescripcion']."</td>".
+                             "</tr>";
+      
+                    
+            }                                                                                                                                                                       
+        }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}
+        $conexion->rollback();
+        $conexion->close();
+        $response = array(
+                "mensaje"=>"$mensaje",
+                "error"=>"$error",
+                "policies_information"=>"$htmlTabla",
+                "pd_data"=>"$pd_information",
+                );   
+        echo json_encode($response);
+  }  
   
 ?>

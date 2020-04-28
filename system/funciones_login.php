@@ -7,7 +7,7 @@
    function  conexion(){  
       //1 Acceso correcto - 0 Acceso denegado no existe usuario ni password - 2 Acceso denegado no existe usuario
       include("cn_usuarios.php");
-      $usuario = trim($_POST['usuario']);
+      $usuario = trim(strtolower($_POST['usuario']));
       $clave   = trim($_POST['password']);
         
       //Consultando tipo de usuario siempre y cuando este Activo.

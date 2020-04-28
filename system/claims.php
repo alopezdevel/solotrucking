@@ -6,7 +6,7 @@ if (!($_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL  
     exit;
 }else{ ?>
 <!-- HEADER -->
-<?php include("header.php"); ?>  
+<?php include("header.php"); ?> 
 <script type="text/javascript"> 
 $(document).ready(inicio);
 function inicio(){  
