@@ -1235,7 +1235,7 @@
             </tr>
             <tr id="grid-head-tools">
                 <td colspan="100%">
-                    <ul>
+                    <ul> 
                         <li><div class="btn-icon report btn-left" title="Report of Endorsements" onclick="fn_endorsement.dialog_report_open();" style="width:auto!important;"><i class="fa fa-folder-open"></i><span style="margin-left:5px;font-size: 10px!important;">Report of Endorsements</span></div></li>  
                     </ul>
                 </td>
@@ -1799,7 +1799,7 @@
         </form> 
     </div>
     </div>
-</div>
+</div>  
 <!-- FOOTER -->
 <?php include("footer.php"); ?> 
 </body>

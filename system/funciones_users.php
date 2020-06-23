@@ -306,17 +306,18 @@
       $conexion->autocommit(FALSE);
       $transaccion_exitosa = true;
       
-      $sql    = "SELECT sUsuario, sCorreo, hClave, hActivado ".
+      $sql    = "SELECT sUsuario, sCorreo, hClave, hActivado, iConsecutivoCompania ".
                 "FROM cu_control_acceso WHERE iConsecutivo = '$iConsecutivo' LOCK IN SHARE MODE";
       $result = $conexion->query($sql);
       $items  = $result->num_rows;
       
       //actualizamos el codigo de confirmacion:
-      if($items > 0){
+      /*if($items > 0){
           $sql = "UPDATE cu_control_acceso SET sCodigoVal = '$codigoconfirm', hActivado = '0' WHERE iConsecutivo = '$iConsecutivo'";
           $conexion->query($sql);   
           if ($conexion->affected_rows < 1 ) {$error = "1";$transaccion_exitosa = false;}     
       }
+      */
       if($error == '0' && $transaccion_exitosa){
           
            //ARMANDO E-MAIL:
@@ -326,6 +327,14 @@
            
            $usuario = $result->fetch_assoc();                
            $subject = "Welcome to Solo-Trucking Insurance System, please confirm your account.";
+           
+           if($usuario['iConsecutivoCompania'] != "" && $usuario['iConsecutivoCompania'] != 0){
+               $query    = "SELECT sNombreCompania FROM ct_companias WHERE iConsecutivo ='".$usuario['iConsecutivoCompania'] ."'";
+               $result   = $conexion->query($query);
+               $compania = $result->fetch_assoc(); 
+               $nombre   = trim($compania['sNombreCompania']);
+           }
+           else{ $nombre = trim($usuario['sUsuario']);}
           
           //header
            $htmlEmail .= "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"\"http://www.w3.org/TR/html4/strict.dtd\"><html>
@@ -338,7 +347,7 @@
                           "<tr>".
                             "<td>"."<h2 style=\"color:#313131;text-transform: uppercase; text-align:center;\">Welcome to Solo-Trucking Insurance System!</h2>"."</td>".
                             "</tr><tr>".
-                            "<td>"."<b>".trim($usuario['sUsuario'])."</b>, Thank you for joining Solo-Trucking the best option to choose the most convenient for you insurance. Feel protected!"."</td>".
+                            "<td>"."<b>".$nombre."</b>, Thank you for joining <a href=\"http://www.solo-trucking.com/\">www.solo-trucking.com</a> the best option to choose the most convenient for your insurance. Feel protected!"."</td>".
                             "</tr><tr>".
                             "<td>"."Then you remember your login to our system, keep them in a safe place."."</td>".
                             "</tr><tr>".
@@ -346,13 +355,21 @@
                             "<li style=\"line-height:15px;\"><strong style=\"color:#044e8d;\">Login: </strong>".$usuario['sCorreo']."</li>".
                             "<li style=\"line-height:15px;\"><strong style=\"color:#044e8d;\">Password: </strong>".$usuario['hClave']."</li>".
                             "</ul></td>". 
-                            "</tr><tr><td><a href=\"$ruta\">Please click here to confirm your account.</a></td></tr>".
+                            //"</tr><tr><td><a href=\"$ruta\">Please click here to confirm your account.</a></td></tr>".
+                            "</tr><tr><td><b>Please confirm after receiving this email.</b></td></tr>".
+                            "<tr><td><p style=\"font-size:13px;\"><b>THANK YOU!!</b></p></td></tr>".
+                            "<tr><td>
+                            <p>
+                                <b style=\"font-size:13px;text-decoration:underline;\">Solo-Trucking Insurance Agency, LLC</b>
+                                <br>6414 Mc Pherson Road.  Suite#1
+                                <br>New Phone # (956) 606-4478
+                            </p>
+                            </td></tr>".
                             "<tr><td><p style=\"color:#858585;margin:5px auto; text-align:left;font-size:10px;\">E-mail sent from Solo-trucking System.</p></tr></td>".  
                           "</table>".
                           "</body>";
            //footer              
            $htmlEmail .= "</html>";
-           
            
            #TERMINA CUERPO DEL MENSAJE
            $mail = new PHPMailer();   
@@ -371,7 +388,15 @@
            $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
            $mail->MsgHTML($htmlEmail);
            $mail->IsHTML(true);  
-           $mail->AddAddress(trim($usuario['sCorreo']));                          
+           $mail->AddAddress(trim($usuario['sCorreo'])); 
+           
+           #VERIFICAR SERVIDOR DONDE SE ENVIAN CORREOS:
+           if($_SERVER["HTTP_HOST"]=="stdev.websolutionsac.com" || $_SERVER["HTTP_HOST"]=="www.stdev.websolutionsac.com"){
+              $mail->AddCC('systemsupport@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');
+           }else if($_SERVER["HTTP_HOST"] == "solotrucking.laredo2.net" || $_SERVER["HTTP_HOST"] == "st.websolutionsac.com" || $_SERVER["HTTP_HOST"] == "www.solo-trucking.com"){
+              $mail->AddCC('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');      
+           }
+           //$mail->AddCC('elizabeth@solo-trucking.com', 'Elizabeth Solo-Trucking Insurance');                         
            
            $mail_error = false;
            if(!$mail->Send()){

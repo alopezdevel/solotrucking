@@ -519,7 +519,8 @@ var fn_policies = {
            $(fn_policies.form + ' input,' + fn_policies.form +' select').val('').removeClass('error');
            $(fn_policies.form+' .mensaje_valido').empty().append('The fields containing an (*) are required.');
            $('.policy_jacker_file, #certificate_edit_form').hide();
-           $(fn_policies.form + ' #sNumeroPoliza ,' + fn_policies.form + ' #iConsecutivoCompania').removeAttr('readonly').removeClass('readonly');
+           $(fn_policies.form + ' #sNumeroPoliza').removeProp('readonly').removeClass('readonly');
+           $(fn_policies.form + ' #iConsecutivoCompania').removeProp('disabled').removeClass('readonly');
            fn_policies.valida_tipo_poliza(false);
            fn_popups.resaltar_ventana('policies_edit_form');  
         },
@@ -551,7 +552,8 @@ var fn_policies = {
                     if(data.error == '0'){
                        $('#policies_edit_form .file_certificate  .trash, #certificate_edit_form').hide(); 
                        $(fn_policies.form+' input, '+fn_policies.form+' select').val('').removeClass('error'); 
-                       $(fn_policies.form + ' #sNumeroPoliza ,' + fn_policies.form + ' #iConsecutivoCompania').attr('readonly','readonly').addClass('readonly');
+                       $(fn_policies.form + ' #sNumeroPoliza').prop('readonly','readonly').addClass('readonly');
+                       $(fn_policies.form + ' #iConsecutivoCompania').prop('disabled','disabled').addClass('readonly');
                        eval(data.fields); 
                        fn_policies.validate_type();
                        fn_policies.valida_tipo_poliza(true);

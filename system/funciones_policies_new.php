@@ -135,6 +135,16 @@
                                          array_push($valores,$iMake); 
                                     }
                                 }else
+                                if($header == "MODEL"){
+                                    $value = strtoupper(trim($value)); 
+                                    if($value != ''){
+                                      //UPDATE 
+                                      array_push($update,"sModelo='$value'");
+                                      //INSERT 
+                                      array_push($campos,"sModelo");
+                                      array_push($valores,$value);
+                                    }
+                                }else
                                 if($header == "VIN"){
                                     /*$sVIN = trim($value); 
                                     $sVIN = str_replace(' ','',nl2br($sVIN));

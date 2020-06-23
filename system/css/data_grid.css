@@ -301,6 +301,30 @@ a.btn-text{display:block;}
 }
 .btn-text i{margin-right: 5px; color:#249cf5;}
 .btn-text:hover i{color:#ffffff;}  
+.btn-text-2{
+    
+    width: auto;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    background: #ececec;
+    background: -moz-linear-gradient(top, #ececec, #e8e8e8);
+    background: linear-gradient(to bottom, #ececec, #e8e8e8);
+    background: -webkit-gradient(linear, 0% 50%, 0% 0%, from(#ececec), to(#e8e8e8));
+    border: 1px solid #c3c3c3;
+    padding: 5px 10px;
+    margin: 2px;
+    text-align: center;
+    color:#424242;
+}
+.btn-text-2:hover{
+    
+    background: #e8e8e8;
+    color:#6f6f6f;
+   
+}
+.btn-text-2 i{margin-right: 5px; color:#424242;}
+.btn-text-2:hover i{color:#044e85;} 
 /*---contexto---*/
 .btnicon{width:auto!important;min-width:90px;color:#999999;font-family: Arial, Helvetica, sans-serif;font-weight:bold;}
 .btnicon i{font-family: 'FontAwesome';font-size: 1.4em;font-weight:normal;vertical-align: middle;}

@@ -51,17 +51,15 @@
                 while($items = $result->fetch_assoc()) { 
                     
                     
-                    $btn_viewpolicies = "<div class=\"btn-icon btn_view_policies add btn-left\" title=\"View policies in which it is active\"><i class=\"fa fa-info-circle\"></i><span></span></div>";
+                    //$btn_viewpolicies = "<div class=\"btn-icon btn_view_policies add btn-left\" title=\"View policies in which it is active\"><i class=\"fa fa-info-circle\"></i><span></span></div>";
                     $htmlTabla .= "<tr><td id=\"".$items['iConsecutivo']."\">".strtoupper($items['sNombre'])."</td>".
                                    "<td>".$items['dFechaNacimiento']."</td>". 
                                    "<td>".$items['iNumLicencia']."</td>".  
                                    "<td>".$items['eTipoLicencia']."</td>".
                                    "<td>".$items['dFechaExpiracionLicencia']."</td>".   
                                    "<td>".$items['iExperienciaYear']."</td>".                                                                                                                                                                                                                     
-                                   "<td> 
-                                        <div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit\"><i class=\"fa fa-pencil-square-o\"></i><span></span></div>
-                                        $btn_viewpolicies
-                                   </td></tr>";  
+                                   "<td> $btn_viewpolicies</td></tr>";
+                                   //<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit\"><i class=\"fa fa-pencil-square-o\"></i><span></span></div>  
                 }
                 $conexion->rollback();
                 $conexion->close();                                                                                                                                                                       
@@ -80,9 +78,9 @@
         $company = $_SESSION['company'];
         $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
         $transaccion_exitosa = true;
-        $iConsecutivo = trim($_POST['iConsecutivo']);
-        $error = "0";
-        $mensaje = "";
+        $iConsecutivo        = trim($_POST['iConsecutivo']);
+        $error               = "0";
+        $mensaje             = "";
         if($iConsecutivo != ""){
             $query     = "SELECT siConsecutivosPolizas FROM ct_operadores WHERE iConsecutivo = '$iConsecutivo' AND iConsecutivoCompania = '$company'";
             $result    = $conexion->query($query);

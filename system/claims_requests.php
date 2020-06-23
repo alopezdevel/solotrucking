@@ -258,6 +258,8 @@
               $("#edit_form select[name=iConsecutivoCompania]").removeProp('disabled');
               $('#edit_form .mensaje_valido').empty().append('The fields containing an (<span style="color:#ff0000;">*</span>) are required.');
               $('#edit_form .p-header h2').empty().append('CLAIMS - NEW APPLICATION');
+              $("#edit_form #files_datagrid tbody").empty().append('<tr><td style="text-align:center; font-weight: bold;" colspan="100%">No uploaded files.</td></tr>');
+              //$("#edit_form #files_datagrid").hide();
               fn_claims.revisar_tipos_polizas(); 
               $("#edit_form #eDanoFisico, #edit_form #eDanoMercancia, #edit_form #eDanoTerceros").val('NOAPPLY');
               fn_solotrucking.get_date(".fecha"); 
@@ -1127,10 +1129,10 @@
                             <tr>
                                 <td colspan="100%">
                                     <div class="datagrid-menu-pages">
-                                        <button class="pgn-inicio"    onclick="fn_claims.files.firstPage();" title="First page"><span></span></button>
-                                        <button class="pgn-anterior"  onclick="fn_claims.files.previousPage();" title="Previous"><span></span></button>
-                                        <button class="pgn-siguiente" onclick="fn_claims.files.nextPage();" title="Next"><span></span></button>
-                                        <button class="pgn-final"     onclick="fn_claims.files.lastPage();" title="Last Page"><span></span></button>
+                                        <button class="pgn-inicio"    onclick="fn_claims.files.firstPage();" title="First page" type="button"><span></span></button>
+                                        <button class="pgn-anterior"  onclick="fn_claims.files.previousPage();" title="Previous" type="button"><span></span></button>
+                                        <button class="pgn-siguiente" onclick="fn_claims.files.nextPage();" title="Next" type="button"><span></span></button>
+                                        <button class="pgn-final"     onclick="fn_claims.files.lastPage();" title="Last Page" type="button"><span></span></button>
                                     </div>
                                 </td>
                             </tr>

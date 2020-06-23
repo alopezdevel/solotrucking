@@ -550,19 +550,40 @@
             $name_file = $_FILES['userfile']["name"];
             $type_file = $_FILES['userfile']["type"];
             $size_file = $_FILES['userfile']["size"];
+            $fileExten   = explode(".",$name_file);
             
-            $sql = "INSERT INTO cb_claims_files (iConsecutivoClaim, sNombreArchivo, sTipoArchivo, iTamanioArchivo, hContenidoDocumentoDigitalizado, dFechaIngreso, sIP, sUsuarioIngreso) ".
-                   "VALUES('$iConsecutivoClaim','$name_file','$type_file','$size_file','$sContenido','".date("Y-m-d H:i:s")."', '".$_SERVER['REMOTE_ADDR']."', '".$_SESSION['usuario_actual']."')";
-            if($conexion->query($sql)){
-                $conexion->commit();
-                $conexion->close();
-                $mensaje = "The file was uploaded successfully.";  
-            }else{
-                $conexion->rollback();
-                $conexion->close();
-                $mensaje = "A general system error ocurred : Please try again later.";
-                $error = "1";
-            }       
+            
+            //Validando nombre del archivo sin puntos...
+            if(count($fileExten) != 2){$error="1";$mensaje = "Error: Please check that the name of the file should not contain points.";}
+            else{
+                  //Extension Valida:
+                  $fileExten = strtolower($fileExten[1]);
+                  if($fileExten != "pdf" && $fileExten != "jpg" && $fileExten != "jpeg" && $fileExten != "png" && $fileExten != "doc" && $fileExten != "docx" && $fileExten != "xlsx" && $fileExten != "xls" && $fileExten != "mp3" && $fileExten != "mp4" && $fileExten != "key" && $fileExten != "cer" && $fileExten != "zip" && $fileExten != "ppt" && $fileExten != "pptx"){
+                      $error = "1"; $mensaje="Error: The file extension is not valid, please check it.";
+                  }
+                  else{
+                      //Revisar si no existe otro archivo con el mismo nombre para el mismo claim:
+                      $query = "SELECT COUNT(iConsecutivo) AS total FROM cb_claims_files WHERE sNombreArchivo='".$name_file."' AND iConsecutivoClaim='".$iConsecutivoClaim."'";  
+                      $result= $conexion->query($query);
+                      $valid = $result->fetch_assoc();
+                      
+                      if($valid['total'] != 0){$error="1";$mensaje = "Error: There is already a file with the same name for this claim, please change it and try again.";}
+                      else{
+                        $sql = "INSERT INTO cb_claims_files (iConsecutivoClaim, sNombreArchivo, sTipoArchivo, iTamanioArchivo, hContenidoDocumentoDigitalizado, dFechaIngreso, sIP, sUsuarioIngreso) ".
+                               "VALUES('$iConsecutivoClaim','$name_file','$type_file','$size_file','$sContenido','".date("Y-m-d H:i:s")."', '".$_SERVER['REMOTE_ADDR']."', '".$_SESSION['usuario_actual']."')";
+                        if($conexion->query($sql)){
+                            $conexion->commit();
+                            $conexion->close();
+                            $mensaje = "The file was uploaded successfully.";  
+                        }else{
+                            $conexion->rollback();
+                            $conexion->close();
+                            $mensaje = "A general system error ocurred : Please try again later.";
+                            $error = "1";
+                        }     
+                      }
+                  }
+            }
           }else{             
              $mensaje = "Error: The file you are trying to upload exceeds the maximum size (5MB) allowed by the system, please check it and try again.";
              $error = "1"; 
@@ -1061,6 +1082,7 @@
                 $mail = new PHPMailer();   
                 $mail->IsSMTP(); // telling the class to use SMTP
                 $mail->Host       = "mail.solo-trucking.com"; // SMTP server
+                //$mail->SMTPDebug  = 1; // enables SMTP debug information (for testing) 1 = errors and messages 2 = messages only
                 $mail->SMTPAuth   = true;                  // enable SMTP authentication
                 $mail->SMTPSecure = "TLS";                 // sets the prefix to the servier
                 $mail->Host       = "smtp.gmail.com";      // sets GMAIL as the SMTP server
@@ -1077,7 +1099,8 @@
                   $mail->SetFrom('claims@solo-trucking.com', 'Claims Solo-Trucking Insurance');   
                 }
                 
-                $mail->AddReplyTo($Replyto,'Claims Solo-Trucking Insurance');
+                $mail->AddReplyTo('claims@solo-trucking.com','Claims Solo-Trucking Insurance');
+                $mail->AddAddress('systemsupport@solo-trucking.com','System Support Solo-Trucking Insurance');
                 $mail->Subject    = $subject;
                 $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
                 $mail->MsgHTML($htmlEmail);
@@ -1094,25 +1117,61 @@
                 $delete_files = "";
                 
                 if($files != ""){
-                   $countFiles = count($files);
-                   for($f=0; $f < $countFiles; $f++){
-                       
-                       //Revisamos si es PDF:
-                       include("./lib/fpdf153/fpdf.php");//libreria fpdf
-                       
-                       $file_tmp = fopen('tmp/'.$files[$f]["name"],"w") or die("Error when creating the file. Please check."); 
-                       fwrite($file_tmp,$files[$f]["content"]); 
-                       fclose($file_tmp);     
-                       $archivo = "tmp/".$files[$f]["name"];  
-                       $mail->AddAttachment($archivo);
-                       $delete_files .= "unlink('".$archivo."');";
                    
-                   } 
+                   include("./lib/fpdf153/fpdf.php");//libreria fpdf 
+                   $countFiles = count($files);
+                   
+                   //SI SON MAS DE 10 ARCHIVOS GENERAR ZIP:
+                   if($countFiles > 10){
+                       
+                       $listadoArchivos = array();
+                       
+                       for($f=0; $f < $countFiles; $f++){
+                       
+                           $file_tmp = fopen('tmp/'.$files[$f]["name"],"w") or die("Error when creating the file. Please check."); 
+                           fwrite($file_tmp,$files[$f]["content"]); 
+                           fclose($file_tmp);  
+                           $archivo       = "tmp/".$files[$f]["name"];  
+                           $delete_files .= "unlink('".$archivo."');";
+                           array_push($listadoArchivos,$files[$f]["name"]);   //Agregar archivo al array para ZIP: 
+                       
+                       }  
+                       
+                       //Generar archivo ZIP:
+                       $zipName = 'Solo-Trucking_claim_files';
+                       $zip     = new ZipArchive();
+                       $fileZip = "tmp/$zipName.zip";
+                       
+                       if($zip->open($fileZip, ZIPARCHIVE::CREATE) != TRUE ){exit("No se puede crear el archivo <$zipName.zip>\n");}
+                       
+                       foreach($listadoArchivos as $archivos){
+                         $nombre_ruta_archivo = "tmp/$archivos";
+                         $zip->addFile($nombre_ruta_archivo,$archivos);
+                       }
+                        
+                       $zip->close();
+                   
+                       $mail->AddAttachment($fileZip);            
+                       $delete_files .= "unlink('".$fileZip."');"; 
+          
+                   }
+                   else{
+                       for($f=0; $f < $countFiles; $f++){
+                       
+                           $file_tmp = fopen('tmp/'.$files[$f]["name"],"w") or die("Error when creating the file. Please check."); 
+                           fwrite($file_tmp,$files[$f]["content"]); 
+                           fclose($file_tmp);     
+                           $archivo = "tmp/".$files[$f]["name"];  
+                           $mail->AddAttachment($archivo);
+                           $delete_files .= "unlink('".$archivo."');";
+                       
+                       } 
+                   }
                 } 
                 
                 $mail_error = false;
                 if(!$mail->Send()){$mail_error = true; $mail->ClearAddresses();$error = '1';}
-                if(!$mail_error){$msj = "Mail confirmation to the user $usuario was successfully sent.";}
+                if(!$mail_error){$msj = "The mail has been sent to the insurances.";}
                 else{$msj = "Error: The e-mail cannot be sent.";$error = "1";}
                 
                 #deleting files attachment:

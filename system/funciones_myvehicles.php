@@ -79,7 +79,6 @@
                                    "<td>".$items['sRadio']."</td>".
                                    "<td>".$items['sModelo']."</td>".   
                                    "<td>".$items['sPeso']."</td>".
-                                   "<td class=\"txt-center\">".$estatus."</td>".                                                                                                                                                                                                                     
                                    "<td></td></tr>";  
                 }
                 $conexion->rollback();

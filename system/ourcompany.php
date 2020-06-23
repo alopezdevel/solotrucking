@@ -247,8 +247,8 @@
                                     <td style="width: 75%;">
                                     <div class="field_item">
                                         <label>E-mail & Password to send invoices:</label><br> 
-                                        <input id="sCorreoEmpresa" tabindex="15" type="text" class="txt-lowercase" style="width: 56%;float: left;clear: none;">
-                                        <input id="sCorreoContrasena" tabindex="16" type="password" maxlength="8" title="max length 8 characters." style="float: right;width: 40%;clear: none;">  
+                                        <input id="sCorreoInvoices"   tabindex="15" type="text" maxlength="75"  class="txt-lowercase" style="width: 56%;float: left;clear: none;">
+                                        <input id="sCorreoContrasena" tabindex="16" type="password" maxlength="45" title="max length 45 characters." style="float: right;width: 40%;clear: none;">  
                                     </div>
                                     </td>
                                 </tr>

@@ -17,7 +17,7 @@
             fn_invoices.init();
             $.unblockUI();
             
-            $('#dialog-confirm').dialog({
+            $('#dialog-confirm-delete-invoice').dialog({
                 modal: true,
                 autoOpen: false,
                 width : 550,
@@ -26,8 +26,9 @@
                 dialogClass: "without-close-button",
                 buttons : {
                     'CONFIRM' : function() {
-                        var clave = $('#dialog-confirm input[name=iConsecutivo]').val();
-                        //fn_companies.borrar(clave);
+                        var clave = $('#dialog-confirm-delete-invoice input[name=iConsecutivo]').val();
+                        fn_invoices.eliminar(clave);
+                        $(this).dialog('close');
                     },
                     'CANCEL' : function(){$(this).dialog('close');}
                 }
@@ -102,6 +103,7 @@
                         $(fn_invoices.data_grid + " tfoot #pagina_actual").val(data.pagina);
                         fn_invoices.pagina_actual = data.pagina; 
                         fn_invoices.edit();
+                        fn_invoices.confirmar_eliminar();
                         fn_solotrucking.btn_tooltip();
                     }
                 }); 
@@ -111,8 +113,9 @@
                $('#edit_form_invoice .mensaje_valido').empty().append('The fields containing an (<span style="color:#ff0000;">*</span>) are required.');
                $('#edit_form_invoice .p-header h2').empty().append('INVOICES - NEW INVOICE');
                $(fn_invoices.form+' #sNoReferencia').removeProp('readonly').removeClass("readonly");
+               $(fn_invoices.form+' button.btn-preview').hide();
                $(fn_invoices.form+" #sCveMoneda").val('USD');
-               
+               fn_invoices.summary.get_services(); 
                //ocultar datagrid detalle:
                $("#invoice_detalle").hide();
                $(fn_invoices.summary.data_grid+" tbody").empty();
@@ -133,20 +136,26 @@
                         if(data.error == '0'){
                            $('#edit_form_invoice :text, #edit_form_invoice select').val('').removeClass('error'); 
                            $(fn_invoices.form+' #sNoReferencia').prop('readonly','readonly').addClass("readonly");
+                           $(fn_invoices.form+' button.btn-preview').show();
                            eval(data.fields);
+                           
+                           fn_invoices.actualiza_totales();
                            
                            //Inicializar datagrid de productos y servicios:
                            fn_invoices.summary.invoice_id =  $(fn_invoices.form+' #iConsecutivo').val();
+                           fn_invoices.summary.company_id =  $(fn_invoices.form+' #iConsecutivoCompania').val();
                            fn_invoices.summary.fillgrid();
+                           fn_invoices.summary.get_services(); 
+                
                            $("#invoice_detalle").show();
                            fn_popups.resaltar_ventana('edit_form_invoice');
                         }
                         else{fn_solotrucking.mensaje(data.msj);}       
                     },"json"); 
               });  
-            },
+            }, 
             save : function (){
-    
+               
                //Validate Fields:
                var valid = true;
                var message = "";
@@ -166,10 +175,11 @@
                     $.post("funciones_invoices.php",struct_data_post.parse(),
                     function(data){
                         switch(data.error){
-                         case '0':
+                         case '0':  
                             fn_solotrucking.mensaje(data.msj);
+                            fn_invoices.summary.company_id =  $(fn_invoices.form+' #iConsecutivoCompania').val();
+                            fn_invoices.actualiza_totales();
                             fn_invoices.filtraInformacion();
-                            fn_invoices.edit();
                          break;
                          case '1': fn_solotrucking.mensaje(data.msj); break;
                         }
@@ -257,9 +267,59 @@
                     $('.financing_fields').show();  
                 }
             },
+            actualiza_totales : function(){
+                $.ajax({
+                    type: "POST",
+                    url : "funciones_invoices.php",
+                    data: {
+                        "accion"      : "actualiza_totales",
+                        "iConsecutivo": $("#edit_form_invoice input[name=iConsecutivo]").val(),
+                        "dSubtotal"   : $("#edit_form_invoice input[name=dSubtotal]").val(),
+                        "dTax"        : $("#edit_form_invoice input[name=dTax]").val(),
+                        "dTotal"      : $("#edit_form_invoice input[name=dTotal]").val(),
+                        "dBalance"    : $("#edit_form_invoice input[name=dBalance]").val(),
+                        "domroot"     : "#invoice_detalle",
+                    },
+                    async : true,
+                    dataType : "json",
+                    success : function(data){
+                        if(data.error == "0"){eval(data.fields);}
+                        else{
+                            fn_solotrucking.mensaje(data.msj);
+                            fn_popups.cerrar_ventana('edit_form_invoice');    
+                        }
+                    }
+                });
+            },
+            confirmar_eliminar : function(){
+                $(fn_invoices.data_grid + " tbody td .btn_delete").bind("click",function(){
+                    var clave = $(this).parent().parent().find("td:eq(1)").prop('id');
+                        clave = clave.split("_");
+                        clave = clave[1];
+                    $("#dialog-confirm-delete-invoice input[name=iConsecutivo]").val(clave);
+                    $("#dialog-confirm-delete-invoice").dialog('open');
+                });    
+            },
+            eliminar : function(clave){
+                if(clave != ""){
+                    $.ajax({             
+                        type:"POST", 
+                        url:"funciones_invoices.php", 
+                        data:{'accion' : "delete_data",'iConsecutivo': clave,},
+                        async : true,
+                        dataType : "json",
+                        success : function(data){ 
+                            fn_solotrucking.mensaje(data.msj);
+                            if(data.error == '0'){fn_invoices.fillgrid();}    
+                        }
+                    });    
+                }    
+            },
             summary : {
                invoice_id : "", 
-               data_grid  : "#invoice_detalle .popup-datagrid", 
+               company_id : "",
+               data_grid  : "#invoice_detalle .popup-datagrid",
+               form : "#edit_form_summary", 
                fillgrid: function(){
                    if(fn_invoices.summary.invoice_id != ""){
                         $.ajax({             
@@ -270,19 +330,43 @@
                             dataType : "json",
                             success : function(data){                               
                                 $(fn_invoices.summary.data_grid+" tbody").empty().append(data.tabla);
-                                //fn_invoices.summary.edit();
-                                //fn_invoices.summary.borrar();
+                                fn_invoices.summary.edit();
+                                fn_invoices.summary.eliminar(); 
                             }
                         });     
                    }
                },
                add : function(){
-                  fn_invoices.summary.get_services(); 
                   $("#edit_form_summary input, #edit_form_summary select, #edit_form_summary textarea").val('').removeClass('error'); 
+                  $("#edit_form_summary input:checkbox").prop('checked',false);
                   //Valores Default:
                   $("#edit_form_summary #iCantidad").val(1);
+                  $("#edit_form_summary input[name=iConsecutivoInvoice]").val(fn_invoices.summary.invoice_id);
+                  
+                  //Limpiar endorsement:
+                  $("#edit_form_summary .data-endorsements").hide();
+                  $("#edit_form_summary .data-endorsements #invoice_endorsement_grid tbody").empty().append('<tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr>');
                   
                   $("#edit_form_summary").show(); 
+               },
+               edit : function (){
+                  $(fn_invoices.summary.data_grid+" tbody td .edit").bind("click",function(){
+                        var clave = $(this).parent().parent().find("td:eq(0)").prop('id');
+                            clave = clave.split("_");
+                            clave = clave[1];
+                        
+                        $.post("funciones_invoices.php",{accion:"detalle_get_data", clave: clave, domroot : fn_invoices.summary.form},
+                        function(data){
+                            if(data.error == '0'){
+                               $("#edit_form_summary input, #edit_form_summary select, #edit_form_summary textarea").val('').removeClass('error'); 
+                               eval(data.fields);
+                               
+                               fn_invoices.summary.valida_endorsements();
+                               $("#edit_form_summary").show();
+                            }
+                            else{fn_solotrucking.mensaje(data.msj);}       
+                        },"json"); 
+                  });  
                },
                cerrar_ventana : function(){
                    $("#edit_form_summary").hide(); 
@@ -309,15 +393,15 @@
                         async : true,
                         dataType : "json",
                         success : function(data){                               
-                            if(data.error == '0'){eval(data.fields);}
+                            if(data.error == '0'){eval(data.fields);fn_invoices.summary.get_total();}
                         }
                       });  
                   } 
                },
                get_total : function(){
-                   var cantidad        = $("#edit_form_summary #iCantidad").val();
-                   var iPrecioUnitario = $("#edit_form_summary #iPrecioUnitario").val();
-                   var iPctImpuesto    = $("#edit_form_summary #iPctImpuesto").val();
+                   var cantidad        = $("#edit_form_summary .detalle_formulario input[name=iCantidad]").val();
+                   var iPrecioUnitario = $("#edit_form_summary .detalle_formulario input[name=iPrecioUnitario]").val();
+                   var iPctImpuesto    = $("#edit_form_summary .detalle_formulario input[name=iPctImpuesto]").val();
                    
                    if(cantidad > 0 && iPrecioUnitario > 0){
                        cantidad        = fn_solotrucking.calcular_decimales(cantidad,2);
@@ -326,10 +410,241 @@
                        
                        var impXcan = fn_solotrucking.calcular_decimales((cantidad*iPrecioUnitario),2); //Importe Unit por Cantidad.
                        var tax     = fn_solotrucking.calcular_decimales((impXcan*(iPctImpuesto/100)),2); //Calcular Tax.
+                       var total   = fn_solotrucking.calcular_decimales((impXcan+tax),2);
+                       
+                       $("#edit_form_summary .detalle_formulario input[name=iImpuesto]").val(tax);
+                       $("#edit_form_summary .detalle_formulario input[name=iPrecioExtendido]").val(total);
                    }
-               }
+               },
+               save : function(ghost_mode){
+                   
+                   if(ghost_mode == '' || ghost_mode == undefined){ghost_mode = false;} 
+                   
+                   //Validate Fields:
+                   var valid   = true;
+                   var message = "";
+                   $(fn_invoices.summary.form+" .required-field").removeClass("error");
+                   $(fn_invoices.summary.form+" .required-field").each(function(){
+                       if($(this).val() == ""){
+                           valid   = false;
+                           message = '<li> You must write all required fields.</li>';
+                           $(this).addClass('error');
+                       }
+                   });
+                   
+                   //Validar si selecciono que aplica a endosos:
+                   var endososApply   = $("#edit_form_summary #iEndorsementsApply");  
+                   var endosos_select = '';
+                   if(endososApply.is(':checked')){
+                        $("#invoice_endorsement_added input[name=chk_endorsement_invoice]").each(function(){
+                           if($(this).is(':checked')){
+                               if(endosos_select == ""){endosos_select = $(this).val();}else{endosos_select += "|"+$(this).val();}
+                           }
+                       }); 
+                       
+                       if(endosos_select != ""){$("#edit_form_summary input[name=iConsecutivoEndosos]").val(endosos_select);}       
+                   }
+                   
+                   if(valid){ 
+                     if($(fn_invoices.summary.form+' .detalle_formulario input[name=iConsecutivoDetalle]').val() != ''){struct_data_post.edit_mode = "true";}else{struct_data_post.edit_mode = "false";}  
+                        
+                        struct_data_post.action  = "detalle_save_data";
+                        struct_data_post.domroot = fn_invoices.summary.form+" .detalle_formulario"; 
+                        
+                        $.post("funciones_invoices.php",struct_data_post.parse(),
+                        function(data){
+                            switch(data.error){
+                             case '0':
+                                if(ghost_mode == false){
+                                    fn_solotrucking.mensaje(data.msj);
+                                    fn_invoices.summary.fillgrid();
+                                    $("#edit_form_summary input, #edit_form_summary select, #edit_form_summary textarea").val('').removeClass('error');
+                                    $("#edit_form_summary .data-endorsements").hide();
+                                    $("#edit_form_summary .data-endorsements #invoice_endorsement_grid tbody").empty().append('<tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr>');
+                                    $("#edit_form_summary").hide(); 
+                                    fn_invoices.actualiza_totales();
+                                }
+                             break;
+                             case '1': fn_solotrucking.mensaje(data.msj); break;
+                            }        
+                        },"json");
+                        
+                        if(ghost_mode && valid){return true;}
+                   }
+                   else{
+                       fn_solotrucking.mensaje('<p>Please check the following:</p><ul style="padding: 10px;">'+message+'</ul>');
+                   }    
+               },
+               eliminar : function(){
+                $(fn_invoices.summary.data_grid+" tbody td .trash").bind("click",function(){
+                    var clave = $(this).parent().parent().find("td:eq(0)").prop('id');
+                        clave = clave.split("_");
+                        clave = clave[1];
+                    $.ajax({             
+                        type:"POST", 
+                        url:"funciones_invoices.php", 
+                        data:{
+                            'accion' : "detalle_delete",
+                            'iConsecutivoDetalle': clave,
+                        },
+                        async : true,
+                        dataType : "json",
+                        success : function(data){ 
+                            fn_solotrucking.mensaje(data.msj);
+                                                       
+                            if(data.error == '0'){
+                                fn_invoices.summary.fillgrid();  
+                                fn_invoices.actualiza_totales();   
+                            }    
+                        }
+                    });    
+                });    
+               },
+               //ENDOSOS
+               valida_endorsements : function(){
+                   var valida = $("#edit_form_summary #iEndorsementsApply");  
+                   
+                   if(valida.is(':checked')){
+                       $("#edit_form_summary .data-endorsements").show();
+                       //Revisamos si es edicion, consultar si ya tiene endosos almacenados:
+                       if($(fn_invoices.summary.form+' .detalle_formulario input[name=iConsecutivoDetalle]').val() != ''){
+                           fn_invoices.summary.endorsements.get_endorsements();
+                       }
+                   }
+                   else{
+                       $("#edit_form_summary .data-endorsements").hide();
+                       $("#edit_form_summary .data-endorsements #invoice_endorsement_grid tbody").empty().append('<tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr>');
+                   }
+               },
+               endorsements : {
+                   filtro: "",
+                   sort  : "DESC",
+                   orden : "LEFT(A.dFechaAplicacion,10)",
+                   data  : "#edit_form_endorsements .data-endorsements",
+                   data_grid : "#edit_form_endorsements #invoice_endorsement_grid",
+                   filtraInformacion : function(){
+                        var valid = true;
+                        fn_invoices.summary.endorsements.filtro = ""; 
+                        $(fn_invoices.summary.endorsements.data+" .flt_endosos").removeClass("error");
+                        
+                        if($(fn_invoices.summary.endorsements.data+" select[name=flt_tipo_endoso]").val() != ""){ 
+                            fn_invoices.summary.endorsements.filtro += "A.iConsecutivoTipoEndoso|"+$(fn_invoices.summary.endorsements.data+" select[name=flt_tipo_endoso]").val()+",";
+                        }else{valid = false;$(fn_invoices.summary.endorsements.data+" select[name=flt_tipo_endoso]").addClass('error');}
+                        
+                        if($(fn_invoices.summary.endorsements.data+" input[name=flt_dateFrom]").val() != ""){
+                            fn_invoices.summary.endorsements.filtro += "A.dFechaAplicacion|"+$(fn_invoices.summary.endorsements.data+" input[name=flt_dateFrom]").val()+",";
+                        }else{valid = false;$(fn_invoices.summary.endorsements.data+" input[name=flt_dateFrom]").addClass('error');}
+                        
+                        if($(fn_invoices.summary.endorsements.data+" input[name=flt_dateTo]").val() != ""){ 
+                            fn_invoices.summary.endorsements.filtro += "A.dFechaAplicacionF|"+$(fn_invoices.summary.endorsements.data+" input[name=flt_dateTo]").val()+",";
+                        }else{valid = false;$(fn_invoices.summary.endorsements.data+" input[name=flt_dateTo]").addClass('error');}
+                        
+                        if(valid){
+                            fn_invoices.summary.endorsements.fillgrid();
+                        }
+                        else{fn_solotrucking.mensaje('Please write the all filter fields.');}    
+                   },
+                   fillgrid: function(){
+                       $.ajax({             
+                        type:"POST", 
+                        url:"funciones_invoices.php", 
+                        data:{
+                            'accion'              : "get_endorsements",
+                            'filtroInformacion'   : fn_invoices.summary.endorsements.filtro,  
+                            'ordenInformacion'    : fn_invoices.summary.endorsements.orden,
+                            'sortInformacion'     : fn_invoices.summary.endorsements.sort,
+                            'iConsecutivoCompania': fn_invoices.summary.company_id,
+                            'iConsecutivoDetalle': $(fn_invoices.summary.form+' .detalle_formulario input[name=iConsecutivoDetalle]').val()
+                        },
+                        async : true,
+                        dataType : "json",
+                        success : function(data){                               
+                            $(fn_invoices.summary.endorsements.data_grid+" tbody").empty().append(data.tabla);
+                        }
+                    }); 
+                   }, 
+                   add : function(){
+                      
+                      valid = fn_invoices.summary.save(true);
+                      if(valid){
+                          //Limpiar endorsement:
+                          $(fn_invoices.summary.endorsements.data_grid+" tbody").empty().append('<tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr>');
+                          
+                          var fechas = fn_solotrucking.obtener_fechas();
+                          
+                          //precargar filtros:
+                          $(fn_invoices.summary.endorsements.data+" select[name=flt_tipo_endoso]").val('0');
+                          $(fn_invoices.summary.endorsements.data+" input[name=flt_dateFrom]").val(fechas[1]); 
+                          $(fn_invoices.summary.endorsements.data+" input[name=flt_dateTo]").val(fechas[2]);
+                          fn_invoices.summary.endorsements.filtraInformacion(); 
+                          
+                          $("#edit_form_endorsements").show();     
+                      } 
+                      
+                   }, 
+                   // Cargar endosos ya guardados:
+                   get_endorsements: function(){
+                       $.ajax({             
+                        type:"POST", 
+                        url:"funciones_invoices.php", 
+                        data:{'accion' : "get_endorsements_added",'iConsecutivoDetalle': $(fn_invoices.summary.form+' .detalle_formulario input[name=iConsecutivoDetalle]').val(),
+                        },
+                        async : true,
+                        dataType : "json",
+                        success : function(data){                               
+                            $("#invoice_endorsement_added tbody").empty().append(data.html); 
+                            fn_invoices.summary.endorsements.delete_endorsement(); 
+                        }
+                       }); 
+                   }, 
+                   delete_endorsement : function(){
+                    $("#invoice_endorsement_added tbody td .btn_delete").bind("click",function(){
+                        var clave = $(this).parent().parent().find("td:eq(0)").prop('id');
+                            clave = clave.split("_");
+                            clave = clave[1];
+                        $.ajax({             
+                            type:"POST", 
+                            url:"funciones_invoices.php", 
+                            data:{
+                                'accion' : "delete_endorsement_added",
+                                'iConsecutivoDetalle': $(fn_invoices.summary.form+' .detalle_formulario input[name=iConsecutivoDetalle]').val(),
+                                'iConsecutivoEndoso' : clave,
+                            },
+                            async : true,
+                            dataType : "json",
+                            success : function(data){ 
+                                fn_solotrucking.mensaje(data.msj);
+                                                           
+                                if(data.error == '0'){
+                                    fn_invoices.summary.endorsements.get_endorsements();     
+                                }    
+                            }
+                        });    
+                    });    
+                   },
+                   // guardar endosos seleccionados:
+                   save : function(){
+                       
+                       //Validar si selecciono endosos:
+                       $(fn_invoices.summary.endorsements.data_grid+" input[name=chk_endorsement_invoice]").each(function(){
+                           if($(this).is(':checked')){
+                               var linehtml = $(this).parent().parent();
+                               
+                               $("#invoice_endorsement_added > tbody").append(linehtml);
+                           }
+                       }); 
+                       
+                       $("#edit_form_endorsements").hide();   
+                   },
+               },
             
-            }  
+            },  
+            preview : function(){
+                var clave = $(fn_invoices.form+' #iConsecutivo').val();
+                if(clave != ""){
+                    window.open('pdf_invoice.php?id='+clave+'&ds=preview','_blank');
+                }    
+            }
     }     
     </script> 
     <div id="layer_content" class="main-section">
@@ -389,7 +704,7 @@
         </div>
     </div>
     <!-- FORMULARIOS -->
-    <div id="edit_form_invoice" class="popup-form" style="height: 97%;">
+    <div id="edit_form_invoice" class="popup-form" style="height: 97%;width:80%;">
         <div class="p-header">
             <h2>INVOICES - (EDIT OR ADD)</h2>
             <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('edit_form_invoice');"><i class="fa fa-times"></i></div>
@@ -521,42 +836,42 @@
                             <tr>
                                 <td colspan="4"></td>
                                 <td><div class="data-grid-totales"><label>Subtotal: </label></div></td>
-                                <td><div class="data-grid-totales"><input id="dSubtotal" type="text" readonly="readonly" value=""></div></td>  
+                                <td><div class="data-grid-totales"><input id="dSubtotal" name="dSubtotal" type="text" readonly="readonly" value=""></div></td>  
                             </tr>
-                            <tr>
+                            <!--<tr>
                                 <td colspan="4"></td>
                                 <td><div class="data-grid-totales"><label>Advance payment: </label></div></td>
-                                <td><div class="data-grid-totales"><input id="dAnticipo" type="text" readonly="readonly" value="" onblur="fn_invoices.actualizaTotales();"></div></td>  
-                            </tr>
+                                <td><div class="data-grid-totales"><input id="dAnticipo" type="text" readonly="readonly" value="" onblur="fn_invoices.actualiza_totales();"></div></td>  
+                            </tr>-->
                             <tr>
                                 <td colspan="4"></td>
                                 <td><div class="data-grid-totales"><label>Tax: </label></div></td>
-                                <td><div class="data-grid-totales"><input id="dTax" type="text" readonly="readonly" value=""></div></td>  
+                                <td><div class="data-grid-totales"><input id="dTax" name="dTax" type="text" readonly="readonly" value=""></div></td>  
                             </tr>
                             <tr>
                                 <td colspan="4"></td>
                                 <td><div class="data-grid-totales"><label>Total: </label></div></td>
-                                <td><div class="data-grid-totales"><input type="text" id="dTotal" readonly="readonly" value=""></div></td>  
+                                <td><div class="data-grid-totales"><input type="text" id="dTotal" name="dTotal" readonly="readonly" value=""></div></td>  
                             </tr>
-                            <tr>
+                            <!--<tr>
                                 <td colspan="4"></td>
                                 <td><div class="data-grid-totales"><label>Balance: </label></div></td>
-                                <td><div class="data-grid-totales"><input id="dBalance" type="text" readonly="readonly" value=""></div></td>  
-                            </tr>
+                                <td><div class="data-grid-totales"><input id="dBalance" name="dBalance" type="text" readonly="readonly" value=""></div></td>  
+                            </tr>-->
                         </tfoot>
                     </table>   
                 </div>
             </form>
             <div>
                 <button type="button" class="btn-1" onclick="fn_invoices.save();" style="">SAVE</button>  
-                <button type="button" class="btn-1" onclick="" style="margin-right:10px;background:#5ec2d4;">Preview</button>         
+                <button type="button" class="btn-1 btn-preview" onclick="fn_invoices.preview();" style="margin-right:10px;background:#5ec2d4;">Preview</button>         
                 <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('edit_form_invoice');" style="margin-right:10px;background:#e8051b;">Cancel</button> 
             </div>
         </div>
         </div>
     </div>
     <!-- EDIT PS -->
-    <div id="edit_form_summary" class="popup-form" style="height: 97%;">
+    <div id="edit_form_summary" class="popup-form" style="height: 97%;width:80%;">
         <div class="p-header">
             <h2>INVOICE SUMMARY - (EDIT OR ADD)</h2>
             <div class="btn-close" title="Close Window" onclick="fn_invoices.summary.cerrar_ventana();"><i class="fa fa-times"></i></div>
@@ -567,33 +882,43 @@
                 <fieldset style="padding-bottom: 5px;">
                 <legend>Product / Service - General Data</legend>
                 <p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p>
-                <input id="iConsecutivoDetalle" name="iConsecutivoDetalle" type="hidden" value=""> 
-                <table style="width: 100%;">
+                <table class="detalle_formulario" style="width: 100%;">
                     <tr>
                         <td colspan="100%">
+                        <input id="iConsecutivoDetalle" name="iConsecutivoDetalle" type="hidden" value=""> 
+                        <input id="iConsecutivoEndosos" name="iConsecutivoEndosos" type="hidden" value=""> 
+                        <input id="iConsecutivoInvoice" name="iConsecutivoInvoice" type="hidden" value="">
                         <div class="field_item"> 
                             <label for="iConsecutivoServicio">Service/Product <span style="color:#ff0000;">*</span>:</label> 
-                            <select tabindex="1" id="iConsecutivoServicio" class="required-field" onblur="fn_invoices.summary.get_service_data();"><option value="">Select an option...</option></select>
+                            <select tabindex="1" id="iConsecutivoServicio" name="iConsecutivoServicio" class="required-field" onblur="fn_invoices.summary.get_service_data();"><option value="">Select an option...</option></select>
                         </div>
                         </td>
+                    </tr>
+                    <tr>
+                        <td colspan="100%">
+                        <div class="field_item">
+                            <label>Comments:</label> 
+                            <textarea tabindex="2" id="sComentarios" name="sComentarios" style="height:50px!important;resize:none;"></textarea>
+                        </div>
+                        </td> 
                     </tr>
                     <tr>
                         <td>
                         <div class="field_item">
                             <label>Qty <span style="color:#ff0000;">*</span>:</label> 
-                            <input tabindex="2" id="iCantidad" class="required-field num" type="text" value="" style="width: 97%;">
+                            <input tabindex="3" id="iCantidad" name="iCantidad" class="required-field num" type="text" value="" style="width: 97%;" onchange="fn_invoices.summary.get_total();">
                         </div>
                         </td>
                         <td>
                         <div class="field_item"> 
                             <label>Unit Price <span style="color:#ff0000;">*</span>:</label> 
-                            <input tabindex="3" id="iPrecioUnitario" class="required-field inputdecimals" type="text" value="" style="width: 97%;"> 
+                            <input tabindex="4" id="iPrecioUnitario" name="iPrecioUnitario" class="required-field inputdecimals" type="text" value="" style="width: 97%;" onchange="fn_invoices.summary.get_total();"> 
                         </div>
                         </td> 
                         <td>
                         <div class="field_item"> 
                             <label>%TAX <span style="color:#ff0000;">*</span>:</label> 
-                            <input tabindex="4" id="iPctImpuesto" class="required-field inputdecimals" type="text" value="" style="width: 97%;"> 
+                            <input tabindex="5" id="iPctImpuesto" name="iPctImpuesto" class="required-field inputdecimals" type="text" value="" style="width: 97%;" onchange="fn_invoices.summary.get_total();"> 
                         </div>
                         </td> 
                     </tr>
@@ -601,27 +926,46 @@
                         <td>
                         <div class="field_item">
                             <label>TAX Amount:</label> 
-                            <input tabindex="5" id="iCantidad" class="required-field inputdecimals readonly" type="text" value="" readonly="readonly" style="width: 97%;">
+                            <input tabindex="6" id="iImpuesto" name="iImpuesto" class="required-field inputdecimals readonly" type="text" value="" readonly="readonly" style="width: 97%;">
                         </div>
                         </td>
                         <td>
                         <div class="field_item"> 
                             <label>Total Price:</label> 
-                            <input tabindex="6" id="iPrecioExtendido" class="required-field inputdecimals readonly" type="text" value="" readonly="readonly" style="width: 97%;"> 
+                            <input tabindex="7" id="iPrecioExtendido" name="iPrecioExtendido" class="required-field inputdecimals readonly" type="text" value="" readonly="readonly" style="width: 97%;"> 
                         </div>
                         </td> 
-                        <td></td> 
-                    </tr>
-                    <tr>
-                        <td colspan="100%">
-                        <div class="field_item">
-                            <label>Comments:</label> 
-                            <textarea tabindex="7" id="sComentarios" style="height:50px!important;"></textarea>
+                        <td>
+                        <div class="field_item"> 
+                            <input tabindex="8" id="iEndorsementsApply" name="iEndorsementsApply" type="checkbox" value="" onchange="fn_invoices.summary.valida_endorsements();" style="position: relative;top: 6px;margin-left: 5px!important;margin-right: 4px!important;">
+                            <label style="position: relative;top: 2px;">Apply payment to endorsement?</label> 
                         </div>
                         </td> 
                     </tr>
-                    
                 </table>
+                <legend class="data-endorsements">Endorsements data</legend>
+                <table style="width: 100%;" cellpadding="0" cellspacing="0" class="data-endorsements">
+                <tr> 
+                    <td colspan="2">
+                    <table id="invoice_endorsement_added" class="popup-datagrid" style="width: 100%;margin-top: 10px;margin-bottom: 10px;" cellpadding="0" cellspacing="0">
+                        <thead>
+                            <tr class="grid-head2">
+                                <td class="etiqueta_grid" style="width: 40%;">type / Description</td>
+                                <td class="etiqueta_grid" style="width: 30%;">
+                                    <span style="display: -webkit-inline-box;width: 60%;">Policy</span>
+                                    <span style="display: -webkit-inline-box;width: 38%;">END No.</span>
+                                </td>
+                                <td class="etiqueta_grid">APP Date</td>
+                                <td class="etiqueta_grid">Status</td>                                      
+                                <td><div class="btn-icon add" title="Add +" onclick="fn_invoices.summary.endorsements.add();"><i class="fa fa-plus"></i></div></td>
+                            </tr>
+                        </thead>
+                        <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
+                        <tfoot></tfoot>
+                    </table>
+                    </td>
+                </tr>
+                </table> 
                 </fieldset>
             </form>
             <div>
@@ -631,9 +975,76 @@
         </div>
         </div>
     </div>
+    <!-- ADD ENDORSEMENTS -->
+    <div id="edit_form_endorsements" class="popup-form" style="height: 97%;width:80%;">
+        <div class="p-header">
+            <h2>INVOICE SUMMARY - (EDIT OR ADD)</h2>
+            <div class="btn-close" title="Close Window" onclick="$('#edit_form_endorsements').hide();"><i class="fa fa-times"></i></div>
+        </div>
+        <div class="p-container" style="height: 94%;overflow-y: auto;">
+        <div>
+            <form>
+                <fieldset style="padding-bottom: 5px;">
+                <p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p>
+                <legend class="data-endorsements">Endorsements data</legend>
+                <table style="width: 100%;" cellpadding="0" cellspacing="0" class="data-endorsements">
+                <tr>
+                    <td style="width:40%;">
+                    <div class="field_item">
+                        <label>Type <span style="color:#ff0000;">*</span>:</label> 
+                        <select name="flt_tipo_endoso" style="height:25px!important;" class="flt_endosos">
+                            <option value="">Select an option...</option>
+                            <option value="0">Both</option>
+                            <option value="1">Vehicles</option>
+                            <option value="2">Drivers</option>
+                        </select>
+                    </div>
+                    </td> 
+                    <td style="width: 60%;padding-left: 10px;">
+                    <div class="field_item">
+                        <label>Filter by date <span style="color:#ff0000;">*</span>:</label> 
+                        <div style="float: left;width: 90%;">
+                            <label class="check-label" style="position: relative;top: 0px;">From</label><input name="flt_dateFrom" type="text"  placeholder="MM/DD/YY" style="width: 150px;" class="flt_endosos fecha">
+                            <label class="check-label" style="position: relative;top: 0px;">To</label><input   name="flt_dateTo"   type="text"  placeholder="MM/DD/YY" style="width: 150px;" class="flt_endosos fecha">
+                        </div>
+                        <div class="btn_pdf btn-icon pdf btn-right" title="filter endorsements" onclick="fn_invoices.summary.endorsements.filtraInformacion();"><i class="fa fa-search"></i></div>
+                    </div>
+                    </td> 
+                </tr>
+                <tr> 
+                    <td colspan="2">
+                    <table id="invoice_endorsement_grid" class="popup-datagrid" style="width: 100%;margin-top: 10px;margin-bottom: 10px;" cellpadding="0" cellspacing="0">
+                        <thead>
+                            <tr id="grid-head2">
+                                <td class="etiqueta_grid" style="width: 40%;">type / Description</td>
+                                <td class="etiqueta_grid" style="width: 30%;">
+                                    <span style="display: -webkit-inline-box;width: 60%;">Policy</span>
+                                    <span style="display: -webkit-inline-box;width: 38%;">END No.</span>
+                                </td>
+                                <td class="etiqueta_grid">APP Date</td>
+                                <td class="etiqueta_grid">Status</td>
+                                <td class="etiqueta_grid"></td> 
+                            </tr>
+                        </thead>
+                        <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
+                        <tfoot></tfoot>
+                    </table>
+                    </td>
+                </tr>
+                </table> 
+                </fieldset>
+            </form>
+            <div>
+                <button type="button" class="btn-1" onclick="fn_invoices.summary.endorsements.save();" style="">SAVE</button>          
+                <button type="button" class="btn-1" onclick="$('#edit_form_endorsements').hide();" style="margin-right:10px;background:#e8051b;">Cancel</button> 
+            </div>
+        </div>
+        </div>
+    </div>
     <!-- DIALOGUES -->
-    <div id="dialog-confirm" title="Delete">
-      <p><span class="ui-icon ui-icon-alert" ></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
+    <div id="dialog-confirm-delete-invoice" title="Delete">
+      <p><span class="ui-icon ui-icon-alert" ></span>Are you sure you want to delete the invoice?</p>
+      <input value="" type="hidden" name="iConsecutivo">
     </div>
     <!-- FOOTER -->
     <?php include("footer.php"); ?> 

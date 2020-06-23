@@ -122,7 +122,7 @@ var fn_vehicles = {
                 if($(fn_vehicles.data_grid+" .flt_radio").val() != ""){ fn_vehicles.filtro += "iConsecutivoRadio|"+$(fn_vehicles.data_grid+" .flt_radio").val()+","} 
                 if($(fn_vehicles.data_grid+" .flt_marca").val() != ""){ fn_vehicles.filtro += "iModelo|"+$(fn_vehicles.data_grid+" .flt_marca").val()+","}    
                 if($(fn_vehicles.data_grid+" .flt_peso").val() != ""){ fn_vehicles.filtro += "sPeso|"+$(fn_vehicles.data_grid+" .flt_peso").val()+","} 
-                if($(fn_vehicles.data_grid+" .flt_status").val() != ""){ fn_vehicles.filtro += "inPoliza|"+$(fn_vehicles.data_grid+" .flt_status").val()+","} 
+                //if($(fn_vehicles.data_grid+" .flt_status").val() != ""){ fn_vehicles.filtro += "inPoliza|"+$(fn_vehicles.data_grid+" .flt_status").val()+","} 
                 fn_vehicles.fillgrid();
        },
        get_list_description : function(policy,type){
@@ -169,7 +169,6 @@ var fn_vehicles = {
                 </td> 
                 <td><input class="flt_marca" type="text" placeholder="Make:"></td>  
                 <td style='width:80px;'><input class="flt_peso" type="text" placeholder="Weight:"></td> 
-                <td style='width:300px;'></td>  
                 <td style='width:35px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_vehicles.filtraInformacion();"><i class="fa fa-search"></i></div>
                 </td> 
@@ -181,7 +180,6 @@ var fn_vehicles = {
                 <td class="etiqueta_grid"      onclick="fn_vehicles.ordenamiento('iConsecutivoRadio',this.cellIndex);">RADIO</td> 
                 <td class="etiqueta_grid"      onclick="fn_vehicles.ordenamiento('iModelo',this.cellIndex);">MAKE</td> 
                 <td class="etiqueta_grid"      onclick="fn_vehicles.ordenamiento('sPeso',this.cellIndex);">WEIGHT</td> 
-                <td class="etiqueta_grid"     >IS IN POLICIES</td>  
                 <td class="etiqueta_grid"></td>
             </tr>
         </thead>

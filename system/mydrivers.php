@@ -131,7 +131,7 @@ var fn_drivers = {
                 if($(fn_drivers.data_grid+" .flt_tipoLicencia").val() != ""){ fn_drivers.filtro += "eTipoLicencia|"+$(fn_drivers.data_grid+" .flt_tipoLicencia").val()+","} 
                 if($(fn_drivers.data_grid+" .flt_fechaExpiracion").val() != ""){ fn_drivers.filtro += "dFechaExpiracionLicencia|"+$(fn_drivers.data_grid+" .flt_fechaExpiracion").val()+","}    
                 if($(fn_drivers.data_grid+" .flt_experiencia").val() != ""){ fn_drivers.filtro += "iExperienciaYear|"+$(fn_drivers.data_grid+" .flt_experiencia").val()+","} 
-                if($(fn_drivers.data_grid+" .flt_status").val() != ""){ fn_drivers.filtro += "inPoliza|"+$(fn_drivers.data_grid+" .flt_status").val()+","} 
+                //if($(fn_drivers.data_grid+" .flt_status").val() != ""){ fn_drivers.filtro += "inPoliza|"+$(fn_drivers.data_grid+" .flt_status").val()+","} 
                 fn_drivers.fillgrid();
        },
         view_policies : function(){

@@ -205,6 +205,7 @@
          $validaemail  = preg_match($emailRegex,trim($email)); 
          return $validaemail;
     }
+    
     /*----- POLIZAS ---*/
     function get_policy_type($iTipo){
         switch($iTipo){
@@ -220,5 +221,20 @@
     }
     function filtro_polizas_claims($tableAlias){
         return "AND ($tableAlias.iConsecutivo = '1' OR $tableAlias.iConsecutivo = '2' OR $tableAlias.iConsecutivo = '3' OR $tableAlias.iConsecutivo = '5') ";
+    }
+    
+    ## ROUND NUMBERS ##
+    function number_round($number, $precision=0) {
+
+        $precision = ($precision == 0 ? 2 : $precision);
+        $pow       = pow(10, $precision);
+        $ceil      = ceil($number * $pow)/$pow;
+        $floor     = floor($number * $pow)/$pow;
+        $pow       = pow(10, $precision+1);
+        $diffCeil  = $pow*($ceil-$number);
+        $diffFloor = $pow*($number-$floor)+($number < 0 ? -1 : 1);
+
+        if($diffCeil >= $diffFloor) return $floor;
+        else return $ceil;
     }
 ?>
