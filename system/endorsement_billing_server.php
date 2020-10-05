@@ -116,15 +116,19 @@
                          $detalle .= $description."</table>";
                      } 
                      
+                     // Revisar fecha limite de factuacion:
+                     
+                     
                      if($items['iConsecutivoInvoice'] == ''){
-                         $estado      = '<i class="fa fa-circle-o icon-estatus" style=\"margin-right: -5px;\"></i><span style="font-size: 10px;position: relative; top: 2px;">NO INVOICE</span>';
+                         $estado      = '<i class="fa fa-circle-o icon-estatus" style=\"margin-right: -5px;\"></i><span style="font-size: 10px;position: relative; top: 2px;">NO BILLED</span>';
+                         $titleEstatus= "The invoice the has not been created.";
                          //$class       = "class = \"blue\"";
                          $btn_confirm = '<div class="btn-icon btn-left btn-green btn_add" title="Add Invoice"><i class="fa fa-plus"></i></div>';
                      }
                      else{
                          switch($items['eStatus']){
                              case 'EDITABLE' : 
-                                $estado      = '<i class="fa fa-circle-o icon-estatus" style=\"margin-right: -5px;\"></i><span style="font-size: 10px;position: relative; top: 2px;">INVOICE NOT APPLIED</span>';
+                                $estado      = '<i class="fa fa-circle-o icon-estatus" style=\"margin-right: -5px;\"></i><span style="font-size: 10px;position: relative; top: 2px;">BILL NOT APPLIED</span>';
                                 $titleEstatus= "The invoice has been created but not sent/applied, you can edit it.";
                                 //$class       = "class = \"blue\"";
                                 $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"View and Edit Endorsement Status\"><i class=\"fa fa-pencil-square-o\"></i></div>";
