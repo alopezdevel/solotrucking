@@ -136,7 +136,7 @@
                     dateFormat : 'mm/dd/yy',
                     buttonImageOnly: true
                 });
-                $(".fecha,.flt_fecha").mask("99/99/9999"); 
+                $(".fecha,.flt_fecha, .flt_date").mask("99/99/9999"); 
                 //Cargar Lista de companias:
                 $.ajax({             
                     type:"POST", 

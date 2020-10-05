@@ -2447,7 +2447,10 @@
       //Variables:
       $error                  = "0";                                                                                                                                                                                                                                    
       $transaccion_exitosa    = true; 
-      $_POST['iConsecutivo'] != "" ? $edit_mode = true : $edit_mode = false; 
+      $fileExist              = false;
+      $_POST['iConsecutivo'] != "" ? $edit_mode = true : $edit_mode = false;
+      $eArchivo               = trim($_POST['eArchivo']); 
+      $iConsecutivoEndoso     = trim($_POST['iConsecutivoEndoso']);  
        
       //Revisamos Archivo de que modulo viene:
       if(isset($_FILES['userfile'])){
@@ -2459,6 +2462,7 @@
           $fileSize    = $_FILES['userfile']['size']; 
           $fileError   = $_FILES['userfile']['error'];
           $fileExten   = explode(".",$fileName); 
+          $fileExist   = true;
            
       }else if(isset($_FILES['file-0'])){
           $file        = fopen($_FILES['file-0']["tmp_name"], 'r'); 
@@ -2469,75 +2473,105 @@
           $fileSize    = $_FILES['file-0']['size']; 
           $fileError   = $_FILES['file-0']['error'];
           $fileExten   = explode(".",$fileName);
-      }else{
+          $fileExist   = true;
+      }
+      
+      
+      if(!($edit_mode) && !($fileExist)){
           $error = "1";
           $mensaje = "Error to read the file data, please try again.";
       }
       
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error  = '1';
+          $mensaje= "This user does not have the privileges to modify or add data to the system.";
+      }
+      
       #REVISAMOS ERRORES:
       if($error == "0"){
-          //Validando nombre del archivo sin puntos...
-          if(count($fileExten) != 2){$error="1";$mensaje = "Error: Please check that the name of the file should not contain points.";}
-          else{
-              //Extension Valida:
-              $fileExten = strtolower($fileExten[1]);
-              if($fileExten != "pdf" && $fileExten != "jpg" && $fileExten != "jpeg" && $fileExten != "png" && $fileExten != "doc" && $fileExten != "docx" && $fileExten != "xlsx" && $fileExten != "xls" && $fileExten != "mp3" && $fileExten != "mp4" && $fileExten != "key" && $fileExten != "cer" && $fileExten != "zip" && $fileExten != "ppt" && $fileExten != "pptx"){
-                  $error = "1"; $mensaje="Error: The file extension is not valid, please check it.";
-              }else {
-                  //Verificar Tamaño:
-                  if($fileSize > 0  && $fileError == 0){
-                      
-                      $sContenido           = $conexion->real_escape_string($fileContent);
-                      $eArchivo             = trim($_POST['eArchivo']); 
-                      $iConsecutivoEndoso   = trim($_POST['iConsecutivoEndoso']);
-                      
-                      if(isset($_POST['iEnviarArchivoEmail']) != ""){
-                        $iEnviaEmail = trim($_POST['iEnviarArchivoEmail']);    
-                      }
-                      else{$iEnviaEmail = '0';}
-                      
-                      //if($eArchivo != "OTHERS" && $eArchivo != 'ENDORSEMENT'){$fileName = strtolower($eArchivo).'.'.$fileExten;} //Si la categoria existe renombramos el archivo.
-                      //else 
-                      if($eArchivo == 'ENDORSEMENT'){
-                          
-                          $fileName = explode(".",$fileName);
-                          $fileName = str_replace(" ","_",$fileName[0]);
-                          $fileName = $fileName.'.'.$fileExten;
-                      }
-                      #UPDATE
-                      if($edit_mode){
-                         $sql = "UPDATE cb_endoso_files SET sNombreArchivo ='$fileName', sTipoArchivo ='$fileType', iTamanioArchivo ='$fileSize', ".
-                                "hContenidoDocumentoDigitalizado='$sContenido', eArchivo='$eArchivo',iEnviarArchivoEmail ='$iEnviaEmail', ".
-                                "dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."'".
-                                "WHERE iConsecutivo ='".trim($_POST['iConsecutivo'])."'";  
-                      }
-                      #INSERT
-                      else{
-                         $sql = "INSERT INTO cb_endoso_files (sNombreArchivo, sTipoArchivo, iTamanioArchivo, hContenidoDocumentoDigitalizado, eArchivo,iConsecutivoEndoso, dFechaIngreso, sIP, sUsuarioIngreso, iEnviarArchivoEmail) ".
-                                "VALUES('$fileName','$fileType','$fileSize','$sContenido','$eArchivo','$iConsecutivoEndoso','".date("Y-m-d H:i:s")."', '".$_SERVER['REMOTE_ADDR']."', '".$_SESSION['usuario_actual']."','".$iEnviaEmail."')"; 
-                      }
-                      
-                      if($conexion->query($sql)){
-                            $id_file = $conexion->insert_id; 
-                            $conexion->commit();
-                            $conexion->close();
-                            $mensaje = "The file was uploaded successfully.";  
-                      }else{
-                            $conexion->rollback();
-                            $conexion->close();
-                            $mensaje = "A general system error ocurred : internal error";
-                            $error = "1";
-                      }     
+          
+          #VALIDANDO ARCHIVO:
+          if($fileExist){
+              //Validando nombre del archivo sin puntos...
+              if(count($fileExten) != 2){$error="1";$mensaje = "Error: Please check that the name of the file should not contain points.";}
+              else{
+                  //Extension Valida:
+                  $fileExten = strtolower($fileExten[1]);
+                  if($fileExten != "pdf" && $fileExten != "jpg" && $fileExten != "jpeg" && $fileExten != "png" && $fileExten != "doc" && $fileExten != "docx" && $fileExten != "xlsx" && $fileExten != "xls" && $fileExten != "mp3" && $fileExten != "mp4" && $fileExten != "key" && $fileExten != "cer" && $fileExten != "zip" && $fileExten != "ppt" && $fileExten != "pptx"){
+                      $error = "1"; $mensaje="Error: The file extension is not valid, please check it.";
                   }
                   else{
-                      $error   = "1";
-                      $mensaje = "Error: The file you are trying to upload is empty or corrupt, please check it and try again.";}
+                      //Verificar Tamaño:
+                      if($fileSize > 0  && $fileError == 0){
+                          
+                          $sContenido           = $conexion->real_escape_string($fileContent);
+                      
+                          if(isset($_POST['iEnviarArchivoEmail']) != ""){$iEnviaEmail = trim($_POST['iEnviarArchivoEmail']);}else{$iEnviaEmail = '0';}
+                          
+                          if($eArchivo == 'ENDORSEMENT'){
+                              
+                              $fileName = explode(".",$fileName);
+                              $fileName = str_replace(" ","_",$fileName[0]);
+                              $fileName = $fileName.'.'.$fileExten;
+                          }
+                             
+                      }
+                      else{
+                          $error   = "1";
+                          $mensaje = "Error: The file you are trying to upload is empty or corrupt, please check it and try again.";
+                      }
+                  }
+              }  
+          }
+          
+          // Termina validaciones para archivo:
+          if($error == '0'){
+              #UPDATE
+              if($edit_mode){
+                 
+                 isset($_POST['iConsecutivoPoliza']) && $_POST['iConsecutivoPoliza'] != "" ? $qPoliza = " iConsecutivoPoliza='".$_POST['iConsecutivoPoliza']."'," : $qPoliza = "";
+                 $qFile = "";
+                 if($fileExist){$qFile = "sNombreArchivo ='$fileName', sTipoArchivo ='$fileType', iTamanioArchivo ='$fileSize', hContenidoDocumentoDigitalizado='$sContenido', ";}
+                  
+                 $sql = "UPDATE cb_endoso_files SET eArchivo='$eArchivo',iEnviarArchivoEmail ='$iEnviaEmail', $qFile $qPoliza".
+                        "dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."'".
+                        "WHERE iConsecutivo ='".trim($_POST['iConsecutivo'])."'";  
+              }
+              #INSERT
+              else{
+                 
+                 if(isset($_POST['iConsecutivoPoliza']) && $_POST['iConsecutivoPoliza'] != ""){
+                    $qPoliza = ', iConsecutivoPoliza';
+                    $vPoliza = ",'".$_POST['iConsecutivoPoliza']."'"; 
+                 } 
+                 else{$qPoliza = "";$vPoliza="";}
+                 
+                 $qFile = ""; $vFile = "";  
+                 if($fileExist){
+                     $qFile = "sNombreArchivo, sTipoArchivo, iTamanioArchivo, hContenidoDocumentoDigitalizado,";
+                     $vFile = "'$fileName','$fileType','$fileSize','$sContenido',";
+                 }
+                  
+                 $sql = "INSERT INTO cb_endoso_files ($qFile eArchivo,iConsecutivoEndoso, dFechaIngreso, sIP, sUsuarioIngreso, iEnviarArchivoEmail $qPoliza) ".
+                        "VALUES($vFile '$eArchivo','$iConsecutivoEndoso','".date("Y-m-d H:i:s")."', '".$_SERVER['REMOTE_ADDR']."', '".$_SESSION['usuario_actual']."','".$iEnviaEmail."' $vPoliza)"; 
               }
               
-          }   
+              if($conexion->query($sql)){
+                    $id_file = $conexion->insert_id; 
+                    $conexion->commit();
+                    $conexion->close();
+                    $mensaje = "The file was uploaded successfully.";  
+              }else{
+                    $conexion->rollback();
+                    $conexion->close();
+                    $mensaje = "A general system error ocurred : internal error";
+                    $error = "1";
+              }      
+          }  
       }
-
-        
+      
       $response = array("mensaje"=>"$mensaje","error"=>"$error", "id_file"=>"$id_file","name_file"=>"$name_file"); 
       echo json_encode($response);             
       
@@ -2551,21 +2585,29 @@
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
       $transaccion_exitosa = true;
       
-      #borrar archivos de unidades si un id de unidad asignado
-      $query = "DELETE FROM cb_endoso_files WHERE iConsecutivo = '$iConsecutivo'"; 
-      if($conexion->query($query)){$transaccion_exitosa = true;}else{$transaccion_exitosa = false;}
+      $valid_user = valid_user($_SESSION['usuario_actual']);
 
-      if($transaccion_exitosa){
-        $conexion->commit();
-        $conexion->close();
-        $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The files has been deleted succesfully!</p>';
-      }else{
-        $conexion->rollback();
-        $conexion->close();
-        $msj   = "A general system error ocurred : internal error";
-        $error = "1";
+      if(!($valid_user)){
+          $error  = '1';
+          $msj    = "This user does not have the privileges to modify or add data to the system.";
       }
-        
+      else{
+          #borrar archivos de unidades si un id de unidad asignado
+          $query = "DELETE FROM cb_endoso_files WHERE iConsecutivo = '$iConsecutivo'"; 
+          if($conexion->query($query)){$transaccion_exitosa = true;}else{$transaccion_exitosa = false;}
+
+          if($transaccion_exitosa){
+            $conexion->commit();
+            $conexion->close();
+            $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The files has been deleted succesfully!</p>';
+          }else{
+            $conexion->rollback();
+            $conexion->close();
+            $msj   = "A general system error ocurred : internal error";
+            $error = "1";
+          }         
+      }
+      
       $response = array("msj"=>"$msj","error"=>"$error");   
       echo json_encode($response);
       

@@ -45,9 +45,9 @@
         $pagina_actual == "0" ? $pagina_actual = 1 : false;
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-        $sql = "SELECT A.iConsecutivo,sNoReferencia, sNombreCompania, sNombreContacto, dTotal, iFinanciamiento, sDiasFinanciamiento, eStatus, iOnRedList, DATE_FORMAT(dFechaInvoice, '%m/%d/%Y') AS  dFechaInvoice, sCveMoneda ".   
-               "FROM cb_invoices A ".
-               "LEFT JOIN ct_companias B ON A.iConsecutivoCompania = B.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
+        $sql = "SELECT A.iConsecutivo,sNoReferencia, sNombreCompania, B.sEmailContacto, sNombreContacto, dTotal, iFinanciamiento, sDiasFinanciamiento, eStatus, iOnRedList, DATE_FORMAT(dFechaInvoice, '%m/%d/%Y') AS  dFechaInvoice, sCveMoneda, A.sNombreArchivo ".   
+               "FROM      cb_invoices  AS A ".
+               "LEFT JOIN ct_companias AS B ON A.iConsecutivoCompania = B.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
         $result = $conexion->query($sql);
         $rows   = $result->num_rows;    
         if ($rows > 0) {    
@@ -63,17 +63,35 @@
                         $redlist_icon = ""; 
                         $redlist_class = "";
                      }
-                     $botones = "";
+                     
+                     
                      switch($items['eStatus']){
                          case 'EDITABLE': 
                             $btns_left  = "<div class=\"btn_apply btn-text-2 send btn-center\" title=\"Apply Invoice\" style=\"width: 70px;text-transform: uppercase;\"><i class=\"fa fa-check-circle\"></i><span>Apply</span></div> "; 
-                            $btns_right = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit\"><i class=\"fa fa-pencil-square-o\"></i></div>".
+                            
+                            if($items['sNombreArchivo'] != ""){
+                                $btns_right .= "<div class=\"btn-icon btn-left pdf\" title=\"Open file\" onclick=\"window.open('open_pdf.php?idfile=".$items['iConsecutivo']."&type=invoice');\"><i class=\"fa fa-file-pdf-o\"></i><span></span></div>";
+                            }
+                            
+                            $btns_right.= "<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit\"><i class=\"fa fa-pencil-square-o\"></i></div>".
                                           "<div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete\"><i class=\"fa fa-trash\"></i></div>";
                          break;
                          case 'APPLIED': 
-                            $btns_left = "<div class=\"btn_send_invoice btn-icon send-email btn-left\" title=\"Send to:\"><i class=\"fa fa-envelope\"></i></div>"; 
-                            $btns_left.= "<div class=\"btn_pdf btn-icon pdf btn-left\" title=\"Open Invoice PDF\"><i class=\"fa fa-file-pdf-o\"></i></div>"; 
+                            //$btns_left = "<div class=\"btn_send_invoice btn-icon send-email btn-left\" title=\"Send to: ".$items['sEmailContacto']."\"><i class=\"fa fa-envelope\"></i></div>"; 
+                            
+                            if($items['sNombreArchivo'] != ""){
+                                $btns_left .= "<div class=\"btn-icon btn-left pdf\" title=\"Open file\" onclick=\"window.open('open_pdf.php?idfile=".$items['iConsecutivo']."&type=invoice');\"><i class=\"fa fa-file-pdf-o\"></i><span></span></div>";
+                            }
+                            else{
+                                $btns_left.= "<div class=\"btn_pdf btn-icon pdf btn-left\" title=\"Open Invoice PDF\"><i class=\"fa fa-file-pdf-o\"></i></div>";     
+                            }
                             //$btns_right= "<div class=\"btn_cancel btn-icon trash btn-left\" title=\"Cancel Invoice\"><i class=\"fa fa-times-circle\"></i></div>";
+                         break; 
+                         case 'SENT': 
+                            $btns_left  = "<div class=\"btn_send_invoice active btn-icon send-email btn-left\" title=\"Send to: ".$items['sEmailContacto']."\"><i class=\"fa fa-envelope\"></i></div>"; 
+                            $btns_left .= "<div class=\"btn_pdf btn-icon pdf btn-left\" title=\"Open Invoice PDF\"><i class=\"fa fa-file-pdf-o\"></i></div>"; 
+                            //$btns_right.= "<div class=\"btn_payments btn-icon view btn-left\" title=\"Payments\"><i class=\"fa fa-usd\"></i></div>";
+                            //$btns_right.= "<div class=\"btn_cancel btn-icon trash btn-left\" title=\"Cancel Invoice\"><i class=\"fa fa-times-circle\"></i></div>";
                          break; 
                      }
                      
@@ -112,7 +130,8 @@
     $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
     $transaccion_exitosa = true;
     $sql    = "SELECT iConsecutivo,iConsecutivoCompania, sNoReferencia, dTotal, iFinanciamiento, sDiasFinanciamiento, eStatus, ".
-              "DATE_FORMAT(dFechaInvoice, '%m/%d/%Y') AS  dFechaInvoice, dSubtotal,dPctTax,dTax,dAnticipo,dBalance,dTipoCambio,sComentarios,sCveMoneda ".
+              "DATE_FORMAT(dFechaInvoice, '%m/%d/%Y') AS  dFechaInvoice, dSubtotal,dPctTax,dTax,dAnticipo,dBalance,dTipoCambio,sComentarios,sCveMoneda,".
+              "sNombreArchivo, sTipoArchivo, iTamanioArchivo ".
               "FROM cb_invoices WHERE iConsecutivo = '$clave'";
     $result = $conexion->query($sql);
     $items  = $result->num_rows;   
@@ -121,7 +140,21 @@
         $llaves = array_keys($items);
         $datos  = $items;
         
-        foreach($datos as $i => $b){$fields .= "\$('$domroot :input[id=".$i."]').val('".$datos[$i]."');";}  
+        foreach($datos as $i => $b){
+            if($i != "sNombreArchivo" && $i != "sTipoArchivo" && $i != "iTamanioArchivo"){
+                $fields .= "\$('$domroot :input[id=".$i."]').val('".$datos[$i]."');";
+            }
+        } 
+        
+        $sArchivoNombre   = $items['sNombreArchivo'];
+        $sArchivoMIMEType = $items['sTipoArchivo'];
+        $sArchivoTamano   = $items['iTamanioArchivo'];
+          
+        if($sArchivoNombre != "" && $sArchivoMIMEType != "" && $sArchivoTamano != ""){
+          $fields.= "\$('$domroot .file-message').empty().html('<b>Informaci&oacute;n del Archivo: </b>$sArchivoNombre".
+                    " <b>Tipo: </b>".substr($sArchivoMIMEType,0,40)." <b>Tama&ntilde;o: </b>$sArchivoTamano bytes');";  
+          $fields.= "\$('$domroot #fileselect').addClass('fileupload'); ";  
+        }  
     }
     $conexion->rollback();
     $conexion->close(); 
@@ -131,7 +164,6 @@
   
   function save_data(){
       
-      include("funciones_genericas.php");
       $error   = '0'; 
       $valores = array();
       $campos  = array(); 
@@ -141,33 +173,78 @@
       include("cn_usuarios.php"); 
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
       $transaccion_exitosa = true;
+      $_POST["iConsecutivo"] == "" ? $edit_mode= 'false' : $edit_mode = 'true';
+      $_POST['dFechaInvoice'] =  date('Y-m-d',strtotime(trim($_POST['dFechaInvoice'])));
       
-      $_POST['dFechaInvoice'] = date('Y-m-d',strtotime(str_replace("/","-",$_POST['dFechaInvoice']))); 
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error = '1';
+          $msj   = "This user does not have the privileges to modify or add data to the system.";
+      }
       
-      //Validar que la referencia no este repetida:
-      $query  = "SELECT COUNT(iConsecutivo) AS total FROM cb_invoices WHERE sNoReferencia ='".$_POST['sNoReferencia']."' AND bEliminado='0'";
-      $result = $conexion->query($query);
-      $valida = $result->fetch_assoc();
-      
-      if($valida['total'] != '0'){
-          if($_POST["edit_mode"] != 'true'){
-              $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
-                      Error: The Reference that you trying to add already exists. Please verify the data.</p>';
-              $error = '1';
-          }else{
-             foreach($_POST as $campo => $valor){
-                if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo" ){ //Estos campos no se insertan a la tabla
-                    array_push($valores,"$campo='".trim($valor)."'");
-                }
-             }   
+      # Archivo
+      if($error == '0' && isset($_FILES['file-0'])){
+          
+          $file        = fopen($_FILES['file-0']["tmp_name"], 'r'); 
+          $fileContent = fread($file, filesize($_FILES['file-0']["tmp_name"]));
+          $fileName    = $_FILES['file-0']['name'];
+          $fileType    = $_FILES['file-0']['type']; 
+          $fileTmpName = $_FILES['file-0']['tmp_name']; 
+          $fileSize    = $_FILES['file-0']['size']; 
+          $fileError   = $_FILES['file-0']['error'];
+          $fileExten   = explode(".",$fileName);
+          
+          //Validando nombre del archivo sin puntos...
+          if(count($fileExten) != 2){$error = '1';$msj = "Error: Please check that the name of the file should not contain points.";}
+          else{
+              //Extension Valida:
+              $fileExten = strtolower($fileExten[1]);
+              if($fileExten != "pdf" && $fileExten != "jpg" && $fileExten != "jpeg" && $fileExten != "png" && $fileExten != "doc" && $fileExten != "docx" && $fileExten != "xlsx" && $fileExten != "xls" && $fileExten != "zip" && $fileExten != "ppt" && $fileExten != "pptx"){
+                  $error = '1'; $msj="Error: The file extension is not valid, please check it.";
+              }
+              else{
+                  //Verificar Tamaño:
+                  if($fileSize > 0  && $fileError == 0){
+                      #CONVERT FILE VAR TO POST ARRAY:
+                      $_POST['hContenidoDocumentoDigitalizado'] = $conexion->real_escape_string($fileContent); //Contenido del archivo 
+                      $_POST['sTipoArchivo']    = $fileType;
+                      $_POST['iTamanioArchivo'] = $fileSize;
+                      $_POST['sNombreArchivo']  = $fileName;
+                  }
+                  else{$error = '1';$msj = "Error: The file you are trying to upload is empty or corrupt, please check it and try again.";}
+              }
           }
-      }else if($_POST["edit_mode"] != 'true'){
-         foreach($_POST as $campo => $valor){
-           if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivo"){ //Estos campos no se insertan a la tabla
-                array_push($campos ,$campo); 
-                array_push($valores, trim($valor));
-           }
-         }  
+          
+      }
+      
+      if($error == '0'){
+          //Validar que la referencia no este repetida:
+          $query  = "SELECT COUNT(iConsecutivo) AS total FROM cb_invoices WHERE sNoReferencia ='".$_POST['sNoReferencia']."' AND bEliminado='0'";
+          $result = $conexion->query($query);
+          $valida = $result->fetch_assoc();
+          
+          if($valida['total'] != '0'){
+              if($edit_mode != 'true'){
+                  $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+                          Error: The Reference that you trying to add already exists. Please verify the data.</p>';
+                  $error = '1';
+              }else{
+                 foreach($_POST as $campo => $valor){
+                    if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo" ){ //Estos campos no se insertan a la tabla
+                        array_push($valores,"$campo='".trim($valor)."'");
+                    }
+                 }   
+              }
+          }
+          else if($edit_mode != 'true'){
+             foreach($_POST as $campo => $valor){
+               if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivo"){ //Estos campos no se insertan a la tabla
+                    array_push($campos ,$campo); 
+                    array_push($valores, trim($valor));
+               }
+             }  
+          }
       }
       
       if($error == '0'){
@@ -179,7 +256,7 @@
           
           if($result->num_rows > 0){
              $items = $result->fetch_assoc(); 
-             if($_POST["edit_mode"] == 'true'){
+             if($edit_mode == 'true'){
                 array_push($valores,"sReceptorNombre='".trim($items['sReceptorNombre'])."'"); 
                 array_push($valores,"sReceptorDireccion='".trim($items['sReceptorDireccion'])."'");
              }else{
@@ -188,7 +265,7 @@
              }
           }
           
-          if($_POST["edit_mode"] == 'true'){
+          if($edit_mode == 'true'){
               
             array_push($valores ,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
             array_push($valores ,"sIP='".$_SERVER['REMOTE_ADDR']."'");
@@ -198,7 +275,7 @@
             $conexion->query($sql);
             
             if($conexion->affected_rows < 0){$transaccion_exitosa = false;}
-            else{$msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The data has been updated successfully.</p>';}
+            else{$idFactura = $_POST['iConsecutivo']; $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The data has been updated successfully.</p>';}
             
           }
           else{
@@ -213,7 +290,7 @@
             $conexion->query($sql);
             
             if($conexion->affected_rows < 1){$transaccion_exitosa = false;}
-            else{$msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The data has been saved successfully!</p>';}
+            else{$idFactura = $conexion->insert_id; $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The data has been saved successfully!</p>';}
             
           }
           
@@ -226,7 +303,7 @@
           }
           if($transaccion_exitosa)$msj = "The data has been saved successfully."; 
       }
-      $response = array("error"=>"$error","msj"=>"$msj");
+      $response = array("error"=>"$error","msj"=>"$msj","idFactura"=>"$idFactura");
       echo json_encode($response);
   }
   
@@ -249,7 +326,7 @@
       //$rPDescuento = trim($_POST['rPDescuento']); //% de descuento.
       //$sMotivosDes = trim($_POST['sMotivosDescuento']);
       
-      if($clave == ""){$transaccion_exitosa = false; $msj = "Error to calculate the invoice total, please try again later.";$error = 1;}
+      if($clave == ""){/*$transaccion_exitosa = false; $msj = "Error to calculate the invoice total, please try again later.";$error = 1;*/}
       else{
            //Consultamos el Subtotal y las Taxas de la factura:
            $query  = "SELECT SUM((iPrecioUnitario*iCantidad)) AS subtotal, SUM(iImpuesto) AS tax ".
@@ -294,17 +371,56 @@
       $msj   = '';
       $clave = trim($_POST['iConsecutivo']);
       
-      $query = "UPDATE cb_invoices SET bEliminado='1' WHERE iConsecutivo='".$clave."'";
-      $conexion->query($query);
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error = '1';
+          $msj   = "This user does not have the privileges to modify or add data to the system.";
+      }
       
-      if($conexion->affected_rows < 0){$error = 1; $msj = "Error to delete data, please try again.";}
-      else{$msj = "The data has been deleted successfully!";}
+      if($error == '0'){
+          $query = "UPDATE cb_invoices SET bEliminado='1' WHERE iConsecutivo='".$clave."'";
+          $conexion->query($query);
+          
+          if($conexion->affected_rows < 0){$error = 1; $msj = "Error to delete data, please try again.";}
+          else{$msj = "The data has been deleted successfully!";}
+      }
       
       $error == 0 ? $conexion->commit() : $conexion->rollback();
       $conexion->close(); 
               
       $response = array("msj"=>"$msj","error"=>"$error");   
       echo json_encode($response);
+  }
+  
+  function apply_data(){
+    
+      $error   = '0';  
+      $msj     = "";
+      $clave   = trim($_POST['clave']);
+      //Conexion:
+      include("cn_usuarios.php"); 
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true; 
+      
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error = '1';
+          $msj   = "This user does not have the privileges to modify or add data to the system.";
+      }
+      
+      if($error == 0){
+          $query = "UPDATE cb_invoices SET eStatus='APPLIED' WHERE iConsecutivo='".$clave."'";  
+          $conexion->query($query);
+          
+          if($conexion->affected_rows < 0){$error = '1'; $msj = "Error to apply the invoice, please try again.";$conexion->rollback();}
+          else{$msj="The invoice has been applied successfully and the customer can see it in his account.";$conexion->commit();}
+      }
+      
+      $conexion->close(); 
+      $response = array("msj"=>"$msj","error"=>"$error");   
+      echo json_encode($response); 
   }
   
   //PRODUCTOS Y SERVICIOS:
@@ -320,10 +436,12 @@
       $result = $conexion->query($sql);
       $rows   = $result->num_rows;    
       
-      if ($rows > 0) {    
+      if ($rows > 0) {  
+          
+            $iFolio = 1;
+              
             while ($items = $result->fetch_assoc()) { 
 
-                $iFolio = 1;
                 $htmlTabla .= "<tr>".
                               "<td id=\"srv_".$items['iConsecutivoDetalle']."\">".$iFolio."</td>". 
                               "<td>".$items['sDescripcion']."</td>".
@@ -392,88 +510,98 @@
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
       $transaccion_exitosa = true;
       
-      //Obtener datos del servicio:
-      $query  = "SELECT sClave, sDescripcion, sCveUnidadMedida FROM ct_productos_servicios WHERE iConsecutivo='".trim($_POST['iConsecutivoServicio'])."'";
-      $res    = $conexion->query($query);
-      $service= $res->fetch_assoc(); 
-      
-      $_POST["sClave"]           = $service['sClave'];
-      $_POST["sDescripcion"]     = $service['sDescripcion'];
-      $_POST["sCveUnidadMedida"] = $service['sCveUnidadMedida'];
-      
-      #INSERT
-      if($edit_mode != 'true'){
-         foreach($_POST as $campo => $valor){
-           if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivoEndosos" && $campo != "iConsecutivoDetalle"){ //Estos campos no se insertan a la tabla
-                if($campo == 'sComentarios' && $valor != ""){$valor = fix_string($valor);}
-                array_push($campos ,$campo); 
-                array_push($valores, trim($valor));
-           }
-         }  
-         
-         array_push($campos ,"dFechaIngreso");
-         array_push($valores ,date("Y-m-d H:i:s"));
-         array_push($campos ,"sIP");
-         array_push($valores ,$_SERVER['REMOTE_ADDR']);
-         array_push($campos ,"sUsuarioIngreso");
-         array_push($valores ,$_SESSION['usuario_actual']);
-            
-         $sql = "INSERT INTO cb_invoice_detalle (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
-         $conexion->query($sql);
-            
-         if($conexion->affected_rows < 1){$transaccion_exitosa = false;}
-         else{
-             $clave= $conexion->insert_id;
-             $msj  = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The data has been saved successfully!</p>';
-         }
-           
-      }
-      #UPDATE
-      else{
-        foreach($_POST as $campo => $valor){
-           if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivoDetalle" && $campo != 'iConsecutivoInvoice' && $campo != "iConsecutivoEndosos"){ //Estos campos no se insertan a la tabla
-                if($campo == 'sComentarios' && $valor != ""){$valor = fix_string($valor);}
-                array_push($valores,"$campo='".trim($valor)."'");
-           }
-        } 
-        
-        array_push($valores ,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
-        array_push($valores ,"sIP='".$_SERVER['REMOTE_ADDR']."'");
-        array_push($valores ,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'");
-        $sql = "UPDATE cb_invoice_detalle SET ".implode(",",$valores)." WHERE iConsecutivoDetalle = '".$clave."'";
-        $conexion->query($sql);
-            
-        if($conexion->affected_rows < 0){$transaccion_exitosa = false;}
-        else{$msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The data has been updated successfully.</p>';}
-                  
-      } 
-      
-      #VALIDAMOS SI APLICA ENDOSOS:
-      $endososApply = trim($_POST['iEndorsementsApply']);
-      if($endososApply == '1' && $transaccion_exitosa && trim($_POST['iConsecutivoEndosos']) != ""){
-         
-          $endosos = trim($_POST['iConsecutivoEndosos']); 
-          $endosos = explode("|",$endosos); 
-          $count   = count($endosos);
-          
-          /*if($edit_mode == 'true'){
-              $sql = "DELETE FROM cb_invoice_detalle_endoso WHERE iConsecutivoDetalle='".$clave."'";
-              $conexion->query($sql);
-              if($conexion->affected_rows < 1){$transaccion_exitosa = false; $msj = "Endorsements could not be updated correctly, please try again.";}
-          }  */
-          
-          if($transaccion_exitosa){
-            for($x=0; $x<$count; $x++){
-                $sql = "INSERT INTO cb_invoice_detalle_endoso (iConsecutivoDetalle,iConsecutivoEndoso) VALUES('".$clave."','".$endosos[$x]."')"; 
-                $conexion->query($sql); 
-                if($conexion->affected_rows < 1){$transaccion_exitosa = false; $msj = "Endorsements could not be added correctly, please try again.";}  
-            }    
-          }
+      $valid_user = valid_user($_SESSION['usuario_actual']);
 
+      if(!($valid_user)){
+          $error = '1';
+          $msj   = "This user does not have the privileges to modify or add data to the system.";
       }
       
-      if($transaccion_exitosa){$conexion->commit(); $msj = "The data has been saved successfully.";}
-      else{$conexion->rollback();$error = "1";}
+      if($error == '0'){
+          //Obtener datos del servicio:
+          $query  = "SELECT sClave, sDescripcion, sCveUnidadMedida FROM ct_productos_servicios WHERE iConsecutivo='".trim($_POST['iConsecutivoServicio'])."'";
+          $res    = $conexion->query($query);
+          $service= $res->fetch_assoc(); 
+          
+          $_POST["sClave"]           = $service['sClave'];
+          $_POST["sDescripcion"]     = $service['sDescripcion'];
+          $_POST["sCveUnidadMedida"] = $service['sCveUnidadMedida'];
+          
+          #INSERT
+          if($edit_mode != 'true'){
+             foreach($_POST as $campo => $valor){
+               if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivoEndosos" && $campo != "iConsecutivoDetalle"){ //Estos campos no se insertan a la tabla
+                    if($campo == 'sComentarios' && $valor != ""){$valor = fix_string($valor);}
+                    array_push($campos ,$campo); 
+                    array_push($valores, trim($valor));
+               }
+             }  
+             
+             array_push($campos ,"dFechaIngreso");
+             array_push($valores ,date("Y-m-d H:i:s"));
+             array_push($campos ,"sIP");
+             array_push($valores ,$_SERVER['REMOTE_ADDR']);
+             array_push($campos ,"sUsuarioIngreso");
+             array_push($valores ,$_SESSION['usuario_actual']);
+                
+             $sql = "INSERT INTO cb_invoice_detalle (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
+             $conexion->query($sql);
+                
+             if($conexion->affected_rows < 1){$transaccion_exitosa = false;}
+             else{
+                 $clave= $conexion->insert_id;
+                 $msj  = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The data has been saved successfully!</p>';
+             }
+               
+          }
+          #UPDATE
+          else{
+            foreach($_POST as $campo => $valor){
+               if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivoDetalle" && $campo != 'iConsecutivoInvoice' && $campo != "iConsecutivoEndosos"){ //Estos campos no se insertan a la tabla
+                    if($campo == 'sComentarios' && $valor != ""){$valor = fix_string($valor);}
+                    array_push($valores,"$campo='".trim($valor)."'");
+               }
+            } 
+            
+            array_push($valores ,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
+            array_push($valores ,"sIP='".$_SERVER['REMOTE_ADDR']."'");
+            array_push($valores ,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'");
+            $sql = "UPDATE cb_invoice_detalle SET ".implode(",",$valores)." WHERE iConsecutivoDetalle = '".$clave."'";
+            $conexion->query($sql);
+                
+            if($conexion->affected_rows < 0){$transaccion_exitosa = false;}
+            else{$msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The data has been updated successfully.</p>';}
+                      
+          } 
+          
+          #VALIDAMOS SI APLICA ENDOSOS:
+          $endososApply = trim($_POST['iEndorsementsApply']);
+          if($endososApply == '1' && $transaccion_exitosa && trim($_POST['iConsecutivoEndosos']) != ""){
+             
+              $endosos = trim($_POST['iConsecutivoEndosos']); 
+              $endosos = explode("|",$endosos); 
+              $count   = count($endosos);
+              
+              /*if($edit_mode == 'true'){
+                  $sql = "DELETE FROM cb_invoice_detalle_endoso WHERE iConsecutivoDetalle='".$clave."'";
+                  $conexion->query($sql);
+                  if($conexion->affected_rows < 1){$transaccion_exitosa = false; $msj = "Endorsements could not be updated correctly, please try again.";}
+              }  */
+              
+              if($transaccion_exitosa){
+                for($x=0; $x<$count; $x++){
+                    $sql = "INSERT INTO cb_invoice_detalle_endoso (iConsecutivoDetalle,iConsecutivoEndoso) VALUES('".$clave."','".$endosos[$x]."')"; 
+                    $conexion->query($sql); 
+                    if($conexion->affected_rows < 1){$transaccion_exitosa = false; $msj = "Endorsements could not be added correctly, please try again.";}  
+                }    
+              }
+
+          }
+          
+          if($transaccion_exitosa){$conexion->commit(); $msj = "The data has been saved successfully.";}
+          else{$conexion->rollback();$error = "1";} 
+      }
+      
           
       $conexion->close();
       $response = array("error"=>"$error","msj"=>"$msj");
@@ -528,19 +656,28 @@
       //Conexion:
       include("cn_usuarios.php"); 
       $conexion->autocommit(FALSE); 
-     
-      //Revisamos si hay que eliminar endosos asociados:
-      $query = "SELECT iEndorsementsApply FROM cb_invoice_detalle WHERE iConsecutivoDetalle='".$clave."'";
-      $res   = $conexion->query($query);
-      if($res->num_rows > 0){
-          $valida = $res->fetch_assoc();
-          if($valida['iEndorsementsApply'] == '1'){
-              $query = "DELETE FROM cb_invoice_detalle_endoso WHERE iConsecutivoDetalle='".$clave."'";
-              $conexion->query($query);
-              if($conexion->affected_rows <= 0){$error = '1'; $msj = "Error to delete the endorsement added, please try again later.";}
-          }
+      
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error = '1';
+          $msj   = "This user does not have the privileges to modify or add data to the system.";
       }
       
+      if($error == '0'){
+          //Revisamos si hay que eliminar endosos asociados:
+          $query = "SELECT iEndorsementsApply FROM cb_invoice_detalle WHERE iConsecutivoDetalle='".$clave."'";
+          $res   = $conexion->query($query);
+          if($res->num_rows > 0){
+              $valida = $res->fetch_assoc();
+              if($valida['iEndorsementsApply'] == '1'){
+                  $query = "DELETE FROM cb_invoice_detalle_endoso WHERE iConsecutivoDetalle='".$clave."'";
+                  $conexion->query($query);
+                  if($conexion->affected_rows <= 0){$error = '1'; $msj = "Error to delete the endorsement added, please try again later.";}
+              }
+          }
+      }
+     
       if($error == '0'){
           $query = "DELETE FROM cb_invoice_detalle WHERE iConsecutivoDetalle='".$clave."'";
           $conexion->query($query);
@@ -934,13 +1071,21 @@
      
       //Conexion:
       include("cn_usuarios.php"); 
-      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
-
-      $query = "DELETE FROM cb_invoice_detalle_endoso WHERE iConsecutivoEndoso='".$claveEndoso."' AND iConsecutivoDetalle='".$claveDetalle."'";
-      $conexion->query($query);
+      $conexion->autocommit(FALSE); 
       
-      if($conexion->affected_rows <= 0){$error = '1'; $msj = "Error to delete the data, please try again later.";}
-      else{$msj = "Data has been deleted successfully!";}
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error = '1';
+          $msj   = "This user does not have the privileges to modify or add data to the system.";
+      }
+      else{
+          $query = "DELETE FROM cb_invoice_detalle_endoso WHERE iConsecutivoEndoso='".$claveEndoso."' AND iConsecutivoDetalle='".$claveDetalle."'";
+          $conexion->query($query);
+          
+          if($conexion->affected_rows <= 0){$error = '1'; $msj = "Error to delete the data, please try again later.";}
+          else{$msj = "Data has been deleted successfully!";}
+      }                                                                                                                                                                                                                                     
       
       $error == '0' ? $conexion->commit() : $conexion->rollback();
       $conexion->close();
@@ -949,7 +1094,226 @@
        
   }
   
-  // PDF & E-MAIL:
+  // PDF AND EMAIL
+  function send_email_gmail(){
+      
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);
+      
+      //variables:
+      $error               = '0';
+      $clave               = trim($_POST['clave']);
+      $transaccion_exitosa = true;
+      $envio_correo        = 1;
+      $folio               = $clave;
+      $ds                  = 'email';   
+      
+      require_once("pdf_invoice.php");
+     
+      if($nombre_pdf != ''){
+          
+           #CONSULTAR INVOICE:
+           $sql    = "SELECT A.iConsecutivo, A.iConsecutivoCompania, B.sNombreCompania, B.sEmailContacto, sNoReferencia, DATE_FORMAT(dFechaInvoice,'%m/%d/%Y') AS dFechaInvoice,sReceptorNombre, sReceptorDireccion,sEmisorNombre, sLugarExpedicionDireccion, ".
+                     "dSubtotal,rPDescuento,eStatus, dDescuento, sMotivosDescuento, dPctTax, dTax, dTotal, dAnticipo, dBalance, sCveMoneda, dTipoCambio, sComentarios ".
+                     "FROM       cb_invoices  AS A ".
+                     "INNER JOIN ct_companias AS B ON A.iConsecutivoCompania = B.iConsecutivo ".
+                     "WHERE A.iConsecutivo = '".$folio."'";
+           $result = $conexion->query($sql);
+           $rows   = $result->num_rows;    
+           if($rows == 0){ $error = '1'; $msj = "Error when consulting the invoice data, please try again.";}
+           else{
+               $invoice    = $result->fetch_assoc(); 
+
+               #ARMANDO EMAIL:
+               $subject = "sending invoice - ".trim($invoice['sNombreCompania']);
+               #Building Email Body:                                   
+               require_once("./lib/phpmailer_master/class.phpmailer.php");
+               require_once("./lib/phpmailer_master/class.smtp.php"); 
+               //header
+               $htmlEmail .= "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"\"http://www.w3.org/TR/html4/strict.dtd\"><html>
+                              <head><meta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\">
+                                <title>Sending Invoice from Solo-Trucking Insurance System</title>
+                              </head>";
+               //Body
+               $htmlEmail .= "<body>".
+                              "<table style=\"font-size:12px;border:1px solid #6191df;border-radius:3px;padding:10px;width:95%; margin:5px auto;font-family: Arial, Helvetica, sans-serif;\">".
+                              "<tr>".
+                                "<td>"."<h2 style=\"color:#313131;text-transform: uppercase; text-align:center;\">Sending your Invoice by Solo-Trucking Insurance System!</h2>"."</td>".
+                              "</tr>".
+                              "<tr>".
+                                "<td>"."<b>".trim($invoice['sNombreCompania'])."</b>, Thank you for requesting our services <a href=\"http://www.solo-trucking.com/\">www.solo-trucking.com</a> the best option to choose the most convenient for your insurance."."</td>".
+                              "</tr>".
+                              "<tr>".
+                                "<td><ul style=\"color:#010101;line-height:15px;\">".
+                                "<li style=\"line-height:15px;\"><strong style=\"color:#044e8d;\">Invoice #: </strong>".$invoice['sNoReferencia']."</li>".
+                                "<li style=\"line-height:15px;\"><strong style=\"color:#044e8d;\">Date: </strong>".$invoice['dFechaInvoice']."</li>".
+                                "</ul></td>". 
+                                "</tr><tr><td><b>If you have a doubt, please reply this email or call us.</b></td></tr>".
+                              "<tr><td><p style=\"font-size:13px;\"><b>THANK YOU!!</b></p></td></tr>".
+                              "<tr><td></td></tr>".
+                              "<tr><td><p style=\"color:#858585;margin:5px auto; text-align:left;font-size:10px;\">E-mail sent from Solo-trucking System.</p></td></tr>".
+                              "<tr></tr>". 
+                              "</table>".
+                              "</body>";
+               //footer              
+               $htmlEmail .= "</html>";
+               
+               #TERMINA CUERPO DEL MENSAJE
+               $mail = new PHPMailer();   
+               $mail->IsSMTP(); // telling the class to use SMTP
+               $mail->Host       = "mail.solo-trucking.com"; // SMTP server
+               //$mail->SMTPDebug  = 2; // enables SMTP debug information (for testing) 1 = errors and messages 2 = messages only
+               $mail->SMTPAuth   = true;                  // enable SMTP authentication
+               $mail->SMTPSecure = "TLS";                 // sets the prefix to the servier
+               $mail->Host       = "smtp.gmail.com";      // sets GMAIL as the SMTP server
+               $mail->Port       = 587;                   // set the SMTP port for the GMAIL server
+               
+               #VERIFICAR SERVIDOR DONDE SE ENVIAN CORREOS:
+               if($_SERVER["HTTP_HOST"]=="stdev.websolutionsac.com" || $_SERVER["HTTP_HOST"]=="www.stdev.websolutionsac.com"){
+                  $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
+                  $mail->Password   = "SL09100242";  
+                  $mail->SetFrom('systemsupport@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');
+               }
+               else if($_SERVER["HTTP_HOST"] == "solotrucking.laredo2.net" || $_SERVER["HTTP_HOST"] == "st.websolutionsac.com" || $_SERVER["HTTP_HOST"] == "www.solo-trucking.com"){
+                  $mail->Username   = "customerservice@solo-trucking.com";  // GMAIL username
+                  $mail->Password   = "1101W3bSTruck";
+                  $mail->SetFrom('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance'); 
+                  $mail->AddReplyTo('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance'); 
+                  $mail->AddAddress('systemsupport@solo-trucking.com','System Support Solo-Trucking Insurance');  
+               }
+                
+               $mail->Subject    = $subject;
+               $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
+               $mail->MsgHTML($htmlEmail);
+               $mail->IsHTML(true);  
+               $mail->AddAddress(trim($invoice['sEmailContacto']));                          
+               $mail->AddAttachment($pdfnew);
+               $mail_error = false;
+               if(!$mail->Send()){$mail_error = true; $mail->ClearAddresses();}
+               if(!$mail_error){
+                    $msj = "The e-mail was successfully sent.";
+                    //Actualizar fecha de envio:
+                    $query = "UPDATE cb_invoices SET dFechaEnvio = NOW(), sUsuarioEnvio = '".$_SESSION["usuario_actual"]."', eStatus='SENT' ".
+                             "WHERE iConsecutivo='$clave' AND iConsecutivoCompania = '".$invoice['iConsecutivoCompania']."'";
+                    $conexion->query($query);
+                }
+                else{
+                    $msj = "Error: The e-mail cannot be sent.";
+                    $error = "1";            
+                }
+                $mail->ClearAttachments();
+                unlink($pdfnew);
+               
+           }
+            
+      }
+          
+      
+      
+      if($transaccion_exitosa){
+            $conexion->commit();
+            $conexion->close();
+            
+      }else{
+            $conexion->rollback();
+            $conexion->close();
+            $error = "1"; 
+            if($nombre_pdf != ""){unlink($pdfnew);}
+      }
+      $response = array("error"=>"$error","msj"=>"$msj");
+      echo json_encode($response);
+  }
+  
+  // PAYMENTS:
+  function payment_invoice_getdata(){
+    $error   = '0';
+    $msj     = "";
+    $fields  = "";
+    $clave   = trim($_POST['clave']);
+    $domroot = $_POST['domroot'];
+    
+    include("cn_usuarios.php");
+  
+    $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+    $transaccion_exitosa = true;
+    $sql    = "SELECT iConsecutivo,iConsecutivoCompania, sNoReferencia, dTotal, iFinanciamiento, sDiasFinanciamiento, eStatus, ".
+              "DATE_FORMAT(dFechaInvoice, '%m/%d/%Y') AS  dFechaInvoice, dSubtotal,dPctTax,dTax,dAnticipo,dBalance,dTipoCambio,sComentarios,sCveMoneda ".
+              "FROM cb_invoices WHERE iConsecutivo = '$clave'";
+    $result = $conexion->query($sql);
+    $items  = $result->num_rows;   
+    if ($items > 0) {     
+        $items  = $result->fetch_assoc();
+        $llaves = array_keys($items);
+        $datos  = $items;
+        
+        foreach($datos as $i => $b){$fields .= "\$('#$domroot :input[name=".$i."]').val('".$datos[$i]."');";}  
+        
+        
+        $query = "SELECT SUM(iMonto) AS iSaldoAplicado FROM cb_invoice_pago WHERE iConsecutivoInvoice = '$clave'";
+        $res   = $conexion->query($query);
+        
+        if($res->num_rows == 0){$saldoA = 0;}
+        else{
+            $saldoA= $res->fetch_assoc();
+            $saldoA= $saldoA['iSaldoAplicado'];
+        }
+        
+        $saldoA  = number_format($saldoA,2,'.',','); 
+        $fields .= "\$('#$domroot :input[name=iBalancePaid]').val('".$saldoA."');";
+        
+        $query = "SELECT iSaldoPendiente FROM cb_invoice_pago WHERE iConsecutivoInvoice = '1' ORDER BY iConsecutivoPago DESC LIMIT 1";
+        $res   = $conexion->query($query);
+        
+        if($res->num_rows == 0){$saldoP = 0;}
+        else{
+            $saldoP= $res->fetch_assoc();
+            $saldoP= $saldoP['iSaldoPendiente'];
+        }
+
+        $saldoP  = number_format($saldoP,2,'.',',');
+        $fields .= "\$('#$domroot :input[name=iBalanceOutstanding]').val('".$saldoP."');"; 
+    }
+    $conexion->rollback();
+    $conexion->close(); 
+    $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields");   
+    echo json_encode($response);    
+  }
+  
+  function payment_getdata(){
+      
+    include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      $iConsecutivoInvoice = trim($_POST['iConsecutivoInvoice']);
+    
+      $sql    = "SELECT iConsecutivoPago,sNoPago, sDescripcion, DATE_FORMAT(dFechaPago, '%m/%d/%Y') AS dFechaPago, iMonto, sCveMoneda 
+                 FROM cb_invoice_pago WHERE iConsecutivoInvoice = '$iConsecutivoInvoice' ORDER BY iConsecutivoPago DESC";
+      $result = $conexion->query($sql);
+      $rows   = $result->num_rows;    
+      
+      if ($rows > 0) {  
+            $items  = mysql_fetch_all($result); //print_r($items);  
+            foreach($items as $i => $l){ 
+                $btns_der = "<div class=\"btn-icon edit btn-left\" title=\"Edit\"><i class=\"fa fa-pencil-square-o\"></i></div>";
+                if($i == 0){$btns_der.="<div class=\"btn-icon trash btn-left\" title=\"Delete\"><i class=\"fa fa-trash\"></i></div>";}
+                $htmlTabla .= "<tr>".
+                              "<td id=\"pay_".$items[$i]['iConsecutivoPago']."\">".$items[$i]['sNoPago']."</td>". 
+                              "<td class=\"text-center\">".$items[$i]['dFechaPago']."</td>".
+                              "<td>".$items[$i]['sDescripcion']."</td>". 
+                              "<td class=\"text-right\">\$ ".number_format($items[$i]['iMonto'],2,'.',',')." ".$items[$i]['sCveMoneda']."</td>".
+                              "<td>".$btns_der."</td>".
+                              "</tr>";
+            }
+      } 
+      else { $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";} 
+      
+      $conexion->rollback();
+      $conexion->close(); 
+              
+      $response = array("tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error");   
+      echo json_encode($response);
+  }
+  
   
 
 ?>

@@ -235,26 +235,36 @@
       $clave = trim($_POST['clave']);
       $domroot = $_POST['domroot'];
       include("cn_usuarios.php");
-      $conexion->autocommit(FALSE);                                                                                                                 
-      $sql = "SELECT A.iConsecutivo, sNumeroPoliza, A.iConsecutivoCompania, iConsecutivoBrokers, iTipoPoliza,iConsecutivoAseguranza, A.eTipoCategoria, A.eTipoEnvio, ". 
-             "DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio, DATE_FORMAT(dFechaCaducidad,'%m/%d/%Y') AS dFechaCaducidad, ".
-             "B.sNombreArchivo AS txtPolicyJacker, iConsecutivoArchivo, iConsecutivoArchivoPFA, C.sNombreArchivo AS txtPolicyPFA, iConsecutivoInsurancePremiumFinancing, ".
-             "iPremiumAmount, iDeductible, iDeductibleAdditional, iPremiumAmountAdditional,iCGL_EachOccurrence,iCGL_DamageRented,iCGL_MedExp,iCGL_PersonalAdvInjury, ".
-             "iCGL_GeneralAggregate,iCGL_ProductsComp ".
-             "FROM ct_polizas A ".
-             "LEFT JOIN cb_company_files B ON A.iConsecutivoArchivo = B.iConsecutivo ".
-             "LEFT JOIN cb_company_files C ON A.iConsecutivoArchivoPFA = C.iConsecutivo ".
-             "WHERE A.iConsecutivo = '".$clave."'";  
-      $result = $conexion->query($sql);
-      $items = $result->num_rows;   
-      if ($items > 0) {     
-        $data = $result->fetch_assoc();
-        $llaves  = array_keys($data);
-        $datos   = $data;
-        foreach($datos as $i => $b){
-            $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');"; 
-        }  
+      $conexion->autocommit(FALSE); 
+      
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error = '1';
+          $msj   = "This user does not have the privileges to modify or add data to the system.";
       }
+      else{
+          $sql = "SELECT A.iConsecutivo, sNumeroPoliza, A.iConsecutivoCompania, iConsecutivoBrokers, iTipoPoliza,iConsecutivoAseguranza, A.eTipoCategoria, A.eTipoEnvio, ". 
+                 "DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio, DATE_FORMAT(dFechaCaducidad,'%m/%d/%Y') AS dFechaCaducidad, ".
+                 "B.sNombreArchivo AS txtPolicyJacker, iConsecutivoArchivo, iConsecutivoArchivoPFA, C.sNombreArchivo AS txtPolicyPFA, iConsecutivoInsurancePremiumFinancing, ".
+                 "iPremiumAmount, iDeductible, iDeductibleAdditional, iPremiumAmountAdditional,iCGL_EachOccurrence,iCGL_DamageRented,iCGL_MedExp,iCGL_PersonalAdvInjury, ".
+                 "iCGL_GeneralAggregate,iCGL_ProductsComp ".
+                 "FROM ct_polizas A ".
+                 "LEFT JOIN cb_company_files B ON A.iConsecutivoArchivo = B.iConsecutivo ".
+                 "LEFT JOIN cb_company_files C ON A.iConsecutivoArchivoPFA = C.iConsecutivo ".
+                 "WHERE A.iConsecutivo = '".$clave."'";  
+          $result = $conexion->query($sql);
+          $items = $result->num_rows;   
+          if ($items > 0) {     
+            $data = $result->fetch_assoc();
+            $llaves  = array_keys($data);
+            $datos   = $data;
+            foreach($datos as $i => $b){
+                $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');"; 
+            }  
+          } 
+      }                                                                                                                
+      
       $conexion->rollback();
       $conexion->close(); 
       $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields");   
@@ -372,22 +382,29 @@
       $transaccion_exitosa = true;
       $_POST['sComentariosCancelacion'] != "" ? $sComentarios = ", sComentariosCancelacion='".utf8_encode($_POST['sComentariosCancelacion'])."'" : $sComentarios = ""; 
       
-      
-      $query = "UPDATE ct_polizas SET iDeleted = '1', eDeletedStatus = '".$_POST['eDeletedStatus']."' $sComentarios WHERE iConsecutivo = '".$_POST["clave"]."'"; 
-      $conexion->query($query);
-      $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
-      if($transaccion_exitosa){
-        $conexion->commit();
-        $conexion->close();
-        $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
-                The user has been deleted succesfully!</p>';
-      }else{
-        $conexion->rollback();
-        $conexion->close();
-        $msj = "A general system error ocurred : internal error";
-        $error = "1";
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error = '1';
+          $msj   = "This user does not have the privileges to modify or add data to the system.";
       }
-        
+      else{
+          $query = "UPDATE ct_polizas SET iDeleted = '1', eDeletedStatus = '".$_POST['eDeletedStatus']."' $sComentarios WHERE iConsecutivo = '".$_POST["clave"]."'"; 
+          $conexion->query($query);
+          $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
+          if($transaccion_exitosa){
+            $conexion->commit();
+            $conexion->close();
+            $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+                    The user has been deleted succesfully!</p>';
+          }else{
+            $conexion->rollback();
+            $conexion->close();
+            $msj = "A general system error ocurred : internal error";
+            $error = "1";
+          }
+      }
+      
       $response = array("msj"=>"$msj","error"=>"$error");   
       echo json_encode($response);
   }
@@ -491,16 +508,23 @@
       $idFile    = $_POST['iConsecutivo']; 
       $eArchivo  = $_POST['eArchivo'];
       
-      if($idFile != ""){
-        $query  = "DELETE FROM cb_company_files WHERE iConsecutivo ='$idFile' AND iConsecutivoCompania = '$idCompany'"; 
-        $success= $conexion->query($query);  
-        
-        if(!($success)){$transaccion_exitosa = false; $mensaje = "Error when deleting the file, please try again.";}
-        else{$mensaje = "The file was successfully deleted.";} 
-      }else{$transaccion_exitosa = false; $mensaje = "The data was not found, please try again.";}  
-      
-      $transaccion_exitosa ? $conexion->commit() : $conexion->rollback(); 
-      
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error  = '1';
+          $mensaje= "This user does not have the privileges to modify or add data to the system.";
+      }else{
+          if($idFile != ""){
+            $query  = "DELETE FROM cb_company_files WHERE iConsecutivo ='$idFile' AND iConsecutivoCompania = '$idCompany'"; 
+            $success= $conexion->query($query);  
+            
+            if(!($success)){$transaccion_exitosa = false; $mensaje = "Error when deleting the file, please try again.";}
+            else{$mensaje = "The file was successfully deleted.";} 
+          }else{$transaccion_exitosa = false; $mensaje = "The data was not found, please try again.";}  
+          
+          $transaccion_exitosa ? $conexion->commit() : $conexion->rollback(); 
+      }
+  
       $response = array("mensaje"=>"$mensaje","error"=>"$error"); 
       echo json_encode($response);  
   }
@@ -1138,7 +1162,8 @@
         $pagina_actual == "0" ? $pagina_actual = 1 : false;
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-        $sql    = "SELECT iConsecutivo, sNombre, DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, iExperienciaYear, iNumLicencia, (CASE eTipoLicencia WHEN  'Federal/B1' THEN 'Federal / B1' WHEN  'Commercial/CDL-A' THEN 'Commercial / CDL - A' END) AS TipoLicencia,eModoIngreso ".
+        $sql    = "SELECT iConsecutivo, sNombre, DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, iExperienciaYear, iNumLicencia, 
+                  eTipoLicencia AS TipoLicencia,eModoIngreso ".
                   "FROM ct_operadores ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
         $result = $conexion->query($sql);
         $rows   = $result->num_rows;   
@@ -1416,38 +1441,47 @@
       $company = trim($_POST['company']);  
       $domroot = $_POST['domroot'];
       include("cn_usuarios.php");
-      $conexion->autocommit(FALSE);                                                                                                                 
+      $conexion->autocommit(FALSE);  
+      
+      $valid_user = valid_user($_SESSION['usuario_actual']);
 
-      $sql    = "SELECT iConsecutivo,iConsecutivoCompania, sNombre, DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, ".
-                "iExperienciaYear, iNumLicencia, eTipoLicencia  FROM ct_operadores WHERE iConsecutivo = '$clave' AND iConsecutivoCompania = '$company'";  
-      $result = $conexion->query($sql);
-      $items  = $result->num_rows;   
-      if ($items > 0) {     
-        $data = $result->fetch_assoc();
-        $llaves  = array_keys($data);
-        $datos   = $data;
-        foreach($datos as $i => $b){
-            if($i != 'siConsecutivosPolizas'){
-               $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');"; 
+      if(!($valid_user)){
+          $error= '1';
+          $msj  = "This user does not have the privileges to modify or add data to the system.";
+      }
+      else{
+          $sql    = "SELECT iConsecutivo,iConsecutivoCompania, sNombre, DATE_FORMAT(dFechaNacimiento,'%m/%d/%Y') AS dFechaNacimiento, DATE_FORMAT(dFechaExpiracionLicencia,'%m/%d/%Y') AS dFechaExpiracionLicencia, ".
+                    "iExperienciaYear, iNumLicencia, eTipoLicencia  FROM ct_operadores WHERE iConsecutivo = '$clave' AND iConsecutivoCompania = '$company'";  
+          $result = $conexion->query($sql);
+          $items  = $result->num_rows;   
+          if ($items > 0) {     
+            $data = $result->fetch_assoc();
+            $llaves  = array_keys($data);
+            $datos   = $data;
+            foreach($datos as $i => $b){
+                if($i != 'siConsecutivosPolizas'){
+                   $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');"; 
+                }
+                 
+            }  
+            
+            $query  = "SELECT iConsecutivoPoliza, B.sNumeroPoliza, C.sDescripcion AS sTipoPoliza, C.sAlias, DATE_FORMAT(A.dFechaIngreso,'%m/%d/%Y') AS dFechaIngreso, eModoIngreso ".
+                       "FROM cb_poliza_operador AS A ".
+                       "INNER JOIN ct_polizas   AS B ON A.iConsecutivoPoliza = B.iConsecutivo AND B.iDeleted = '0' AND B.dFechaCaducidad >= CURDATE() ".
+                       "LEFT JOIN  ct_tipo_poliza AS C ON B.iTipoPoliza = C.iConsecutivo ".
+                       "WHERE A.iConsecutivoOperador = '".$data['iConsecutivo']."' AND A.iDeleted='0' ";
+            $r      = $conexion->query($query);
+            $total  = $r->num_rows;
+            
+            if($total > 0){
+                while ($poli = $r->fetch_assoc()){
+                   $fields .= "\$('#drivers_edit_form  :input[value=\"".$poli['iConsecutivoPoliza']."\"]').prop(\"checked\",\"true\");"; 
+                }
             }
              
-        }  
-        
-        $query  = "SELECT iConsecutivoPoliza, B.sNumeroPoliza, C.sDescripcion AS sTipoPoliza, C.sAlias, DATE_FORMAT(A.dFechaIngreso,'%m/%d/%Y') AS dFechaIngreso, eModoIngreso ".
-                   "FROM cb_poliza_operador AS A ".
-                   "INNER JOIN ct_polizas   AS B ON A.iConsecutivoPoliza = B.iConsecutivo AND B.iDeleted = '0' AND B.dFechaCaducidad >= CURDATE() ".
-                   "LEFT JOIN  ct_tipo_poliza AS C ON B.iTipoPoliza = C.iConsecutivo ".
-                   "WHERE A.iConsecutivoOperador = '".$data['iConsecutivo']."' AND A.iDeleted='0' ";
-        $r      = $conexion->query($query);
-        $total  = $r->num_rows;
-        
-        if($total > 0){
-            while ($poli = $r->fetch_assoc()){
-               $fields .= "\$('#drivers_edit_form  :input[value=\"".$poli['iConsecutivoPoliza']."\"]').prop(\"checked\",\"true\");"; 
-            }
-        }
-         
-      }
+          }
+      }                                                                                                               
+
       $conexion->rollback();
       $conexion->close(); 
       $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields");   
@@ -1515,7 +1549,8 @@
                     $r      = $conexion->query($query);
                     $total  = $r->num_rows;
                     $polizas= "";
-                    $PDApply= false;  
+                    $PDApply= false;
+                      
                     if($total > 0){
                         $polizas  = '<table style="width: 100%;text-transform: uppercase;border-collapse: collapse;">';
                         //$classpan = "style=\"display:block;width:100%;padding:1px;\""; 
@@ -1526,12 +1561,15 @@
                             $polizas .= "<td style=\"width:10;\">".$poli['sAlias']."</td>";
                             $polizas .= "<td style=\"width:50%;\">".$poli['eModoIngreso']." - ".$poli['dFechaIngreso']."</td>";
                             $polizas .= "</tr>";
-                           if($poli['sAlias'] == "PD"){$PDApply = true;}
+                            
+                            //Revisar si aplica PD:
+                            $pos = strpos($poli['sAlias'],'PD');
+                            if(!($pos === false)){$PDApply = true;}
                         }
                         $polizas .= "</table>"; 
                     }
-                    
-                    $PDApply && $items['iTotalPremiumPD'] > 0 ? $value = "\$ ".number_format($items['iTotalPremiumPD'],2,'.',',') : $value = "";           
+                   
+                    $PDApply && $items['iTotalPremiumPD'] != 0 ? $value = "\$ ".number_format($items['iTotalPremiumPD'],2,'.',',') : $value = "";           
                     $htmlTabla .= "<tr>".
                                   "<td id=\"".$items['iConsecutivo']."\">".$items['sVIN']."</td>".
                                   "<td>".$items['Radio']."</td>".
@@ -1646,37 +1684,47 @@
       $domroot = $_POST['domroot'];
       
       include("cn_usuarios.php");
-      $conexion->autocommit(FALSE);                                                                                                                 
-      $sql    = "SELECT * FROM ct_unidades WHERE iConsecutivo = '$clave' AND iConsecutivoCompania = '$company'";  
-      $result = $conexion->query($sql);
-      $items  = $result->num_rows;   
-      if($items > 0){     
-        $data = $result->fetch_assoc();
-        $llaves  = array_keys($data);
-        $datos   = $data;
-        foreach($datos as $i => $b){
-            if($i != 'siConsecutivosPolizas'){
-               $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');"; 
-            }
-             
-        } 
-        
-        //CONSULTAR POLIZAS:
-        $query  = "SELECT iConsecutivoPoliza, B.sNumeroPoliza, C.sDescripcion AS sTipoPoliza, C.sAlias, DATE_FORMAT(A.dFechaIngreso,'%m/%d/%Y') AS dFechaIngreso,eModoIngreso ".
-                   "FROM cb_poliza_unidad AS A ".
-                   "INNER JOIN ct_polizas   AS B ON A.iConsecutivoPoliza = B.iConsecutivo AND B.iDeleted = '0' AND B.dFechaCaducidad >= CURDATE() ".
-                   "LEFT JOIN  ct_tipo_poliza AS C ON B.iTipoPoliza = C.iConsecutivo ".
-                   "WHERE A.iConsecutivoUnidad = '".$data['iConsecutivo']."' AND A.iDeleted = '0' ";
-        $r      = $conexion->query($query);
-        $total  = $r->num_rows;
-        $PDApply= 'false';  
-        if($total > 0){
-           while ($poli = $r->fetch_assoc()){ 
-                if($poli['sAlias'] == "PD"){$PDApply = 'true';} 
-                $fields .= "\$('#unit_edit_form  :input[value=\"".$poli['iConsecutivoPoliza']."\"]').prop(\"checked\",\"true\");";
-           }
-        }
+      $conexion->autocommit(FALSE);  
+      
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error= '1';
+          $msj  = "This user does not have the privileges to modify or add data to the system.";
       }
+      else{
+          $sql    = "SELECT * FROM ct_unidades WHERE iConsecutivo = '$clave' AND iConsecutivoCompania = '$company'";  
+          $result = $conexion->query($sql);
+          $items  = $result->num_rows;   
+          if($items > 0){     
+            $data = $result->fetch_assoc();
+            $llaves  = array_keys($data);
+            $datos   = $data;
+            foreach($datos as $i => $b){
+                if($i != 'siConsecutivosPolizas'){
+                   $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');"; 
+                }
+                 
+            } 
+            
+            //CONSULTAR POLIZAS:
+            $query  = "SELECT iConsecutivoPoliza, B.sNumeroPoliza, C.sDescripcion AS sTipoPoliza, C.sAlias, DATE_FORMAT(A.dFechaIngreso,'%m/%d/%Y') AS dFechaIngreso,eModoIngreso ".
+                       "FROM cb_poliza_unidad AS A ".
+                       "INNER JOIN ct_polizas   AS B ON A.iConsecutivoPoliza = B.iConsecutivo AND B.iDeleted = '0' AND B.dFechaCaducidad >= CURDATE() ".
+                       "LEFT JOIN  ct_tipo_poliza AS C ON B.iTipoPoliza = C.iConsecutivo ".
+                       "WHERE A.iConsecutivoUnidad = '".$data['iConsecutivo']."' AND A.iDeleted = '0' ";
+            $r      = $conexion->query($query);
+            $total  = $r->num_rows;
+            $PDApply= 'false';  
+            if($total > 0){
+               while ($poli = $r->fetch_assoc()){ 
+                    if($poli['sAlias'] == "PD"){$PDApply = 'true';} 
+                    $fields .= "\$('#unit_edit_form  :input[value=\"".$poli['iConsecutivoPoliza']."\"]').prop(\"checked\",\"true\");";
+               }
+            }
+          }
+      }                                                                                                               
+      
       $conexion->rollback();
       $conexion->close(); 
       $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields","PDApply"=>"$PDApply");   
@@ -1903,17 +1951,27 @@
       $valores            = array();
       isset($_POST['iConsecutivo']) != "" ? $edit_mode = true : $edit_mode = false;
       
-      if(isset($_FILES['file-0'])){
-          $file        = fopen($_FILES['file-0']["tmp_name"], 'r'); 
-          $fileContent = fread($file, filesize($_FILES['file-0']["tmp_name"]));
-          $fileName    = $_FILES['file-0']['name'];
-          $fileType    = $_FILES['file-0']['type']; 
-          $fileTmpName = $_FILES['file-0']['tmp_name']; 
-          $fileSize    = $_FILES['file-0']['size']; 
-          $fileError   = $_FILES['file-0']['error'];
-          $fileExten   = explode(".",$fileName);
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error   = '1';
+          $mensaje = "This user does not have the privileges to modify or add data to the system.";
       }
-      else{$error = 1; $mensaje= "Error to read the file data, please try again.";}
+      else{
+          if(isset($_FILES['file-0'])){
+              $file        = fopen($_FILES['file-0']["tmp_name"], 'r'); 
+              $fileContent = fread($file, filesize($_FILES['file-0']["tmp_name"]));
+              $fileName    = $_FILES['file-0']['name'];
+              $fileType    = $_FILES['file-0']['type']; 
+              $fileTmpName = $_FILES['file-0']['tmp_name']; 
+              $fileSize    = $_FILES['file-0']['size']; 
+              $fileError   = $_FILES['file-0']['error'];
+              $fileExten   = explode(".",$fileName);
+          }
+          else{$error = 1; $mensaje= "Error to read the file data, please try again.";}
+      }
+      
+      
       
       #REVISAMOS ERRORES:
       if($error == "0"){
@@ -1958,6 +2016,7 @@
                       $query   = "INSERT INTO cb_poliza_files (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
                       $success = $conexion->query($query);
                       if(!($success)){$mensaje = "Error: The data of file has not been saved successfully, please try again.";$error = 1;} 
+                      else{$mensaje = "The file has been saved successfully!";}
                          
                   }
                   else{$error = 1;$mensaje = "Error: The file you are trying to upload is empty or corrupt, please check it and try again.";}
@@ -1979,21 +2038,28 @@
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
       $transaccion_exitosa = true;
       
-      #borrar archivos de unidades si un id de unidad asignado
-      $query = "DELETE FROM cb_poliza_files WHERE iConsecutivo = '$iConsecutivo'"; 
-      if($conexion->query($query)){$transaccion_exitosa = true;}else{$transaccion_exitosa = false;}
+      $valid_user = valid_user($_SESSION['usuario_actual']);
 
-      if($transaccion_exitosa){
-        $conexion->commit();
-        $conexion->close();
-        $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The files has been deleted succesfully!</p>';
+      if(!($valid_user)){
+          $error = '1';
+          $msj   = "This user does not have the privileges to modify or add data to the system.";
       }else{
-        $conexion->rollback();
-        $conexion->close();
-        $msj   = "A general system error ocurred : internal error";
-        $error = "1";
+          #borrar archivos de unidades si un id de unidad asignado
+          $query = "DELETE FROM cb_poliza_files WHERE iConsecutivo = '$iConsecutivo'"; 
+          if($conexion->query($query)){$transaccion_exitosa = true;}else{$transaccion_exitosa = false;}
+
+          if($transaccion_exitosa){
+            $conexion->commit();
+            $conexion->close();
+            $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The files has been deleted succesfully!</p>';
+          }else{
+            $conexion->rollback();
+            $conexion->close();
+            $msj   = "A general system error ocurred : internal error";
+            $error = "1";
+          }
       }
-        
+      
       $response = array("msj"=>"$msj","error"=>"$error");   
       echo json_encode($response);    
   }

@@ -48,7 +48,7 @@ if ( !($_SESSION["acceso"] != '2'  && $_SESSION["usuario_actual"] != "" && $_SES
             init : function(){
                 fn_insurances.fillgrid();
                 $('.num').keydown(fn_solotrucking.inputnumero);  
-                $(".phone").mask("(999) 999-9999");
+                //$(".phone").mask("(999) 999-9999");
                 //Filtrado con la tecla enter
                 $(fn_insurances.data_grid + ' #grid-head1 input').keyup(function(event){
                     if (event.keyCode == '13') {

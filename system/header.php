@@ -75,6 +75,7 @@
                     <ul>
                         <li><a href="services_products">Products & Services</a></li> 
                         <li><a href="invoices">Invoices</a></li> 
+                        <li><a href="payments">Payments</a></li> 
                     </ul>
                 </li> 
 
@@ -122,6 +123,15 @@
                         <li><a href="quote_formats">Formats</a></li>  
                     </ul>
                  </li>
+                 <?php if($_SESSION["usuario_actual"] == "management@solo-trucking.com" || $_SESSION["usuario_actual"] == "customerservice@solo-trucking.com"){?> 
+                 <li class="submenu"><a href="invoices">ACCOUNTING</a>
+                    <ul>
+                        <li><a href="services_products">Products & Services</a></li> 
+                        <li><a href="invoices">Invoices</a></li> 
+                        <li><a href="payments">Payments</a></li> 
+                    </ul>
+                 </li> 
+                 <?php }?>
               <?php } if($_SESSION['acceso'] == "3"){ //SOLO TRUCKING ADMIN?>
               <!-- Admin MASTER navigation -->
                   <li><a href="inicio">Home</a></li>
@@ -161,6 +171,13 @@
                         <li><a href="quote_formats">QUOTE FORMATS</a></li>  
                     </ul>
                 </li> 
+                <li class="submenu"><a href="invoices">ACCOUNTING</a>
+                    <ul>
+                        <li><a href="services_products">Products & Services</a></li> 
+                        <li><a href="invoices">Invoices</a></li> 
+                        <li><a href="payments">Payments</a></li> 
+                    </ul>
+                 </li> 
                 <li style="display:none;" class="submenu"><a href="#">SYSTEM SUPPORT</a>
                     <ul>
                         <li><a href="bitacora_actividades">SYSTEM DEVELOPMENT ACTIVITIES</a></li>

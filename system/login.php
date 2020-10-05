@@ -63,6 +63,7 @@ function conexion(u, p){
                 break;
          case "1":   
                      location.href= "inicio.php?type=88e5542d2cd5b7f86cd6c204dc77fb523fb719071b2b08cfd7cbfbcadb365af1c8c9ba63";
+                     //window.open('https://st.websolutionsac.com/system/inicio');
                 break;
          case "2":  $("#loginPassword").val("");
                     $("#loginPassword").focus();
@@ -152,7 +153,7 @@ function actualizarMensajeAlerta(t) {
 <section class="section-phone">
     <p>Need Help? CALL  (956) 606-4478</p>
 </section>
-<div class="copyright">SoloTrucking 2015 . � All rights reserved.</div>
+<div class="copyright">SoloTrucking 2020. © All rights reserved.</div>
 </body>
 <?php }else{ ?>
 <?php  } ?>

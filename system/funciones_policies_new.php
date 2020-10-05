@@ -33,6 +33,7 @@
       $sUsuario             = $_SESSION['usuario_actual'];
       $dFecha               = date("Y-m-d H:i:s");
       $query                = "";
+      $query_error          = "";
       
       //Crear archivo fisico en el Temporal:
       $fp      = fopen($tmpName, 'r'); 
@@ -194,7 +195,7 @@
                                 }else
                                 if($header == "TYPE"){
                                     $sType = strtoupper(trim($value)); 
-                                    if($sType == 'UNIT' || $sType == 'TRAILER' || $sType == "TRACTOR"){
+                                    if($sType == 'UNIT' || $sType == 'TRAILER' || $sType == "TRACTOR" || $sType == "PICKUP"){
                                       //UPDATE 
                                       array_push($update,"sTipo='$sType'");
                                       //INSERT 
@@ -285,7 +286,7 @@
                                                   "VALUES('".$iConsecutivoPolizas[$p]."','$iConsecutivoUnidad','AMIC','".$r['dFechaInicio']."','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
                                         $conexion->query($query);
                                                 
-                                        if($conexion->affected_rows < 1){$error = 1; $success = false; $mensaje = "The data of unit in the policy was not saved properly, please try again.";}
+                                        if($conexion->affected_rows < 1){$query_error =  $conexion->error." - ".$sVIN; $error = 1; $success = false; $mensaje = "The data of unit in the policy was not saved properly, please try again.";}
                                         else{$success_unit ++;}
                                    }    
                                }
@@ -413,7 +414,9 @@
                                    if($Type != ""){
                                        
                                        if($Type == "FEDERAL"    || $Type == "F" || $Type == "FEDERAL / B1"){$Type = "FEDERAL/B1";}else
-                                       if($Type == "COMMERCIAL" || $Type == "C" || $Type == "COMMERCIAL / CDL-A"){$Type = "COMMERCIAL/CDL-A";}
+                                       if($Type == "COMMERCIAL-A" || $Type == "CDLA" || $Type == "COMMERCIAL / CDL-A"){$Type = "COMMERCIAL/CDL-A";}
+                                       if($Type == "COMMERCIAL-B" || $Type == "CDLB" || $Type == "COMMERCIAL / CDL-B"){$Type = "COMMERCIAL/CDL-B";}
+                                       if($Type == "COMMERCIAL-C" || $Type == "CDLC" || $Type == "COMMERCIAL / CDL-C"){$Type = "COMMERCIAL/CDL-C";} 
                                        //UPDATE 
                                        array_push($update,"eTipoLicencia='$Type'"); 
                                        //INSERT 
@@ -480,7 +483,7 @@
                                                  "VALUES('".$iConsecutivoPolizas[$p]."','$iConsecutivoOperador','AMIC','".$r['dFechaInicio']."','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
                                         $conexion->query($query);
                                         
-                                        if($conexion->affected_rows < 1){$error = 1; $success = false; $mensaje = "The data of driver in the policy was not saved properly, please try again.";}
+                                        if($conexion->affected_rows < 1){$query_error =  $conexion->error." - ".$iLicense; $error = 1; $success = false; $mensaje = "The data of driver in the policy was not saved properly, please try again.";}
                                         else{$success_driv ++;}
                                         
                                    }
@@ -778,20 +781,21 @@
                                    // Recorrer polizas:
                                    for($p=0;$p<$count;$p++){
                                        
-                                        $iConsecutivoPoliza = $iConsecutivoPolizas[$p]; 
+                                        $iConsecutivoPoliza = $iConsecutivoPolizas[$p];
                                         
+                                        if($polizas[$iConsecutivoPoliza]['iTipoPoliza'] != 4 && $polizas[$iConsecutivoPoliza]['iTipoPoliza'] != 6 && $polizas[$iConsecutivoPoliza]['iTipoPoliza'] != 9){
                                         // AL
-                                        if($polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 3){
+                                        //if($polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 3){
                                             isset($dataArray['ENDAL']) ? $sNumeroEndosoBroker  =  $dataArray['ENDAL'] : $sNumeroEndosoBroker  = "";  
                                             isset($dataArray['AL'])    ? $rImporteEndosoBroker =  $dataArray['AL']    : $rImporteEndosoBroker = "";
-                                        }
+                                       // }
                                         // MTC 
-                                        else if($polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 2 || $polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 5 || $polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 10){
+                                        //else if($polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 2 || $polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 5 || $polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 10){
                                             isset($dataArray['ENDMTC']) ? $sNumeroEndosoBroker  =  $dataArray['ENDMTC'] : $sNumeroEndosoBroker  = "";  
                                             isset($dataArray['MTC'])    ? $rImporteEndosoBroker =  $dataArray['MTC']    : $rImporteEndosoBroker = "";
-                                        }
+                                       // }
                                         // PD 
-                                        else if($polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 1){
+                                       // else if($polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 1){
                                             isset($dataArray['ENDPD']) ? $sNumeroEndosoBroker  =  $dataArray['ENDPD'] : $sNumeroEndosoBroker  = "";  
                                             isset($dataArray['PD'])    ? $rImporteEndosoBroker =  $dataArray['PD']    : $rImporteEndosoBroker = "";
                                         }
@@ -983,8 +987,8 @@
                                 }else
                                 if($header == "RADIUS"){
                                     $iRadius = trim($value);
-                                    $iRadius = str_replace(' ','',$iRadius);
-                                  
+                                    if($iRadius != 'UNLIMITED MILES'){$iRadius = str_replace(' ','',$iRadius);}
+                                    
                                     //Revisamos si existe el Radius en el catalogo: 
                                     $query  = "SELECT iConsecutivo AS Radius FROM ct_unidad_radio WHERE sDescripcion = '$iRadius'";
                                     $result = $conexion->query($query);
@@ -995,7 +999,7 @@
                                 }else
                                 if($header == "TYPE"){
                                     $value = strtoupper(trim($value)); 
-                                    if($value == 'UNIT' || $value == 'TRAILER' || $value == "TRACTOR"){ $dataArray['sTipo'] = $value;}
+                                    if($value == 'UNIT' || $value == 'TRAILER' || $value == "TRACTOR" || $value == "PICKUP"){ $dataArray['sTipo'] = $value;}
                                 }else
                                 if($header == "YEAR"){
                                     $value = intval(trim($value)); 
@@ -1140,19 +1144,19 @@
                                    for($p=0;$p<$count;$p++){
                                        
                                         $iConsecutivoPoliza = $iConsecutivoPolizas[$p]; 
-                                        
+                                        if($polizas[$iConsecutivoPoliza]['iTipoPoliza'] != 4 && $polizas[$iConsecutivoPoliza]['iTipoPoliza'] != 6 && $polizas[$iConsecutivoPoliza]['iTipoPoliza'] != 9){
                                         // AL
-                                        if($polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 3){
+                                        //if($polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 3){
                                             isset($dataArray['ENDAL']) ? $sNumeroEndosoBroker  =  $dataArray['ENDAL'] : $sNumeroEndosoBroker  = "";  
                                             isset($dataArray['AL'])    ? $rImporteEndosoBroker =  $dataArray['AL']    : $rImporteEndosoBroker = "";
-                                        }
+                                       // }
                                         // MTC 
-                                        else if($polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 2 || $polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 5 || $polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 10){
+                                        //else if($polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 2 || $polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 5 || $polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 10){
                                             isset($dataArray['ENDMTC']) ? $sNumeroEndosoBroker  =  $dataArray['ENDMTC'] : $sNumeroEndosoBroker  = "";  
                                             isset($dataArray['MTC'])    ? $rImporteEndosoBroker =  $dataArray['MTC']    : $rImporteEndosoBroker = "";
-                                        }
+                                        //}
                                         // PD 
-                                        else if($polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 1){
+                                        //else if($polizas[$iConsecutivoPoliza]['iTipoPoliza'] == 1){
                                             isset($dataArray['ENDPD']) ? $sNumeroEndosoBroker  =  $dataArray['ENDPD'] : $sNumeroEndosoBroker  = "";  
                                             isset($dataArray['PD'])    ? $rImporteEndosoBroker =  $dataArray['PD']    : $rImporteEndosoBroker = "";
                                         }
@@ -1237,7 +1241,7 @@
             }
       }  
       $conexion->close();
-      $response = array("mensaje"=>"$mensaje","error"=>"$error", "name_file" => "$fileName","query"=>"$query"); 
+      $response = array("mensaje"=>"$mensaje","error"=>"$error", "name_file" => "$fileName","query"=>"$query","query_error"=>"$query_error"); 
       echo json_encode($response); 
       
   }

@@ -1,4 +1,7 @@
-<?php session_start();    
+<?php 
+
+session_start(); 
+   
 if ( !($_SESSION["acceso"] != '')  && ($_SESSION["usuario_actual"] != "" && $_SESSION["usuario_actual"] != NULL)){ 
     //No ha iniciado session, redirecciona a la pagina de login
     header("Location: login.php");

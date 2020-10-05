@@ -2281,7 +2281,8 @@ var fn_certificate = {
                 <option value="BIND">Bind Request</option>
                 <option value="ACCEPTANCE REPORT">Acceptance Report</option>   
                 <option value="QUOTE">Quote</option> 
-                <option value="POLICY JACKER">Policy Jacker</option>   
+                <option value="POLICY JACKER">Policy Jacker</option>  
+                <option value="BROKER INVOICE">Broker Invoice</option>  
                 <option value="PFA">PFA</option>   
             </select> 
             <input name="eArchivoOther" type="text" class="txt-uppercase" value="" style="display: none;height: 27px!important;width:98.5%;" placeholder="Other Category:">

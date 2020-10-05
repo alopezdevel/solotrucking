@@ -121,6 +121,7 @@
        if($iConsecutivoCompania != ''){
            
            $_POST['dFechaVencimiento'] = format_date($_POST['dFechaVencimiento']);
+           $_POST['sNombreCompania']   = clean_string($_POST['sNombreCompania']);
            
            // Si el archivo existe, entonces:
            if(isset($_FILES['userfile']["tmp_name"])){
@@ -262,29 +263,37 @@
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);
       
-      $sql    = "SELECT iConsecutivo, sNombreArchivo AS txtsCertificatePDF, sNombreArchivoAdd, DATE_FORMAT(dFechaVencimiento,'%m/%d/%Y') AS dFechaVencimiento, eOrigenCertificado, sDescripcionOperaciones  ".
-                "FROM cb_certificate_file WHERE iConsecutivoCompania = '".$clave."'";
-      $result = $conexion->query($sql); 
-      $rows   = $result->num_rows; 
-      
-      if ($rows > 0) {     
-        $data    = $result->fetch_assoc();
-        $llaves  = array_keys($data);
-        $datos   = $data;
-        foreach($datos as $i => $b){
-            
-            if(($data['eOrigenCertificado'] == "LAYOUT" && $i != "sDescripcionOperaciones") || ($data['eOrigenCertificado'] == "DATABASE")){
-                if($i == "sDescripcionOperaciones"){
-                    $datos[$i] = preg_replace("/\r\n|\r|\n/",'\n',$datos[$i]);   
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error = '1';
+          $msj   = "This user does not have the privileges to modify or add data to the system.";
+      }
+      else{
+          $sql    = "SELECT iConsecutivo, sNombreArchivo AS txtsCertificatePDF, sNombreArchivoAdd, DATE_FORMAT(dFechaVencimiento,'%m/%d/%Y') AS dFechaVencimiento, eOrigenCertificado, sDescripcionOperaciones  ".
+                    "FROM cb_certificate_file WHERE iConsecutivoCompania = '".$clave."'";
+          $result = $conexion->query($sql); 
+          $rows   = $result->num_rows; 
+          
+          if ($rows > 0) {     
+            $data    = $result->fetch_assoc();
+            $llaves  = array_keys($data);
+            $datos   = $data;
+            foreach($datos as $i => $b){
+                
+                if(($data['eOrigenCertificado'] == "LAYOUT" && $i != "sDescripcionOperaciones") || ($data['eOrigenCertificado'] == "DATABASE")){
+                    if($i == "sDescripcionOperaciones"){
+                        $datos[$i] = preg_replace("/\r\n|\r|\n/",'\n',$datos[$i]);   
+                    }
+                    
+                    if($parametro != "#" || $parametro == ""){$campo = "[$parametro=$i]";}else{$campo = $parametro.$i;}
+                    $fields .= "\$('#$domroot ".$campo."').val('".$datos[$i]."');";     
                 }
                 
-                if($parametro != "#" || $parametro == ""){$campo = "[$parametro=$i]";}else{$campo = $parametro.$i;}
-                $fields .= "\$('#$domroot ".$campo."').val('".$datos[$i]."');";     
-            }
-            
-        }  
+            }  
+          }
       }
-      
+
       /*if($items_files["sNombreArchivo"] != ''){
             $fields .= "\$('#$domroot :input[id=txtsCertificatePDF]').val('".$items_files['sNombreArchivo']."');";
             $fields .= "\$('#$domroot :input[id=iConsecutivo]').val('".$items_files['iConsecutivo']."');";  

@@ -49,7 +49,10 @@
                 FROM  ct_companias ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
         $result = $conexion->query($sql);
         $rows = $result->num_rows;    
-        if ($rows > 0) {    
+        if ($rows > 0) {   
+        
+            $valid_user = valid_user($_SESSION['usuario_actual']);
+
             while ($usuario = $result->fetch_assoc()) { 
                if($usuario["id"] != ""){
                      //telefonos:
@@ -74,10 +77,13 @@
                                        "<td>".$usuario['usdot']."</td>". 
                                        "<td>".$usuario['direccion']."</td>".
                                        "<td>".$usuario['estado']."</td>".
-                                       "<td>".$usuario['zipcode']."</td>".
-                                       "<td>".$usuario['sNombreContacto']."</td>".
-                                       "<td>".$telefonos."</td>".                                                                                                                                                                                                                        
-                                       "<td>$btns</td></tr>";
+                                       "<td>".$usuario['zipcode']."</td>";
+                     if($valid_user){
+                        $htmlTabla .= "<td>".$usuario['sNombreContacto']."</td>".
+                                       "<td>".$telefonos."</td>"; 
+                     }
+                                                                                                                                                                                                                                                             
+                     $htmlTabla .= "<td>$btns</td></tr>";
                  }else{                                                                                                                                                                                                        
                     
                      $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>"   ;
@@ -106,19 +112,30 @@
     //$conexion->begin_transaction();
     $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
     $transaccion_exitosa = true;
-    $sql = "SELECT * FROM ct_companias WHERE iConsecutivo = ".$clave;
-    $result = $conexion->query($sql);
-    $items = $result->num_rows;   
-    if ($items > 0) {     
-        $drivers = $result->fetch_assoc();
-        $llaves  = array_keys($drivers);
-        $datos   = $drivers;
-        
-        foreach($datos as $i => $b){
-             $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');"; 
-             //if($i == 'iEntidad'){$country = $datos[$i];} 
-        }  
+    
+    $valid_user = valid_user($_SESSION['usuario_actual']);
+
+    if(!($valid_user)){
+      $error = '1';
+      $msj   = "This user does not have the privileges to modify or add data to the system.";
     }
+    else{
+        $sql   = "SELECT * FROM ct_companias WHERE iConsecutivo = ".$clave;
+        $result= $conexion->query($sql);
+        $items = $result->num_rows;   
+        if ($items > 0) {     
+            $drivers = $result->fetch_assoc();
+            $llaves  = array_keys($drivers);
+            $datos   = $drivers;
+            
+            foreach($datos as $i => $b){
+                 if($i == 'sNombreCompania'){$datos[$i] = addslashes($datos[$i]);} 
+                 $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');"; 
+                 //if($i == 'iEntidad'){$country = $datos[$i];} 
+            }  
+        } 
+    }  
+    
     $conexion->rollback();
     $conexion->close(); 
     $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields");   
@@ -153,7 +170,8 @@
             
              foreach($_POST as $campo => $valor){
                 if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo" ){ //Estos campos no se insertan a la tabla
-                    if($valor != ""){array_push($valores,"$campo='".trim($valor)."'");}
+                    if($campo == 'sNombreCompania'){$valor = addslashes($valor);} 
+                    if($valor != ""){array_push($valores,"$campo='".trim($valor)."'");} 
                 }
              }     
               
@@ -168,6 +186,10 @@
             foreach($_POST as $campo => $valor){
                if($campo != "accion" and $campo != "edit_mode"){ //Estos campos no se insertan a la tabla
                     if($valor != ""){
+                        
+                       if($campo == 'sNombreCompania'){
+                        $valor = addslashes($valor);    
+                       } 
                        array_push($campos ,$campo); 
                        array_push($valores, trim($valor)); 
                     }
@@ -208,21 +230,30 @@
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
       $transaccion_exitosa = true;
       
-      //DESACTIVAR COMPANY:
-      $query = "UPDATE ct_companias SET iDeleted = '1' WHERE iConsecutivo = '".$_POST["clave"]."'";
-      $conexion->query($query);
-      $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
-      if($transaccion_exitosa){
-        
-        //DESACTIVAR SUS USUARIOS:
-        $query   = "UPDATE cu_control_acceso SET iDeleted = '1', hActivado = '0' WHERE iConsecutivoCompania = '".$_POST["clave"]."' AND iConsecutivoTipoUsuario ='2' ";
-        $success = $conexion->query($query);
-        
-        if(!($success)){$msj = "A general system error ocurred : internal error, please try again.";$error = "1";}
-        else{$msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The company has been disabled succesfully!</p>';}
-        
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error = '1';
+          $msj   = "This user does not have the privileges to modify or add data to the system.";
+      }else{
+          //DESACTIVAR COMPANY:
+          $query = "UPDATE ct_companias SET iDeleted = '1' WHERE iConsecutivo = '".$_POST["clave"]."'";
+          $conexion->query($query);
+          $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
+          if($transaccion_exitosa){
+            
+            //DESACTIVAR SUS USUARIOS:
+            $query   = "UPDATE cu_control_acceso SET iDeleted = '1', hActivado = '0' WHERE iConsecutivoCompania = '".$_POST["clave"]."' AND iConsecutivoTipoUsuario ='2' ";
+            $success = $conexion->query($query);
+            
+            if(!($success)){$msj = "A general system error ocurred : internal error, please try again.";$error = "1";}
+            else{$msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The company has been disabled succesfully!</p>';}
+            
+          }
+          else{$msj = "A general system error ocurred : internal error";$error = "1";}
       }
-      else{$msj = "A general system error ocurred : internal error";$error = "1";}
+      
+      
       
       if($error == "0"){$conexion->commit();$conexion->close();}
       else{$conexion->rollback();$conexion->close();}

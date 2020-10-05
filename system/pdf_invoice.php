@@ -1,21 +1,30 @@
 <?php
-    session_start();
-    include("cn_usuarios.php"); 
-    include("functiones_genericas.php"); 
+    
+    isset($envio_correo) ? $envio_correo = 1 : $envio_correo = 0;
+    
+    if($envio_correo == 0){
+        session_start();
+        include("cn_usuarios.php"); 
+        include("functiones_genericas.php");
+    }  
+     
     require_once('lib/fpdf153/fpdf.php'); 
     
     // PARAMETROS GET:
-    isset($_GET['id']) ? $folio = urldecode($_GET['id']) : $folio = "";
-    isset($_GET['ds']) ? $ds    = strtoupper(urldecode($_GET['ds'])) : $ds    = "";
-    $error = false; 
-    $folio = preg_replace("/%u([0-9a-f]{3,4})/i","&#x\\1;",urldecode($folio)); 
-    $folio = html_entity_decode($folio,null,'UTF-8');
+    if($envio_correo == 0){
+        isset($_GET['id']) ? $folio = urldecode($_GET['id']) : $folio = "";
+        isset($_GET['ds']) ? $ds    = strtoupper(urldecode($_GET['ds'])) : $ds    = "";    
+    } 
     
+    $error        = false; 
+    $folio        = preg_replace("/%u([0-9a-f]{3,4})/i","&#x\\1;",urldecode($folio)); 
+    $folio        = html_entity_decode($folio,null,'UTF-8');
+  
     if($folio == "" || $folio == null){$error = true; $mensaje = "Error when consulting the company data, please try again.";}
     else{
-        #CONSULTAR CONFIGURACION DEL CERTIFICADO Y DATOS:
+        #CONSULTAR INVOICE:
         $sql    = "SELECT iConsecutivo, iConsecutivoCompania,sNoReferencia, DATE_FORMAT(dFechaInvoice,'%m/%d/%Y') AS dFechaInvoice,sReceptorNombre, sReceptorDireccion,sEmisorNombre, sLugarExpedicionDireccion, ".
-                  "dSubtotal,rPDescuento, dDescuento, sMotivosDescuento, dPctTax, dTax, dTotal, dAnticipo, dBalance, sCveMoneda, dTipoCambio, sComentarios ".
+                  "dSubtotal,rPDescuento,eStatus, dDescuento, sMotivosDescuento, dPctTax, dTax, dTotal, dAnticipo, dBalance, sCveMoneda, dTipoCambio, sComentarios ".
                   "FROM cb_invoices WHERE iConsecutivo = '".$folio."'";
         $result = $conexion->query($sql);
         $rows   = $result->num_rows;    
@@ -23,7 +32,7 @@
         else{
            $invoice    = $result->fetch_assoc(); 
            $compania   = $invoice['iConsecutivoCompania'];
-           $nombre_pdf = "solo_trucking_invoice_No-".$invoice['iConsecutivo'];
+           $nombre_pdf = "solo-trucking-invoice_".$invoice['sNoReferencia'];
            
         }
     }
@@ -216,7 +225,7 @@
         var $DatosReceptor;
         var $CurrentY;
         var $DetailY;
-        var $hdetail;
+        var $hdetail = 165;
         var $ytot;
         var $FooterY;
         var $Correo_R;
@@ -226,7 +235,7 @@
         var $TotX;
         var $SymbolX;
         var $TotalsX;
-        var $limit;
+        var $limit   = 200;
         var $CantX   = 122;
         var $ImpUX   = 144;
         var $IVAX    = 167;
@@ -239,31 +248,33 @@
         var $OpcionesImpresion = array("Emisor"=>array("RazonSocial"=>true,"DomicilioFiscal"=>true),"Receptor"=>array("RazonSocial"=>true, "DomicilioFiscal"=>true));
         var $colores=array(0,0,0);
         var $display;
+        var $conexion;
 
-        function init($folio, $invoice, $compania, $nombre_pdf, $ds){
+        function init($folio, $invoice, $compania, $conexion, $ds){
 
-           $this->$display = $ds;
-    
+           $this->display      = $ds;
+           $this->DatosFactura = $invoice;
+           $this->conexion     = $conexion;
+           
            #Datos de configuracion del Emisor:
            $sql    = "SELECT * FROM ct_empresa WHERE iConsecutivo IS NOT NULL LIMIT 1";
            $result = $conexion->query($sql);
            $this->ConfiguracionSeleccionado = $result->fetch_array();
-
+          
            #Datos del Cliente:
            $sql    = "SELECT iConsecutivo,sNombreCompania,sUsdot,sDireccion,sCiudad,sEstado,sCodigoPostal, sEmailContacto ".
                      "FROM ct_companias WHERE iConsecutivo = '".$compania."'";
-           $result = $dbconn->query($sql);
+           $result = $conexion->query($sql);
            $this->DatosReceptor = $result->fetch_array();
-           
 
            #Factura Detalle:
-           $sql    = "iConsecutivoDetalle, iConsecutivoServicio, sClave, sDescripcion, sCveUnidadMedida, iCantidad, iPrecioUnitario, iPctImpuesto, iImpuesto, iPrecioExtendido, iEndorsementsApply, sComentarios".
+           $sql    = "SELECT iConsecutivoDetalle, iConsecutivoServicio, sClave, sDescripcion,iMostrarEndorsements, sCveUnidadMedida, iCantidad, iPrecioUnitario, iPctImpuesto, iImpuesto, iPrecioExtendido, iEndorsementsApply, sComentarios ".
                      "FROM cb_invoice_detalle WHERE iConsecutivoInvoice = '".$folio."'";
-           $result = $dbconn->query($sql);
+           $result = $conexion->query($sql);
            $this->DatosFacturaDetalle= mysql_fetch_all($result);
            
            #Otras Variables:
-           $this->decimales = $this->ConfiguracionSeleccionado["Decimales"];
+           $this->decimales = $this->ConfiguracionSeleccionado["iDecimales"];
 
         }
 
@@ -275,1096 +286,269 @@
            $this->SetDrawColor(intval($arrRGBColor[0]), intval($arrRGBColor[1]), intval($arrRGBColor[2]));
            
         }
+        
+        function pdf_font_define(){
+            $colorPDF    = $this->ConfiguracionSeleccionado["sColorPdf"];
+            $arrRGBColor = explode(",", $colorPDF);
+            $this->SetTextColor(intval($arrRGBColor[0]), intval($arrRGBColor[1]), intval($arrRGBColor[2]));
+              
+        }
 
         function pdf_header(){
 
-            $FechaAsignacion = $this->DatosFolios['dFechaAprobacion'];
-            $TipoMoneda      = $this->DatosFactura['Moneda'];
-            $TipoCambio      = number_format(gpcround($this->DatosFactura['sTipoCambio'],$this->decimales),$this->decimales,'.',',');
-            $this->ImprimeTC = $this->ConfiguracionSeleccionado['ImprimirTC'];
-
-            #Datos del Cliente:
-            $Receptor       = utf8_decode($this->DatosFactura['sNombreCliente']);
-            $Calle_R        = utf8_decode($this->DatosFactura['sCalleCliente']);
-            $NumeroExt_R    = $this->DatosFactura['sNumExteriorCliente'];
-            $NumeroInt_R    = $this->DatosFactura['sNumInteriorCliente'];
-            $Colonia_R      = utf8_decode($this->DatosFactura['sColoniaCliente']);
-            $Localidad_R    = utf8_decode($this->DatosFactura['sCiudadCliente']);
-            $Pais_R         = $this->DatosFactura['sPaisCliente'];
-            $CodigoPostal_R = $this->DatosFactura['sCodigoPostalCliente'];
-            $RFC_C          = $this->DatosFactura['sRFCCliente'];
-           
-            if($this->ConfiguracionSeleccionado['iIncluirDescripcionEntidad'] == '1' AND $this->Instancia != "bd_econta_snl"){
-              $Estado_R = $this->DescEntidad;
-              switch($Pais_R){
-                case "USA" : $Pais_R = "ESTADOS UNIDOS"; break;
-                case "MEX" : $Pais_R = "MEXICO"; break;
-                case "CAN" : $Pais_R = "CANADA"; break;
-              }
+            $inv_date  = $this->DatosFactura['dFechaInvoice'];
+            $inv_number= $this->DatosFactura['sNoReferencia'];
+            
+            #Datos Emisor: 
+            $emisor_nombre = "";
+            if($this->ConfiguracionSeleccionado["eIncluirNombreAlias"] != 'NONE'){
+               switch($this->ConfiguracionSeleccionado["eIncluirNombreAlias"]){
+                   case 'COMP'  : $emisor_nombre = $this->ConfiguracionSeleccionado['sNombreCompleto']; break;
+                   case 'ALIAS' : $emisor_nombre = $this->ConfiguracionSeleccionado['sAlias']; break;
+               }    
             }
-            else if($this->Instancia == "bd_econta_snl"){$Estado_R = $this->DescEntidad;}
-            else {$Estado_R = utf8_decode($this->DatosFactura['sEstadoCliente']);}
-
-            $this->Correo_R = $this->DatosCorreoCorresponsal['sCorreos'];
-            if ($this->Correo_R==""){$this->Correo_R = $this->DatosCorreo['sCorreos'];}
-            if ($this->Correo_R==""){$this->Correo_R = $this->DatosFactura['sCorreoCliente'];}
-
-            if($_SERVER["HTTP_HOST"] == 'localhost:8080'){$Estado_R = strtoupper($Estado_R);}
-            else{$Estado_R = mb_strtoupper($Estado_R);}
-            if($this->OpcionesImpresion["Receptor"]["DomicilioFiscal"]){
-                    if ($Calle_R != "")             {$direccion = $direccion."$Calle_R";}
-                    if ($NumeroExt_R !="")          {$direccion = $direccion." # $NumeroExt_R";}
-                    if($NumeroInt_R != "")          {$direccion = $direccion." INT. $NumeroInt_R";}
-                    if($Colonia_R != "")            {$direccion = $direccion.", COL. $Colonia_R\n";}
-                    if($this->TelefonoCliente != ""){$direccion = $direccion."TEL: ".$this->TelefonoCliente;}
-                    if($CodigoPostal_R != "")       {$direccion = $direccion." C.P. $CodigoPostal_R";}
-                    $direccion = $direccion . " $Localidad_R, ".($Estado_R).".";
-                    $direccion = $direccion." $Pais_R";
+            
+            $emisor_direccion = "";
+            $emisor_ciudad    = "";
+            if($this->ConfiguracionSeleccionado["eLugarExpedicion"] == 'SI'){
+                
+                $emisor_direccion = $this->ConfiguracionSeleccionado['sCalle'];
+                if($this->ConfiguracionSeleccionado['sNumExterior'] != ""){ $emisor_direccion .= " Suite. ".$this->ConfiguracionSeleccionado['sNumExterior'];}
+                
+                if($this->ConfiguracionSeleccionado['sCiudad']       != ""){$emisor_ciudad = $this->ConfiguracionSeleccionado['sCiudad'];}
+                if($this->ConfiguracionSeleccionado['sCveEntidad']   != ""){$emisor_ciudad != "" ? $emisor_ciudad .= " ".$this->ConfiguracionSeleccionado['sCveEntidad'] : $emisor_ciudad = $this->ConfiguracionSeleccionado['sCveEntidad'];}
+                if($this->ConfiguracionSeleccionado['sCodigoPostal'] != ""){$emisor_ciudad != "" ? $emisor_ciudad .= " ".$this->ConfiguracionSeleccionado['sCodigoPostal'] : $emisor_ciudad = $this->ConfiguracionSeleccionado['sCodigoPostal'];}
+                
             }
-
-            if(($this->DatosFactura["sNombreDestino"]<>"NINGUNO" AND (strlen($this->DatosFactura["sNombreDestino"])>0)) OR ($this->DatosFactura["sNombreOrigen"]<>"NINGUNO" AND (strlen($this->DatosFactura["sNombreOrigen"])>0)) ){
-                    if($this->Instancia=="bd_econta_rfr") {$transp = false;} else { $transp = true;    }
-            }
-
-            if($this->Instancia == "disa") {$DatosEmision = "DatosExpedicion";}else{$DatosEmision = "ConfiguracionSeleccionado";}
-
-            $EmpresaNombreComercial = utf8_decode($this->ConfiguracionSeleccionado["sNombre"]);
-            $EmpresaRFC             = $this->ConfiguracionSeleccionado["sRFC"];
-
-            if($this->OpcionesImpresion["Emisor"]["DomicilioFiscal"]){
-                    $EmpresaCalle = utf8_decode($this->{$DatosEmision}["sCalle"]);
-                    $this->{$DatosEmision}["sNumExt"] !="" ? $EmpresaNumExt = " # ".$this->{$DatosEmision}["sNumExt"] : $EmpresaNumExt = "";
-                    $this->{$DatosEmision}["sNumInt"] !="" ? $EmpresaNumInt = " INT. ".$this->{$DatosEmision}["sNumInt"]."," : $EmpresaNumInt="";
-                    $EmpresaColonia = " ".utf8_decode($this->{$DatosEmision}["sColonia"])."\n";
-                    $this->{$DatosEmision}["sLocalidad"]!="" ? $EmpresaLocalidad = utf8_decode($this->{$DatosEmision}["sLocalidad"])."," : $EmpresaLocalidad ="";
-
-                    $this->{$DatosEmision}["sEstado"]!="" ? $EmpresaEstado = " ".$this->{$DatosEmision}["sEstado"]."," : $EmpresaEstado = "";
-                    $this->Instancia == "bd_econta_snl" ? $EmpresaEstado = $this->{$DatosEmision}['DescEstado']."," : $EmpresaEstado = $EmpresaEstado;
-                    $EmpresaPais = " ".$this->{$DatosEmision}["sPais"]."\n";
-                    $this->{$DatosEmision}["sCP"]!="" ? $EmpresaCP = "C.P:".$this->{$DatosEmision}["sCP"] : $EmpresaCP ="";
-                    $this->{$DatosEmision}["sTelefono1"] != "" && $this->{$DatosEmision}["sTelefono1"] != '()' ? $EmpresaTelefono1 = " Tel:".$this->{$DatosEmision}["sTelefono1"]."\n" : $EmpresaTelefono1="";
-                    $EmpresaTelefono2 = $this->{$DatosEmision}["sTelefono2"];
-            }
-
-            $EmpresaRazonSocial       = utf8_decode($this->ConfiguracionSeleccionado["sRazonSocial"]);
-            $EmpresaMail              = $this->ConfiguracionSeleccionado["sMail"];
-            $EmpresaWebSite           = $this->ConfiguracionSeleccionado["sWebSite"];
-            $this->EsquemaFacturacion = $this->ConfiguracionSeleccionado["sEsquemaFacturacion"];
-            $DomicilioFiscal          = "$EmpresaCalle$EmpresaNumExt$EmpresaNumInt$EmpresaColonia".
-                                        "$EmpresaLocalidad$EmpresaEstado$EmpresaPais".
-                                        "$EmpresaCP$EmpresaTelefono1".
-                                        "RFC. ".$EmpresaRFC;
+            
+            #Datos Receptor:
+            $receptor_nombre    = $this->DatosReceptor['sNombreCompania'];
+            $receptor_direccion = $this->DatosReceptor['sDireccion'];
+            $receptor_direccion2= $this->DatosReceptor['sCiudad'].", ".$this->DatosReceptor['sEstado']." ".$this->DatosReceptor['sCodigoPostal'];
+            
             #Logo
-            $logo  = $this->ConfiguracionSeleccionado['hLogoEmpresa'];
+            /*$logo  = $this->ConfiguracionSeleccionado['hLogoEmpresa'];
             $h     = $this->ConfiguracionSeleccionado['iLogoH'];
             $w     = $this->ConfiguracionSeleccionado['iLogoW'];
-            if(!empty($logo)){$this->MemImage($logo,8,11,$w,$h,'');}
+            if(!empty($logo)){$this->MemImage($logo,8,11,$w,$h,'');}*/
 
-            $TotalCFD               = number_format(gpcround($this->DatosFactura['rTotal'],$this->decimalesfijos),$this->decimalesfijos,'.','');
-            if($EmpresaRazonSocial == $EmpresaNombreComercial AND $this->OpcionesImpresion["Emisor"]["RazonSocial"]){$ImprimeNC = false;}else{$ImprimeNC = true;}
+            $this->Image('images/img-logo.jpg',10,10,50,0,'JPG');
 
             #PDF:
-            $xh = 70;
+            $xh = 60;
             $yh = 12;
-            $this->SetXY($xh, $yh);
+            
+            //IZQUIERDA
             $this->SetFont('Arial', 'B', 11);
             $this->SetTextColor(0,0,0);
-            if($ImprimeNC){
-                 $len = strlen($EmpresaNombreComercial);
-                 if ($len>40){
-                    $this->MultiCell(80, 4, $EmpresaNombreComercial, 0,'J');
-                    $yh+= 8;
-                } else{
-                    $this->Cell(56, 3, $EmpresaNombreComercial, 0, 0, 'J');
-                     $yh += 4;
+            $this->SetXY($xh, $yh);
+            $this->Cell(70, 3, $emisor_nombre, 0, 0, 'J');
+            
+            $yh+= 4;
+            //Imprimir direccion:
+            if($this->ConfiguracionSeleccionado["eLugarExpedicion"] == 'SI'){
+                $this->SetFont('Arial', '', 10); 
+                $this->SetXY($xh, $yh);
+                $this->Cell(70, 3, $emisor_direccion, 0, 0, 'J');
+                
+                if($emisor_ciudad != ""){
+                    $yh+= 3;
+                    $this->SetXY($xh, $yh);
+                    $this->Cell(70, 3, $emisor_ciudad, 0, 0, 'J');    
                 }
-
-                $this->SetXY($xh,$yh);
-                $this->SetFont('Arial', '', 8.5);
-
+              
             }
-            $len = strlen($EmpresaRazonSocial);
-            $reng_RS = ($len-($len % 40))/40;
-
-            if (($len%40)>0){$reng_RS ++;}
-            if($this->OpcionesImpresion["Emisor"]["RazonSocial"]){
-                if ($len>40){
-                    $this->SetFont('Arial','B',9);
-                    $this->MultiCell(80, 4, $EmpresaRazonSocial, 0,'J');
-                    $yh+= ($reng_RS*4);
-                } else{
-                    $this->Cell(56, 3, $EmpresaRazonSocial, 0, 0, 'J');
-                    $yh+= 4;
-                }
-            }
-            $this->SetXY($xh, $yh );
-            $this->SetFont('Arial', '', 8.5);
-
-
-            $this->MultiCell(70, 3.5, $DomicilioFiscal, 0, 'J');
-
-            $cY = $this->getY();
-            if($cY<=39){
-                $this->SetXY($xh, $cY);
-                $this->SetFont('Arial', 'B', 10);
-                if($this->Instancia!="bd_econta_smalimentos")
-                    $this->SetTextColor(192, 192, 192);
-                $this->Cell(56, 3, $EmpresaWebSite, 0, 'J');
-            }
-
-            // Serie
-            $this->SetFont('Arial', '', 8);
-            $this->pdf_color_define();
-            $this->RoundedRect(160, 12, 15, 6, 2, '12', 'DF');
-            $this->SetXY(160, 12);
-            $this->SetTextColor(255, 255, 255);
-            $this->Cell(15, 6, 'SERIE', 0, 0, 'C');
-            $this->SetXY(162, 19);
-            $this->SetTextColor(0, 0, 0);
-
-            // Facutra No.
-            $TIPOCF = $this->DatosFactura["tipoCF"]." NO.";
-            $this->RoundedRect(178, 12, 32, 6, 2, '12', 'DF');
-            $this->SetXY(178, 12);
-            $this->SetTextColor(255, 255, 255);
-            $this->Cell(32, 6, "FOLIO / $TIPOCF", 0, 0, 'C');
-            $this->SetXY(162, 19);
-            $this->SetTextColor(0, 0, 0);
-
-            // Serie
-            $this->RoundedRect(160, 18, 15, 6, 2, '34', 'D');
-            if ($this->DatosFactura['sSerie'] != '_'){
-                $this->SetXY(160, 18);
-                $this->SetTextColor(0, 0, 0);
-                $this->SetFont('Arial', '', 10);
-                $this->Cell(15, 6, $this->DatosFactura['sSerie'],0,0,'C');
-                $this->SetFont('Arial', '', 8);
-            }
-            // Factura/Folio No.
-            $this->RoundedRect(178, 18, 32, 6, 2, '34', 'D');
-            $this->SetXY(178, 18);
-            $this->SetTextColor(0, 0, 0);
+            
+            $xh = 10;
+            $yh+= 15;
+            
+            $this->SetFont('Arial', 'B', 10);
+            $this->SetTextColor(0,0,0);
+            $this->SetXY($xh, $yh);
+            $this->Cell(70, 3, 'BILL TO :', 0, 0, 'J');
+            $yh+= 5;
+            $this->SetFont('Arial', '', 11);
+            $this->SetXY($xh+1, $yh);
+            $this->Cell(70, 3, utf8_decode($receptor_nombre), 0, 0, 'J');
+            
+            $yh+= 4.5;
             $this->SetFont('Arial', '', 10);
-
-            if($this->Instancia=="bd_econta_pericostransfer" OR $this->Instancia=="bd_econta_smalimentos" OR $this->Instancia == "bd_econta_dante" OR $this->Instancia == "bd_econta_jdec" OR $this->Instancia=="devel"){
-                $this->FolioImpreso = $this->DatosFactura['iFolioCliente'];
-            }else{
-                $this->FolioImpreso = $this->DatosFactura['sFolio'];
-            }
-            $this->Cell(32, 6, $this->FolioImpreso,0,0,'C');
-            $this->SetFont('Arial', '', 8);
-
-            // Lugar y fecha
-            $this->RoundedRect(160, 25, 50, 4.5, 2, '12', 'DF');
-            $this->SetXY(162, 25);
-            $this->SetTextColor(255, 255, 255);
-            $this->Cell(46, 5, 'EXPEDIDO EN:', 0, 0, 'C');
-
-            #DATOS DEL CLIENTE:
-            $this->RoundedRect(6, 44, 150, 24, 2, '1234', 'D');
-            $Y = 44;
-            //No. Cliente y RFC.
-            $this->RoundedRect(6, $Y, 28, 5, 2, '1', 'DF');
-            $this->RoundedRect(69, $Y, 25, 5, 2, '', 'DF');
-            $this->SetTextColor(255, 255, 255);
-            $this->SetXY(6, $Y);
-            $this->Cell(28, 5.5, 'NO. CLIENTE:', 0, 0, 'C');
-            $this->SetXY(69, $Y);
-            $this->Cell(25, 5.5, 'RFC:', 0, 0, 'C');
-            $this->RoundedRect(34, $Y, 35, 5, 2, '', 'D');
-            $this->RoundedRect(94, $Y, 62, 5, 2, '2', 'D');
-            //textos:
+            $this->SetXY($xh+1, $yh);
+            $this->Cell(70, 3, utf8_decode($receptor_direccion), 0, 0, 'J');
+            $yh+= 3;
+            $this->SetXY($xh+1, $yh);
+            $this->Cell(70, 3, utf8_decode($receptor_direccion2), 0, 0, 'J');
+            
+            //DERECHA
+            $xR = 130;
+            $yR = 13;
+            $this->SetFont('Arial', 'B', 20);
+            $this->SetXY($xR, $yR);
+            $this->Cell(70, 7, 'INVOICE', 0, 0, 'R');
+            
+            $yR += 12;
+            $xR  = 160;
+            $this->SetFont('Arial', '', 10); 
+            $this->SetXY($xR, $yR);
+            $this->Cell(23, 4, 'INVOICE # : ', 0, 0, 'J');
+            $this->SetXY($xR+23, $yR);
+            $this->Cell(25, 4, $inv_number, 0, 0, 'J');
+            
+            $yR += 5;
+            $this->SetXY($xR, $yR);
+            $this->Cell(23, 4, 'DATE : ', 0, 0, 'J');
+            $this->SetXY($xR+23, $yR);
+            $this->Cell(25, 4, $inv_date, 0, 0, 'J');
+            
+            #PRODUCTOS / SERVICIOS TABLA:
+            $this->pdf_color_define();
+            $yD = 60;
+            $this->RoundedRect(10,$yD, 190, $this->hdetail, 1, '12', 'D');
+            $this->RoundedRect(10,$yD, 190, 7, 1, '12', 'F');
+            
+            $yD += 0.5;
+            $this->SetTextColor(255,255,255);
             $this->SetFont('Arial', '', 9);
-            $this->SetTextColor(0, 0, 0);
-            $this->SetXY(34, $Y);
-
-            if( $this->DatosFactura['bImportada'] == 1 && empty($this->DatosFactura['sCveClienteEconta']) ) {
-                $this->Cell(34, 5.5, $this->DatosFactura['sCveClientePropia'],0,0,'C');
-            }
-            else {
-                $this->Cell(34, 5.5, $this->DatosFactura['sCveClienteEconta'],0,0,'C');
-            }
-
-            $this->SetXY(94, $Y);
-            $this->Cell(62, 5.5, $RFC_C,0,0,'C');
-
-            //Razon Social:
-            $Y += 6;
-            $this->SetXY(8, $Y);
-            $this->SetTextColor(0, 0, 0);
+            $this->SetXY(10, $yD);
+            $this->Cell(25,6,"Quantity",0,0,'C');
+            $this->SetXY(35, $yD);
+            $this->Cell(105,6,"Description",0,0,'C');
+            $this->SetXY(140, $yD);
+            $this->Cell(30,6,"Unit Price",0,0,'C');
+            $this->SetXY(170, $yD);
+            $this->Cell(30,6,"Total",0,0,'C');
+            
+            //lineas divisoras:
+            $yD += 6;
+            $this->Line(35, $yD, 35, 225);
+            $this->Line(140, $yD, 140, 225);
+            $this->Line(170, $yD, 170, 225);
+            
+            $this->CurrentY = $yD;
+            
+            $yD += 160;
+            $this->SetTextColor(0,0,0);
+            $this->SetXY(140, $yD);
+            $this->Cell(25,3,"Subtotal",0,0,'R');
+            
+            $this->SetXY(140, $yD+5);
+            $this->Cell(25,3,"Sales Tax",0,0,'R');
+            
             $this->SetFont('Arial', 'B', 9);
-            if($this->OpcionesImpresion["Receptor"]["RazonSocial"]){
-                $this->MultiCell(150, 4, $Receptor, 0, 'L');
-                if(strlen($Receptor) > 72){
-                   $Y += 8;
-                }else{$Y += 4.5;}
-
-            }
-            //Direccion:
-            $this->SetXY(8,$Y);
-            $this->SetFont('Arial', '', 8);
-            $this->MultiCell(145, 4, $direccion , 0, 'L');
-            //CBB
-            $this->SecY=0;
-            $this->DetailHeight=0;
-            switch($this->EsquemaFacturacion){
-                        case 1:
-                                $this->print_HeaderCFD();
-                                break;
-                        case 2:
-                                $this->print_HeaderCBB();
-                                $this->DetailHeight = 20;
-                                $this->SecY = 23;
-                                break;
-                        case 3:
-                                $this->print_HeaderCFDi();
-                                break;
-            }
-            if($transp){
-                $this->print_TranspInfo();
-                $this->CurrentY=102;
-                $this->SecY+=204;
-                $this->DetailHeight += 112;
-            }else{
-                $this->CurrentY=72;
-                $this->SecY+=205;
-                $this->DetailHeight += 142;
-            }
-            $this->TotX=160;
-            $this->SymbolX  = 183;
-            $this->TotalsX = 190;
-
-
-        }
-
-        function print_HeaderCFD(){
-                $this->SetXY(160, 6);
-                $TIPOCF = $this->DatosFactura["tipo"];
-                                    $this->SetFont('Arial', '', 8);
-                                    $this->MultiCell(50, 3, "COMPROBANTE FISCAL DIGITAL\n$TIPOCF", 0, 'C');
-
-                                    $this->SetFont('Arial', '', 7);
-                                    //$this->RoundedRect(160, 33, 50, 6, 2, '34', 'D');
-                                    $this->RoundedRect(160, 29.5, 50, 10, 2, '34', 'D');
-                                        $this->SetTextColor(0, 0, 0);
-                                        $this->SetXY(160, 30);
-                                        $this->Cell(50, 4, $this->DatosExpedicion["ExpedidoEn"], 0, 0, 'C');
-                                    $this->SetXY(162, 33);
-                                    $this->SetTextColor(0, 0, 0);
-                                    $this->Cell(46, 6, $this->DatosFactura['dFechaHora'] ,0,0,'C');
-                                        // Num. de serie
-                                    $this->RoundedRect(160, 44, 50, 6, 2, '12', 'DF');
-                                    $this->SetTextColor(255, 255, 255);
-                                    $this->SetXY(162, 44);
-
-                                    $this->Cell(46, 6, 'No. de Serie del Certificado', 0, 0, 'C');
-                                    $this->SetLineWidth('0.15');
-                                    $this->Line(160,56,210,56);
-
-                                    $this->SetXY(160, 50);
-                                    $this->SetTextColor(0, 0, 0);
-                                    $this->Cell(50, 6, $this->DatosFolios["sSerieCertificado"].$this->echo,0,0,'C');
-
-                                    $this->RoundedRect(160, 48, 50, 20, 2, '34', 'D');
-
-                                    // Num. aprobacion
-                                    $this->SetXY(163, 57);
-                                    if(!isset($colores)){ $colores = $this->colores; }
-
-                                    $this->SetTextColor($colores[0], $colores[1], $colores[2]);
-                                    $this->Cell(30, 6, 'No. DE APROBACIÓN:', 0, 0, 'R');
-                                    $this->SetXY(195, 57);
-                                    $this->SetTextColor(0, 0, 0);
-                                    $this->Cell(15, 6, $this->DatosFolios['sNumeroAprobacion'],0,0,'' );
-
-                                    // Anio. aprobacion
-                                    $this->SetXY(163, 61);
-                                    $this->SetTextColor($colores[0], $colores[1], $colores[2]);
-                                    $this->Cell(30, 6, 'AÑO DE APROBACIÓN:', 0, 0, 'R');
-                                    $this->SetXY(190, 61);
-                                    $this->SetTextColor(0, 0, 0);
-                                    $this->Cell(15, 6, $this->DatosFolios['iAnioAprobacion'],0,0,'R');
-
-        }
-
-        function print_HeaderCFDi(){
+            $this->SetXY(140, $yD+10);
+            $this->Cell(25,3,"Total",0,0,'R');
             
-            $pos = stripos($this->DatosFactElec["sXMLCFDi"],"noCertificadoSAT");
-            if ($pos!=false){
-                $str = substr($this->DatosFactElec["sXMLCFDi"],$pos+18);
-                $pos2=stripos($str," ");
-                $str= substr($str,0,$pos2-1);
-                $CertificadoSAT= $str;
-            }
-             $pos = stripos($this->DatosFactElec["sXMLCFDi"],"noCertificado");
-            if ($pos!=false){
-                $str = substr($this->DatosFactElec["sXMLCFDi"],$pos+15);
-                $pos2=stripos($str," ");
-                $str= substr($str,0,$pos2-1);
-                $CertificadoEmisor= $str;
-            }
-            $pos = stripos($this->DatosFactElec["sXMLCFDi"],"selloSAT");
-            if ($pos!=false){
-                $str = substr($this->DatosFactElec["sXMLCFDi"],$pos+10);
-                $pos2=stripos($str," ");
-                $str= substr($str,0,$pos2-1);
-                $SelloSAT= $str;
-            }
-            $pos = stripos($this->DatosFactElec["sXMLCFDi"],"selloCFD");
-            if ($pos!=false){
-                $str = substr($this->DatosFactElec["sXMLCFDi"],$pos+10);
-                $pos2=stripos($str," ");
-                $str= substr($str,0,$pos2-1);
-                $SelloCFD= $str;
-                $this->TamanoSelloCFD =  strlen($SelloCFD);
-            }
+            $yD += 28;
+            $this->SetTextColor(79,79,79);
+            $this->SetFont('Arial', '', 10);
+            $this->SetXY(10, $yD); 
+            $this->Cell(190,3,"Make all checks payable to ".$emisor_nombre,0,0,'C');
             
-            //Calcular la posicion del Folio Fiscal en caso de ser una Nota de Credito:
-            if($this->DatosFactura['tipo'] == "NOTA DE CREDITO"){
-                
-                $pos1 = strpos($this->DatosFactElec["sXMLCFDi"],"<cfdi:Complemento>");
-                $pos2 = strpos($this->DatosFactElec["sXMLCFDi"],"</cfdi:Complemento>");
-                $xmlT = substr($this->DatosFactElec["sXMLCFDi"],$pos1,$pos2); 
-
-                $pos  = strpos($xmlT,'UUID="');
-                if ($pos!=false){
-                    $str  = substr($xmlT,$pos+6);
-                    $pos2 = stripos($str," ");
-                    $str  = substr($str,0,$pos2-1);
-                    $UUID = $str;
-                } 
-    
-                
-            }else{
-                $pos = strrpos($this->DatosFactElec["sXMLCFDi"],"UUID=\"");
-                if ($pos!=false){
-                    $str  = substr($this->DatosFactElec["sXMLCFDi"],$pos+6);
-                    $pos2 = stripos($str," ");
-                    $str  = substr($str,0,$pos2-1);
-                    $UUID = $str;
-                } 
-            }
+            $yD += 5;
+            $this->pdf_font_define();
+            $this->SetFont('Arial', '', 10);
+            $this->SetXY(10, $yD); 
+            $this->Cell(190,3,"THANK YOU FOR YOUR BUSINESS!",0,0,'C');
             
-            $pos = stripos($this->DatosFactElec["sXMLCFDi"],"Fecha");
-            if ($pos!=false){
-                $str = substr($this->DatosFactElec["sXMLCFDi"],$pos+7);
-                $pos2=stripos($str," ");
-                $str= substr($str,0,$pos2-1);
-                $FT = $str;
-                $FechaTmp=explode($FT,"T");
-                $FechaT=explode($FechaTmp[0],"-");
-                $FechaExp = substr($FT,8,2)."-".substr($FT,5,2)."-".substr($FT,0,4)." ".substr($FT,11,8);
-            }
-
-            $pos = stripos($this->DatosFactElec["sXMLCFDi"],"FechaTimbrado");
-            if ($pos!=false){
-                $str = substr($this->DatosFactElec["sXMLCFDi"],$pos+15);
-                $pos2=stripos($str," ");
-                $str= substr($str,0,$pos2-1);
-                $FT = $str;
-                $FechaTmp=explode($FT,"T");
-                $FechaT=explode($FechaTmp[0],"-");
-                $FechaTimbrado = substr($FT,8,2)."-".substr($FT,5,2)."-".substr($FT,0,4)." ".substr($FT,11,8);
-                $FechaTimbrado1 = substr($FT,8,2)."-".substr($FT,5,2)."-".substr($FT,0,4)."T".substr($FT,11,8);
-            }
-
-            $this->Cadena_Original = "||1.1|$UUID|$FechaTimbrado1|EME000602QR9|$SelloCFD|$CertificadoSAT||";
-            $this->UUID[ $this->DatosFactura['iFolio'] ] = $UUID;
-            $this->SelloCFD  = $SelloCFD;
-            $this->SelloSAT = $SelloSAT;
-
-
-            $TIPOCF = $this->DatosFactura["tipo"];
-            $this->SetTextColor(205, 205, 205);
-            $this->SetXY(160, 6);
-            $this->SetFont('Arial', '', 7);
-            $this->MultiCell(50, 3, "Comprobante Fiscal Digital por Internet\n$TIPOCF", 0, 'R');
-            $hdet = 85;
-            $ytotal = 165;
-            // Num. de Aprobacion
-            $this->RoundedRect(160, 44, 50, 6, 2, '12', 'DF');
-            $this->SetTextColor(255, 255, 255);
-            $this->SetXY(162, 44);
-            $this->SetFont('Arial', '', 7);
-            $this->Cell(46, 6, 'No. Serie del Certificado Emisor', 0, 0, 'C');
-            $this->SetLineWidth('0.15');
-            $this->Line(160,56,210,56);
-            $this->RoundedRect(160, 56, 50, 6, 2, '', 'DF');
-            $this->SetXY(160, 50);
-            $this->SetTextColor(0, 0, 0);
-            $this->Cell(50, 6, $CertificadoEmisor,0,0,'C');
-
-            $this->RoundedRect(160, 48, 50, 20, 2, '34', 'D');
-
-            // Anio. aprobacion
-            $this->SetXY(162, 56);
-            $this->SetTextColor(255, 255, 255);
-            $this->Cell(46, 6, 'No. Serie del Certificado SAT', 0, 0, 'C');
-            $this->SetXY(162, 62);
-            $this->SetTextColor(0, 0, 0);
-            $this->Cell(46, 6, $CertificadoSAT,0,0,'C');
-
-            $this->RoundedRect(160, 29.5, 50,13, 2, '34', 'D');
-
-            //$this->RoundedRect(160, 33, 50,9, 2, '34', 'D');
-            $this->SetTextColor(0, 0, 0);
-            $this->SetFontSize(7);
-            $this->SetTextColor(0, 0, 0);
-            $this->SetXY(160, 30);
-            $this->Cell(50, 4, strtoupper($this->DatosExpedicion["ExpedidoEn"]), 0, 0, 'C');
-            $this->SetXY(160, 34);
-            $this->Cell(30, 3, "Fecha Emisión:" ,0,0,'L');
-            $this->SetXY(185, 34);
-            $this->Cell(46, 3, $FechaExp ,0,0,'L');
-            $this->SetXY(160, 38);
-            $this->Cell(30, 3, "Fecha Certificación:" ,0,0,'L');
-            $this->SetXY(185, 38);
-            $this->Cell(46, 3, $FechaTimbrado ,0,0,'L');
-
         }
 
-        function print_Totals(){
-            // GENERICO //
-            $x_cant     = $this->CantX;
-            $x_impu     = $this->ImpUX;
-            $x_iva      = $this->IVAX;
-            $x_imptot   = $this->ImpTotX;
-            $x_tot      = $this->TotX;
-            $x_totals   = $this->TotalsX;
-            $x_symbol   = $this->SymbolX;
-            $y          = $this->CurrentY;
-            $height     = $this->DetailHeight;
-            $TipoMoneda = $this->DatosFactura["Moneda"];
-            $MonedaDesc = $this->DescMoneda['sDescripcion'];
-            $TipoCambio = number_format(gpcround(($this->DatosFactura["sTipoCambio"]),2),2,'.','');
-            $iva_11     = $this->IVA11;
-            $iva_16     = $this->IVA16;
-            $iva_5      = $this->IVA5;
-            $iva_8      = $this->IVA8;
-            $iva_0      = $this->IVA0;
+        function pdf_detail(){
+         
+            $limit_page = $this->limit;
+            
+            $this->SetFont('Arial', '', 10);
+            $this->SetTextColor(0,0,0);
+            
+            if( $this->MostrarTotales == 0 ) {$limit_page += 35;}
 
-            #Recuadro de descripciones:
-            $this-> pdf_color_define();
-            $this->RoundedRect(6  ,$y, 204,$height, 2, '12', 'D');
-            $this->RoundedRect(6  ,$y, 204, 6, 2, '12', 'DF');
-            $this->RoundedRect(182,$y, 28, $height, 2, '12', 'D');
-
-            $this->SetTextColor(255, 255, 255);
-            $this->SetXY(6, $y);
-            $this->Cell(50, 6, 'DESCRIPCIÓN DEL SERVICIO', 0, 0, 'C');
-            $this->SetXY($x_cant, $y);
-            $this->Cell(10, 6, 'CANTIDAD', 0, 0, 'C');
-            $this->SetXY(140, $y);
-            $this->Cell(4, 6, 'U.M.', 0, 0, 'C');
-            $this->SetXY($x_impu, $y);
-            $this->Cell(30, 6, 'PRECIO U.', 0, 0, 'C');
-            $this->SetXY($x_iva, $y);
-            $this->Cell(18, 6, 'IVA', 0, 0, 'C');
-            $this->SetXY($x_imptot, $y);
-            $this->Cell(40, 6, 'IMPORTE', 0, 0, 'C');
-
-            if( $this->MostrarTotales == 1 ) {
-
-                #VARIABLES:
-                $y           = $this->SecY;
-                $Comentarios = trim($this->DatosFactura['sComentarios']);
-                $Plazo       = $this->DatosFactura['Plazo'];
-                $yTmp        = $y-18; // para los comentarios y tipo de cambio etc...
-
-                if($this->UUID[ $this->DatosFactura['iFolio']] == ""){
-                   $yTmp -= 10;
-                }
-
-                if(!isset($colores)){$colores = $this->colores;}
-                $this->SetTextColor($colores[0], $colores[1], $colores[2]);
-                $this->SetFont('Arial', '', 7);
-
-                #COMENTARIOS / TIPO DE CAMBIO / TOTAL EN LETRA:
-                if ($Plazo>0) { $MsgPlazo = "Esta factura deberá ser pagada en un plazo de $Plazo días"; $y-=3;}
-                if ($TipoCambio > 0  && $TipoMoneda !="MXP" && $TipoMoneda !="MXN" && $TipoMoneda !="XXX" && $this->ImprimeTC=='SI'){
-                    $ImpTipoCambio  = "Tipo de Cambio: \$ $TipoCambio";
-                    $ImpDescTCambio = "Moneda: $TipoMoneda - $MonedaDesc";
-
-                }
-                //imprime comentarios:
-                if (utf8_decode($Comentarios) AND $Comentarios != "NULL" AND $this->EsquemaFacturacion != 2) {
-
-                    $Comentarios = utf8_decode($Comentarios);
-                    if(strlen($Comentarios) > 345){
-                        $Comentarios =  substr($Comentarios,0,345);
-                    }
-                    $lCom = strlen($Comentarios);
-                    if($lCom > 150){$this->SetFont('Arial','',6.5);}
-
-                    $RengCom = ($lCom-($lCom % 75))/75;
-                    if (($lCom % 75) > 0 ){$RengCom++;}
-                    $CalReng = $RengCom * 3;
-                    $this->SetXY(12, $yTmp);
-                    $this->MultiCell(120, 3,$Comentarios, 0,'J');
-
-                    $lCom > 150 ? $yTmp += 9 : $yTmp += 6;
-                    $this->RengCom = $CalReng;
-                }
-                else {
-                    $yTmp += 8;
-                }
-                if (strlen(utf8_decode($ImpTipoCambio)) > 0) {
-
-                    $this->SetXY(12, $yTmp);
-                    $this->Cell(75, 3,"$ImpDescTCambio",0,0,'L');
-                    $this->Cell(45, 3,"$ImpTipoCambio" ,0,0,'R');
-                    $yTmp += 4;
-                }
-                if (strlen(utf8_decode($Plazo)) > 0) {
-                    $this->SetFont('Arial','B',8);
-                    $this->SetXY(12, $yTmp);
-                    $this->MultiCell(120, 3,"$MsgPlazo", 0,'L');
-                    $yTmp += 5;
-                }
-
-                $this->SetFillColor('239','239','239');//< --- Background importe con letra titulo.
-                $this->RoundedRect(6,$yTmp,125,5, 2, '23', 'F');
-                $this->SetFont('Arial', 'B', 8);
-                $this->SetXY(12, $yTmp);
-                $this->SetTextColor($colores[0], $colores[1], $colores[2]);
-                $this->Cell(40, 5, 'IMPORTE CON LETRA', 0, 0, 'L');
-                $yTmp += 5;
-                $this->SetXY(12, $yTmp);
-                $this->SetTextColor(0, 0, 0);
-                $this->SetFont('Arial', '', 7);
-                $importe_con_letra = getCantidadDineroEnLetra(number_format(gpcround($this->DatosFactura["rTotal"],$this->decimalesfijos),$this->decimalesfijos,'.',''), $TipoMoneda);
-                $this->MultiCell(100, 4, $importe_con_letra, 0, 'L');
-                
-                //Calculamos Y
-                if ($this->DatosFactura["rDescuento"] != 0){ $y += -13.5; }else { $y+=-4;}
-                if ($this->DatosFactura["rRetencionesIVA"] != 0){ $y += -4;}
-                if ($this->DatosFactura["rRetenciones"] != 0)   { $y += -4;}
-                if ($iva_11 == 0 && $iva_16 == 0 && $iva_5 == 0 && $iva_8 == 0) { $y -=  4;}
-                if ($iva_16<>0){ $y+= -4; }
-                if ($iva_11<>0){ $y+= -4; }
-                if ($iva_5 <>0){ $y+= -4; }
-                if ($iva_8 <>0){ $y+= -4; }
-                if ( $this->ISH <> 0 ) { $y+= -4; }
-                /*if(count($this->IEPS)>0){
-                    #$y += (count($this->IEPS)*-4.5);
-                    $y += -4.5;
-                }*/
-
-                $num_IEPS = 0;
-                foreach( $this->IEPS as $k => $v ) {
-                    if( $k != 0 ) {
-                        $num_IEPS++;
-                    }
-                }
-                if( $num_IEPS > 0 ) {
-
-                    $y += -4.5;
-                }
-
-                #SUBTOTAL:
-                $this->SetFont('Arial', '', 9);
-                $this->SetXY($x_tot, $y);
-                $this->SetTextColor($colores[0], $colores[1], $colores[2]);
-                $this->Cell(20, 6, "SUBTOTAL", 0, 0, 'R');
-                $this->SetXY($x_symbol,$y);
-                $this->Cell(2,6,"$",0,0,'L');
-                $this->SetXY($x_totals, $y);
-                $this->SetTextColor(0, 0, 0);
-                //$SubTotalBalin = round($this->DatosFactura["rSubtotal"],2,PHP_ROUND_HALF_UP);
-                //$SubTotalBalin = round($SubTotalBalin,2);
-                $this->Cell(20, 6,number_format(gpcround($this->DatosFactura["rSubtotal"],2),2,'.',','), 0, 0, 'R');
-
-                #DESCUENTO:
-                if ($this->DatosFactura["rDescuento"] <> 0 ) {
-                    $y += 5;
-                    $this->SetXY($x_tot, $y);
-                    $this->Cell(20, 6, number_format(gpcround($this->DatosFactura["rPDescuento"],$this->decimales),$this->decimales,'.','').' % DESCUENTO',0,0, 'R');
-                    $this->SetXY($x_symbol,$y);
-                    $this->Cell(2,6,"$",0,0,'L');
-                    $this->SetXY($x_totals, $y);
-                    $this->SetTextColor(255, 0, 0);
-                    $this->Cell(20, 6, number_format(gpcround($this->DatosFactura["rDescuento"],$this->decimalesfijos),$this->decimalesfijos,'.',','), 0,0, 'R');
-                    $y += 5;
-                    $this->SetTextColor(0, 0, 0);
-                    $this->SetXY($x_tot, $y);
-                    $this->Cell(20, 6, 'SUBTOTAL NETO',0,0, 'R');
-                    $SubtotalNeto = $this->DatosFactura["rSubtotal"] - $this->DatosFactura["rDescuento"];
-                    $this->SetXY($x_symbol,$y);
-                    $this->Cell(2,6,"$",0,0,'L');
-                    $this->SetXY($x_totals, $y);
-                    $this->Cell(20, 6, number_format(gpcround($SubtotalNeto,$this->decimalesfijos),$this->decimalesfijos,'.',','), 0,0, 'R');
-                }
-
-                #IVA - IEPS
-                #if(count($this->IEPS)>0){
-                if($num_IEPS>0){
-
-                    if( $num_IEPS == 1 ) {
-
-                        foreach($this->IEPS as $k=>$v){
-                            if($k != 0){
-                                $tasaIEPS = number_format($k,2,'.','');
-                                $importeIEPS = number_format($v,2,'.','');
-                                $y += 5;
-                                $this->SetXY($x_tot, $y);
-                                $this->SetTextColor(0,0,0);
-                                $this->Cell(20, 6, "IEPS", 0, 0, 'R');
-                                $this->SetXY(150, $y);
-                                $this->SetTextColor(0, 0, 0);
-                                $this->Cell(20, 6,"$tasaIEPS %", 0, 0, 'R');
-                                $this->SetXY($x_symbol,$y);
-                                $this->Cell(2,6,"$",0,0,'L');
-                                $this->SetXY($x_totals, $y);
-                                $this->SetTextColor(0, 0, 0);
-                                $this->Cell(20, 6, number_format(gpcround($importeIEPS,$this->decimalesfijos),$this->decimalesfijos,'.',','), 0, 0,'R');
-
-                            }
-                        }
-                    }
-                    else {
-
-                        $totalIEPS = 0;
-
-                        foreach($this->IEPS as $k=>$v){
-
-                            if($k != 0){
-                                $importeIEPS = number_format($v,2,'.','');
-                                $totalIEPS += $importeIEPS;
-                            }
-                        }
-
-                        $y += 5;
-                        $this->SetXY($x_tot, $y);
-                        $this->SetTextColor(0,0,0);
-                        $this->Cell(20, 6, "TASA MÚLTIPLE IEPS", 0, 0, 'R');
-                        /*$this->SetXY(140, $y);
-                        $this->SetTextColor(0, 0, 0);
-                        $this->Cell(20, 6,"TASA MÚLTIPLE", 1, 0, 'R');*/
-                        $this->SetXY($x_symbol,$y);
-                        $this->Cell(2,6,"$",0,0,'L');
-                        $this->SetXY($x_totals, $y);
-                        $this->SetTextColor(0, 0, 0);
-                        $this->Cell(20, 6, number_format(gpcround($totalIEPS,$this->decimalesfijos),$this->decimalesfijos,'.',','), 0, 0,'R');
-                    }
-
-                    /*foreach($this->IEPS as $k=>$v){
-                        if($k != 0){
-                            $tasaIEPS = number_format($k,2,'.','');
-                            $importeIEPS = number_format($v,2,'.','');
-                            $y += 5;
-                            $this->SetXY($x_tot, $y);
-                            $this->SetTextColor(0,0,0);
-                            $this->Cell(20, 6, "IEPS", 0, 0, 'R');
-                            $this->SetXY(150, $y);
-                            $this->SetTextColor(0, 0, 0);
-                            $this->Cell(20, 6,"$tasaIEPS %", 0, 0, 'R');
-                            $this->SetXY($x_symbol,$y);
-                            $this->Cell(2,6,"$",0,0,'L');
-                            $this->SetXY($x_totals, $y);
-                            $this->SetTextColor(0, 0, 0);
-                            $this->Cell(20, 6, number_format(gpcround($importeIEPS,$this->decimalesfijos),$this->decimalesfijos,'.',','), 0, 0,'R');
-
-                        }
-                    }*/
-                }
-                #IVAS
-                if ($iva_11 == 0 && $iva_16 == 0 && $iva_5==0 && $iva_0==0 && $iva_8==0){
-                    $y += 5;
-                    $this->SetXY($x_tot, $y);
-                    $this->SetTextColor(0,0,0);
-                    $this->Cell(20, 6, "I.V.A.", 0, 0, 'R');
-                    $this->SetXY(150, $y);
-                    $this->SetTextColor(0, 0, 0);
-                    $this->Cell(20, 6,'', 0, 0, 'R');
-                    $this->SetXY($x_symbol,$y);
-                    $this->Cell(2,6,"$",0,0,'L');
-                    $this->SetXY($x_totals, $y);
-                    $this->SetTextColor(0, 0, 0);
-                    $this->Cell(20, 6, 0.00, 0, 0,'R');
-                }
-                else{
-                    if($iva_11<>0){
-                        $y += 5;
-                        $this->SetXY($x_tot, $y);
-                        $this->SetTextColor(0,0,0);
-                        $this->Cell(20, 6, "I.V.A.", 0, 0, 'R');
-                        $this->SetXY(150, $y);
-                        $this->SetTextColor(0, 0, 0);
-                        $this->Cell(20, 6,'11 %', 0, 0, 'R');
-                        $this->SetXY($x_symbol,$y);
-                        $this->Cell(2,6,"$",0,0,'L');
-                        $this->SetXY($x_totals, $y);
-                        $this->SetTextColor(0, 0, 0);
-                        $this->Cell(20, 6, number_format(gpcround($iva_11,$this->decimalesfijos),$this->decimalesfijos,'.',','), 0, 0,'R');
-                    }
-                    if($iva_16<>0){
-                        $y += 5;
-                        $this->SetXY($x_tot, $y);
-                        $this->SetTextColor(0,0,0);
-                        $this->Cell(20, 6, "I.V.A.", 0, 0, 'R');
-                        $this->SetXY(150, $y);
-                        $this->SetTextColor(0, 0, 0);
-                        $this->Cell(20, 6,'16 %', 0, 0, 'R');
-                        $this->SetXY($x_symbol,$y);
-                        $this->Cell(2,6,"$",0,0,'L');
-                        $this->SetXY($x_totals, $y);
-                        $this->SetTextColor(0, 0, 0);
-                        $this->Cell(20, 6, number_format(gpcround($iva_16,$this->decimalesfijos),$this->decimalesfijos,'.',','), 0, 0,'R');
-                    }
-                    if($iva_5<>0){
-                        $y += 5;
-                        $this->SetXY($x_tot, $y);
-                        $this->SetTextColor(0,0,0);
-                        $this->Cell(20, 6, "I.V.A.", 0, 0, 'R');
-                        $this->SetXY(150, $y);
-                        $this->SetTextColor(0, 0, 0);
-                        $this->Cell(20, 6,'5 %', 0, 0, 'R');
-                        $this->SetXY($x_symbol,$y);
-                        $this->Cell(2,6,"$",0,0,'L');
-                        $this->SetXY($x_totals, $y);
-                        $this->SetTextColor(0, 0, 0);
-                        $this->Cell(20, 6, number_format(gpcround($iva_5,$this->decimalesfijos),$this->decimalesfijos,'.',','), 0, 0,'R');
-                    }
-                    if($iva_8<>0){
-                        $y += 5;
-                        $this->SetXY($x_tot, $y);
-                        $this->SetTextColor(0,0,0);
-                        $this->Cell(20, 6, "I.V.A.", 0, 0, 'R');
-                        $this->SetXY(150, $y);
-                        $this->SetTextColor(0, 0, 0);
-                        $this->Cell(20, 6,'8 %', 0, 0, 'R');
-                        $this->SetXY($x_symbol,$y);
-                        $this->Cell(2,6,"$",0,0,'L');
-                        $this->SetXY($x_totals, $y);
-                        $this->SetTextColor(0, 0, 0);
-                        $this->Cell(20, 6, number_format(gpcround($iva_8,$this->decimalesfijos),$this->decimalesfijos,'.',','), 0, 0,'R');
-                    }
-                    if($iva_0 > 0 && $iva_11 == 0 && $iva_16 == 0 && $iva_5 == 0 && $iva_8==0){
-                        $y += 5;
-                        $this->SetXY($x_tot, $y);
-                        $this->SetTextColor(0,0,0);
-                        $this->Cell(20, 6, "I.V.A.", 0, 0, 'R');
-                        $this->SetXY(150, $y);
-                        $this->SetTextColor(0, 0, 0);
-                        $this->Cell(20, 6,' 0%', 0, 0, 'R');
-                        $this->SetXY($x_symbol,$y);
-                        $this->Cell(2,6,"$",0,0,'L');
-                        $this->SetXY($x_totals, $y);
-                        $this->SetTextColor(0, 0, 0);
-                        $this->Cell(20, 6, 0.00, 0, 0,'R');
-                    }
-                }
-                
-                #Retenciones ISR
-                if ($this->DatosFactura["rRetenciones"]<>0){
-                    $y += 5;
-                    $this->SetXY($x_symbol,$y);
-                    $this->Cell(2,6,"$",0,0,'L');
-                    $this->SetXY($x_tot, $y);
-                    $this->SetTextColor(0, 0, 0);
-                    $this->Cell(20, 6, $this->DatosFactura["rPRetenciones"].' % RETENCION ISR', 0, 0, 'R');
-
-                    $this->SetXY($x_totals, $y);
-                    $this->SetTextColor(0, 0, 0);
-                    $this->Cell(20, 6, number_format(gpcround($this->DatosFactura["rRetenciones"],$this->decimalesfijos),$this->decimalesfijos,'.',','), 0, 0, 'R');
-                }
-
-                #Retenciones IVA
-                if ($this->DatosFactura["rRetencionesIVA"]<>0){
-                    $y += 5;
-                    $this->SetXY($x_symbol,$y);
-                    $this->Cell(2,6,"$",0,0,'L');
-                    $this->SetXY($x_tot, $y);
-                    $this->SetTextColor(0, 0, 0);
-                    if($this->Instancia == "bd_econta_tsieven"){
-                        $this->Cell(20, 6, $this->DatosFactura["rPRetencionesIVA"].' % RETENCION', 0, 0, 'R');
-                    } else {
-                        $this->Cell(20, 6, $this->DatosFactura["rPRetencionesIVA"].' % RETENCION I.V.A.', 0, 0, 'R');
-                    }
-                    $this->SetXY($x_totals, $y);
-                    $this->SetTextColor(0, 0, 0);
-                    $this->Cell(20, 6, number_format(gpcround($this->DatosFactura["rRetencionesIVA"],$this->decimalesfijos),$this->decimalesfijos,'.',','), 0, 0, 'R');
-                }
-
-                # ISH 
-                if( !empty( $this->ISH ) ) {
-                    $y += 5;
-                    $this->SetXY($x_symbol,$y);
-                    $this->Cell(2,6,"$",0,0,'L');
-                    $this->SetXY($x_tot, $y);
-                    $this->SetTextColor(0, 0, 0);
-                    $this->Cell(20, 6, $this->PISH.' % I.S.H.', 0, 0, 'R');
-
-                    $this->SetXY($x_totals, $y);
-                    $this->SetTextColor(0, 0, 0);
-                    $this->Cell(20, 6, number_format(gpcround($this->ISH,$this->decimalesfijos),$this->decimalesfijos,'.',','), 0, 0, 'R');
-                }
-                
-                #TOTAL
-                $y += 5;
-                $this->SetXY($x_tot, $y);
-                //$this->SetTextColor($colores[0], $colores[1], $colores[2]);
-                //$this->SetTextColor(19, 110, 170);
-                $this->Cell(20, 6, "TOTAL", 0, 0, 'R');
-                $this->SetXY($x_symbol,$y);
-                $this->Cell(2,6,"$",0,0,'L');
-                $this->SetXY($x_totals, $y);
-                
-                $this->Cell(20, 6, number_format(gpcround($this->DatosFactura["rTotal"],$this->decimalesfijos),$this->decimalesfijos,'.',','),0,0,'R');
-                
-                //FIN GENERICO/*/
-                $this->SetFont('Arial', '', 8);
-                $this->SetTextColor(0, 0, 0);
-            }
-        }
-
-        function Detail(){
-
-            switch($this->EsquemaFacturacion){
-                case 1:
-                        $limit_page = 190 - $this->RengCom;
-                        if ($this->DatosFactura["rDescuento"]<>0){ $limit_page += -15; } else { $limit_page+=-5;}
-                        if ($this->DatosFactura["rRetencionesIVA"]<>0){ $limit_page+= -5;}
-                        if ($this->DatosFactura["rRetenciones"]<>0){ $limit_page+= -5; }
-                        $this->limit = $limit_page;
-                        $this->print_DetailCFD_CBB();
-
-                        break;
-                case 2:
-                        $limit_page = 214;
-                        if ($this->DatosFactura["rDescuento"]<>0){ $limit_page += -10; } else { $limit_page+=-5;}
-                        if ($this->DatosFactura["rRetencionesIVA"]<>0){ $limit_page+= -5;}
-                        if ($this->DatosFactura["rRetenciones"]<>0){ $limit_page+= -5; }
-                        $this->limit = $limit_page;
-                        $this->print_DetailCFD_CBB();
-                        break;
-                case 3:
-                        $limit_page = 180 - $this->RengCom;
-                        if ($this->DatosFactura["rDescuento"]<>0){ $limit_page += -10; } else { $limit_page+=-5;}
-                        //if ($this->DatosFactura["rRetencionesIVA"]<>0){ $limit_page+= -5;}
-                        if ($this->DatosFactura["rRetenciones"]<>0){ $limit_page+= -5; }
-                        $this->limit = $limit_page;
-                        $this->print_DetailCFDi();
-                        break;
-            }
-
-        }
-
-        function print_DetailCFDi(){
-             $limit_page = $this->limit;
-
-             if( $this->MostrarTotales == 0 ) {
-                $limit_page += 35;
-             }
-
-             $this->DetailY = $this->CurrentY+8;
-             $y             = $this->DetailY;
-             $x_cant        = $this->CantX;
-             $x_impu        = $this->ImpUX;
-             $x_tot         = $this->TotX;
-             $x_totals      = $this->TotalsX;
-             $x_iva         = $this->IVAX;
-             #$desc_limit    = 58;
-             $total_detalle = count($this->DatosFacturaDetalle);
+            $this->DetailY = $this->CurrentY+2;
+            $y             = $this->DetailY;
+            $total_detalle = count($this->DatosFacturaDetalle);
 
             for($w=0; $w < $total_detalle; $w++) {
-                   $this->SetFontSize(8);
-                   $this->SetXY(6, $y);
-                   $this->MultiCell(8, 4, $w+1+$ww, 0, 'R');
-                   $y_pos = null;
-
-                   #$this->DatosFacturaDetalle[$w]["sDescripcion"] = $this->DatosFacturaDetalle[$w]["sDescripcion"] . ' 01234 56789 01234 56789 0123456789 012 3456789 012345 6789 01234567 9 0123456 789 0123 01234 56789 0123456789 012 3456789 012345 6789 01234567 9 0123456 789 0123';
-                   #$this->DatosFacturaDetalle[$w]["sComentarios"] = $this->DatosFacturaDetalle[$w]["sComentarios"] . ' 01234 56789 01234 56789 0123456789 012 3456789 012345 6789 01234567 9 0123456 789 0123 01234 56789 0123456789 012 3456789 012345 6789 01234567 9 0123456 789 0123';
-
-                   if( empty( $this->DatosFactura['sUsoCFDI'] ) ) {
-
-                       $desc_limit    = 58;
-
-                       $length = strlen($this->DatosFacturaDetalle[$w]["iProductoServicio"]) + strlen(utf8_decode($this->DatosFacturaDetalle[$w]["sDescripcion"]));
-                       $renglones = ($length-($length % $desc_limit))/$desc_limit;
-                       $reng_aux = $renglones;
-                       if (($length % $desc_limit) > 0 ){ $renglones++;}
-
-                       $this->SetXY(15, $y);
-                       $this->MultiCell(107,4, $this->DatosFacturaDetalle[$w]["iProductoServicio"].' - '.utf8_decode($this->DatosFacturaDetalle[$w]["sDescripcion"]), 0, 'L');
-
-                       #if ($renglones>1){ $y = $y + ($renglones*2.5); }
-
-                       $y_pos = $this->GetY();
-                   }
-                   else {
-
-                       $desc_limit    = 51;
-
-                       $length = strlen($this->DatosFacturaDetalle[$w]["iProductoServicio"]) + strlen(utf8_decode($this->DatosFacturaDetalle[$w]["sDescripcion"]));
-                       $renglones = ($length-($length % $desc_limit))/$desc_limit;
-                       $reng_aux = $renglones;
-                       if (($length % $desc_limit) > 0 ){ $renglones++;}
-
-                       $this->SetXY(15, $y);
-                       $this->MultiCell(87,4, $this->DatosFacturaDetalle[$w]["iProductoServicio"].' - '.utf8_decode($this->DatosFacturaDetalle[$w]["sDescripcion"]), 0, 'L');
-
-                       #if ($renglones>1){ $y = $y + ($renglones*2.5); }
-
-                       $y_pos = $this->GetY();
-
-                       $this->SetXY(102,$y);
-                       $this->SetFontSize(6);
-                       $this->Cell(13, 4, '(' . $this->DatosFacturaDetalle[$w]['sClavePSSAT'] . ')' , 0, 0, 'R');
-                       $this->SetFontSize(8);
-                   }
-
-                   $this->SetXY($x_cant, $y);
-                   $Cantidad = NUMBER_FORMAT($this->DatosFacturaDetalle[$w]["rCantidad"],4,'.',',');
-                   $this->Cell(10, 4, $Cantidad, 0, 0, 'R');
-                   $UMe = trim($this->DatosFacturaDetalle[$w]["UnidadMedida"]);
-                   $this->SetXY($x_cant+3, $y);
-                   $this->Cell(20, 4, $UMe, 0, 0, 'R');
-                   $this->SetXY(146, $y);
-                   $this->Cell(3, 4, "\$ ", 0, 0, 'L');
-                   $this->SetXY($x_impu, $y);
-                   $this->Cell(23, 4, NUMBER_FORMAT(gpcround($this->DatosFacturaDetalle[$w]["rPrecioUnitario"],$this->decimales),$this->decimales,'.',','), 0, 0, 'R');
-
-
-
-                   //Revisamos % de IVA:
-                   if($this->DatosFacturaDetalle[$w]["iPctIVA"] != -1){
-                      $this->SetXY($x_iva, $y);
-                      $this->Cell(13, 4, "%", 0, 0, 'R');
-                      $this->SetXY($x_iva, $y);
-                      $DetiPctIVA = NUMBER_FORMAT($this->DatosFacturaDetalle[$w]["iPctIVA"],0,'.',',');
-                   }else{
-                      $this->SetXY($x_iva, $y);
-                      $this->Cell(13, 4, "", 0, 0, 'R');
-                      $this->SetXY(($x_iva+3), $y);
-                      $DetiPctIVA = "Exento";
-                   }
-
-                   $this->Cell(10, 4,$DetiPctIVA, 0, 0, 'R');
-                   $this->SetXY(183, $y);
-                   $this->Cell(2, 4, "$", 0, 0, 'L');
-                   $this->SetXY(190, $y);
-                   $this->Cell(20, 4, number_format(gpcround($this->DatosFacturaDetalle[$w]["rPrecioExtendido"],$this->decimalesfijos),$this->decimalesfijos,'.',','), 0, 0, 'R');
-                   #$y = $y + 4;
-                   $y = $y_pos;
-                   $total_no_comprobados = $total_no_comprobados + $this->DatosFacturaDetalle[$w]["rPrecioExtendido"];
-                   $this->SetFontSize(7);
-                   $length_comentario = strlen(utf8_decode($this->DatosFacturaDetalle[$w]["sComentarios"]));
-
-                   if( !empty( $this->DatosFacturaDetalle[$w]['iPctIEPS'] ) ) {
-
-                       if( $length_comentario > 0 ) {
-                           $this->DatosFacturaDetalle[$w]["sComentarios"] .= ' (' . number_format( $this->DatosFacturaDetalle[$w]['iPctIEPS'], 2, '.', ',' ) . ' % IEPS - $ ' . number_format( $this->DatosFacturaDetalle[$w]['rIEPS'] , 2, '.', ',' ) . ')';
-                       }
-                       else {
-                           $this->DatosFacturaDetalle[$w]["sComentarios"] = '(' . number_format( $this->DatosFacturaDetalle[$w]['iPctIEPS'], 2, '.', ',' ) . ' % IEPS - $ ' . number_format( $this->DatosFacturaDetalle[$w]['rIEPS'] , 2, '.', ',' ) . ')';
-                       }
-
-                   }
-
-                   $length_comentario = strlen(utf8_decode($this->DatosFacturaDetalle[$w]["sComentarios"]));
-
-                   if ($length_comentario > 0 AND $this->DatosFacturaDetalle[$w]["sComentarios"] != "NULL") {
-                        $reng = ($length_comentario-($length_comentario % 50))/50;
-                        if (($length_comentario % 50) > 0 ){ $reng++;}
-
-                        if( empty( $this->DatosFactura['sUsoCFDI'] ) ) {
-                            $this->SetXY(30, $y);
-                            $this->MultiCell(91, 3, utf8_decode($this->DatosFacturaDetalle[$w]["sComentarios"]), 0, 'L');
-                        }
-                        else {
-                            $this->SetXY(25, $y);
-                            $this->MultiCell(81, 3, utf8_decode($this->DatosFacturaDetalle[$w]["sComentarios"]), 0, 'L');
-                        }
-
-                        #$this->SetXY(30, $y);
-                        #$this->MultiCell(91, 3, utf8_decode($this->DatosFacturaDetalle[$w]["sComentarios"]), 0, 'L');
-                        #$y = $y + ($reng*3);
-                        $y = $this->GetY();
-                   }
-                   $Aduana = $this->DatosFacturaDetalle[$w]['sAduanaSAT'];
-                   $Pedimento = $this->DatosFacturaDetalle[$w]['sPedimento'];
-                   $FechaPedimento = $this->DatosFacturaDetalle[$w]['FechaPedimento'];
-                   $str="";
-                   if ($Aduana!="" AND $Aduana != '0'){ $str = "Aduana: $Aduana";}
-                   if ($Pedimento!=""){ $str = "$str Pedimento: $Pedimento";}
-                   if ($FechaPedimento!="00-00-0000" AND $FechaPedimento!="") {$str = "$str Fecha: $FechaPedimento";}
-                   if (strlen($str)>0){$y+=1; $this->SetXY(30, $y); $this->Cell(91,3,$str,0,0,'L'); $y+=4; }
-
-                   $PctIVA =  $this->DatosFacturaDetalle[$w]["iPctIVA"];
-                   switch($PctIVA){
-                            case 16:    $iva_16 += $this->DatosFacturaDetalle[$w]["rIVA"]; break;
-                            case 11:    $iva_11 += $this->DatosFacturaDetalle[$w]["rIVA"]; break;
-                            case  0:    $iva_0 ++; break;
-                   }
-                   if( ($y + 5) >= $limit_page){
-
-                        if( $w != ( count($this->DatosFacturaDetalle) - 1 ) ) {
-
-                            $this->print_FE_Elements();
-                            $this->print_Totals();
-
-                            $this->AddPage();
-                            $this->Customized_Header($bd_empresa_host);
-
-                            $y = $this->DetailY;
-                        }
-
-                        /*if( $this->MostrarTotales == 1 ) { // Se muestra el total en todas las p?ginas.
-
-                            $this->print_FE_Elements();
-                            $this->print_Totals();
-
-                            // P?gina nueva.
-                            $this->AddPage();
-                            $this->Customized_Header($bd_empresa_host);
-
-                            $y = $this->DetailY;
-                        }
-                        else { # Se muestra el total en la ?ltima p?gina.
-
-                            // Averiguar si hay espacio en la ?ltima p?gina.
-                            $iva_11 = $this->IVA11;
-                            $iva_16 = $this->IVA16;
-                            $iva_5 = $this->IVA5;
-
-                            if ($this->DatosFactura["rDescuento"]<>0){ $ye += -15; } else { $ye +=- 5; }
-                            if ($this->DatosFactura["rRetencionesIVA"]<>0){ $ye += -5; }
-                            if ($this->DatosFactura["rRetenciones"]<>0){ $ye += -5; }
-                            if ($iva_11 == 0 AND $iva_16 == 0 AND $iva_5==0){ $ye -= 5; }
-                            if ($iva_16<>0){ $ye += -5; }
-                            if ($iva_11<>0){ $ye += -5; }
-                            if ($iva_5<>0){ $ye += -5; }
-                            if(count($this->IEPS)>0){
-                                $ye += count($this->IEPS) * -5;
+                
+                $pCantidad = $this->DatosFacturaDetalle[$w]['iCantidad'];
+                $pDescrip  = $this->DatosFacturaDetalle[$w]['sClave']." - ".$this->DatosFacturaDetalle[$w]['sDescripcion'];
+                $pUnitPrice= number_format($this->DatosFacturaDetalle[$w]["iPrecioUnitario"],$this->decimales,'.',',');
+                $pTotPrice = number_format(($pUnitPrice*$pCantidad),$this->decimales,'.',',');
+                $pTax      = number_format($this->DatosFacturaDetalle[$w]["iImpuesto"],$this->decimales,'.',',');
+                
+                if($this->DatosFacturaDetalle[$w]['iMostrarEndorsements'] == 1 && $this->DatosFacturaDetalle[$w]['iEndorsementsApply'] == 1){
+                    $query = "SELECT A.iConsecutivo,A.iConsecutivoTipoEndoso,DATE_FORMAT( A.dFechaAplicacion, '%m/%d/%Y' ) AS dFechaAplicacion,C.sDescripcion,A.eStatus,eAccion, A.sVINUnidad AS sVIN,A.sNombreOperador AS sNombre, A.iEndosoMultiple ".
+                             "FROM       cb_endoso                 AS A ".
+                             "INNER JOIN cb_invoice_detalle_endoso AS B ON B.iConsecutivoEndoso = A.iConsecutivo ".
+                             "LEFT  JOIN ct_tipo_endoso            AS C ON A.iConsecutivoTipoEndoso = C.iConsecutivo ".
+                             "WHERE B.iConsecutivoDetalle='".$this->DatosFacturaDetalle[$w]['iConsecutivoDetalle']."' AND A.eStatus != 'E' AND A.eStatus != 'S' AND A.iDeleted='0' ".
+                             "ORDER BY LEFT(A.dFechaAplicacion,10) DESC";
+                    $result = $this->conexion->query($query);
+                    $rows   = $result->num_rows;   
+                    
+                    if($rows > 0){
+                        while($items = $result->fetch_assoc()){ 
+                            
+                            if($items['iConsecutivoTipoEndoso'] == '1'){
+                                 $tipo = "VEHICLE";
+                                 #CONSULTAR DETALLE DEL ENDOSO:
+                                 $query = "SELECT A.sVIN, (CASE 
+                                            WHEN A.eAccion = 'ADDSWAP'    THEN 'ADD SWAP'
+                                            WHEN A.eAccion = 'DELETESWAP' THEN 'DELETE SWAP'
+                                            WHEN A.eAccion = 'CHANGEPD'   THEN 'CHANGE PD'
+                                            ELSE A.eAccion
+                                            END) AS eAccion FROM cb_endoso_unidad AS A WHERE A.iConsecutivoEndoso = '".$items['iConsecutivo']."' ORDER BY sVIN ASC";
+                                 $r     = $this->conexion->query($query);
+                                 
+                                 while($item = $r->fetch_assoc()){
+                                    $endosos == "" ? $endosos .= $item['eAccion']." ".$tipo." ".$item['sVIN'] : $endosos .= "\n".$item['eAccion']." ".$tipo." ".$item['sVIN']; 
+                                 }
+                                    
                             }
-
-                            $ye = abs($ye);
-
-                            if( ( $y + $ye ) >=  ) {
-
+                            else{
+                                 $tipo = "DRIVER";
+                                 #CONSULTAR DETALLE DEL ENDOSO:
+                                 $query = "SELECT A.sNombre, (CASE 
+                                            WHEN A.eAccion = 'ADDSWAP'    THEN 'ADD SWAP'
+                                            WHEN A.eAccion = 'DELETESWAP' THEN 'DELETE SWAP'
+                                            ELSE A.eAccion
+                                            END) AS eAccion FROM cb_endoso_operador AS A WHERE A.iConsecutivoEndoso = '".$items['iConsecutivo']."' ORDER BY sNombre ASC";
+                                 $r     = $this->conexion->query($query);
+                                 
+                                 while($item = $r->fetch_assoc()){
+                                    $endosos == "" ?  $endosos .= $item['eAccion']." ".$tipo." ".$item['sNombre'] : $endosos .= "\n".$item['eAccion']." ".$tipo." ".$item['sNombre'];
+                                 }
                             }
-                            else {
+                            
+                            
+                        }
+                    } 
+                }
+                else{$endosos = "";}
+                  
+                $this->SetFontSize(8);
+                $this->SetXY(10, $y);
+                $this->Cell(25, 6, $pCantidad, 0, 0, 'C');
+                $this->SetXY(35, $y);
+                $this->MultiCell(105, 6, $pDescrip, 0, 'J',false);
+                $this->SetXY(140, $y);
+                $this->Cell(30,6,"\$ ".$pUnitPrice,0,0,'R');
+                $this->SetXY(170, $y);
+                $this->Cell(30,6,"\$ ".$pTotPrice,0,0,'R');
+                
+                $this->SetFontSize(6);
+                $this->SetXY(35, $y+4);
+                $this->MultiCell(105,4, $endosos, 0, 'J',false);
+                
+                $this->TAX += $pTax;
+                if($endosos != ""){$y += 4;}
+                
+                $y += 6;
+            } 
 
-                            }
-
-                            $this->print_FE_Elements();
-                            $this->print_Totals();
-                            $this->AddPage();
-                            $this->Customized_Header($bd_empresa_host);
-
-                            $y = $this->DetailY;
-                        }*/
-                   }
-            }
-
-            //VERIFICAMOS SI EXISTEN PRODUCTOS CON IVA%0:
-            if($iva_0 > 0){$this->IVA0 = $iva_0;}
+        
             // Ya termin? de imprimir items.
             $w = 0;
 
             // Determinar si hay espacio para los totales en la ?ltima p?gina.
-            if( $this->MostrarTotales == 0 ) {
+            /*if( $this->MostrarTotales == 0 ) {
 
                 // Averiguar si hay espacio en la ?ltima p?gina.
                 $iva_11      = $this->IVA11;
@@ -1412,11 +596,7 @@
                 if ($iva_11<>0){ $ye += -5; }
                 if ($iva_5<>0) { $ye += -5; }
                 if ($iva_0<>0) { $ye += -5; }
-                /*if(count($this->IEPS)>0){
-                    #$ye += (count($this->IEPS)*-5);
-                    $ye += -5;
-                }*/
-
+                
                 $num_IEPS = 0;
                 foreach( $this->IEPS as $k => $v ) {
                     if( $k != 0 ) {
@@ -1443,248 +623,52 @@
             else {
                 $this->print_Totals();
                 $this->print_FE_Elements();
-            }
+            }  */
+        }
+        
+        function pdf_totals(){
+            
+            $y = 226.5;
+            $this->SetTextColor(0,0,0);
+            $this->SetXY(170, $y);
+            $this->Cell(30,3, "\$ ".number_format($this->DatosFactura['dSubtotal'],$this->decimales,'.',','),0,0,'R');
+            
+            $this->SetXY(170, $y+5);
+            $this->Cell(30,3, "\$ ".number_format($this->DatosFactura['dTax'],$this->decimales,'.',','),0,0,'R');
+            
+            $this->SetFont('Arial', 'B', 9);
+            $this->SetXY(170, $y+10);
+            $this->Cell(30,3, "\$ ".number_format($this->DatosFactura['dTotal'],$this->decimales,'.',','),0,0,'R');
+        
         }
 
-        function print_FE_Elements(){
-               switch($this->EsquemaFacturacion){
-                            case 1:
-                                    $this->FE_Elements_CFD();
-                                    break;
-                            case 2:
-                                    $this->FE_Elements_CBB();
-                                    break;
-                            case 3:
-                                    $this->FE_Elements_CFDi();
-                                    break;
-                }
-
-        }
-
-        function FE_Elements_CFDi(){
-
-                #INFO DEL CFDI:
-                $yy=215;
-                $this->pdf_color_define();
-                $this->SetFont($this->font, 'B', 6.5);
-                $this->RoundedRect(6,$yy,165,5, 2, '12','DF');
-                $this->SetTextColor(255, 255, 255);
-                $this->SetXY(6,$yy);
-                $titulo = 'ESTE DOCUMENTO ES UNA REPRESENTACIÓN IMPRESA DE UN CFDI';
-                $this->Cell(165,5,strtoupper($titulo), 0, 0, 'C');
-                $this->RoundedRect(6,($yy+5),165,15, 2, '34','D');
-                //lineas grises:
-                $this->SetTextColor(0, 0, 0);
-                $this->SetFillColor('201','201','201');
-                $this->SetDrawColor('201','201','201');
-                $this->Line(82.5,($yy+15),82.5,($yy+5.5));
-                $this->Line(6,($yy+15),171,($yy+15));
-
-                $this->SetXY(65,($yy+15));
-                $this->SetFont($this->font, '', 6.5);
-                $this->Cell(15,6,'Emitido desde:',0,0, 'L');
-                #logo econta - proveedor:
-                $logo  = "images/img-home/img-logofoot.png";
-                $x = 83; $w = 15;
-                if(!empty($logo)){$this->Image($logo,$x,($yy+15.5),$w);}
-
-                #Datos dentro de la info del CFDi:
-                $MetodoPago = $this->MetodoPago;
-                $RegimenFis = $this->Regimen;
-                $FolioFis   = $this->UUID[ $this->DatosFactura['iFolio'] ];;
-                $FormaPago  = $this->FormaPago;
-                $UsoCFDi    = $this->UsoCfdi;
-                if($this->CuentaBancaria != ""){$CuentaBancaria = $this->CuentaBancaria;}
-
-                $yTmp = $yy+5.5;
-                $this->SetFont($this->font, '', 6.5);
-                $this->SetXY(6, $yTmp);
-                $this->Cell (20, 3, 'Folio Fiscal',0,0, 'L');
-                $this->SetXY(25, $yTmp);
-                $this->Cell (2, 3, ':',0,0, 'L');
-                $this->SetXY(27, $yTmp);
-                $this->Cell (55, 3,$FolioFis,0,0, 'L');
-
-                $this->SetXY(83, $yTmp);
-                $this->Cell (20, 3, 'Forma de Pago',0,0, 'L');
-                $this->SetXY(104, $yTmp);
-                $this->Cell (2, 3, ':',0,0, 'L');
-                $this->SetXY(106, $yTmp);
-                $this->Cell (65, 3,substr($FormaPago, 0, 52),0,0, 'L');
-
-                $yTmp += 3;
-                $this->SetXY(6, $yTmp);
-                $this->Cell (20, 3, 'Régimen Fiscal',0,0, 'L');
-                $this->SetXY(25, $yTmp);
-                $this->Cell (2, 3, ':',0,0, 'L');
-                $this->SetXY(27, $yTmp);
-                $this->Cell (55, 3,substr($RegimenFis, 0, 46),0,0, 'L');
-
-                $yTmp += 3;
-                $this->SetXY(6, $yTmp);
-                $this->Cell (20, 3, 'Método de Pago',0,0, 'L');
-                $this->SetXY(25, $yTmp);
-                $this->Cell (2, 3, ':',0,0, 'L');
-                $this->SetXY(27, $yTmp);
-                $this->Cell (55, 3,substr($MetodoPago, 0, 46),0,0, 'L');
-
-                if($CuentaBancaria != ""){
-                   $this->SetXY(83, $yTmp-3);
-                   $this->Cell (20, 3, 'Cuenta Bancaria',0,0, 'L');
-                   $this->SetXY(104, $yTmp-3);
-                   $this->Cell (2, 3, ':',0,0, 'L');
-                   $this->SetXY(106, $yTmp-3);
-                   $this->Cell (65, 3,$CuentaBancaria,0,0, 'L');
-                }else{
-                   $yTmp -= 3;
-                }
-
-                $this->SetXY(83, $yTmp);
-                $this->Cell (20, 3, 'Uso del CFDi',0,0, 'L');
-                $this->SetXY(104, $yTmp);
-                $this->Cell (2, 3, ':',0,0, 'L');
-                $this->SetXY(106, $yTmp);
-                $this->Cell (65, 3,substr($UsoCFDi, 0, 52),0,0, 'L');
-
-                #CADENA ORIGINAL:
-               /*$this->SetFillColor(90,90,90);
-                $this->SetDrawColor(90,90,90);*/
-                $this->pdf_color_define();
-
-                $yy+=21;
-                $this->SetTextColor(255, 255, 255);
-                $this->SetFont($this->font, 'B',6);
-                $this->RoundedRect(6,$yy,165,3, 2, '12','DF');
-                $this->RoundedRect(6,$yy,165,13, 2, '1234', 'D');
-                $this->SetXY(6, $yy);
-                $this->Cell(165,3,strtoupper(utf8_decode('Cadena Original')), 0, 0, 'C');
-
-                $yy+=3.5;
-                $this->SetXY(6, $yy);
-                $this->SetTextColor(0, 0, 0);
-                if(strlen($this->Cadena_Original)> 200){$tamano_letraCO = 5; $yyy=-2;}
-                else{$tamano_letraCO = 6;$yyy=0;}
-                $this->SetFont('Arial', '', $tamano_letraCO);
-                $this->MultiCell(164,3, $this->Cadena_Original,0,'L',0);
-
-                #Codigo QR:
-                $this->SetFont('Arial', '', 8);
-                $EmpresaRFC = $this->ConfiguracionSeleccionado["sRFC"];
-                $RFC_C      = $this->DatosFactura['sRFCCliente'];
-                $UUID       = $this->UUID[ $this->DatosFactura['iFolio'] ];
-                $TotalCFD   = number_format($this->DatosFactura['rTotal'],2,'.','');
-                $SelloE_qr  = substr($this->SelloCFD, -8);
-
-                strlen($RFC_C) == 9 ? $RFC_C = "XEXX010101000" : "";
-
-                if($UUID != ""){
-
-                    if($_SERVER["HTTP_HOST"] == 'localhost:8080'){$url = $_SERVER['DOCUMENT_ROOT'].'\images\\';}
-                    else{$url = "/tmp/";}
-                    $CBB_Data="https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?&id=$UUID&re=$EmpresaRFC&rr=$RFC_C&tt=$TotalCFD&fe=$SelloE_qr";
-                    QRcode::png($CBB_Data,$url."$UUID.png",'H',4,2);
-                    $this->Image($url."$UUID.png",176.5,$yy-25,35,35,'PNG');
-                    unlink($url."$UUID.png"); // Eliminar temporal del QR.
-                }
-                else{
-                    $QRTest  = "images/img_QR_vista_previa.png";
-                    $x = 176.5; $w = 35;
-                    if(!empty($QRTest)){$this->Image($QRTest,$x,($yy-25),$w,35,'PNG');}
-                }
-
-                #Sello Digital del Emisor
-                $yy+=10.5;
-                $this->RoundedRect(6,$yy,205,3,  2, '12','DF');
-                $this->RoundedRect(6,$yy,205,11, 2,'1234','D');
-                $this->SetFont($this->font, 'B', 6);
-                $this->SetTextColor(255, 255, 255);
-                $this->SetXY(6, $yy);
-                $this->Cell(205, 3, 'SELLO DIGITAL DEL EMISOR', 0,0, 'C');
-
-                $yy+=3.5;
-                $this->SetTextColor(0, 0, 0);
-                if(strlen($this->SelloCFD)> 200){$tamano_letra_Sello_CO = 5; $yyy=0;}else{$tamano_letra_Sello_CO = 6;$yyy=0;}
-                $this->SetXY(6, $yy+$yyy);
-                $this->SetFont('Arial', '',$tamano_letra_Sello_CO);
-                $this->MultiCell(205,3,$this->SelloCFD,0,'L',0);
-
-                #Sello Digital SAT
-                $yy+=8.5;
-                $this->RoundedRect(6,$yy,205, 3, 2, '12','DF');
-                $this->RoundedRect(6,$yy,205,11, 2, '1234','D');
-                $this->SetFont($this->font, 'B', 6);
-                $this->SetTextColor(255, 255, 255);
-                $this->SetXY(6, $yy);
-                $this->Cell(205,3, 'SELLO DIGITAL DEL SAT', 0,0, 'C');
-
-                $yy+=3.5;
-                $this->SetTextColor(0, 0, 0);
-                if(strlen($this->SelloSAT) > 200){$this->SetFont('Arial', '', 5);}else {$this->SetFont('Arial', '', 6);}
-                $this->SetXY(6, $yy);
-                $this->MultiCell(205, 3, $this->SelloSAT,0,'L',0);
-                $yy+=4;
-
-                /*$yy+=9;
-                $this->SetXY(6, $yy);
-                $this->SetTextColor($colores[0], $colores[1], $colores[2]);
-                $this->SetFont('Arial', 'B', 8);
-                $this->Cell(40, 5, 'FOLIO FISCAL', 0, 0, 'J');
-                $yy+=5;//207
-                $this->RoundedRect(6, $yy, 60, 11, 2, '1234', 'D');
-                $this->RoundedRect(69, $yy, 140, 11, 2, '1234', 'D');
-                $yy+=1;//208
-                $this->SetXY(6, $yy);
-                $this->SetTextColor(0, 0, 0);
-                $this->SetFont('Arial', 'B', 7);
-                $this->MultiCell(60, 3,"\n". $UUID,0,'L',0);
-                $this->SetFont('Arial', '', 8);
-                $this->SetXY(69, $yy);
-                $this->MultiCell(120, 3.25, $Cta_Regimen,0,'L',0);
-                //CBB
-                $this->SetFont('Arial', 'B', 9);
-                if ($this->DatosFactura["tipoCF"]=="CREDITO"){$Devolucion=" DEVOLUCION";}else{$Devolucion = "";}
-                //$mensaje = "EFECTOS FISCALES AL PAGO\nPAGO EN UNA SOLA EXHIBICI?N$Devolucion";
-                //$mensaje2 = "ESTE DOCUMENTO ES UNA REPRESENTACI?N IMPRESA DE UN CFDI";
-
-                $yy+=11;
-                $this->SetFont('Arial', '', 5);
-                $this->SetXY(6, $yy);
-                $this->MultiCell(175, 2, $mensaje, 0, 'J', 0);
-
-                //$yy+=10;
-                $this->SetFont('Arial', '', 7);
-                $this->SetXY(120, $yy+1);
-                $this->Cell(60, 2, $mensaje2, 0,0, 'L', 0);*/
-
-        }
-
-        function Footer()   {
+        function Footer(){
 
                 //Position at 1.5 cm from bottom
                 $this->SetY(-7);
                 $this->SetFont('Arial','',6);
                 $this->SetTextColor(90, 90, 90);
                 $page         = $this->PageNo();
-                $this->UsoCfdi != "" ? $version = '3.3' : $version = '3.2';
                 $totalpaginas = '{nb}';
 
-                $this->Cell(50,10,"Versión del comprobante: ".$version,0,0,'L');
-                $this->Cell(0,10,"Página $page de $totalpaginas",0,0,'R');
+                $this->Cell(50,10,"www.solo-trucking.com ",0,0,'L');
+                $this->Cell(0,10,"Page $page of $totalpaginas",0,0,'R');
 
                 //Verificar si es Vista previa (aun no esta timbrada la nomina) Tiene folio vacio;
-                if($this->FolioImpreso == "" && $this->DatosFactura['bEstatus'] == 0){
+                if($this->DatosFactura['eStatus'] == 'EDITABLE'){
                      //Put the watermark
                      $this->SetFont('Arial','B',50);
                      $this->SetAlpha(0.6);
                      $this->SetTextColor(212,212,212);
-                     $txt = utf8_decode('V i s t a  P r e v i a  F a c t u r a');
+                     $txt = utf8_decode(' I n v o i c e   P r e v i e w ');
                      $this->RotatedText(20,230,$txt,48);
-                }else if($this->DatosFactura['bEstatus'] == 3){
+                }
+                else if($this->DatosFactura['eStatus'] == 'CANCELED'){
                      //Put the watermark
                      $this->SetFont('Arial','B',55);
                      $this->SetAlpha(0.6);
                      $this->SetTextColor(223,23,23);
-                     $txt = utf8_decode(' F a c t u r a   C a n c e l a d a ');
+                     $txt = utf8_decode(' C a n c e l e d  B i l l ');
                      $this->RotatedText(20,230,$txt,48);
                 }
         }
@@ -2000,14 +984,21 @@
         $pdf = new PDF('P', 'mm', 'Letter');
         $pdf->SetAutoPageBreak(FALSE);
         $pdf->AliasNbPages(); 
-        
-        $ifolio = $F[$i]["iFolio"];
         $pdf->AddPage();
         $pdf->SetLineWidth(0.2);
-        $pdf->init($folio, $invoice, $compania, $nombre_pdf, $ds);
+        $pdf->init($folio, $invoice, $compania, $conexion, $ds);
         $pdf->pdf_header();
-        //$pdf->Detail(); 
+        $pdf->pdf_detail(); 
+        $pdf->pdf_totals();
+        $nombre_archivo_pdf = $nombre_pdf.".pdf";
         
+        if($envio_correo == 1){
+            $pdf->Output("tmp/".$nombre_archivo_pdf,"F");
+            $pdfnew = "tmp/".$nombre_archivo_pdf;
+            return $pdfnew;
+        
+        }
+        else{$pdf->Output($nombre_archivo_pdf,'I');} 
     }
     else{
         echo '<script language="javascript">alert(\''.$mensaje.'\')</script>';

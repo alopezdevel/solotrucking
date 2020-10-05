@@ -371,8 +371,8 @@ div.btn-icon span{font-weight: bold;font-size: 13px;}
 .pdf:hover i{color:#de3c3c!important;} 
 .pdf:hover {background: #fff4f4!important;border: 1px solid #991515!important;} 
 /*--SEND EMAIL--*/
-.send-email:hover  i, .btn-green:hover  i{color:#52bc12!important;}
-.send-email:hover, .btn-green:hover  {background: #e9ffdb!important;border: 1px solid #56cf0c!important;}
+.send-email:hover  i, .btn-green:hover  i, .btn-green.active i ,.send-email.active  i{color:#52bc12!important;}
+.send-email:hover, .btn-green:hover, .btn-green.active, .send-email.active  {background: #e9ffdb!important;border: 1px solid #56cf0c!important;}
 /*--BUY--*/
 .buy:hover, .buy:hover i{color:#52bc12!important;}
 .buy:hover  {background: #e9ffdb!important;border: 1px solid #56cf0c!important;}
@@ -550,7 +550,7 @@ input.fecha{max-width: 96%;margin-right: 5px!important;}
 .popup-datagrid .grid-head2 div.btn-icon{
     width: auto;
     float: none;
-    padding: 5px 8px;
+    padding: 2px 6px 4px;
     display: inline-block;
     background: #064f8e;
     border: 1px solid #1265a5;

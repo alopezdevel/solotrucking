@@ -205,6 +205,13 @@
          $validaemail  = preg_match($emailRegex,trim($email)); 
          return $validaemail;
     }
+    function clean_string($string ){
+     $string = htmlentities($string);
+     $string = preg_replace("/\"\&(.)[^;]*;'/", '\\1', $string);
+     $string = str_replace("'","",$string);
+     $string = str_replace("\"","",$string);
+     return $string;
+    }
     
     /*----- POLIZAS ---*/
     function get_policy_type($iTipo){
@@ -236,5 +243,14 @@
 
         if($diffCeil >= $diffFloor) return $floor;
         else return $ceil;
+    }
+    
+    function valid_user($user){
+        $valid = true;
+        if($user == 'test@domain.com'){
+            $valid = false;
+        }
+        
+        return $valid;
     }
 ?>

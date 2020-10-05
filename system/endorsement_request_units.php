@@ -39,7 +39,7 @@
                 modal: true,
                 autoOpen: false,
                 width : 500,
-                height : 350,
+                height : 450,
                 resizable : false,
                 buttons : {
                     'SAVE DATA' : function() {
@@ -165,7 +165,7 @@
                     dateFormat : 'mm/dd/yy',
                     buttonImageOnly: true
                 });
-                $(".fecha,.flt_fecha").mask("99/99/9999");
+                $(".fecha,.flt_fecha, .flt_date").mask("99/99/9999");
                 //Cargar Lista de companias:
                 $.ajax({             
                     type:"POST", 
@@ -481,7 +481,7 @@
                             $("#files_datagrid tfoot .pagina_actual").val(data.pagina);
                             fn_endorsement.files.pagina_actual = data.pagina;
                             fn_endorsement.files.delete_file();
-                            
+                            fn_endorsement.files.edit();
                             //Archivos:
                             /*if(window.File && window.FileList && window.FileReader) {
                                   fn_solotrucking.files.form      = "#dialog_upload_files";
@@ -545,24 +545,45 @@
                     fn_endorsement.files.fillgrid();
                     return false;
                 }, 
-               add : function(){
-                   $("#dialog_upload_files input[name=iConsecutivoEndoso]").val(fn_endorsement.files.iConsecutivoEndoso);
+               add : function(form){
+                   $("#dialog_upload_files input[type=hidden]").val('');
+                   $("#dialog_upload_files input[name=iConsecutivoEndoso]").val(fn_endorsement.files.iConsecutivoEndoso); 
                    $("#dialog_upload_files .file-message").html("");
                    $("#dialog_upload_files #fileselect").val(null);
                    $("#dialog_upload_files #fileselect").removeClass("fileupload");
                    fn_endorsement.files.active_file_form('#dialog_upload_files','fileselect');
+                   
+                   $("#dialog_upload_files .field-sent-to-brokers select[name=iEnviarArchivoEmail]").val(0);
+                   /*if(form == 'form_change_estatus' && $('#form_change_estatus select[name=eStatusEndoso]').val() != 'SB'){
+                      $('#dialog_upload_files .field-sent-to-brokers').hide();    
+                   }
+                   else{
+                      $('#dialog_upload_files .field-sent-to-brokers').show();
+                   } */
+                   
+                   fn_endorsement.files.valid_file();
                    $('#dialog_upload_files').dialog("open"); 
                },
                save : function(){
-                   var valid   = true;
-                   var mensaje = "";
+                  var valid   = true;
+                  var mensaje = "";
+                  
+                  $("#dialog_upload_files input, #dialog_upload_files select" ).removeClass('error');
                       
                   //Validar campo para archivo:
-                   if($("#dialog_upload_files #fileselect").val() == ""){
+                  if($("#dialog_upload_files #fileselect").val() == "" &&  $("#dialog_upload_files input[name=iConsecutivo]").val() == ''){
                       mensaje += '<li>No file has been loaded.</li>';
                       valid    = false;
                       $("#dialog_upload_files #fileselect").addClass('error'); 
-                   }
+                  }
+                  
+                  //Valida si es endoso, registrar poliza a la que pertenece:
+                  var tipo = $("#dialog_upload_files select[name=eArchivo]").val();
+                  if(tipo == 'ENDORSEMENT' && $("#dialog_upload_files select[name=iConsecutivoPoliza").val() == ''){
+                      valid = false;
+                      $("#dialog_upload_files select[name=iConsecutivoPoliza").addClass('error');
+                      mensaje += '<li>You must select a policy to upload endorsement file.</li>';
+                  }
                       
                   if(valid){
                       var form       = "#dialog_upload_files form";
@@ -600,6 +621,70 @@
                       fn_solotrucking.files.fileinput = fileinput;
                       fn_solotrucking.files.add(); 
                   }
+               },
+               valid_file : function(poliza){
+                   
+                var tipo = $("#dialog_upload_files select[name=eArchivo]").val();
+            
+                if(tipo == 'ENDORSEMENT'){
+                    //$('#dialog_upload_files .field-sent-to-brokers').hide();
+                    $("#dialog_upload_files .field-select-policy").show(); 
+                    fn_endorsement.files.get_policies_select(); 
+                    if(poliza != ""){$("#dialog_upload_files select[name=iConsecutivoPoliza").val(poliza);} 
+                } 
+                else{
+                    $("#dialog_upload_files .field-select-policy").hide();
+                    $("#dialog_upload_files select[name=iConsecutivoPoliza").empty();
+                }   
+               },
+               get_policies_select : function(){
+                    $.ajax({             
+                        type:"POST", 
+                        url:"funciones_endorsement_request_units.php", 
+                        data:{
+                            'accion'   : "get_endoso_polizas",
+                            'idEndoso' : fn_endorsement.files.iConsecutivoEndoso,
+                        },
+                        async : false,
+                        dataType : "json",
+                        success : function(data){
+                            $("#dialog_upload_files select[name=iConsecutivoPoliza").empty().append(data.select);
+                        }
+                    });     
+               },
+               edit : function (){
+                  $("#files_datagrid .btn-edit").bind("click",function(){
+                        var clave    = $(this).parent().parent().find("td:eq(0)").prop('id');
+                            clave    = clave.split('_');
+                            clave    = clave[1]; 
+                        $.post("funciones_endorsement_request_units.php",{
+                            accion:"get_file_data", 
+                            clave: clave,
+                            domroot : "#dialog_upload_files"
+                        },
+                        function(data){
+                            if(data.error == '0'){
+                                
+                               $("#dialog_upload_files .file-message").html("");
+                               $("#dialog_upload_files #fileselect").val(null);
+                               $("#dialog_upload_files #fileselect").removeClass("fileupload");
+                               fn_endorsement.files.active_file_form('#dialog_upload_files','fileselect');
+                               eval(data.fields);
+                   
+                               /*$("#dialog_upload_files .field-sent-to-brokers select[name=iEnviarArchivoEmail]").val(0);
+                               if(form == 'form_change_estatus'){
+                                  $('#dialog_upload_files .field-sent-to-brokers').hide();    
+                               }
+                               else{
+                                  $('#dialog_upload_files .field-sent-to-brokers').show();
+                               }  */
+                               
+                               fn_endorsement.files.valid_file(data.poliza);
+                               $('#dialog_upload_files').dialog("open"); 
+                                
+                            }
+                        },'json');
+                  });  
                },
             },
             get_company_data : function(){
@@ -850,6 +935,11 @@
                                       
                                       fn_endorsement.files.iConsecutivoEndoso = clave;
                                       fn_endorsement.files.fillgrid();
+                                      
+                                      if($("#form_change_estatus select[name=eStatusEndoso]").val() == 'A'){
+                                         $("#form_change_estatus select[name=eStatusEndoso]").prop('disabled','disabled'); 
+                                      }
+                                      else{$("#form_change_estatus select[name=eStatusEndoso]").removeProp('disabled');}
                                                       
                                       fn_popups.resaltar_ventana('form_change_estatus'); 
                                 }
@@ -898,6 +988,10 @@
                         success : function(data){                               
                             fn_solotrucking.mensaje(data.msj);
                             fn_endorsement.files.fillgrid();
+                            if($("#form_change_estatus select[name=eStatusEndoso]").val() == 'A'){
+                                $("#form_change_estatus select[name=eStatusEndoso]").prop('disabled','disabled'); 
+                            }
+                                      
                         }
                      });   
                   }else{fn_solotrucking.mensaje('Please first select a status before you press save.');$('#form_change_estatus #eStatus').addClass('error');} 
@@ -1442,7 +1536,7 @@
                                 <td class="etiqueta_grid">Size</td>
                                 <td class="etiqueta_grid">Send to brokers</td>
                                 <td class="etiqueta_grid" style="width: 100px;text-align: center;">
-                                    <div class="btn-icon edit btn-left" title="Upload files" onclick="fn_endorsement.files.add();" style="width: auto!important;"><i class="fa fa-upload"></i><span style="    padding-left: 5px;font-size: 0.8em;text-transform: uppercase;">upload</span></div>
+                                    <div class="btn-icon edit btn-left" title="Upload files" onclick="fn_endorsement.files.add('endorsements_edit_form');" style="width: auto!important;"><i class="fa fa-upload"></i><span style="    padding-left: 5px;font-size: 0.8em;text-transform: uppercase;">upload</span></div>
                                 </td>
                             </tr>
                         </thead>
@@ -1490,9 +1584,10 @@
     <form class="frm_upload_files" action="" method="POST" enctype="multipart/form-data">
         <fieldset>
         <input name="iConsecutivoEndoso" type="hidden" value="">
+        <input name="iConsecutivo" type="hidden" value="">
         <div>
             <label>File Category <span style="color:#ff0000;">*</span>: </label>
-            <Select name="eArchivo" style="height: 27px!important;" class="txt-uppercase">
+            <select name="eArchivo" style="height: 27px!important;" class="txt-uppercase" onchange="fn_endorsement.files.valid_file();">
                 <option value="OTHERS">Other</option>
                 <option value="TITLE">Title</option>
                 <option value="DA">Delease Agreement</option>   
@@ -1500,6 +1595,12 @@
                 <option value="NOR">Non-Op Registration</option>   
                 <option value="PTL">Proof of Total Loss</option>  
                 <option value="ENDORSEMENT">ENDORSEMENT</option>  
+            </select> 
+        </div>
+        <div class="field-select-policy">
+            <label>Policy Endorsement <span style="color:#ff0000;">*</span>: </label>
+            <select name="iConsecutivoPoliza" style="height: 27px!important;">
+                <option value="OTHERS">Select an option...</option>
             </select> 
         </div>
         <div class="field-sent-to-brokers">
@@ -1658,7 +1759,7 @@
                         <td class="etiqueta_grid">Size</td>
                         <td class="etiqueta_grid">Send to brokers</td>
                         <td class="etiqueta_grid" style="width: 100px;text-align: center;">
-                            <div class="btn-icon edit btn-left" title="Upload files" onclick="fn_endorsement.files.add();" style="width: auto!important;"><i class="fa fa-upload"></i><span style="    padding-left: 5px;font-size: 0.8em;text-transform: uppercase;">upload</span></div>
+                            <div class="btn-icon edit btn-left" title="Upload files" onclick="fn_endorsement.files.add('form_change_estatus');" style="width: auto!important;"><i class="fa fa-upload"></i><span style="    padding-left: 5px;font-size: 0.8em;text-transform: uppercase;">upload</span></div>
                         </td>
                     </tr>
                 </thead>

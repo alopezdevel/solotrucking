@@ -199,12 +199,17 @@ var fn_companies = {
             fn_companies.filtro = "";
             if($(fn_companies.data_grid+" .flt_id").val() != ""){ fn_companies.filtro += "iConsecutivo|"+$(fn_companies.data_grid+" .flt_id").val()+","}
             if($(fn_companies.data_grid+" .flt_name").val() != ""){ fn_companies.filtro += "sNombreCompania|"+$(fn_companies.data_grid+" .flt_name").val()+","} 
-            if($(fn_companies.data_grid+" .flt_contacto").val() != ""){ fn_companies.filtro += "sNombreContacto|"+$(fn_companies.data_grid+" .flt_contacto").val()+","} 
             if($(fn_companies.data_grid+" .flt_address").val() != ""){ fn_companies.filtro += "sDireccion|"+$(fn_companies.data_grid+" .flt_address").val()+","} 
             if($(fn_companies.data_grid+" .flt_country").val() != ""){ fn_companies.filtro += "estado|"+$(fn_companies.data_grid+" .flt_country").val()+","} 
             if($(fn_companies.data_grid+" .flt_zip").val() != ""){ fn_companies.filtro += "sCodigoPostal|"+$(fn_companies.data_grid+" .flt_zip").val()+","} 
-            if($(fn_companies.data_grid+" .flt_phone").val() != ""){ fn_companies.filtro += "sTelefonoPrincipal|"+$(fn_companies.data_grid+" .flt_phone").val()+","}  
             if($(fn_companies.data_grid+" .flt_usdot").val() != ""){ fn_companies.filtro += "sUsdot|"+$(fn_companies.data_grid+" .flt_usdot").val()+","}    
+            
+            <?php if($_SESSION['usuario_actual'] != 'test@domain.com'){ ?>                                                 
+                
+                if($(fn_companies.data_grid+" .flt_contacto").val() != ""){ fn_companies.filtro += "sNombreContacto|"+$(fn_companies.data_grid+" .flt_contacto").val()+","}
+                if($(fn_companies.data_grid+" .flt_phone").val() != ""){ fn_companies.filtro += "sTelefonoPrincipal|"+$(fn_companies.data_grid+" .flt_phone").val()+","} 
+                
+            <?php } ?>
             fn_companies.fillgrid();
         },  
         delete_confirm : function(){
@@ -241,8 +246,12 @@ var fn_companies = {
                 <td><input class="flt_address" type="text" placeholder="Address:"></td> 
                 <td><input class="flt_country" type="text" placeholder="Country:"></td>
                 <td style='width:50px;'><input class="flt_zip" type="text" placeholder="Zip Code:"></td> 
-                <td><input class="flt_contacto" type="text" placeholder="Contact Name:"></td>
-                <td style='width:200px;'><input class="flt_phone" type="text" placeholder="Phone(s):"></td> 
+                <?php 
+                    if($_SESSION['usuario_actual'] != 'test@domain.com'){
+                ?>
+                    <td><input class="flt_contacto" type="text" placeholder="Contact Name:"></td>
+                    <td style='width:200px;'><input class="flt_phone" type="text" placeholder="Phone(s):"></td> 
+                <?php }?>
                 <td style='width:80px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_companies.filtraInformacion();"><i class="fa fa-search"></i></div>
                     <div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_companies.add();"><i class="fa fa-plus"></i></div>
@@ -263,8 +272,12 @@ var fn_companies = {
                 <td class="etiqueta_grid"      onclick="fn_companies.ordenamiento('sDireccion',this.cellIndex);">Address</td>
                 <td class="etiqueta_grid"      onclick="fn_companies.ordenamiento('estado',this.cellIndex);">Country</td>
                 <td class="etiqueta_grid"      onclick="fn_companies.ordenamiento('sCodigoPostal',this.cellIndex);">ZIP</td>
+                <?php 
+                    if($_SESSION['usuario_actual'] != 'test@domain.com'){
+                ?>
                 <td class="etiqueta_grid"      onclick="fn_companies.ordenamiento('sNombreContacto',this.cellIndex);">Contact Name</td> 
                 <td class="etiqueta_grid"      onclick="fn_companies.ordenamiento('sTelefonoPrincipal',this.cellIndex);">Phone(s)</td>
+                <?php }?>
                 <td class="etiqueta_grid"></td> 
             </tr>
         </thead>

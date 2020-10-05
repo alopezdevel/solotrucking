@@ -76,9 +76,16 @@
                     async : true,
                     dataType : "json",
                     success : function(data){                               
-                        if(data.error == '0'){$("#iConsecutivoCompania").empty().append(data.select); }
+                        if(data.error == '0'){$("#edit_form_invoice #iConsecutivoCompania, #edit_form_payment select[name=iConsecutivoCompania]").empty().append(data.select); }
                     }
                 });
+                
+                //Archivos:
+                if(window.File && window.FileList && window.FileReader) {
+                      fn_solotrucking.files.form      = "#edit_form_invoice";
+                      fn_solotrucking.files.fileinput = "fileselect";
+                      fn_solotrucking.files.add();
+                }
                 
             },
             fillgrid: function(){
@@ -121,7 +128,12 @@
                $(fn_invoices.summary.data_grid+" tbody").empty();
                
                fn_solotrucking.get_date("#dFechaInvoice");
-               fn_popups.resaltar_ventana('edit_form_invoice');  
+               fn_popups.resaltar_ventana('edit_form_invoice');
+               
+               //Limpiar campo file:
+               $(fn_invoices.form+" .file-message").html("");
+               $(fn_invoices.form+" #fileselect").val(null);
+               $(fn_invoices.form+" #fileselect").removeClass("fileupload");  
             },
             edit : function (){
                 $(fn_invoices.data_grid + " tbody td .edit").bind("click",function(){
@@ -130,6 +142,58 @@
                         clave = clave[1];
                     
                     $('#edit_form_invoice .p-header h2').empty().append('INVOICES - EDIT INVOICE #' + $(this).parent().parent().find("td:eq(1)").html()); 
+                    fn_invoices.get_data(clave);
+                }); 
+              
+                $(fn_invoices.data_grid + " tbody td .btn_apply").bind("click",function(){
+                    var clave = $(this).parent().parent().find("td:eq(1)").prop('id');
+                        clave = clave.split("_");
+                        clave = clave[1];
+                    
+                    $.post("funciones_invoices.php",{accion:"apply_data", clave: clave},
+                    function(data){
+                        fn_solotrucking.mensaje(data.msj);
+                        if(data.error == '0'){fn_invoices.filtraInformacion();}
+                    },"json"); 
+                }); 
+                
+                $(fn_invoices.data_grid + " tbody td .btn_pdf").bind("click",function(){
+                    var clave = $(this).parent().parent().find("td:eq(1)").prop('id');
+                        clave = clave.split("_");
+                        clave = clave[1];
+                
+                        if(clave != ""){
+                            window.open('pdf_invoice.php?id='+clave+'&ds=view','_blank');
+                        }  
+                }); 
+               
+                $(fn_invoices.data_grid + " tbody .btn_send_invoice").bind("click",function(){
+                       var clave = $(this).parent().parent().find("td:eq(1)").prop('id');
+                           clave = clave.split("_");
+                           clave = clave[1];
+                       var msg   = "<p style=\"text-align:center;\">Sending invoice by e-mail, please wait....<br><img src=\"images/ajax-loader.gif\" alt=\"ajax-loader.gif\" style=\"margin-top:10px;\"><br></p>";
+                       
+                       $('#Wait').empty().append(msg).dialog('open');
+                       $.post("funciones_invoices.php",{accion:"send_email_gmail", clave: clave},
+                        function(data){ 
+                            $('#Wait').empty().dialog('close');
+                            fn_solotrucking.mensaje(data.msj);
+                            if(data.error == '0'){fn_invoices.filtraInformacion();}     
+                        },"json");
+                }); 
+                
+                $(fn_invoices.data_grid + " tbody td .btn_payments").bind("click",function(){
+                    var clave = $(this).parent().parent().find("td:eq(1)").prop('id');
+                        clave = clave.split("_");
+                        clave = clave[1];
+                    
+                    fn_invoices.payments.iConsecutivoInvoice = clave;
+                    fn_invoices.payments.init();
+                    
+                });
+            }, 
+            get_data : function(clave){
+                if(clave != ""){
                     $.post("funciones_invoices.php",
                     {accion:"get_data", clave: clave, domroot : fn_invoices.form},
                     function(data){
@@ -137,6 +201,12 @@
                            $('#edit_form_invoice :text, #edit_form_invoice select').val('').removeClass('error'); 
                            $(fn_invoices.form+' #sNoReferencia').prop('readonly','readonly').addClass("readonly");
                            $(fn_invoices.form+' button.btn-preview').show();
+                           
+                           //Limpiar campo file:
+                           $(fn_invoices.form+" .file-message").html("");
+                           $(fn_invoices.form+" #fileselect").val(null);
+                           $(fn_invoices.form+" #fileselect").removeClass("fileupload");
+                           
                            eval(data.fields);
                            
                            fn_invoices.actualiza_totales();
@@ -152,8 +222,8 @@
                         }
                         else{fn_solotrucking.mensaje(data.msj);}       
                     },"json"); 
-              });  
-            }, 
+                }    
+            },
             save : function (){
                
                //Validate Fields:
@@ -169,25 +239,42 @@
                });
                
                if(valid){
-                 if($(fn_invoices.form+' input[name=iConsecutivo]').val() != ''){struct_data_post.edit_mode = "true";}else{struct_data_post.edit_mode = "false";}  
-                    struct_data_post.action  = "save_data";
-                    struct_data_post.domroot = "#invoice_data"; 
-                    $.post("funciones_invoices.php",struct_data_post.parse(),
-                    function(data){
-                        switch(data.error){
-                         case '0':  
-                            fn_solotrucking.mensaje(data.msj);
-                            fn_invoices.summary.company_id =  $(fn_invoices.form+' #iConsecutivoCompania').val();
-                            fn_invoices.actualiza_totales();
-                            fn_invoices.filtraInformacion();
-                         break;
-                         case '1': fn_solotrucking.mensaje(data.msj); break;
-                        }
-                    },"json");
-               }else{
-                   fn_solotrucking.mensaje('<p>Please check the following:</p><ul style="padding: 10px;">'+message+'</ul>');
+                   
+                    var form       = "#invoice_data";
+                    var dataForm   = new FormData();
+                    var other_data = $(form).serializeArray();
+                    dataForm.append('accion','save_data');
+                    $.each($(form+' input[type=file]')[0].files,function(i, file){dataForm.append('file-'+i, file);});
+                    $.each(other_data,function(key,input){dataForm.append(input.name,input.value);});
+                    
+                    $.ajax({
+                      type: "POST",
+                      url : "funciones_invoices.php",
+                      data: dataForm,
+                      cache: false,
+                      contentType: false,
+                      processData: false,
+                      type: 'POST',
+                      dataType : "json",
+                      success : function(data){ 
+                          switch(data.error){
+                              case '0':  
+                                fn_solotrucking.mensaje(data.msj);
+                                $(fn_invoices.form+' #iConsecutivoCompania').val(data.idFactura);
+                                fn_invoices.summary.company_id =  $(fn_invoices.form+' #iConsecutivoCompania').val();
+                                fn_invoices.actualiza_totales();
+                                
+                                fn_invoices.filtraInformacion();
+                                
+                                fn_invoices.get_data(data.idFactura);
+                              break;
+                              case '1': fn_solotrucking.mensaje(data.msj); break;
+                          }
+                      }
+                    });  
+                    
                }
-                
+               else{fn_solotrucking.mensaje('<p>Please check the following:</p><ul style="padding: 10px;">'+message+'</ul>');}
             },
             firstPage : function(){
                 if($(fn_invoices.data_grid+" #pagina_actual").val() != "1"){
@@ -510,6 +597,7 @@
                        if($(fn_invoices.summary.form+' .detalle_formulario input[name=iConsecutivoDetalle]').val() != ''){
                            fn_invoices.summary.endorsements.get_endorsements();
                        }
+                       $("#edit_form_summary .data-endorsements select[name='iMostrarEndorsements']").val('0');
                    }
                    else{
                        $("#edit_form_summary .data-endorsements").hide();
@@ -640,10 +728,128 @@
             
             },  
             preview : function(){
-                var clave = $(fn_invoices.form+' #iConsecutivo').val();
-                if(clave != ""){
-                    window.open('pdf_invoice.php?id='+clave+'&ds=preview','_blank');
-                }    
+                var clave = $("#edit_form_invoice input[name=iConsecutivo]").val();
+                if(clave != ''){
+                    if(clave != ""){
+                        window.open('pdf_invoice.php?id='+clave+'&ds=preview','_blank');
+                    }     
+                }
+            },
+            //PAYMENTS
+            payments : {
+                iConsecutivoInvoice : "",
+                form     : "edit_form_payment",
+                form_add : "#edit_form_payment_detalle",
+                data_grid: "#payments_detalle",
+                init : function(){
+                    if(fn_invoices.payments.iConsecutivoInvoice != ""){
+                        
+                        $.post("funciones_invoices.php",
+                        {
+                            accion :"payment_invoice_getdata", 
+                            clave  : fn_invoices.payments.iConsecutivoInvoice, 
+                            domroot: fn_invoices.payments.form
+                        },
+                        function(data){
+                            if(data.error == '0'){
+                               $('#'+fn_invoices.payments.form+' :text, #'+fn_invoices.payments.form+' select').val(''); 
+                               eval(data.fields);
+                               fn_invoices.payments.fillgrid();
+                               fn_popups.resaltar_ventana('edit_form_payment');
+                            }
+                            else{fn_solotrucking.mensaje(data.msj);}       
+                        },"json"); 
+                           
+                    }
+                },
+                fillgrid: function(){
+                   if(fn_invoices.payments.iConsecutivoInvoice != ""){
+                        $.ajax({             
+                            type:"POST", 
+                            url:"funciones_invoices.php", 
+                            data:{accion:"payment_getdata","iConsecutivoInvoice":fn_invoices.payments.iConsecutivoInvoice},
+                            async : true,
+                            dataType : "json",
+                            success : function(data){                               
+                                $(fn_invoices.payments.data_grid+" tbody").empty().append(data.tabla);
+                                //fn_invoices.summary.edit();
+                                //fn_invoices.summary.eliminar(); 
+                            }
+                        });     
+                   }
+               },
+                add : function(){
+                      $("#edit_form_payment_detalle input, #edit_form_payment_detalle select, #edit_form_payment_detalle textarea").val('').removeClass('error'); 
+                      
+                      //Valores Default:
+                      fn_solotrucking.get_date("#dFechaPago");
+                      $("#edit_form_payment_detalle input[name=iConsecutivoInvoice]").val(fn_invoices.summary.invoice_id);
+                      $("#edit_form_payment_detalle input[name=iMonto]").val(0);
+                      $("#edit_form_payment_detalle input[name=iSaldoAnterior]").val(parseFloat($("#"+fn_invoices.payments.form+" input[name=iBalanceOutstanding]").val()).toFixed(2));
+                      $("#edit_form_payment_detalle input[name=iSaldoPendiente]").val(parseFloat($("#"+fn_invoices.payments.form+" input[name=iBalanceOutstanding]").val()).toFixed(2));
+
+                      $("#edit_form_payment_detalle").show(); 
+                },
+                cerrar_ventana : function(){
+                   $("#edit_form_payment_detalle").hide(); 
+                },
+                save : function(ghost_mode){
+                   
+                   if(ghost_mode == '' || ghost_mode == undefined){ghost_mode = false;} 
+                   
+                   //Validate Fields:
+                   var valid   = true;
+                   var message = "";
+                   $(fn_invoices.payments.form_add+" .required-field").removeClass("error");
+                   $(fn_invoices.payments.form_add+" .required-field").each(function(){
+                       if($(this).val() == ""){
+                           valid   = false;
+                           message = '<li> You must write all required fields.</li>';
+                           $(this).addClass('error');
+                       }
+                   });
+                   
+                   
+                   if(valid){ 
+                     if($(fn_invoices.payments.form_add+' input[name=iConsecutivoPago]').val() != ''){struct_data_post.edit_mode = "true";}else{struct_data_post.edit_mode = "false";}  
+                        
+                        struct_data_post.action  = "payment_save_data";
+                        struct_data_post.domroot = fn_invoices.payments.form_add; 
+                        
+                        $.post("funciones_invoices.php",struct_data_post.parse(),
+                        function(data){
+                            switch(data.error){
+                             case '0':
+                                if(ghost_mode == false){
+                                    fn_solotrucking.mensaje(data.msj);
+                                    $("#edit_form_payment_detalle input, #edit_form_payment_detalle select, #edit_form_payment_detalle textarea").val('').removeClass('error');
+                                    $("#edit_form_payment_detalle").hide(); 
+                                    fn_invoices.payments.init();
+                                }
+                             break;
+                             case '1': fn_solotrucking.mensaje(data.msj); break;
+                            }        
+                        },"json");
+                        
+                        if(ghost_mode && valid){return true;}
+                   }
+                   else{
+                       fn_solotrucking.mensaje('<p>Please check the following:</p><ul style="padding: 10px;">'+message+'</ul>');
+                   }    
+               },
+                get_saldos : function(){
+                
+                   var monto_aplicado = parseFloat($("#edit_form_payment_detalle input[name=iMonto]").val());
+                   
+                   if(monto_aplicado == "" || monto_aplicado == null){
+                      $("#edit_form_payment_detalle input[name=iMonto]").val(0); 
+                      monto_aplicado = 0;
+                   } 
+                   var saldo_anterior = parseFloat($("#edit_form_payment_detalle input[name=iSaldoAnterior]").val());  
+                   var saldo_pendiente= saldo_anterior - monto_aplicado;
+                   $("#edit_form_payment_detalle input[name=iSaldoPendiente]").val(parseFloat(saldo_pendiente).toFixed(2));
+                   
+                }
             }
     }     
     </script> 
@@ -658,22 +864,22 @@
                 <tr id="grid-head1">
                     <td class="etiqueta_grid" style="width: 100px;"></td>
                     <td style='width:120px;'>
-                        <input class="flt_ref" class="numeros" type="text" placeholder="No. Reference:">
+                        <input class="flt_ref" class="numeros" type="text" placeholder="No.#:">
                     </td>
                     <td><input class="flt_name" type="text" placeholder="Company:"></td> 
                     <td><input class="flt_date" type="text" placeholder="MM/DD/YY:"></td>
-                    <td><input class="flt_amount" type="text" placeholder="Payment Amount:"></td> 
-                    <td style='width:80px;'>
+                    <td><input class="flt_amount" type="text" placeholder="Total:"></td> 
+                    <td style='width:120px;'>
                         <div class="btn-icon-2 btn-left" title="Search" onclick="fn_invoices.filtraInformacion();"><i class="fa fa-search"></i></div>
                         <div class="btn-icon-2 btn-left" title="Add +"  onclick="fn_invoices.add();"><i class="fa fa-plus"></i></div>
                     </td> 
                 </tr>
                 <tr id="grid-head2">
                     <td class="etiqueta_grid"></td>
-                    <td class="etiqueta_grid down" onclick="fn_invoices.ordenamiento('sNoReferencia',this.cellIndex);">Reference</td>
+                    <td class="etiqueta_grid down" onclick="fn_invoices.ordenamiento('sNoReferencia',this.cellIndex);">No. #</td>
                     <td class="etiqueta_grid"      onclick="fn_invoices.ordenamiento('sNombreCompania',this.cellIndex);">Company</td>
                     <td class="etiqueta_grid"      onclick="fn_invoices.ordenamiento('A.dFechaInvoice',this.cellIndex);">Date</td> 
-                    <td class="etiqueta_grid"      onclick="fn_invoices.ordenamiento('dTotal',this.cellIndex);">Payment Amount</td>
+                    <td class="etiqueta_grid"      onclick="fn_invoices.ordenamiento('dTotal',this.cellIndex);">Total</td>
                     <td class="etiqueta_grid"></td> 
                 </tr>
             </thead>
@@ -707,7 +913,7 @@
     <div id="edit_form_invoice" class="popup-form" style="height: 97%;width:80%;">
         <div class="p-header">
             <h2>INVOICES - (EDIT OR ADD)</h2>
-            <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('edit_form_invoice');"><i class="fa fa-times"></i></div>
+            <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('edit_form_invoice');fn_invoices.filtraInformacion();"><i class="fa fa-times"></i></div>
         </div>
         <div class="p-container" style="height: 94%;overflow-y: auto;">
         <div>
@@ -720,14 +926,14 @@
                     <tr>
                         <td style="width: 60%;">
                         <div class="field_item"> 
-                            <label for="sNoReferencia">No. Reference <span style="color:#ff0000;">*</span>:</label> 
-                            <input tabindex="1" id="sNoReferencia" type="text" class="txt-uppercase required-field" style="width: 97%;">
+                            <label for="sNoReferencia">No. # <span style="color:#ff0000;">*</span>:</label> 
+                            <input tabindex="1" id="sNoReferencia" name="sNoReferencia" type="text" class="txt-uppercase required-field" style="width: 97%;">
                         </div>
                         </td>
                         <td>
                         <div class="field_item"> 
                             <label>Invoice Date <span style="color:#ff0000;">*</span>:</label> 
-                            <input tabindex="2" id="dFechaInvoice" type="text" class="fecha required-field" style="width: 85%;position: relative;margin-left:15px;">
+                            <input tabindex="2" id="dFechaInvoice" name="dFechaInvoice" type="text" class="fecha required-field" style="width: 90%;position: relative;margin-left:15px;">
                         </div>
                         </td>
                     </tr>
@@ -735,23 +941,32 @@
                         <td>
                         <div class="field_item">
                             <label>Company <span style="color:#ff0000;">*</span>:</label> 
-                            <select tabindex="3" id="iConsecutivoCompania" class="required-field"><option value="">Select an option...</option></select>
+                            <select tabindex="3" id="iConsecutivoCompania" name="iConsecutivoCompania" class="required-field" style="width: 98%!important;height: 25px!important;"><option value="">Select an option...</option></select>
                         </div>
                         </td>
                         <td>
                         <div class="field_item"> 
                             <label>Payment Currency <span style="color:#ff0000;">*</span>:</label> 
-                            <select tabindex="4" id="sCveMoneda" class="required-field">
-                                <option value="USD" selected>USD</option>
-                            </select> 
+                            <select tabindex="4" id="sCveMoneda" name="sCveMoneda" class="required-field" style="height: 25px!important;"><option value="USD" selected>USD</option></select> 
                         </div>
                         </td> 
                     </tr>
                     <tr>
                         <td colspan="100%">
+                            <div class="field_item"> 
+                                <label>File to upload (PDF,JPEG,JPG,PNG):</label>
+                                <div class="file-container">
+                                    <input id="fileselect" name="fileselect" type="file" style="height: 90px!important;"/>
+                                    <div class="file-message"></div>
+                                </div>
+                            </div> 
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="100%">
                         <div class="field_item">
                             <label>Comments:</label> 
-                            <textarea tabindex="6" id="sComentarios" style="height:50px!important;"></textarea>
+                            <textarea tabindex="6" id="sComentarios" name="sComentarios" style="height:50px!important;"></textarea>
                         </div>
                         </td> 
                     </tr>
@@ -865,7 +1080,7 @@
             <div>
                 <button type="button" class="btn-1" onclick="fn_invoices.save();" style="">SAVE</button>  
                 <button type="button" class="btn-1 btn-preview" onclick="fn_invoices.preview();" style="margin-right:10px;background:#5ec2d4;">Preview</button>         
-                <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('edit_form_invoice');" style="margin-right:10px;background:#e8051b;">Cancel</button> 
+                <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('edit_form_invoice');fn_invoices.filtraInformacion();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
             </div>
         </div>
         </div>
@@ -941,6 +1156,17 @@
                             <label style="position: relative;top: 2px;">Apply payment to endorsement?</label> 
                         </div>
                         </td> 
+                    </tr>
+                    <tr class="data-endorsements">
+                        <td>
+                        <div class="field_item"> 
+                            <label>Show detail of endorsements on the invoice?</label> 
+                            <select tabindex="9" id="iMostrarEndorsements" name="iMostrarEndorsements" style="width: 50%;">
+                                <option value="0">NO</option>
+                                <option value="0">YES</option>
+                            </select>
+                        </div>
+                        </td>
                     </tr>
                 </table>
                 <legend class="data-endorsements">Endorsements data</legend>
@@ -1045,6 +1271,183 @@
     <div id="dialog-confirm-delete-invoice" title="Delete">
       <p><span class="ui-icon ui-icon-alert" ></span>Are you sure you want to delete the invoice?</p>
       <input value="" type="hidden" name="iConsecutivo">
+    </div>
+    <!-- PAYMENTS -->
+    <div id="edit_form_payment" class="popup-form" style="height: 97%;width:80%;">
+        <div class="p-header">
+            <h2>INVOICES - PAYMENTS</h2>
+            <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('edit_form_payment');"><i class="fa fa-times"></i></div>
+        </div>
+        <div class="p-container" style="height: 94%;overflow-y: auto;">
+        <div>
+            <form id="payments_data">
+                <fieldset>
+                    <legend>Invoice Data</legend>
+                    <table style="width: 100%;">
+                    <tbody>
+                        <tr>
+                            <td style="width: 60%;">
+                            <div class="field_item"> 
+                                <label for="sNoReferencia">No. Reference:</label> 
+                                <input name="sNoReferencia" type="text" class="readonly" style="width: 97%;" readonly>
+                            </div>
+                            </td>
+                            <td>
+                            <div class="field_item"> 
+                                <label>Invoice Date:</label> 
+                                <input name="dFechaInvoice" type="text" class="readonly" style="width: 97%;" readonly>
+                            </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                            <div class="field_item">
+                                <label>Company:</label> 
+                                <select name="iConsecutivoCompania" class="readonly" disabled style="width: 98%!important;height: 25px!important;"><option value="">Select an option...</option></select>
+                            </div>
+                            </td>
+                            <td>
+                            <div class="field_item"> 
+                                <label>Payment Currency:</label> 
+                                <select name="sCveMoneda" class="readonly" disabled style="width: 99%!important;height: 25px!important;"><option value="USD" selected="">USD</option></select> 
+                            </div>
+                            </td> 
+                        </tr>
+                        <tr>
+                            <td>
+                            <div class="field_item">
+                                <label>Balance paid:</label> 
+                                <input name="iBalancePaid" type="text" class="readonly" style="width: 97%;" readonly>
+                            </div>
+                            </td>
+                            <td>
+                            <div class="field_item"> 
+                                <label>Invoice Total:</label> 
+                                <input name="dTotal" type="text" class="readonly" style="width: 97%;" readonly>
+                            </div>
+                            </td> 
+                        </tr>
+                        <tr>
+                            <td>
+                            <div class="field_item">
+                                <label>Outstanding balance:</label> 
+                                <input name="iBalanceOutstanding" type="text" class="readonly" style="width: 97%;" readonly>
+                            </div>
+                            </td>
+                            <td></td> 
+                        </tr>
+                    </tbody>
+                    </table>
+                </fieldset>
+                <div id="payments_detalle" style="width: 99%;margin: 0 auto 25px;">
+                    <h5 class="data-grid-header">Payments</h5>
+                    <table class="popup-datagrid" style="width: 100%;">
+                        <thead>
+                            <tr class="grid-head2"> 
+                                <td class="etiqueta_grid">No.</td>
+                                <td class="etiqueta_grid">Payment Date</td>
+                                <td class="etiqueta_grid">Description</td> 
+                                <td class="etiqueta_grid">Amount</td>
+                                <td><div class="btn-icon add" title="Add +"  onclick="fn_invoices.payments.add();"><i class="fa fa-plus"></i></div></td>
+                            </tr>
+                        </thead>
+                        <tbody><tr><td style="text-align:center; font-weight: bold;" colspan="100%">No data available.</td></tr></tbody>
+                    </table>   
+                </div>
+            </form>
+            <div>        
+                <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('edit_form_payment');" style="margin-right:10px;background:#e8051b;">Close</button> 
+            </div>
+        </div>
+        </div>
+    </div>
+    <div id="edit_form_payment_detalle" class="popup-form" style="height: 97%;width:80%;">
+        <div class="p-header">
+            <h2>INVOICE PAYMENT - (EDIT OR ADD)</h2>
+            <div class="btn-close" title="Close Window" onclick="fn_invoices.payments.cerrar_ventana();"><i class="fa fa-times"></i></div>
+        </div>
+        <div class="p-container" style="height: 94%;overflow-y: auto;">
+        <div>
+            <form>
+                <fieldset style="padding-bottom: 5px;">
+                <legend>Payment General Data</legend>
+                <p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p>
+                <table class="detalle_formulario" style="width: 100%;">
+                    <tr>
+                        <td>
+                        <input name="iConsecutivoPago" type="hidden" value=""> 
+                        <input name="iConsecutivoInvoice" type="hidden" value="">
+                        <div class="field_item"> 
+                            <label for="sNoPago">No. Payment <span style="color:#ff0000;">*</span>:</label> 
+                            <input tabindex="1" name="sNoPago" class="required-field txt-uppercase" type="text" value="" style="width: 97%;">
+                        </div>
+                        </td>
+                        <td>
+                        <div class="field_item"> 
+                            <label for="dFechaPago">Date <span style="color:#ff0000;">*</span>:</label> 
+                            <input tabindex="2" id="dFechaPago" name="dFechaPago" class="required-field fecha" type="text" value="" style="width:90%!important;">
+                        </div>
+                        </td> 
+                    </tr>
+                    <tr>
+                        <td colspan="100%">
+                        <div class="field_item"> 
+                            <label for="sDescripcion">Description <span style="color:#ff0000;">*</span>:</label> 
+                            <input tabindex="3" name="sDescripcion" class="required-field txt-uppercase" type="text" value="">
+                        </div>
+                        </td> 
+                    </tr>
+                    <tr> 
+                        <td>
+                        <div class="field_item">
+                            <label>Amount <span style="color:#ff0000;">*</span>:</label> 
+                            <input tabindex="4" name="iMonto" class="required-field inputdecimals" type="text" value="" style="width: 97%;" onchange="fn_invoices.payments.get_saldos();">
+                        </div>
+                        </td>
+                        <td>
+                        <div class="field_item"> 
+                            <label>Currency <span style="color:#ff0000;">*</span>:</label> 
+                            <select tabindex="5" name="sCveMoneda" class="required-field" style="height: 25px!important;width:97%;"><option value="USD" selected>USD</option></select> 
+                        </div>
+                        </td>  
+                        <td>
+                        <div class="field_item"> 
+                            <label>Payment Method <span style="color:#ff0000;">*</span>:</label> 
+                            <input tabindex="6" name="sMetodoPago" class="required-field txt-uppercase" type="text" value="" style="width: 97%;"> 
+                        </div>
+                        </td> 
+                    </tr>
+                    <tr>
+                        <td colspan="100%">
+                        <div class="field_item">
+                            <label>Comments:</label> 
+                            <textarea tabindex="7" name="sComentarios" style="height:50px!important;"></textarea>
+                        </div>
+                        </td> 
+                    </tr>
+                    <tr>
+                        <td>
+                        <div class="field_item">
+                            <label>Previous balance:</label> 
+                            <input name="iSaldoAnterior" class="required-field inputdecimals readonly" type="text" value="" readonly="readonly" style="width: 97%;">
+                        </div>
+                        </td>
+                        <td>
+                        <div class="field_item"> 
+                            <label>Outstanding balance:</label> 
+                            <input name="iSaldoPendiente" class="required-field inputdecimals readonly" type="text" value="" readonly="readonly" style="width: 97%;"> 
+                        </div>
+                        </td>  
+                    </tr>
+                </table>
+                </fieldset>
+            </form>
+            <div>
+                <button type="button" class="btn-1" onclick="fn_invoices.payments.save();" style="">SAVE</button>          
+                <button type="button" class="btn-1" onclick="fn_invoices.payments.cerrar_ventana();" style="margin-right:10px;background:#e8051b;">Cancel</button> 
+            </div>
+        </div>
+        </div>
     </div>
     <!-- FOOTER -->
     <?php include("footer.php"); ?> 

@@ -132,24 +132,35 @@
       echo json_encode($response);
   }
   function get_user(){
-      $error = '0';
-      $msj = "";
+      $error  = '0';
+      $msj    = "";
       $fields = "";
-      $clave = trim($_POST['clave']);
-      $domroot = $_POST['domroot'];
+      $clave  = trim($_POST['clave']);
+      $domroot= $_POST['domroot'];
+      
       include("cn_usuarios.php");
-      $conexion->autocommit(FALSE);                                                                                                                 
-      $sql = "SELECT * FROM cu_control_acceso WHERE iConsecutivo = ".$clave;
-      $result = $conexion->query($sql);
-      $items = $result->num_rows;   
-      if ($items > 0) {     
-        $data = $result->fetch_assoc();
-        $llaves  = array_keys($data);
-        $datos   = $data;
-        foreach($datos as $i => $b){
-            $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');"; 
-        }  
+      $conexion->autocommit(FALSE); 
+      
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error = '1';
+          $msj   = "This user does not have the privileges to modify or add data to the system.";
       }
+      else{
+          $sql   = "SELECT * FROM cu_control_acceso WHERE iConsecutivo = ".$clave;
+          $result= $conexion->query($sql);
+          $items = $result->num_rows;   
+          if ($items > 0) {     
+            $data = $result->fetch_assoc();
+            $llaves  = array_keys($data);
+            $datos   = $data;
+            foreach($datos as $i => $b){
+                $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');"; 
+            }  
+          }
+      }                                                                                                                
+      
       $conexion->rollback();
       $conexion->close(); 
       $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields");   
@@ -271,21 +282,29 @@
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
       $transaccion_exitosa = true;
       
-      $query = "UPDATE cu_control_acceso SET iDeleted = '1', hActivado = '0' WHERE iConsecutivo = '".$_POST["clave"]."'";
-      $conexion->query($query);
-      $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
-      if($transaccion_exitosa){
-        $conexion->commit();
-        $conexion->close();
-        $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
-                The user has been deleted succesfully!</p>';
-      }else{
-        $conexion->rollback();
-        $conexion->close();
-        $msj = "A general system error ocurred : internal error";
-        $error = "1";
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error = '1';
+          $msj   = "This user does not have the privileges to modify or add data to the system.";
       }
-        
+      else{
+          $query = "UPDATE cu_control_acceso SET iDeleted = '1', hActivado = '0' WHERE iConsecutivo = '".$_POST["clave"]."'";
+          $conexion->query($query);
+          $conexion->affected_rows < 1 ? $transaccion_exitosa = false : $transaccion_exitosa = true;
+          if($transaccion_exitosa){
+            $conexion->commit();
+            $conexion->close();
+            $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+                    The user has been deleted succesfully!</p>';
+          }else{
+            $conexion->rollback();
+            $conexion->close();
+            $msj = "A general system error ocurred : internal error";
+            $error = "1";
+          }
+      }
+      
       $response = array("msj"=>"$msj","error"=>"$error");   
       echo json_encode($response);
   }

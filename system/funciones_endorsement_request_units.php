@@ -20,9 +20,11 @@
      foreach($array_filtros as $key => $valor){
         if($array_filtros[$key] != ""){
             $campo_valor = explode("|",$array_filtros[$key]);
-            if($campo_valor[0] == 'iConsecutivo'){ 
-                $filtroQuery.= " AND  ".$campo_valor[0]."='".$campo_valor[1]."' ";
-            }else{
+            if($campo_valor[0] == 'A.dFechaAplicacion'){ 
+                $campo_valor[1] = date('Y-m-d',strtotime(trim($campo_valor[1])));
+                $filtroQuery   .= " AND  ".$campo_valor[0]."='".$campo_valor[1]."' ";
+            }
+            else{
                 if($campo_valor[0] == 'eStatus'){
                      $filtroQuery .= " AND  ".$campo_valor[0]." = '".$campo_valor[1]."'";
                 }else{
@@ -372,43 +374,52 @@
       $sSolicitanteNombre   = trim(strtoupper($_POST['sSolicitanteNombre']));
       $sSolicitanteEmail    = trim(strtolower($_POST['sSolicitanteEmail']));
       $sSolicitanteFecha    = $_POST['sSolicitanteFecha'] != "" ? date('Y-m-d',strtotime(trim($_POST['sSolicitanteFecha']))) : "";
-  
-      //GUARDAMOS EL ENDOSO
-      if($edit_mode == 'true'){
-          //UPDATE
-          $query   = "UPDATE cb_endoso SET dFechaAplicacion='$dFechaApp', sComentarios=$sComentarios, sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha',iEndosoMultiple='1', ".
-                     "sSolicitanteNombre='$sSolicitanteNombre',sSolicitanteEmail='$sSolicitanteEmail',sSolicitanteFecha='$sSolicitanteFecha' ".   
-                     "WHERE iConsecutivo='$iConsecutivo' AND iConsecutivoCompania='$iConsecutivoCompania'";
-          $mensaje = "The data was updated successfully.";
       
-      }else if($edit_mode == 'false'){
-          //INSERT
-          $query   = "INSERT cb_endoso (iConsecutivoCompania,iConsecutivoTipoEndoso,eStatus,dFechaAplicacion,sComentarios,sIP,sUsuarioIngreso,dFechaIngreso,sSolicitanteNombre,sSolicitanteEmail,sSolicitanteFecha) ".
-                     "VALUES('$iConsecutivoCompania','1','S','$dFechaApp',$sComentarios,'$sIP','$sUsuario','$dFecha','$sSolicitanteNombre','$sSolicitanteEmail','$sSolicitanteFecha') ";
-          $mensaje = "The data was saved successfully.";
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error  = '1';
+          $mensaje= "This user does not have the privileges to modify or add data to the system.";
+      }
+      else{
+          //GUARDAMOS EL ENDOSO
+          if($edit_mode == 'true'){
+              //UPDATE
+              $query   = "UPDATE cb_endoso SET dFechaAplicacion='$dFechaApp', sComentarios=$sComentarios, sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha',iEndosoMultiple='1', ".
+                         "sSolicitanteNombre='$sSolicitanteNombre',sSolicitanteEmail='$sSolicitanteEmail',sSolicitanteFecha='$sSolicitanteFecha' ".   
+                         "WHERE iConsecutivo='$iConsecutivo' AND iConsecutivoCompania='$iConsecutivoCompania'";
+              $mensaje = "The data was updated successfully.";
+          
+          }
+          else if($edit_mode == 'false'){
+              //INSERT
+              $query   = "INSERT cb_endoso (iConsecutivoCompania,iConsecutivoTipoEndoso,eStatus,dFechaAplicacion,sComentarios,sIP,sUsuarioIngreso,dFechaIngreso,sSolicitanteNombre,sSolicitanteEmail,sSolicitanteFecha) ".
+                         "VALUES('$iConsecutivoCompania','1','S','$dFechaApp',$sComentarios,'$sIP','$sUsuario','$dFecha','$sSolicitanteNombre','$sSolicitanteEmail','$sSolicitanteFecha') ";
+              $mensaje = "The data was saved successfully.";
+          }
+          
+          $success = $conexion->query($query);
+          if(!($success)){$error = '1';$mensaje = "Error to save the endorsement data, please try again later.";}
+          else{
+              if($edit_mode == 'false'){$iConsecutivo = $conexion->insert_id;} 
+              //ELIMINAMOS POLIZAS GUARDADAS ANTERIORMENTE:
+              $query   = "DELETE FROM cb_endoso_estatus WHERE iConsecutivoEndoso='$iConsecutivo'";
+              $success = $conexion->query($query); 
+              if(!($success)){$error = '1';$mensaje = "Error to update the endorsement status data, please try again later.";}
+              else{
+                  foreach($_POST as $campo => $valor){
+                      if(!(strpos($campo,"chk_policies_") === false) && $valor == 1){
+                          $poliza  = str_replace("chk_policies_","",$campo);
+                          $query   = "INSERT INTO cb_endoso_estatus (iConsecutivoEndoso,iConsecutivoPoliza,eStatus,sIP,sUsuarioIngreso,dFechaIngreso) ".
+                                     "VALUES('$iConsecutivo','$poliza','S','$sIP','$sUsuario','$dFecha')";
+                          $success = $conexion->query($query);
+                          if(!($success)){$error = '1';$mensaje = "Error to save the endorsement status data, please try again later.";} 
+                      }
+                  }   
+              }
+          } 
       }
       
-      $success = $conexion->query($query);
-      if(!($success)){$error = '1';$mensaje = "Error to save the endorsement data, please try again later.";}
-      else{
-          if($edit_mode == 'false'){$iConsecutivo = $conexion->insert_id;} 
-          //ELIMINAMOS POLIZAS GUARDADAS ANTERIORMENTE:
-          $query   = "DELETE FROM cb_endoso_estatus WHERE iConsecutivoEndoso='$iConsecutivo'";
-          $success = $conexion->query($query); 
-          if(!($success)){$error = '1';$mensaje = "Error to update the endorsement status data, please try again later.";}
-          else{
-              foreach($_POST as $campo => $valor){
-                  if(!(strpos($campo,"chk_policies_") === false) && $valor == 1){
-                      $poliza  = str_replace("chk_policies_","",$campo);
-                      $query   = "INSERT INTO cb_endoso_estatus (iConsecutivoEndoso,iConsecutivoPoliza,eStatus,sIP,sUsuarioIngreso,dFechaIngreso) ".
-                                 "VALUES('$iConsecutivo','$poliza','S','$sIP','$sUsuario','$dFecha')";
-                      $success = $conexion->query($query);
-                      if(!($success)){$error = '1';$mensaje = "Error to save the endorsement status data, please try again later.";} 
-                  }
-              }   
-          }
-      } 
-     
       $success && $error == '0' ? $conexion->commit() : $conexion->rollback();
       $conexion->close();
       $response = array("error"=>"$error","msj"=>"$mensaje","iConsecutivo"=>"$iConsecutivo");
@@ -425,31 +436,39 @@
       $msj    = ""; 
       $clave  = trim($_POST['clave']); 
       
-      //Revisar que tipo de endoso es para verrificar si hay que borrar otros datos antes:
-      $query  = "SELECT iConsecutivoTipoEndoso, iReeferYear, iTrailerExchange, iConsecutivoOperador, iConsecutivoUnidad FROM cb_endoso WHERE iConsecutivo = '$clave'"; 
-      $result = $conexion->query($query); 
-      $rows   = $result->num_rows;
-      if($rows > 0 ){$endoso = $result->fetch_assoc();}else{$error = '1';}
-      
-      //BORRAMOS ENDOSO.
-      if($error == '0'){
-          
-          // Lo marcamos como eliminado mas no se elimina fisicamente de la BDD.
-          $query = "UPDATE cb_endoso SET iDeleted='1' WHERE iConsecutivo = '$clave'"; 
-          $conexion->query($query);
-          $conexion->affected_rows ? $transaccion_exitosa = true : $transaccion_exitosa = false;
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error = '1';
+          $msj   = "This user does not have the privileges to modify or add data to the system.";
       }
-      else{$msj = "Error: Descriptions in Endorsement are not found.";$transaccion_exitosa = false;} 
-      
-      if($transaccion_exitosa){
-        $conexion->commit();
-        $conexion->close();
-        $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data has been deleted succesfully!</p>';
-      }else{
-        $conexion->rollback();
-        $conexion->close();
-        $msj = "A general system error ocurred : internal error";
-        $error = "1";
+      else{
+          //Revisar que tipo de endoso es para verrificar si hay que borrar otros datos antes:
+          $query  = "SELECT iConsecutivoTipoEndoso, iReeferYear, iTrailerExchange, iConsecutivoOperador, iConsecutivoUnidad FROM cb_endoso WHERE iConsecutivo = '$clave'"; 
+          $result = $conexion->query($query); 
+          $rows   = $result->num_rows;
+          if($rows > 0 ){$endoso = $result->fetch_assoc();}else{$error = '1';}
+          
+          //BORRAMOS ENDOSO.
+          if($error == '0'){
+              
+              // Lo marcamos como eliminado mas no se elimina fisicamente de la BDD.
+              $query = "UPDATE cb_endoso SET iDeleted='1' WHERE iConsecutivo = '$clave'"; 
+              $conexion->query($query);
+              $conexion->affected_rows ? $transaccion_exitosa = true : $transaccion_exitosa = false;
+          }
+          else{$msj = "Error: Descriptions in Endorsement are not found.";$transaccion_exitosa = false;} 
+          
+          if($transaccion_exitosa){
+            $conexion->commit();
+            $conexion->close();
+            $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data has been deleted succesfully!</p>';
+          }else{
+            $conexion->rollback();
+            $conexion->close();
+            $msj = "A general system error ocurred : internal error";
+            $error = "1";
+          }
       }
         
       $response = array("msj"=>"$msj","error"=>"$error");   
@@ -479,117 +498,125 @@
       $sUsuario             = $_SESSION['usuario_actual'];
       $dFecha               = date("Y-m-d H:i:s");
       
-      //REVISAMOS DATOS DE LA UNIDAD:
-      if($iConsecutivoUnidad == ""){
-         //Verificamos si la unidad ya existe: 
-         $query  = "SELECT iConsecutivo FROM ct_unidades WHERE sVIN='".trim($_POST['sVIN'])."' AND iConsecutivoCompania = '$iConsecutivoCompania'";
-         $result = $conexion->query($query);
-         $items  = $result->fetch_assoc();
-         //Tomamos el consecutivo de la unidad ya existente:
-         $iConsecutivoUnidad          = trim($items['iConsecutivo']);
-         $_POST['iConsecutivoUnidad'] = $iConsecutivoUnidad; 
-      }
-  
-      if($iConsecutivoUnidad!= ""){
-         
-          //Verificamos si se va a editar en el DETALLE:
-          $query = "SELECT COUNT(iConsecutivoUnidad) AS total FROM cb_endoso_unidad ".
-                   "WHERE iConsecutivoUnidad='$iConsecutivoUnidad' AND iConsecutivoEndoso='$iConsecutivoEndoso'";
-          $result= $conexion->query($query);
-          $valid = $result->fetch_assoc();
-          $valid['total'] > 0 ? $edit_detalle = true : $edit_detalle = false;
-          
-          foreach($_POST as $campo => $valor){
-            if($campo != "accion" && $campo != "edit_mode"){ //Estos campos no se insertan a la tabla
-                #CAMPOS QUE SE GUARDAN A NIVEL CATALOGO
-                if($campo != "iConsecutivoUnidad" && $campo != "iConsecutivoCompania" && $campo != "iTotalPremiumPD" && $campo != "iConsecutivoRadio" && $campo != "eAccion" && $campo != "iConsecutivoEndoso"){
-                   if($valor != ""){
-                       array_push($valorCatalogo,"$campo='". strtoupper($valor)."'"); 
-                   }
-                }
-                #CAMPOS QUE DE GUARDAN A NIVEL DETALLE ENDOSO:
-                if($campo == "sVIN" || $campo == "iConsecutivoEndoso" || $campo == "iConsecutivoRadio" || $campo == "iTotalPremiumPD" || $campo == "eAccion" || $campo == "iConsecutivoUnidad"){
-                   if($valid['total'] == 0){
-                        if($valor != ""){
-                            array_push($campoDetalle ,$campo);
-                            array_push($valorDetalle, strtoupper($valor));    
-                        }
-                   }
-                   else{
-                       if($valor != ""){
-                            array_push($valorDetalle,"$campo='". strtoupper($valor)."'");
-                       }
-                   } 
-                }
-            }
-          }
-          
-          #EDITAR LA UNIDAD:
-          array_push($valorCatalogo,"sUsuarioActualizacion='".$sUsuario."'");
-          array_push($valorCatalogo,"sIP='".$sIP."'");
-          array_push($valorCatalogo ,"dFechaActualizacion='".$dFecha."'");
-          //array_push($valorCatalogo ,"eModoIngreso='ENDORSEMENT'");
-                
-          $query   = "UPDATE ct_unidades SET ".implode(",",$valorCatalogo)." WHERE iConsecutivo ='$iConsecutivoUnidad' AND iConsecutivoCompania = '$iConsecutivoCompania'"; 
-          $success = $conexion->query($query);
-          if(!($success)){$mensaje = "Error: The data of unit has not been saved successfully, please try again.";$error = "1";} 
-                  
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error = '1';
+          $mensaje   = "This user does not have the privileges to modify or add data to the system.";
       }
       else{
-         
-         //GUARDAR DATOS A NIVEL DETALLE ENDOSO:
-         foreach($_POST as $campo => $valor){
-            if($campo != "accion" && $campo != "edit_mode"){
-                
-                #CAMPOS QUE SE GUARDAN PARA UNA UNIDAD NUEVA
-                if($campo != "iConsecutivoUnidad" && $campo != "iTotalPremiumPD" && $campo != "iConsecutivoRadio" && $campo != "eAccion" && $campo != "iConsecutivoEndoso"){
-                   if($valor != ""){
-                       array_push($campoCatalogo ,$campo);
-                       array_push($valorCatalogo, strtoupper($valor));
-                   }
+          //REVISAMOS DATOS DE LA UNIDAD:
+          if($iConsecutivoUnidad == ""){
+             //Verificamos si la unidad ya existe: 
+             $query  = "SELECT iConsecutivo FROM ct_unidades WHERE sVIN='".trim($_POST['sVIN'])."' AND iConsecutivoCompania = '$iConsecutivoCompania'";
+             $result = $conexion->query($query);
+             $items  = $result->fetch_assoc();
+             //Tomamos el consecutivo de la unidad ya existente:
+             $iConsecutivoUnidad          = trim($items['iConsecutivo']);
+             $_POST['iConsecutivoUnidad'] = $iConsecutivoUnidad; 
+          }
+      
+          if($iConsecutivoUnidad!= ""){
+             
+              //Verificamos si se va a editar en el DETALLE:
+              $query = "SELECT COUNT(iConsecutivoUnidad) AS total FROM cb_endoso_unidad ".
+                       "WHERE iConsecutivoUnidad='$iConsecutivoUnidad' AND iConsecutivoEndoso='$iConsecutivoEndoso'";
+              $result= $conexion->query($query);
+              $valid = $result->fetch_assoc();
+              $valid['total'] > 0 ? $edit_detalle = true : $edit_detalle = false;
+              
+              foreach($_POST as $campo => $valor){
+                if($campo != "accion" && $campo != "edit_mode"){ //Estos campos no se insertan a la tabla
+                    #CAMPOS QUE SE GUARDAN A NIVEL CATALOGO
+                    if($campo != "iConsecutivoUnidad" && $campo != "iConsecutivoCompania" && $campo != "iTotalPremiumPD" && $campo != "iConsecutivoRadio" && $campo != "eAccion" && $campo != "iConsecutivoEndoso"){
+                       if($valor != ""){
+                           array_push($valorCatalogo,"$campo='". strtoupper($valor)."'"); 
+                       }
+                    }
+                    #CAMPOS QUE DE GUARDAN A NIVEL DETALLE ENDOSO:
+                    if($campo == "sVIN" || $campo == "iConsecutivoEndoso" || $campo == "iConsecutivoRadio" || $campo == "iTotalPremiumPD" || $campo == "eAccion" || $campo == "iConsecutivoUnidad"){
+                       if($valid['total'] == 0){
+                            if($valor != ""){
+                                array_push($campoDetalle ,$campo);
+                                array_push($valorDetalle, strtoupper($valor));    
+                            }
+                       }
+                       else{
+                           if($valor != ""){
+                                array_push($valorDetalle,"$campo='". strtoupper($valor)."'");
+                           }
+                       } 
+                    }
                 }
-                
-                #CAMPOS QUE DE GUARDAN A NIVEL DETALLE ENDOSO:
-                if($campo == "sVIN" || $campo == "iConsecutivoEndoso" || $campo == "iConsecutivoRadio" || $campo == "iTotalPremiumPD" || $campo == "eAccion" || $campo == "iConsecutivoUnidad"){
-                    if($valor != ""){
-                        array_push($campoDetalle ,$campo);
-                        array_push($valorDetalle, strtoupper($valor));
-                    }    
+              }
+              
+              #EDITAR LA UNIDAD:
+              array_push($valorCatalogo,"sUsuarioActualizacion='".$sUsuario."'");
+              array_push($valorCatalogo,"sIP='".$sIP."'");
+              array_push($valorCatalogo ,"dFechaActualizacion='".$dFecha."'");
+              //array_push($valorCatalogo ,"eModoIngreso='ENDORSEMENT'");
+                    
+              $query   = "UPDATE ct_unidades SET ".implode(",",$valorCatalogo)." WHERE iConsecutivo ='$iConsecutivoUnidad' AND iConsecutivoCompania = '$iConsecutivoCompania'"; 
+              $success = $conexion->query($query);
+              if(!($success)){$mensaje = "Error: The data of unit has not been saved successfully, please try again.";$error = "1";} 
+                      
+          }
+          else{
+             
+             //GUARDAR DATOS A NIVEL DETALLE ENDOSO:
+             foreach($_POST as $campo => $valor){
+                if($campo != "accion" && $campo != "edit_mode"){
+                    
+                    #CAMPOS QUE SE GUARDAN PARA UNA UNIDAD NUEVA
+                    if($campo != "iConsecutivoUnidad" && $campo != "iTotalPremiumPD" && $campo != "iConsecutivoRadio" && $campo != "eAccion" && $campo != "iConsecutivoEndoso"){
+                       if($valor != ""){
+                           array_push($campoCatalogo ,$campo);
+                           array_push($valorCatalogo, strtoupper($valor));
+                       }
+                    }
+                    
+                    #CAMPOS QUE DE GUARDAN A NIVEL DETALLE ENDOSO:
+                    if($campo == "sVIN" || $campo == "iConsecutivoEndoso" || $campo == "iConsecutivoRadio" || $campo == "iTotalPremiumPD" || $campo == "eAccion" || $campo == "iConsecutivoUnidad"){
+                        if($valor != ""){
+                            array_push($campoDetalle ,$campo);
+                            array_push($valorDetalle, strtoupper($valor));
+                        }    
+                    }
                 }
-            }
-         } 
-         
-         //Se inicializan campos adicionales de control
-         array_push($campoCatalogo ,"sUsuarioIngreso"); array_push($valorCatalogo,$sUsuario);
-         array_push($campoCatalogo ,"sIP"); array_push($valorCatalogo,$sIP); 
-         array_push($campoCatalogo ,"eModoIngreso"); array_push($valorCatalogo,"ENDORSEMENT"); 
-         
-         $query   = "INSERT INTO ct_unidades (".implode(",",$campoCatalogo).") VALUES ('".implode("','",$valorCatalogo)."')";
-         $success = $conexion->query($query);
-         if($success){
-             $iConsecutivoUnidad = $conexion->insert_id;
-             array_push($campoDetalle ,"iConsecutivoUnidad");
-             array_push($valorDetalle, $iConsecutivoUnidad);
-         }
-         else{$mensaje = "Error: The data of unit has not been saved successfully, please try again.";$error = "1";}
-      
+             } 
+             
+             //Se inicializan campos adicionales de control
+             array_push($campoCatalogo ,"sUsuarioIngreso"); array_push($valorCatalogo,$sUsuario);
+             array_push($campoCatalogo ,"sIP"); array_push($valorCatalogo,$sIP); 
+             array_push($campoCatalogo ,"eModoIngreso"); array_push($valorCatalogo,"ENDORSEMENT"); 
+             
+             $query   = "INSERT INTO ct_unidades (".implode(",",$campoCatalogo).") VALUES ('".implode("','",$valorCatalogo)."')";
+             $success = $conexion->query($query);
+             if($success){
+                 $iConsecutivoUnidad = $conexion->insert_id;
+                 array_push($campoDetalle ,"iConsecutivoUnidad");
+                 array_push($valorDetalle, $iConsecutivoUnidad);
+             }
+             else{$mensaje = "Error: The data of unit has not been saved successfully, please try again.";$error = "1";}
+          
+          }
+          
+          if($success){
+             if($edit_detalle){
+                $query   = "UPDATE cb_endoso_unidad SET ".implode(",",$valorDetalle)." WHERE iConsecutivoUnidad ='$iConsecutivoUnidad' AND iConsecutivoEndoso='$iConsecutivoEndoso'"; 
+                $mensaje = "The data was updated successfully.";
+             }
+             else{
+                $query   = "INSERT INTO cb_endoso_unidad (".implode(",",$campoDetalle).") VALUES ('".implode("','",$valorDetalle)."')";
+                $mensaje = "The data was saved successfully.";
+             }
+          
+             $success = $conexion->query($query);
+             if(!($success)){$mensaje = "Error: The data of unit/endorsement has not been saved successfully, please try again.";$error = "1";}
+             
+          }
       }
-      
-      if($success){
-         if($edit_detalle){
-            $query   = "UPDATE cb_endoso_unidad SET ".implode(",",$valorDetalle)." WHERE iConsecutivoUnidad ='$iConsecutivoUnidad' AND iConsecutivoEndoso='$iConsecutivoEndoso'"; 
-            $mensaje = "The data was updated successfully.";
-         }
-         else{
-            $query   = "INSERT INTO cb_endoso_unidad (".implode(",",$campoDetalle).") VALUES ('".implode("','",$valorDetalle)."')";
-            $mensaje = "The data was saved successfully.";
-         }
-      
-         $success = $conexion->query($query);
-         if(!($success)){$mensaje = "Error: The data of unit/endorsement has not been saved successfully, please try again.";$error = "1";}
-         
-      }
-      
+           
       $success && $error == '0' ? $conexion->commit() : $conexion->rollback();
       $conexion->close();
       $response = array("error"=>"$error","msj"=>"$mensaje");
@@ -707,25 +734,33 @@
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE); 
       
-      //CONSULTAMOS, SI LA UNIDAD NO ESTA ACTUALMENTE EN NINGUNA POLIZA, LA MARCAREMOS COMO ELIMINADA EN EL CATALOGO:
-      $query = "SELECT COUNT(A.iConsecutivo) AS total ".
-               "FROM ct_unidades AS A INNER JOIN cb_poliza_unidad AS B ON A.iConsecutivo = B.iConsecutivoUnidad ".
-               "WHERE A.iConsecutivo = '$clave'";
-      $result= $conexion->query($query);
-      $valid = $result->fetch_assoc();
-      $valid['total'] > 0 ? $iElimina = false : $iElimina = true;
-      
-      $query   = "DELETE FROM cb_endoso_unidad WHERE iConsecutivoUnidad='$clave' AND iConsecutivoEndoso='$idEndoso'";
-      $success = $conexion->query($query);
-      
-      if(!($success)){$error = '1'; $mensaje = "Error to try delete data, please try again later.";}
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error = '1';
+          $mensaje= "This user does not have the privileges to modify or add data to the system.";
+      }
       else{
-         if($iElimina){
-            $query   = "UPDATE ct_unidades SET iDeleted = '1' WHERE iConsecutivo='$clave'";
-            $success = $conexion->query($query); 
-            if(!($success)){$error = '1'; $mensaje = "Error to try update data, please try again later.";}
-         }
-         if($error == "0"){$mensaje = "The data has been deleted successfully!";} 
+          //CONSULTAMOS, SI LA UNIDAD NO ESTA ACTUALMENTE EN NINGUNA POLIZA, LA MARCAREMOS COMO ELIMINADA EN EL CATALOGO:
+          $query = "SELECT COUNT(A.iConsecutivo) AS total ".
+                   "FROM ct_unidades AS A INNER JOIN cb_poliza_unidad AS B ON A.iConsecutivo = B.iConsecutivoUnidad ".
+                   "WHERE A.iConsecutivo = '$clave'";
+          $result= $conexion->query($query);
+          $valid = $result->fetch_assoc();
+          $valid['total'] > 0 ? $iElimina = false : $iElimina = true;
+          
+          $query   = "DELETE FROM cb_endoso_unidad WHERE iConsecutivoUnidad='$clave' AND iConsecutivoEndoso='$idEndoso'";
+          $success = $conexion->query($query);
+          
+          if(!($success)){$error = '1'; $mensaje = "Error to try delete data, please try again later.";}
+          else{
+             if($iElimina){
+                $query   = "UPDATE ct_unidades SET iDeleted = '1' WHERE iConsecutivo='$clave'";
+                $success = $conexion->query($query); 
+                if(!($success)){$error = '1'; $mensaje = "Error to try update data, please try again later.";}
+             }
+             if($error == "0"){$mensaje = "The data has been deleted successfully!";} 
+          } 
       }
       
       $error == "0" ? $conexion->commit() : $conexion->rollback();
@@ -1082,122 +1117,130 @@
       $PolizasEstatus = trim($_POST['polizas']);
       $eStatus        = trim($_POST['eStatusEndoso']);
       
-      if(isset($_FILES['file-0'])){
-          $file        = fopen($_FILES['file-0']["tmp_name"], 'r'); 
-          $fileContent = fread($file, filesize($_FILES['file-0']["tmp_name"]));
-          $fileName    = $_FILES['file-0']['name'];
-          $fileType    = $_FILES['file-0']['type']; 
-          $fileTmpName = $_FILES['file-0']['tmp_name']; 
-          $fileSize    = $_FILES['file-0']['size']; 
-          $fileError   = $_FILES['file-0']['error'];
-          $fileExten   = explode(".",$fileName);
-      }  
- 
-      //Conexion:
-      include("cn_usuarios.php");  
-      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
-      $transaccion_exitosa = true;
-      
-      //Revisar si hay que actualizar polizas:
-      $array       = explode(";",$PolizasEstatus);
-      $count       = count($array);
-      $iAprobacion = 0;
-      $iDenegado   = 0;
-      
-      if($count > 0){
-          
-          for($x=0;$x < $count; $x++){
-              $actualiza = "";
-              $poliza    = explode("|",$array[$x]);
-              $polizaID  = $poliza[0];
-              $eStatus == "A" ? $eStatusP = 'A' : $eStatusP  = trim($poliza[1]);
-              
-              $actualiza .= " eStatus='$eStatusP' "; 
-              $actualiza != "" ? $actualiza .= ", sComentarios='".utf8_encode(trim($poliza[2]))."'" : $actualiza = "sComentarios='".utf8_encode(trim($poliza[2]))."'";
-              $actualiza != "" ? $actualiza .= ", sNumeroEndosoBroker='".strtoupper(trim($poliza[3]))."'"       : $actualiza = "sNumeroEndosoBroker='".strtoupper(trim($poliza[3]))."'"; 
-              $actualiza != "" ? $actualiza .= ", rImporteEndosoBroker='".trim($poliza[4])."'"      : $actualiza = "rImporteEndosoBroker='".trim($poliza[4])."'"; 
-              
-              if($actualiza != "" && $polizaID != ""){
-                 $query   = "UPDATE cb_endoso_estatus SET $actualiza WHERE iConsecutivoPoliza ='$polizaID' AND iConsecutivoEndoso = '$iConsecutivo'";
-                 $success = $conexion->query($query);
-                 if(!($success)){$transaccion_exitosa = false;$mensaje = "The data was not updated properly, please try again."; }
-                 
-                 //Incrementamos contador para verificar aprobacion:
-                 if($eStatusP == "A"){
-                     
-                     $iAprobacion++;
-                     $validaAccion = set_endoso_poliza($iConsecutivo,$polizaID,$conexion);
-                    
-                     if(!($validaAccion)){$transaccion_exitosa=false;$mensaje="The policy data was not updated properly, please try again.";}
-                     else{
-                        $mensaje = "The data has been saved successfully and the vehicle has been updated in the company policy. <br>Thank you!"; 
-                     }
-                 }else
-                 if($eStatusP == "D"){$iDenegado++;}
-              }
-              
-          } 
-          
-          //VERIFICAMOS SI TODOS LOS ESTATUS ESTAN APROBADOS, MARCAMOS EL ENDOSO TAMBIEN:
-          if($iAprobacion == $count){$eStatus = 'A';}else
-          if($iDenegado == $count){$eStatus = 'D';}
-      }
-      
-      if($transaccion_exitosa){
-          $actualiza = "eStatus='$eStatus'";
-          if($Comentarios != ""){$actualiza .= ", sComentarios='".utf8_encode($Comentarios)."'";}
-          
-          if($actualiza != ""){
-              $query   = "UPDATE cb_endoso SET $actualiza WHERE iConsecutivo = '$iConsecutivo'"; 
-              $success = $conexion->query($query); 
-              if(!($success)){$transaccion_exitosa = false;$mensaje = "The data was not saved properly, please try again.";}
-          }
-      }
-      
-      //Subir archivo
-      if($transaccion_exitosa && $fileError = 0 && $fileName != ""){
-          if(count($fileExten) != 2){$transaccion_exitosa = false;$mensaje = "Error: Please check that the name of the file should not contain points.";}
-          else{
-            //Extension Valida:
-              $fileExten = strtolower($fileExten[1]);
-              if($fileExten != "pdf" && $fileExten != "jpg" && $fileExten != "jpeg" && $fileExten != "png" && $fileExten != "doc" && $fileExten != "docx" && $fileExten != "xlsx" && $fileExten != "xls" && $fileExten != "mp3" && $fileExten != "mp4" && $fileExten != "key" && $fileExten != "cer" && $fileExten != "zip" && $fileExten != "ppt" && $fileExten != "pptx"){
-                  $transaccion_exitosa = false; $mensaje="Error: The file extension is not valid, please check it.";
-              }
-              else{
-                  //Verificar Tamaño:
-                  if($fileSize > 0  && $fileError == 0){
-                      $sContenido           = $conexion->real_escape_string($fileContent);
-                      $eArchivo             = trim('ENDORSEMENT'); 
-                      //if($eArchivo != "OTHERS"){$fileName = strtolower($eArchivo).'.'.$fileExten;} //Si la categoria existe renombramos el archivo. 
-                      
-                      #UPDATE
-                      /*if($edit_mode){
-                         $sql = "UPDATE cb_endoso_files SET sNombreArchivo ='$fileName', sTipoArchivo ='$fileType', iTamanioArchivo ='$fileSize', ".
-                                "hContenidoDocumentoDigitalizado='$sContenido', eArchivo='$eArchivo', ".
-                                "dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."'".
-                                "WHERE iConsecutivo ='".trim($_POST['iConsecutivo'])."'";  
-                      }
-                      #INSERT
-                      else{ */
-                         $sql = "INSERT INTO cb_endoso_files (sNombreArchivo, sTipoArchivo, iTamanioArchivo, hContenidoDocumentoDigitalizado, eArchivo,iConsecutivoEndoso, dFechaIngreso, sIP, sUsuarioIngreso) ".
-                                "VALUES('$fileName','$fileType','$fileSize','$sContenido','$eArchivo','$iConsecutivo','".date("Y-m-d H:i:s")."', '".$_SERVER['REMOTE_ADDR']."', '".$_SESSION['usuario_actual']."')"; 
-                      //}
-                      if(!($conexion->query($sql))){$transaccion_exitosa = false; $mensaje = "A general system error ocurred : internal error";}       
-                  }
-                  else{$transaccion_exitosa = false;  $mensaje = "Error: The file you are trying to upload is empty or corrupt, please check it and try again.";}
-              }    
-          }
-      }
-      
-      if($transaccion_exitosa){
-            $conexion->commit();
-            $conexion->close();
-            if($mensaje == ""){$mensaje = "The data has been saved successfully, Thank you!";}
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error  = '1';
+          $mensaje= "This user does not have the privileges to modify or add data to the system.";
       }
       else{
-            $conexion->rollback();
-            $conexion->close(); 
-            $error = "1";
+          if(isset($_FILES['file-0'])){
+              $file        = fopen($_FILES['file-0']["tmp_name"], 'r'); 
+              $fileContent = fread($file, filesize($_FILES['file-0']["tmp_name"]));
+              $fileName    = $_FILES['file-0']['name'];
+              $fileType    = $_FILES['file-0']['type']; 
+              $fileTmpName = $_FILES['file-0']['tmp_name']; 
+              $fileSize    = $_FILES['file-0']['size']; 
+              $fileError   = $_FILES['file-0']['error'];
+              $fileExten   = explode(".",$fileName);
+          }  
+     
+          //Conexion:
+          include("cn_usuarios.php");  
+          $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+          $transaccion_exitosa = true;
+          
+          //Revisar si hay que actualizar polizas:
+          $array       = explode(";",$PolizasEstatus);
+          $count       = count($array);
+          $iAprobacion = 0;
+          $iDenegado   = 0;
+          
+          if($count > 0){
+              
+              for($x=0;$x < $count; $x++){
+                  $actualiza = "";
+                  $poliza    = explode("|",$array[$x]);
+                  $polizaID  = $poliza[0];
+                  $eStatus == "A" ? $eStatusP = 'A' : $eStatusP  = trim($poliza[1]);
+                  
+                  $actualiza .= " eStatus='$eStatusP' "; 
+                  $actualiza != "" ? $actualiza .= ", sComentarios='".utf8_encode(trim($poliza[2]))."'" : $actualiza = "sComentarios='".utf8_encode(trim($poliza[2]))."'";
+                  $actualiza != "" ? $actualiza .= ", sNumeroEndosoBroker='".strtoupper(trim($poliza[3]))."'"       : $actualiza = "sNumeroEndosoBroker='".strtoupper(trim($poliza[3]))."'"; 
+                  $actualiza != "" ? $actualiza .= ", rImporteEndosoBroker='".trim($poliza[4])."'"      : $actualiza = "rImporteEndosoBroker='".trim($poliza[4])."'"; 
+                  
+                  if($actualiza != "" && $polizaID != ""){
+                     $query   = "UPDATE cb_endoso_estatus SET $actualiza WHERE iConsecutivoPoliza ='$polizaID' AND iConsecutivoEndoso = '$iConsecutivo'";
+                     $success = $conexion->query($query);
+                     if(!($success)){$transaccion_exitosa = false;$mensaje = "The data was not updated properly, please try again."; }
+                     
+                     //Incrementamos contador para verificar aprobacion:
+                     if($eStatusP == "A"){
+                         
+                         $iAprobacion++;
+                         $validaAccion = set_endoso_poliza($iConsecutivo,$polizaID,$conexion);
+                        
+                         if(!($validaAccion)){$transaccion_exitosa=false;$mensaje="The policy data was not updated properly, please try again.";}
+                         else{
+                            $mensaje = "The data has been saved successfully and the vehicle has been updated in the company policy. <br>Thank you!"; 
+                         }
+                     }else
+                     if($eStatusP == "D"){$iDenegado++;}
+                  }
+                  
+              } 
+              
+              //VERIFICAMOS SI TODOS LOS ESTATUS ESTAN APROBADOS, MARCAMOS EL ENDOSO TAMBIEN:
+              if($iAprobacion == $count){$eStatus = 'A';}else
+              if($iDenegado == $count){$eStatus = 'D';}
+          }
+          
+          if($transaccion_exitosa){
+              $actualiza = "eStatus='$eStatus'";
+              if($Comentarios != ""){$actualiza .= ", sComentarios='".utf8_encode($Comentarios)."'";}
+              
+              if($actualiza != ""){
+                  $query   = "UPDATE cb_endoso SET $actualiza WHERE iConsecutivo = '$iConsecutivo'"; 
+                  $success = $conexion->query($query); 
+                  if(!($success)){$transaccion_exitosa = false;$mensaje = "The data was not saved properly, please try again.";}
+              }
+          }
+          
+          //Subir archivo
+          if($transaccion_exitosa && $fileError = 0 && $fileName != ""){
+              if(count($fileExten) != 2){$transaccion_exitosa = false;$mensaje = "Error: Please check that the name of the file should not contain points.";}
+              else{
+                //Extension Valida:
+                  $fileExten = strtolower($fileExten[1]);
+                  if($fileExten != "pdf" && $fileExten != "jpg" && $fileExten != "jpeg" && $fileExten != "png" && $fileExten != "doc" && $fileExten != "docx" && $fileExten != "xlsx" && $fileExten != "xls" && $fileExten != "mp3" && $fileExten != "mp4" && $fileExten != "key" && $fileExten != "cer" && $fileExten != "zip" && $fileExten != "ppt" && $fileExten != "pptx"){
+                      $transaccion_exitosa = false; $mensaje="Error: The file extension is not valid, please check it.";
+                  }
+                  else{
+                      //Verificar Tamaño:
+                      if($fileSize > 0  && $fileError == 0){
+                          $sContenido           = $conexion->real_escape_string($fileContent);
+                          $eArchivo             = trim('ENDORSEMENT'); 
+                          //if($eArchivo != "OTHERS"){$fileName = strtolower($eArchivo).'.'.$fileExten;} //Si la categoria existe renombramos el archivo. 
+                          
+                          #UPDATE
+                          /*if($edit_mode){
+                             $sql = "UPDATE cb_endoso_files SET sNombreArchivo ='$fileName', sTipoArchivo ='$fileType', iTamanioArchivo ='$fileSize', ".
+                                    "hContenidoDocumentoDigitalizado='$sContenido', eArchivo='$eArchivo', ".
+                                    "dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."'".
+                                    "WHERE iConsecutivo ='".trim($_POST['iConsecutivo'])."'";  
+                          }
+                          #INSERT
+                          else{ */
+                             $sql = "INSERT INTO cb_endoso_files (sNombreArchivo, sTipoArchivo, iTamanioArchivo, hContenidoDocumentoDigitalizado, eArchivo,iConsecutivoEndoso, dFechaIngreso, sIP, sUsuarioIngreso) ".
+                                    "VALUES('$fileName','$fileType','$fileSize','$sContenido','$eArchivo','$iConsecutivo','".date("Y-m-d H:i:s")."', '".$_SERVER['REMOTE_ADDR']."', '".$_SESSION['usuario_actual']."')"; 
+                          //}
+                          if(!($conexion->query($sql))){$transaccion_exitosa = false; $mensaje = "A general system error ocurred : internal error";}       
+                      }
+                      else{$transaccion_exitosa = false;  $mensaje = "Error: The file you are trying to upload is empty or corrupt, please check it and try again.";}
+                  }    
+              }
+          }
+          
+          if($transaccion_exitosa){
+                $conexion->commit();
+                $conexion->close();
+                if($mensaje == ""){$mensaje = "The data has been saved successfully, Thank you!";}
+          }
+          else{
+                $conexion->rollback();
+                $conexion->close(); 
+                $error = "1";
+          }
       }
       
       $response = array("error"=>"$error","msj"=>"$mensaje");
@@ -1226,12 +1269,20 @@
       $polizas = explode(";",$polizas);
       $count   = count($polizas);
       
-      for($x=0;$x<$count;$x++){
-          $data    = explode("|",$polizas[$x]);
-          $query   = "UPDATE cb_endoso_estatus SET sEmail='".trim($data[1])."', sMensajeEmail='".$sMensaje."',sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha' ".
-                     "WHERE iConsecutivoEndoso='$iConsecutivoEndoso' AND iConsecutivoPoliza='".$data[0]."'";
-          $success = $conexion->query($query) or die($conexion->error);
-          if(!($success)){$error = '1';$mensaje = "Error to save data, please try again later.";}
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error  = '1';
+          $mensaje= "This user does not have the privileges to modify or add data to the system.";
+      }
+      else{
+          for($x=0;$x<$count;$x++){
+              $data    = explode("|",$polizas[$x]);
+              $query   = "UPDATE cb_endoso_estatus SET sEmail='".trim($data[1])."', sMensajeEmail='".$sMensaje."',sIP='$sIP',sUsuarioActualizacion='$sUsuario',dFechaActualizacion='$dFecha' ".
+                         "WHERE iConsecutivoEndoso='$iConsecutivoEndoso' AND iConsecutivoPoliza='".$data[0]."'";
+              $success = $conexion->query($query) or die($conexion->error);
+              if(!($success)){$error = '1';$mensaje = "Error to save data, please try again later.";}
+          }
       }
       
       $success && $error == '0' ? $conexion->commit() : $conexion->rollback();
@@ -1318,95 +1369,138 @@
       $count     = count($Emails);
       $htmlTabla = "";
       $msjCRC    = "";
+      $msj       = "";
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);
       
-      #ACTUALIZAMOS ENDOSO A SB..   
-      if($count > 0){ 
-          if($Emails['error']=="0"){
-              #UPDATE ENDORSEMENT DETAILS:
-              $query = "UPDATE cb_endoso SET eStatus = 'SB',dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
-                       "WHERE iConsecutivo = '$iConsecutivo'"; 
-              $conexion->query($query);
-              if($conexion->affected_rows < 1){$success = false;$mensaje="Error to update the endorsement status, please check with de system admin.";}     
-          }
-          else{$success = false;$msj=$Emails['error'];}
+      $valid_user = valid_user($_SESSION['usuario_actual']);
+
+      if(!($valid_user)){
+          $error  = '1';
+          $msj    = "This user does not have the privileges to modify or add data to the system.";
       }
-      
-      if($success){
-         for($x=0;$x < $count;$x++){
-              if($Emails[$x]['html']!= ""){
-                      
-                #UPDATE ENDORSEMENT DETAILS:
-                $query = "UPDATE cb_endoso_estatus SET eStatus = 'SB', dFechaAplicacion='".date("Y-m-d H:i:s")."', dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
-                         "WHERE iConsecutivoEndoso = '$iConsecutivo' AND iConsecutivoPoliza = '".$Emails[$x]['idPoliza']."'"; 
-                $conexion->query($query);
-                if($conexion->affected_rows < 1){$success = false;$mensaje="Error to update the endorsement status, please check with de system admin.";}   
-                
-                //ANTES DE ENVIAR CORREO, VERIFICAMOS QUE EXISTAN CORREOS PARA LOS BROKERS REGISTRADOS:
-                if($Emails[$x]['emails'] != ""){
-                    #HTML:
-                    $htmlEmail  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"\"http://www.w3.org/TR/html4/strict.dtd\"><html>".
-                                    "<head><meta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\">".
-                                    "<title>Endorsement from Solo-Trucking Insurance</title></head>"; 
-                    $htmlEmail .= "<body>".$Emails[$x]['html']."</body>";   
-                    $htmlEmail .= "</html>";
+      else{
+          #ACTUALIZAMOS ENDOSO A SB..   
+          if($count > 0){ 
+              if($Emails['error']=="0"){
+                  #UPDATE ENDORSEMENT DETAILS:
+                  $query = "UPDATE cb_endoso SET eStatus = 'SB',dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
+                           "WHERE iConsecutivo = '$iConsecutivo'"; 
+                  $conexion->query($query);
+                  if($conexion->affected_rows < 1){$success = false;$mensaje="Error to update the endorsement status, please check with de system admin.";}     
+              }
+              else{$success = false;$msj=$Emails['error'];}
+          }
+          
+          if($success){
+             for($x=0;$x < $count;$x++){
+                  if($Emails[$x]['html']!= ""){
+                          
+                    #UPDATE ENDORSEMENT DETAILS:
+                    $query = "UPDATE cb_endoso_estatus SET eStatus = 'SB', dFechaAplicacion='".date("Y-m-d H:i:s")."', dFechaActualizacion='".date("Y-m-d H:i:s")."', sIP='".$_SERVER['REMOTE_ADDR']."', sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
+                             "WHERE iConsecutivoEndoso = '$iConsecutivo' AND iConsecutivoPoliza = '".$Emails[$x]['idPoliza']."'"; 
+                    $conexion->query($query);
+                    if($conexion->affected_rows < 1){$success = false;$mensaje="Error to update the endorsement status, please check with de system admin.";}   
                     
-                    #TERMINA CUERPO DEL MENSAJE
-                    $mail = new PHPMailer();   
-                    $mail->IsSMTP(); // telling the class to use SMTP
-                    $mail->Host       = "mail.solo-trucking.com"; // SMTP server
-                    //$mail->SMTPDebug  = 2; // enables SMTP debug information (for testing) 1 = errors and messages 2 = messages only
-                    $mail->SMTPAuth   = true;                  // enable SMTP authentication
-                    $mail->SMTPSecure = "TLS";                 // sets the prefix to the servier
-                    $mail->Host       = "smtp.gmail.com";      // sets GMAIL as the SMTP server
-                    $mail->Port       = 587;                   // set the SMTP port for the GMAIL server
-                    
-                    #VERIFICAR SERVIDOR DONDE SE ENVIAN CORREOS:
-                    if($_SERVER["HTTP_HOST"]=="stdev.websolutionsac.com" || $_SERVER["HTTP_HOST"]=="www.stdev.websolutionsac.com"){
-                      $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
-                      $mail->Password   = "SL09100242";  
-                      $mail->SetFrom('systemsupport@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');
-                    }else if($_SERVER["HTTP_HOST"] == "solotrucking.laredo2.net" || $_SERVER["HTTP_HOST"] == "st.websolutionsac.com" || $_SERVER["HTTP_HOST"] == "www.solo-trucking.com"){
-                      $mail->Username   = "customerservice@solo-trucking.com";  // GMAIL username
-                      $mail->Password   = "1101W3bSTruck";
-                      $mail->SetFrom('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');   
-                    }
-                    
-                    $mail->AddReplyTo('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance'); 
-                    $mail->AddAddress('systemsupport@solo-trucking.com','System Support Solo-Trucking Insurance');
-                    
-                    $mail->Subject    = $Emails[$x]['subject'];
-                    $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
-                    $mail->MsgHTML($htmlEmail);
-                    $mail->IsHTML(true); 
-                     
-                    //Receptores:
-                    $direcciones         = explode(",",trim($Emails[$x]['emails']));
-                    $nombre_destinatario = trim($Emails[$x]['broker']);
-                    foreach($direcciones as $direccion){
-                        $mail->AddAddress(trim($direccion),$nombre_destinatario);
-                    }
-                      
-                    //Atachments:
-                    $files        = $Emails[$x]['files'];
-                    $delete_files = "";
-                    
-                    if($files != ""){
-                       $countFiles = count($files);
-                       for($f=0; $f < $countFiles; $f++){
-                           
-                           //Revisamos si es PDF:
-                           include("./lib/fpdf153/fpdf.php");//libreria fpdf
-                           
-                           $file_tmp = fopen('tmp/'.$files[$f]["name"],"w") or die("Error when creating the file. Please check."); 
-                           fwrite($file_tmp,$files[$f]["content"]); 
-                           fclose($file_tmp);     
-                           $archivo = "tmp/".$files[$f]["name"];  
-                           $mail->AddAttachment($archivo);
-                           $delete_files .= "unlink('".$archivo."');";
+                    //ANTES DE ENVIAR CORREO, VERIFICAMOS QUE EXISTAN CORREOS PARA LOS BROKERS REGISTRADOS:
+                    if($Emails[$x]['emails'] != ""){
+                        #HTML:
+                        $htmlEmail  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"\"http://www.w3.org/TR/html4/strict.dtd\"><html>".
+                                        "<head><meta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\">".
+                                        "<title>Endorsement from Solo-Trucking Insurance</title></head>"; 
+                        $htmlEmail .= "<body>".$Emails[$x]['html']."</body>";   
+                        $htmlEmail .= "</html>";
+                        
+                        #TERMINA CUERPO DEL MENSAJE
+                        $mail = new PHPMailer();   
+                        $mail->IsSMTP(); // telling the class to use SMTP
+                        $mail->Host       = "mail.solo-trucking.com"; // SMTP server
+                        //$mail->SMTPDebug  = 2; // enables SMTP debug information (for testing) 1 = errors and messages 2 = messages only
+                        $mail->SMTPAuth   = true;                  // enable SMTP authentication
+                        $mail->SMTPSecure = "TLS";                 // sets the prefix to the servier
+                        $mail->Host       = "smtp.gmail.com";      // sets GMAIL as the SMTP server
+                        $mail->Port       = 587;                   // set the SMTP port for the GMAIL server
+                        
+                        #VERIFICAR SERVIDOR DONDE SE ENVIAN CORREOS:
+                        if($_SERVER["HTTP_HOST"]=="stdev.websolutionsac.com" || $_SERVER["HTTP_HOST"]=="www.stdev.websolutionsac.com"){
+                          $mail->Username   = "systemsupport@solo-trucking.com";  // GMAIL username
+                          $mail->Password   = "SL09100242";  
+                          $mail->SetFrom('systemsupport@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');
+                        }else if($_SERVER["HTTP_HOST"] == "solotrucking.laredo2.net" || $_SERVER["HTTP_HOST"] == "st.websolutionsac.com" || $_SERVER["HTTP_HOST"] == "www.solo-trucking.com"){
+                          $mail->Username   = "customerservice@solo-trucking.com";  // GMAIL username
+                          $mail->Password   = "1101W3bSTruck";
+                          $mail->SetFrom('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');   
+                        }
+                        
+                        $mail->AddReplyTo('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance'); 
+                        $mail->AddAddress('systemsupport@solo-trucking.com','System Support Solo-Trucking Insurance');
+                        
+                        $mail->Subject    = $Emails[$x]['subject'];
+                        $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!";  // optional, comment out and test
+                        $mail->MsgHTML($htmlEmail);
+                        $mail->IsHTML(true); 
+                         
+                        //Receptores:
+                        $direcciones         = explode(",",trim($Emails[$x]['emails']));
+                        $nombre_destinatario = trim($Emails[$x]['broker']);
+                        foreach($direcciones as $direccion){
+                            $mail->AddAddress(trim($direccion),$nombre_destinatario);
+                        }
+                          
+                        //Atachments:
+                        $files        = $Emails[$x]['files'];
+                        $delete_files = "";
+                        
+                        if($files != ""){
+                           $countFiles = count($files);
+                           //SI SON MAS DE 10 ARCHIVOS GENERAR ZIP:
+                           if($countFiles > 10){
+                               $listadoArchivos = array();
                        
-                       } 
+                               for($f=0; $f < $countFiles; $f++){
+                               
+                                   $file_tmp = fopen('tmp/'.$files[$f]["name"],"w") or die("Error when creating the file. Please check."); 
+                                   fwrite($file_tmp,$files[$f]["content"]); 
+                                   fclose($file_tmp);  
+                                   $archivo       = "tmp/".$files[$f]["name"];  
+                                   $delete_files .= "unlink('".$archivo."');";
+                                   array_push($listadoArchivos,$files[$f]["name"]);   //Agregar archivo al array para ZIP: 
+                               
+                               }  
+                               
+                               //Generar archivo ZIP:
+                               $zipName = 'Solo-Trucking_endorsement_files';
+                               $zip     = new ZipArchive();
+                               $fileZip = "tmp/$zipName.zip";
+                               
+                               if($zip->open($fileZip, ZIPARCHIVE::CREATE) != TRUE ){exit("No se puede crear el archivo <$zipName.zip>\n");}
+                               
+                               foreach($listadoArchivos as $archivos){
+                                 $nombre_ruta_archivo = "tmp/$archivos";
+                                 $zip->addFile($nombre_ruta_archivo,$archivos);
+                               }
+                                
+                               $zip->close();
+                           
+                               $mail->AddAttachment($fileZip);            
+                               $delete_files .= "unlink('".$fileZip."');";      
+                           }
+                           else{
+                              for($f=0; $f < $countFiles; $f++){
+                               
+                               //Revisamos si es PDF:
+                               include("./lib/fpdf153/fpdf.php");//libreria fpdf
+                               
+                               $file_tmp = fopen('tmp/'.$files[$f]["name"],"w") or die("Error when creating the file. Please check."); 
+                               fwrite($file_tmp,$files[$f]["content"]); 
+                               fclose($file_tmp);     
+                               $archivo = "tmp/".$files[$f]["name"];  
+                               $mail->AddAttachment($archivo);
+                               $delete_files .= "unlink('".$archivo."');";
+                               
+                              }  
+                           }
+                           
                     } 
                     
                     $mail_error = false;
@@ -1418,6 +1512,7 @@
                     eval($delete_files);    
                 }
                 else{
+                    
                     $msjCRC = "<br> If the broker is CRC, the email has not been sent but the status in the system is been updated to \"SENT TO BROKERS\".";
                 }
               } 
@@ -1425,9 +1520,12 @@
       }
       
       $success && $error == '0' ? $conexion->commit() : $conexion->rollback();
+      }
+  
       $conexion->close();
+      $msj == "" ? $msj = $msj.$msjCRC : "";
       
-      $response = array("msj"=>$msj.$msjCRC,"error"=>"$error","tabla" => "$htmlTabla");   
+      $response = array("msj"=>$msj,"error"=>"$error","tabla" => "$htmlTabla");   
       echo json_encode($response);    
   }
   function get_email_data($iConsecutivo){
@@ -1824,13 +1922,25 @@
           $limite_superior = $registros_por_pagina;
           $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
           
-          $sql    = "(SELECT iConsecutivo, sTipoArchivo,sNombreArchivo,iTamanioArchivo,eArchivo, IF(iEnviarArchivoEmail = 1, 'YES','NO') AS iEnviarArchivoEmail FROM cb_endoso_files ".$filtroQuery.$ordenQuery.")".$query_union;
+          $sql    = "(SELECT iConsecutivo,iConsecutivoPoliza, sTipoArchivo,sNombreArchivo,iTamanioArchivo,eArchivo, IF(iEnviarArchivoEmail = 1, 'YES','NO') AS iEnviarArchivoEmail FROM cb_endoso_files ".$filtroQuery.$ordenQuery.")".$query_union;
           $result = $conexion->query($sql);
           $rows   = $result->num_rows; 
              
             if ($rows > 0) {    
                 while ($items = $result->fetch_assoc()) { 
                    if($items["iConsecutivo"] != ""){
+                       
+                         if($items['eArchivo'] == 'ENDORSEMENT'){
+                            $query = "SELECT sNumeroPoliza, B.sAlias
+                                        FROM ct_polizas AS A
+                                        LEFT JOIN ct_tipo_poliza AS B ON A.iTipoPoliza = B.iConsecutivo
+                                        WHERE A.iConsecutivo = '".$items['iConsecutivoPoliza']."'";
+                            $res   = $conexion->query($query);
+                            if($res->num_rows > 0){
+                                $poliza = $res->fetch_assoc();
+                                $items['eArchivo'] .= " - ".$poliza['sNumeroPoliza']." / ".$poliza['sAlias'];
+                            }
+                         }
 
                          $htmlTabla .= "<tr>".
                                        "<td id=\"idFile_".$items['iConsecutivo']."\">".$items['sNombreArchivo']."</td>".
@@ -1839,6 +1949,7 @@
                                        "<td>".$items['iTamanioArchivo']."</td>". 
                                        "<td>".$items['iEnviarArchivoEmail']."</td>".
                                        "<td>".
+                                            "<div class=\"btn-edit btn-icon edit btn-left\" title=\"Edit File\"><i class=\"fa fa-pencil-square-o\"></i></div>".
                                             "<div class=\"btn-icon edit btn-left\" title=\"Open file in a new window\" onclick=\"window.open('open_pdf.php?idfile=".$items['iConsecutivo']."&type=endoso');\"><i class=\"fa fa-external-link\"></i><span></span></div>". 
                                             "<div class=\"btn_delete_file btn-icon trash btn-left\" title=\"Delete file\"><i class=\"fa fa-trash\"></i><span></span></div>".
                                        "</td></tr>";  
@@ -1860,6 +1971,80 @@
         
       $response = array("total"=>"$paginas_total","pagina"=>"$pagina_actual","tabla"=>"$htmlTabla","mensaje"=>"$mensaje","error"=>"$error","tabla"=>"$htmlTabla");   
       echo json_encode($response); 
+  }
+  function get_file_data(){
+        $error   = '0';
+        $msj     = "";
+        $fields  = "";
+        $clave   = trim($_POST['clave']);
+        $domroot = $_POST['domroot'];
+        $iConsecutivoPoliza = "";
+        
+        include("cn_usuarios.php");
+      
+        $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+        $transaccion_exitosa = true;
+        $sql    = "SELECT iConsecutivo,iConsecutivoEndoso,iConsecutivoPoliza, sTipoArchivo,sNombreArchivo,iTamanioArchivo,eArchivo, iEnviarArchivoEmail ".
+                  "FROM cb_endoso_files WHERE iConsecutivo='".$clave."'";
+        $result = $conexion->query($sql);
+        $items  = $result->num_rows;   
+        if ($items > 0) {     
+            $items  = $result->fetch_assoc();
+            $llaves = array_keys($items);
+            $datos  = $items;
+            
+            foreach($datos as $i => $b){
+                if($i != "sNombreArchivo" && $i != "sTipoArchivo" && $i != "iTamanioArchivo"){
+                    if($i == 'iEnviarArchivoEmail' && $datos[$i] == ''){$datos[$i] = '0';}
+                    $fields .= "\$('$domroot [name=".$i."]').val('".$datos[$i]."');";
+                }
+            } 
+            
+            $sArchivoNombre    = $items['sNombreArchivo'];
+            $sArchivoMIMEType  = $items['sTipoArchivo'];
+            $sArchivoTamano    = $items['iTamanioArchivo'];
+            $iConsecutivoPoliza= $items['iConsecutivoPoliza'];
+              
+            if($sArchivoNombre != "" && $sArchivoMIMEType != "" && $sArchivoTamano != ""){
+              $fields.= "\$('$domroot .file-message').empty().html('<b>Informaci&oacute;n del Archivo: </b>$sArchivoNombre".
+                        " <b>Tipo: </b>".substr($sArchivoMIMEType,0,40)." <b>Tama&ntilde;o: </b>$sArchivoTamano bytes');";  
+              $fields.= "\$('$domroot #fileselect').addClass('fileupload'); ";  
+            }  
+        }
+        $conexion->rollback();
+        $conexion->close(); 
+        $response = array("msj"=>"$msj","error"=>"$error","fields"=>"$fields",'poliza'=>"$iConsecutivoPoliza");   
+        echo json_encode($response);
+  }
+  function get_endoso_polizas(){
+     include("cn_usuarios.php");
+     $conexion->autocommit(FALSE);
+     
+     $clave  = trim($_POST['idEndoso']);
+     $select = "<option value=\"\">Select an option...</option>";
+     
+     if($clave != ""){
+        $sql   = "SELECT iConsecutivoPoliza, sNumeroPoliza, C.sDescripcion
+                 FROM       cb_endoso_estatus AS A
+                 INNER JOIN ct_polizas        AS B ON A.iConsecutivoPoliza = B.iConsecutivo
+                 LEFT JOIN  ct_tipo_poliza    AS C ON B.iTipoPoliza  =  C.iConsecutivo
+                 WHERE A.iConsecutivoEndoso = '".$clave. "'";
+        $result= $conexion->query($sql);
+        $rows  = $result->num_rows;  
+        if($rows > 0){
+            while ($items = $result->fetch_assoc()) {
+                
+               $sDesc = $items['sDescripcion']; 
+               $select.= "<option value=\"".$items['iConsecutivoPoliza']."\">".$items['sNumeroPoliza']." / ".$sDesc."</option>";
+            }                                                                                                                                                                       
+        }   
+     }
+      
+     $conexion->rollback();
+     $conexion->close();
+     $htmlTabla = utf8_encode($htmlTabla);  
+     $response = array("mensaje"=>"$mensaje","error"=>"$error","select"=>"$select");   
+     echo json_encode($response);      
   }
   
   #FUNCION PARA APLICAR ACCION DEL ENDOSO EN UNIDAD/POLIZA:
@@ -1952,6 +2137,9 @@
                       $eAccion   = $item['eAccion'];
                       $idDetalle = $item['iConsecutivoUnidad']; 
                       
+                      $item['iConsecutivoRadio'] != "" ? $iRadio   = $item['iConsecutivoRadio'] : $iRadio   = "";
+                      $item['iTotalPremiumPD']   != "" ? $iTotalPD = $item['iTotalPremiumPD']   : $iTotalPD = "";
+                      
                       //verificamos si ya existe el registro en la tabla:
                       $query = "SELECT COUNT(iConsecutivoUnidad) AS total FROM cb_poliza_unidad ".
                                "WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoUnidad='$idDetalle' AND eModoIngreso='ENDORSEMENT'";
@@ -1960,7 +2148,7 @@
                       
                       // UPDATE REGISTRO
                       if($valida['total'] != 0){
-                        if($eAccion == "ADD" || $eAccion == "ADDSWAP"){
+                        if($eAccion == "ADD" || $eAccion == "ADDSWAP" || $eAccion = 'CHANGEPD'){
                             //Agregar registro a la tabla de relacion: 
                             $query   = "UPDATE cb_poliza_unidad SET iDeleted='0',dFechaActualizacion='$dFechaEndoso',sIPActualizacion='".$_SERVER['REMOTE_ADDR']."',sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
                                        "WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoUnidad='$idDetalle'";
@@ -1971,11 +2159,11 @@
                             $query   = "UPDATE cb_poliza_unidad SET iDeleted='1',dFechaActualizacion='$dFechaEndoso',sIPActualizacion='".$_SERVER['REMOTE_ADDR']."',sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
                                        "WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoUnidad='$idDetalle'";
                             $success = $conexion->query($query); 
-                        }        
+                        }
                       }
                       // INSERT REGISTRO
                       else{
-                        if($eAccion == "ADD" || $eAccion == "ADDSWAP"){
+                        if($eAccion == "ADD" || $eAccion == "ADDSWAP" || $eAccion = 'CHANGEPD'){
                             //Agregar registro a la tabla de relacion: 
                             $query   = "INSERT INTO cb_poliza_unidad (iConsecutivoPoliza,iConsecutivoUnidad,eModoIngreso,dFechaIngreso,sIPIngreso,sUsuarioIngreso) ".
                                        "VALUES('$iConsecutivoPoliza','$idDetalle','ENDORSEMENT','$dFechaEndoso','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
@@ -1999,7 +2187,7 @@
                       }
                       
                       // Actualizamos el registro general del vehiculo como "no eliminado".
-                      if($eAccion == "ADD" || $eAccion == "ADDSWAP"){
+                      if($eAccion == "ADD" || $eAccion == "ADDSWAP" || $eAccion = 'CHANGEPD'){
                          $query   = "UPDATE ct_unidades SET iDeleted='0' $iRadio,iTotalPremiumPD='$iTotalPD' WHERE iConsecutivo='$idDetalle'";
                          $success = $conexion->query($query);
                          if(!($success)){$transaccion_exitosa = false;} 
