@@ -42,7 +42,7 @@
           $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
           $sql = "SELECT iConsecutivo, sNombre, IF (dFechaNacimiento != '' AND dFechaNacimiento != '0000-00-00' , DATE_FORMAT(dFechaNacimiento ,'%m/%d/%Y'), '') AS dFechaNacimiento, ".
                  "iNumLicencia, IF (dFechaExpiracionLicencia != '' AND dFechaExpiracionLicencia != '0000-00-00' , DATE_FORMAT(dFechaExpiracionLicencia ,'%m/%d/%Y'), '') AS dFechaExpiracionLicencia, ".
-                 "eTipoLicencia,iExperienciaYear ".
+                 "eTipoLicencia,iExperienciaYear, eModoIngreso ".
                  "FROM ct_operadores ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior;
           $result = $conexion->query($sql);
           $rows = $result->num_rows; 
@@ -50,16 +50,45 @@
             if ($rows > 0) {    
                 while($items = $result->fetch_assoc()) { 
                     
+                    //Revisar polizas:
+                    $query  = "SELECT iConsecutivoPoliza, B.sNumeroPoliza, C.sDescripcion AS sTipoPoliza, C.sAlias, DATE_FORMAT(A.dFechaIngreso,'%m/%d/%Y') AS dFechaIngreso, eModoIngreso ".
+                               "FROM cb_poliza_operador AS A ".
+                               "INNER JOIN ct_polizas   AS B ON A.iConsecutivoPoliza = B.iConsecutivo AND B.iDeleted = '0' AND B.dFechaCaducidad >= CURDATE() ".
+                               "LEFT JOIN  ct_tipo_poliza AS C ON B.iTipoPoliza = C.iConsecutivo ".
+                               "WHERE A.iConsecutivoOperador = '".$items['iConsecutivo']."' AND A.iDeleted='0' ";
+                    $r      = $conexion->query($query);
+                    $total  = $r->num_rows;
+                    $polizas= "";
                     
-                    //$btn_viewpolicies = "<div class=\"btn-icon btn_view_policies add btn-left\" title=\"View policies in which it is active\"><i class=\"fa fa-info-circle\"></i><span></span></div>";
-                    $htmlTabla .= "<tr><td id=\"".$items['iConsecutivo']."\">".strtoupper($items['sNombre'])."</td>".
-                                   "<td>".$items['dFechaNacimiento']."</td>". 
-                                   "<td>".$items['iNumLicencia']."</td>".  
-                                   "<td>".$items['eTipoLicencia']."</td>".
-                                   "<td>".$items['dFechaExpiracionLicencia']."</td>".   
-                                   "<td>".$items['iExperienciaYear']."</td>".                                                                                                                                                                                                                     
-                                   "<td> $btn_viewpolicies</td></tr>";
-                                   //<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit\"><i class=\"fa fa-pencil-square-o\"></i><span></span></div>  
+                    if($total > 0){
+                        $polizas  = '<table style="width: 100%;text-transform: uppercase;border-collapse: collapse;">';
+                        //$classpan = "style=\"display:block;width:100%;padding:1px;\""; 
+                        while ($poli = $r->fetch_assoc()){
+                            if($poli['eModoIngreso'] == 'AMIC'){$poli['eModoIngreso'] = 'BIND';}
+                            $polizas .= "<tr>";
+                            $polizas .= "<td style=\"width:40\">".$poli['sNumeroPoliza']."</td>";
+                            $polizas .= "<td style=\"width:10;\">".$poli['sAlias']."</td>";
+                            $polizas .= "<td style=\"width:50%;\">".$poli['eModoIngreso']." - ".$poli['dFechaIngreso']."</td>";
+                            $polizas .= "</tr>";
+                        }
+                        $polizas .= "</table>"; 
+                    }
+                    
+                    if($polizas != ""){
+                        $btn_viewpolicies = "";
+                        //$btn_viewpolicies = "<div class=\"btn-icon btn_view_policies add btn-left\" title=\"View policies in which it is active\"><i class=\"fa fa-info-circle\"></i><span></span></div>";
+                        $htmlTabla .= "<tr><td id=\"".$items['iConsecutivo']."\">".strtoupper($items['sNombre'])."</td>".
+                                       "<td>".$items['dFechaNacimiento']."</td>". 
+                                       "<td>".$items['iNumLicencia']."</td>".  
+                                       "<td>".$items['eTipoLicencia']."</td>".
+                                       "<td>".$items['dFechaExpiracionLicencia']."</td>".   
+                                       "<td>".$items['iExperienciaYear']."</td>".                                                                                                                                                                                                                     
+                                       "<td style=\"padding: 0px!important;\">".$polizas."</td>".
+                                       "<td> ".$btn_viewpolicies."</td>".
+                                       "</tr>";
+                                       //<div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit\"><i class=\"fa fa-pencil-square-o\"></i><span></span></div>      
+                    }
+                
                 }
                 $conexion->rollback();
                 $conexion->close();                                                                                                                                                                       

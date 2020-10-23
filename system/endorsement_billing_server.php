@@ -15,7 +15,8 @@
       $registros_por_pagina == "" ? $registros_por_pagina = 15 : false;
         
      //Filtros de informacion //
-     $filtroQuery   = " WHERE A.eStatus = 'A' AND sNumeroEndosoBroker != '' AND D.iDeleted = '0' AND B.iConsecutivoTipoEndoso = '1' ";
+     $filtroQuery   = " WHERE A.eStatus = 'A' AND sNumeroEndosoBroker != '' AND D.iDeleted = '0' AND B.iConsecutivoTipoEndoso = '1' ".
+                      "AND C.iDeleted = '0' AND C.dFechaCaducidad >= CURDATE() ";
      $array_filtros = explode(",",$_POST["filtroInformacion"]);
      
      foreach($array_filtros as $key => $valor){
@@ -61,7 +62,8 @@
       $limite_superior = $registros_por_pagina;
       $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
       $sql = "SELECT A.iConsecutivoEndoso,B.iConsecutivoCompania, D.sNombreCompania, A.iConsecutivoPoliza, C.sNumeroPoliza, E.sDescripcion, A.eStatus, A.sNumeroEndosoBroker, A.rImporteEndosoBroker, DATE_FORMAT(B.dFechaAplicacion,'%m/%d/%Y') AS dFechaAplicacion, ".
-             "D.iOnRedList, E.sAlias, F.iFinanciamiento,A.iConsecutivoInvoice, F.dTotal, F.sCveMoneda, F.eStatus, B.iEndosoMultiple ".
+             "D.iOnRedList, E.sAlias, F.iFinanciamiento,A.iConsecutivoInvoice, F.dTotal, F.sCveMoneda, F.eStatus, B.iEndosoMultiple, iConsecutivoFinanciera, sDiasFinanciamiento, dFinanciamientoMonto, iFinanciamiento,".
+             "DATE_FORMAT(F.dFechaInvoice,'%m/%d/%Y') AS dFechaInvoice, F.dFechaInvoice AS FechaInvoiceFormat ".
              "FROM       cb_endoso_estatus AS A
               INNER JOIN cb_endoso         AS B ON A.iConsecutivoEndoso   = B.iConsecutivo
               LEFT  JOIN ct_polizas        AS C ON A.iConsecutivoPoliza   = C.iConsecutivo
@@ -82,6 +84,8 @@
                      $detalle      = "";
                      $estado       = "";
                      $class        = "";
+                     $FinancingData= "---";
+                     
                      /*if($items['iEndosoMultiple'] == "0"){
                          switch($items["eAccion"]){
                              case 'A': $action = 'ADD'; break;
@@ -104,15 +108,34 @@
                                     END) AS eAccion FROM cb_endoso_unidad AS A WHERE A.iConsecutivoEndoso = '".$items['iConsecutivoEndoso']."' ORDER BY sVIN ASC";
                          $r     = $conexion->query($query);
                          
-                         $detalle     = "<table style=\"width:100%;padding:0!important;margin:0!important;border-collapse: collapse;\">";
-                         $description = "";
+                         $description = "";   
+                         $count       = 0;
+                         $descTitle   = "";
                          
                          while($item = $r->fetch_assoc()){
-                            $description .= "<tr style='background: none;'>".
-                                            "<td style='border: 0;width:120px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['eAccion']."</td>".
-                                            "<td style='border: 0;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['sVIN']."</td>".
-                                            "</tr>"; 
+                            
+                            if($count == 0){
+                                $firstA = $item['eAccion'];
+                                $firstV = $item['sVIN'];
+                                $description = "<tr style='background: none;'>".
+                                                "<td style='border: 0;width:105px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['eAccion']."</td>".
+                                                "<td style='border: 0;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['sVIN']."</td>".
+                                                "<td style='border: 0;width: 70px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$items['dFechaAplicacion']."</td>".
+                                                "</tr>";                    
+                            }
+                            else{
+                                if($count == 1){
+                                    $description = "<tr style='background: none;'>".
+                                                    "<td style='border: 0;width:105px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$firstA."</td>".
+                                                    "<td style='border: 0;padding: 0!important;min-height: auto!important;height:auto!important;'>".$firstV."... </td>".
+                                                    "<td style='border: 0;width: 70px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$items['dFechaAplicacion']."</td>".
+                                                    "</tr>"; 
+                                }
+                            } 
+                            $descTitle == "" ? $descTitle .= $item['eAccion']." ".$item['sVIN'] : $descTitle.= "\n".$item['eAccion']." ".$item['sVIN'];
+                            $count ++;
                          }
+                         $detalle  = "<table title=\"$descTitle\" style=\"width:100%;padding:0!important;margin:0!important;border-collapse: collapse;\">";
                          $detalle .= $description."</table>";
                      } 
                      
@@ -122,20 +145,69 @@
                      if($items['iConsecutivoInvoice'] == ''){
                          $estado      = '<i class="fa fa-circle-o icon-estatus" style=\"margin-right: -5px;\"></i><span style="font-size: 10px;position: relative; top: 2px;">NO BILLED</span>';
                          $titleEstatus= "The invoice the has not been created.";
-                         //$class       = "class = \"blue\"";
                          $btn_confirm = '<div class="btn-icon btn-left btn-green btn_add" title="Add Invoice"><i class="fa fa-plus"></i></div>';
+                         $invoiceID   = '';
                      }
                      else{
-                         switch($items['eStatus']){
-                             case 'EDITABLE' : 
-                                $estado      = '<i class="fa fa-circle-o icon-estatus" style=\"margin-right: -5px;\"></i><span style="font-size: 10px;position: relative; top: 2px;">BILL NOT APPLIED</span>';
-                                $titleEstatus= "The invoice has been created but not sent/applied, you can edit it.";
-                                //$class       = "class = \"blue\"";
-                                $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"View and Edit Endorsement Status\"><i class=\"fa fa-pencil-square-o\"></i></div>";
-                                               //"<div class=\"btn_edit_estatus btn-icon send-email btn-left\" title=\"Send e-mail to the brokers\"><i class=\"fa fa-envelope\"></i></div>".
-                                               //"<div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete Endorsement\"><i class=\"fa fa-trash\"></i> <span></span></div>";
-                             break;
+                         $invoiceID = "invID_".$items['iConsecutivoInvoice'];
+                         
+                         if($items['iFinanciamiento'] == "0"){
+                            $FinancingData = 'N/A';  
+                            //Validar fecha limite de pago para determinar el estatus:
+                            $fechaLimite   = sumar_dias_fecha($items['dFechaAplicacion'],10);   
                          }
+                         else{
+                            $FinancingData = "<span style=\"font-weight: 700;\">".$items['sDiasFinanciamiento']." months</span>";
+                            $FinancingData.= "<br><span style=\"font-size: 10px;opacity: 0.9;\">\$ ".$items['dFinanciamientoMonto']." ".$items['sCveMoneda']."</span>"; 
+                        
+                            // Calcular fecha de vencimiento:
+                            $fecha_factura= $items['FechaInvoiceFormat'];
+                            $today        = new DateTime($fecha_factura);            
+                            $date         = $today->modify('+'.$items['sDiasFinanciamiento'].' months');
+                            $fechaLimite  = $date->format('m/d/Y');
+                         
+                         }
+                          
+                         if($items['eStatus'] == 'EDITABLE'){
+                            $estado      = '<i class="fa fa-circle-o icon-estatus" style="margin-right: -5px;"></i><span style="font-size: 10px;position: relative; top: 2px;">BILL NOT APPLIED</span>';
+                            $titleEstatus= "The invoice has been created but not sent/applied, you can edit it.";
+                            $btn_confirm = "<div class=\"btn_edit btn-icon edit btn-left\" title=\"View and Edit Endorsement Status\"><i class=\"fa fa-pencil-square-o\"></i></div>";
+                         }
+                         else if($items['eStatus'] == 'APPLIED' || $items['eStatus'] == 'SENT'){
+                     
+                            $validExp= verificar_vencimiento($fechaLimite);
+                            if(!($validExp)){
+                                $estado      = '<i class="fa fa-exclamation-circle icon-estatus" style="background-color: #ffe2e2;color: #de3636;border-color: #ffacac;position: relative;top: 3px;"></i><span style="font-size: 10px;position: relative; top: 2px;">'.$items['eStatus'].
+                                               '<br><span style="font-size: 9px;position: relative;top: -5px;">Payday Limit: <b>'.$fechaLimite.'</b></span></span>';
+                                $titleEstatus= "The invoice has not been paid and has exceeded the 10 day limit, please check it.";
+                                $class       = "class = \"red\"";
+                            }
+                            else{
+                                $dias = calcula_dias_diff($fechaLimite,date('m/d/Y'));
+                                if($dias <= 5){
+                                    $estado      = '<i class="fa fa-exclamation-triangle status-process icon-estatus" style="color: #ffba00;background-color: #ffecba;border-color: #f2d176;"></i><span style="font-size: 10px;">'.$items['eStatus'].
+                                                   '<br><span style="font-size: 9px;position: relative;top: -5px;">Payday Limit: <b>'.$fechaLimite.'</b></span></span>';
+                                    $titleEstatus= "The invoice has not been paid and it is close to the 10 day limit, please check it.";
+                                    $class       = "class = \"orange\"";    
+                                }
+                                else{
+                                    $estado      = '<i class="fa fa-check-circle status-success icon-estatus "></i><span style="font-size: 10px;">'.$items['eStatus'].
+                                                   '<br><span style="font-size: 9px;position: relative;top: -5px;">Payday Limit: <b>'.$fechaLimite.'</b></span></span>';
+                                    $titleEstatus= "The invoice has not been paid but is on time.";
+                                    $class       = "class = \"green\""; 
+                                }
+                            }
+                            
+                            $btn_confirm = '<div class="btn-icon btn-left btn-green btn_add_pay" title="Add Payments"><i class="fa fa-plus"></i></div>';
+                            if($items['sNombreArchivo'] != ""){
+                                $btn_confirm.= "<div class=\"btn-icon btn-left pdf\" title=\"Open file\" onclick=\"window.open('open_pdf.php?idfile=".$items['iConsecutivo']."&type=invoice');\"><i class=\"fa fa-file-pdf-o\"></i><span></span></div>";
+                            }
+                            else{
+                                $btn_confirm.= "<div class=\"btn_pdf btn-icon pdf btn-left\" title=\"Open Invoice PDF\"><i class=\"fa fa-file-pdf-o\"></i></div>";     
+                            }
+                            
+                         }
+                         
                      }
                      
                      
@@ -145,17 +217,21 @@
                      //Revisar si esta marcado como enviado y se envio fuera del sistema:
                      $iEnviadoFuera == 1 ? $txtFechaApp = "<span style=\"font-size:9px;display:block;\">Mark As Sent</span>".$items['dFechaAplicacion'] : $txtFechaApp = $items['dFechaAplicacion'];
                  
-                     //strlen($items['sDescripcion']) > 30 ? $polizaDesc = substr($items['sDescripcion'],0,30) : $polizaDesc = $items['sDescripcion'];
-                     $items['iConsecutivoInvoice'] != "" ? $total = "\$ ".$items['dTotal']." ".$items['sCveMoneda'] : $total = "";
+                     $total      = "";
+                     $titletotal = "";
+                     if($items['iConsecutivoInvoice'] != ""){
+                        $total     = "\$ ".number_format($items['dTotal'],2,'.',',')." ".$items['sCveMoneda'];
+                        $titletotal= 'title="'.number_format($items['dTotal'],2,'.','').'"';    
+                     }
                      
                      $htmlTabla .= "<tr $class>".
-                                   "<td id=\"iCve_".$items['iConsecutivoCompania']."\">".$redlist_icon.$items['sNombreCompania']."</td>".
+                                   "<td id=\"iCve_".$items['iConsecutivoCompania']."\" class=\"".$invoiceID."\">".$redlist_icon.$items['sNombreCompania']."</td>".
                                    "<td id=\"iPol_".$items['iConsecutivoPoliza']."\" title=\"".$items['sDescripcion']."\">".$items['sNumeroPoliza']." / ".$items['sAlias']."</td>". 
                                    "<td id=\"iEnd_".$items['iConsecutivoEndoso']."\" class=\"text-center\">".$items['sNumeroEndosoBroker']."</td>". 
                                    "<td>".$detalle."</td>".
-                                   "<td class=\"text-center\">".$items['dFechaAplicacion']."</td>".
+                                   "<td class=\"text-center\">$FinancingData</td>".
                                    "<td title='$titleEstatus'>".$estado."</td>". 
-                                   "<td class=\"text-right\">".$total."</td>". 
+                                   "<td class=\"text-right\" $titletotal>".$total."</td>". 
                                    "<td>".$btn_confirm."</td></tr>";
             }
             $conexion->rollback();
@@ -307,11 +383,12 @@
                 
                 if($conexion->affected_rows == 0){$error = '1'; $msj = "Error to update the endorsement data to link the invoice, please try again.";}
                 else{
-                    $query = "SELECT iConsecutivo AS iConsecutivoServicio, sClave, sDescripcion, sCveUnidadMedida, iPrecioUnitario, iPctImpuesto* FROM ct_productos_servicios WHERE sDescripcion LIKE '%ENDORSEMENT%' LIMIT 1"; 
+                    $query = "SELECT iConsecutivo AS iConsecutivoServicio, sClave, sDescripcion, sCveUnidadMedida, iPrecioUnitario, iPctImpuesto FROM ct_productos_servicios WHERE sDescripcion LIKE '%ENDORSEMENT%' LIMIT 1"; 
                     $res   = $conexion->query($query);
                     
                     if($res->num_rows > 0){
                         $service = $res->fetch_assoc();
+                        
                         //Agregar registro automatico para ligar endoso desde la factura:
                         $campos_endoso = array();
                         $valores_endoso= array();
@@ -333,7 +410,7 @@
                         
                         //Campos adicionales:
                         array_push($campos_endoso ,"iCantidad");            array_push($valores_endoso ,'1');
-                        array_push($campos_endoso ,"iConsecutivoInvoice");  array_push($valores_endoso ,"'".$idFactura."'");
+                        array_push($campos_endoso ,"iConsecutivoInvoice");  array_push($valores_endoso ,"$idFactura");
                         array_push($campos_endoso ,"iEndorsementsApply");   array_push($valores_endoso ,'1');
                         array_push($campos_endoso ,"iMostrarEndorsements"); array_push($valores_endoso ,'1');
                         array_push($campos_endoso ,"iImpuesto");            array_push($valores_endoso ,$iImpuesto);
@@ -342,13 +419,13 @@
                         array_push($campos_endoso ,"sIP");                  array_push($valores_endoso ,$_SERVER['REMOTE_ADDR']);
                         array_push($campos_endoso ,"sUsuarioIngreso");      array_push($valores_endoso ,$_SESSION['usuario_actual']);
                         
-                        $query = "INSET INTO cb_invoice_detalle (".implode(",",$campos_endoso).") VALUES ('".implode("','",$valores_endoso)."')";
+                        $query = "INSERT INTO cb_invoice_detalle (".implode(",",$campos_endoso).") VALUES ('".implode("','",$valores_endoso)."')";
                         $conexion->query($query);  
                 
                         if($conexion->affected_rows == 0){$error = '1'; $msj = "Error to add the endorsement summary data to link the invoice, please try again.";}
                         else{
                             $idDetalle = $conexion->insert_id;
-                            $query = "INSET INTO cb_invoice_detalle_endoso (iConsecutivoDetalle,iConsecutivoEndoso) VALUES ('".$idDetalle."','".$_POST['iConsecutivoEndoso']."')";
+                            $query = "INSERT INTO cb_invoice_detalle_endoso (iConsecutivoDetalle,iConsecutivoEndoso) VALUES ('".$idDetalle."','".$_POST['iConsecutivoEndoso']."')";
                             $conexion->query($query); 
                             if($conexion->affected_rows == 0){$error = '1'; $msj = "Error to update the endorsement summary data to link the invoice, please try again.";}   
                         }
@@ -361,10 +438,150 @@
           
       }
       
-      $transaccion_exitosa && $error == '0' ? $conexion->commit() :$conexion->rollback();
+      $transaccion_exitosa && $error == '0' ? $conexion->commit() : $conexion->rollback();
       $conexion->close();
       
       $response = array("error"=>"$error","msj"=>"$msj","idFactura"=>"$idFactura");
+      echo json_encode($response);
+  }
+  
+  
+  // EXTRAS:
+  function get_policy_data(){
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      $htmlTabla = "";
+      $clave     = trim($_POST['iConsecutivoPoliza']);
+      $clave2    = trim($_POST['iConsecutivoEndoso']);
+      
+      $sql   = "SELECT A.iConsecutivo AS clave, sNumeroPoliza, sNombreCompania, C.sName AS sBroker, E.sName AS sInsurance , D.sDescripcion, iOnRedList, DATE_FORMAT(dFechaInicio,'%m/%d/%Y') AS dFechaInicio, DATE_FORMAT(dFechaCaducidad,'%m/%d/%Y') AS dFechaCaducidad, iConsecutivoArchivo,A.iConsecutivoCompania, iTipoPoliza, iConsecutivoArchivoPFA ".
+               "FROM      ct_polizas     AS A 
+                LEFT JOIN ct_companias   AS B ON A.iConsecutivoCompania   = B.iConsecutivo
+                LEFT JOIN ct_brokers     AS C ON A.iConsecutivoBrokers    = C.iConsecutivo
+                LEFT JOIN ct_tipo_poliza AS D ON A.iTipoPoliza            = D.iConsecutivo 
+                LEFT JOIN ct_aseguranzas AS E ON A.iConsecutivoAseguranza = E.iConsecutivo ".
+               "WHERE A.iConsecutivo='".$clave."'";
+      $result= $conexion->query($sql);
+      $rows  = $result->num_rows; 
+      if ($rows > 0) {$items = $result->fetch_assoc();}
+      
+      $sql2   = "SELECT sNumeroEndosoBroker, sComentarios, rImporteEndosoBroker FROM cb_endoso_estatus WHERE iConsecutivoEndoso = '".$clave2."'";
+      $result2= $conexion->query($sql2);
+      $rows2  = $result2->num_rows; 
+      if ($rows2 > 0) {$items2 = $result2->fetch_assoc();}
+      
+      
+      if($rows > 0 && $rows2 > 0){
+          
+        #CONSULTAR DETALLE DEL ENDOSO:
+         $query = "SELECT A.sVIN, (CASE 
+                    WHEN A.eAccion = 'ADDSWAP'    THEN 'ADD SWAP'
+                    WHEN A.eAccion = 'DELETESWAP' THEN 'DELETE SWAP'
+                    WHEN A.eAccion = 'CHANGEPD'   THEN 'CHANGE PD'
+                    ELSE A.eAccion
+                    END) AS eAccion FROM cb_endoso_unidad AS A WHERE A.iConsecutivoEndoso = '".$clave2."' ORDER BY sVIN ASC";
+         $r     = $conexion->query($query);
+         
+         $description = "";   
+         $count       = 0;
+         $descTitle   = "";
+         
+         while($item = $r->fetch_assoc()){
+            
+            if($count == 0){
+                $firstA = $item['eAccion'];
+                $firstV = $item['sVIN'];
+                $description = "<tr style='background: none;'>".
+                                "<td style='border: 0;width:105px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['eAccion']."</td>".
+                                "<td style='border: 0;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['sVIN']."</td>".
+                                "<td style='border: 0;width: 70px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$items['dFechaAplicacion']."</td>".
+                                "</tr>";                    
+            }
+            else{
+                if($count == 1){
+                    $description = "<tr style='background: none;'>".
+                                    "<td style='border: 0;width:105px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$firstA."</td>".
+                                    "<td style='border: 0;padding: 0!important;min-height: auto!important;height:auto!important;'>".$firstV."... </td>".
+                                    "<td style='border: 0;width: 70px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$items['dFechaAplicacion']."</td>".
+                                    "</tr>"; 
+                }
+            } 
+            $descTitle == "" ? $descTitle .= $item['eAccion']." ".$item['sVIN'] : $descTitle.= "\n".$item['eAccion']." ".$item['sVIN'];
+            $count ++;
+         }
+         $detalle  = "<table title=\"$descTitle\" style=\"width:100%;padding:0!important;margin:0!important;border-collapse: collapse;\">";
+         $detalle .= $description."</table>"; 
+          
+          
+        $insurance = strtoupper(utf8_decode($items['sInsurance']));
+        if(strlen($insurance) > 15){$insurance = substr($insurance,0,15)."... ";}
+        
+        $broker = strtoupper(utf8_decode($items['sBroker']));
+        if(strlen($broker) > 15){$broker = substr($broker,0,15)."... ";}
+        
+        $btn_pdf = '<a href="endorsement_files?idEndorsement='.$clave2.'" target="_blank" class="btn-text-2 btn-right" title="Endorsement files"><i class="fa fa-external-link" aria-hidden="true" style="margin-right:0px!important;"></i></a>';
+        
+        $htmlTabla = "<tr>".
+                      "<td>".$items['sNumeroPoliza']."</td>".
+                      "<td>".$items['sDescripcion']."</td>". 
+                      "<td title=\"".strtoupper(utf8_decode($items['sBroker']))."\">".$broker."</td>".
+                      "<td title=\"".strtoupper(utf8_decode($items['sInsurance']))."\">".$insurance."</td>". 
+                      "<td>".$items['dFechaInicio']."</td>".
+                      "<td>".$items['dFechaCaducidad']."</td>".  
+                      "<td title=\"Customer service Comments: ".$items2['sComentarios']."\">".$items2['sNumeroEndosoBroker']."</td>".
+                      "<td>".$detalle."</td>".
+                      "<td class=\"text-right\"> \$".number_format($items2['rImporteEndosoBroker'],2,'.',',')."</td>". 
+                      "<td>".$btn_pdf."</td>".                                                                                                                                                                                                                   
+                      "</tr>"; 
+      } 
+      
+      
+      if($htmlTabla == ""){$htmlTabla ="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";} 
+      $conexion->rollback();
+      $conexion->close();  
+      
+      $response = array("html"=>"$htmlTabla");   
+      echo json_encode($response);
+  }
+  function get_invoice_data(){
+      include("cn_usuarios.php");
+      $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
+      $transaccion_exitosa = true;
+      $clave = trim($_POST['iConsecutivoInvoice']);
+      
+      $sql   = "SELECT A.iConsecutivo,sNoReferencia, sNombreCompania, B.sEmailContacto, sNombreContacto, dTotal, iFinanciamiento, sDiasFinanciamiento, eStatus, iOnRedList, DATE_FORMAT(dFechaInvoice, '%m/%d/%Y') AS  dFechaInvoice, sCveMoneda, A.sNombreArchivo ".   
+               "FROM      cb_invoices  AS A ".
+               "LEFT JOIN ct_companias AS B ON A.iConsecutivoCompania = B.iConsecutivo ".
+               "WHERE A.iConsecutivo='".$clave."'";
+      $result= $conexion->query($sql);
+      $rows  = $result->num_rows; 
+      if ($rows > 0) {    
+        while ($items = $result->fetch_assoc()){ 
+            $FinancingData = "";
+            if($items['iFinanciamiento'] == "0"){
+                $FinancingData = 'N/A';  
+                //Validar fecha limite de pago para determinar el estatus:
+                $fechaLimite   = sumar_dias_fecha($items['dFechaAplicacion'],10);   
+            }
+            else{
+                $FinancingData = "<span style=\"font-weight: 700;\">".$items['sDiasFinanciamiento']." months</span>";
+                $FinancingData.= "<br><span style=\"font-size: 10px;opacity: 0.9;\">\$ ".$items['dFinanciamientoMonto']." ".$items['sCveMoneda']."</span>"; 
+            }
+            
+            $htmlTabla = "<tr ".$redlist_class.">".
+                         "<td id=\"inv_".$items['iConsecutivo']."\">".$items['sNoReferencia']."</td>".
+                         "<td class=\"text-center\">".$FinancingData."</td>".
+                         "<td class=\"text-center\">".$items['dFechaInvoice']."</td>".
+                         "<td class=\"text-right\" style=\"padding-right: 5px;\">\$ ".number_format($items['dTotal'],2,'.',',')." ".$items['sCveMoneda']."</td>".  
+                         "</tr>"; 
+        }
+      }
+      else{$htmlTabla ="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";} 
+      $conexion->rollback();
+      $conexion->close();  
+      
+      $response = array("html"=>"$htmlTabla");   
       echo json_encode($response);
   }
 ?>

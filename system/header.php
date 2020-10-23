@@ -33,7 +33,8 @@
                         <li><a href="ourcompany">Our Company</a></li> 
                         <li><a href="users">Users</a></li> 
                         <li><a href="brokers">Brokers</a></li>
-                        <li><a href="insurances">Insurances</a></li>  
+                        <li><a href="insurances">Insurances</a></li>
+                        <li><a href="financiers">Financiers</a></li>  
                     </ul>
                 </li>
                 <li class="submenu"><a href="#">COMPANIES</a>
@@ -76,6 +77,7 @@
                         <li><a href="services_products">Products & Services</a></li> 
                         <li><a href="invoices">Invoices</a></li> 
                         <li><a href="payments">Payments</a></li> 
+                        <li><a href="endorsement_billing">Endorsements Billing</a></li>
                     </ul>
                 </li> 
 
@@ -96,11 +98,12 @@
                             <li><a href="list_admin">Administrator drivers/vehicles</a></li>
                         <?php }?>
                         <li><a href="brokers">Brokers</a></li>
-                        <li><a href="insurances">Insurances</a></li> 
+                        <li><a href="insurances">Insurances</a></li>
+                        <li><a href="financiers">Financiers</a></li> 
                     </ul>
                   </li>
                   <li class="submenu"><a href="certificate_request_pdf_upload">CERTIFICATES</a></li>
-                  <?php if($_SESSION["usuario_actual"] == "customerservice@solo-trucking.com"){?>
+                  <?php if($_SESSION["usuario_actual"] == "customerservice@solo-trucking.com" || $_SESSION["usuario_actual"] == "elizabeth@solo-trucking.com"){?>
                   <li class="submenu"><a href="#">Endorsements</a>
                    <ul>
                         <li><a  href="endorsement_request">New for Drivers</a></li>
@@ -127,8 +130,9 @@
                  <li class="submenu"><a href="invoices">ACCOUNTING</a>
                     <ul>
                         <li><a href="services_products">Products & Services</a></li> 
-                        <li><a href="invoices">Invoices</a></li> 
+                        <!--<li><a href="invoices">Invoices</a></li>--> 
                         <li><a href="payments">Payments</a></li> 
+                        <!--<li><a href="endorsement_billing">Endorsements Billing</a></li>-->
                     </ul>
                  </li> 
                  <?php }?>
@@ -139,7 +143,8 @@
                     <ul>
                         <li><a href="ourcompany">Our Company</a></li> 
                         <li><a href="brokers">Brokers</a></li>
-                        <li><a href="insurances">Insurances</a></li>  
+                        <li><a href="insurances">Insurances</a></li>
+                        <li><a href="financiers">Financiers</a></li>  
                     </ul>
                   </li>
                   <li class="submenu"><a href="#">COMPANIES</a>
@@ -175,7 +180,8 @@
                     <ul>
                         <li><a href="services_products">Products & Services</a></li> 
                         <li><a href="invoices">Invoices</a></li> 
-                        <li><a href="payments">Payments</a></li> 
+                        <li><a href="payments">Payments</a></li>
+                        <!--<li><a href="endorsement_billing">Endorsements Billing</a></li>-->  
                     </ul>
                  </li> 
                 <li style="display:none;" class="submenu"><a href="#">SYSTEM SUPPORT</a>

@@ -230,7 +230,7 @@ if ( !($_SESSION["acceso"] != '2'  && $_SESSION["usuario_actual"] != "" && $_SES
         <thead id="grid-head2">
             <tr id="grid-head1">
                 <td style="width:50px!important;"><input class="flt_id" type="text" placeholder="ID:"></td> 
-                <td><input class="flt_name" type="text" placeholder="Broker:"></td>
+                <td><input class="flt_name" type="text" placeholder="Name:"></td>
                 <td><input class="flt_email" type="text" placeholder="E-mail(s):"></td>
                 <td><input class="flt_naic" type="text" placeholder="NAIC#:"></td>
                 <td><input class="flt_phone" type="text" placeholder="Phone:"></td> 

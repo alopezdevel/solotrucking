@@ -240,6 +240,7 @@ var fn_drivers = {
                 </td> 
                 <td><input class="flt_fechaExpiracion" type="text" placeholder="MM-DD-YY"></td>  
                 <td><input class="flt_experiencia" type="text" placeholder="##" maxlength="2"></td>  
+                <td style='width:300px;'></td>
                 <td style='width:80px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_drivers.filtraInformacion();"><i class="fa fa-search"></i></div>
                 </td> 
@@ -250,7 +251,16 @@ var fn_drivers = {
                 <td class="etiqueta_grid"      onclick="fn_drivers.ordenamiento('iNumLicencia',this.cellIndex);">LICENSE #</td>
                 <td class="etiqueta_grid"      onclick="fn_drivers.ordenamiento('eTipoLicencia',this.cellIndex);">LICENSE TYPE </td> 
                 <td class="etiqueta_grid"      onclick="fn_drivers.ordenamiento('dFechaExpiracionLicencia',this.cellIndex);">EXPIRE DATE</td> 
-                <td class="etiqueta_grid"      onclick="fn_drivers.ordenamiento('iExperienciaYear',this.cellIndex);">EXPERIENCE YEARS</td> 
+                <td class="etiqueta_grid"      onclick="fn_drivers.ordenamiento('iExperienciaYear',this.cellIndex);">EXP YEARS</td> 
+                <td class="etiqueta_grid" style="padding: 3px 0px 0px!important;width:450px;">
+                    <span style="display: block;padding: 0px 3px;text-align: center;">POLICIES</span>
+                    <table style="width: 100%;text-transform: uppercase;">
+                    <thead><tr>
+                        <td style="width:40%;">No.</td>
+                        <td style="width:10%">Type</td>
+                        <td style="width:50%">Application Date</td>
+                    </tr></thead></table>
+                </td> 
                 <td class="etiqueta_grid"></td>
             </tr>
         </thead>

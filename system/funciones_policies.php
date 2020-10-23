@@ -1619,7 +1619,7 @@
              foreach($_POST as $campo => $valor){
                 if($campo != "accion" and $campo != "edit_mode"  and $campo != "iConsecutivo" and $campo != "sVIN"){ //Estos campos no se insertan a la tabla
                     
-                    if($campo == "siConsecutivosPolizas" || $valor != "" || $campo == "iTotalPremiumPD"){
+                    if($campo != "siConsecutivosPolizas" || $valor != "" || $campo == "iTotalPremiumPD"){
                         array_push($valores,"$campo='".trim($valor)."'");
                     }
                 }
@@ -1644,7 +1644,7 @@
             array_push($valores ,"dFechaActualizacion='".date("Y-m-d H:i:s")."'");
             array_push($valores ,"sIP='".$_SERVER['REMOTE_ADDR']."'");
             array_push($valores ,"sUsuarioActualizacion='".$_SESSION['usuario_actual']."'"); 
-            array_push($valores,"inPoliza = '$inPoliza'");
+            //array_push($valores,"inPoliza = '$inPoliza'");
             $sql = "UPDATE ct_unidades SET ".implode(",",$valores)." WHERE iConsecutivo ='".$_POST['iConsecutivo']."' AND iConsecutivoCompania ='".$_POST['iConsecutivoCompania']."'";
             $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data have been updated successfully.</p>'; 
           }else{
@@ -1654,8 +1654,8 @@
             array_push($valores ,$_SERVER['REMOTE_ADDR']);
             array_push($campos ,"sUsuarioIngreso");
             array_push($valores ,$_SESSION['usuario_actual']);
-            array_push($campos ,"inPoliza");
-            array_push($valores ,"'$inPoliza'");
+            /*array_push($campos ,"inPoliza");
+            array_push($valores ,"'$inPoliza'");*/
             $sql = "INSERT INTO ct_unidades (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
             $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Data have been added successfully.</p>';
           }

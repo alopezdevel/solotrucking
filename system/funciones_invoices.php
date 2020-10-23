@@ -131,8 +131,8 @@
     $transaccion_exitosa = true;
     $sql    = "SELECT iConsecutivo,iConsecutivoCompania, sNoReferencia, dTotal, iFinanciamiento, sDiasFinanciamiento, eStatus, ".
               "DATE_FORMAT(dFechaInvoice, '%m/%d/%Y') AS  dFechaInvoice, dSubtotal,dPctTax,dTax,dAnticipo,dBalance,dTipoCambio,sComentarios,sCveMoneda,".
-              "sNombreArchivo, sTipoArchivo, iTamanioArchivo ".
-              "FROM cb_invoices WHERE iConsecutivo = '$clave'";
+              "sNombreArchivo, sTipoArchivo, iTamanioArchivo, iConsecutivoFinanciera, sDiasFinanciamiento, dFinanciamientoMonto, iFinanciamiento ".
+              "FROM cb_invoices WHERE iConsecutivo = '$clave'"; 
     $result = $conexion->query($sql);
     $items  = $result->num_rows;   
     if ($items > 0) {     
@@ -142,7 +142,7 @@
         
         foreach($datos as $i => $b){
             if($i != "sNombreArchivo" && $i != "sTipoArchivo" && $i != "iTamanioArchivo"){
-                $fields .= "\$('$domroot :input[id=".$i."]').val('".$datos[$i]."');";
+                $fields .= "\$('$domroot [name=".$i."]').val('".$datos[$i]."');";
             }
         } 
         
@@ -430,6 +430,7 @@
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
       $transaccion_exitosa = true;
       $iConsecutivoInvoice = trim($_POST['iConsecutivoInvoice']);
+      !isset($_POST['iEndososBilling']) ? $_POST['iEndososBilling'] = 'false' : "";
     
       $sql    = "SELECT iConsecutivoDetalle, CONCAT(sClave,' - ',sDescripcion) AS sDescripcion, iCantidad, iPrecioUnitario, iPctImpuesto, iImpuesto, iPrecioExtendido ".
                 "FROM cb_invoice_detalle WHERE iConsecutivoInvoice = '$iConsecutivoInvoice'";
@@ -441,6 +442,8 @@
             $iFolio = 1;
               
             while ($items = $result->fetch_assoc()) { 
+                
+                $_POST['iEndososBilling'] == 'true' && $iFolio == 1 ? $btn_delete = "" : $btn_delete = "<div class=\"btn-icon trash btn-left\" title=\"Delete\"><i class=\"fa fa-trash\"></i></div>"; 
 
                 $htmlTabla .= "<tr>".
                               "<td id=\"srv_".$items['iConsecutivoDetalle']."\">".$iFolio."</td>". 
@@ -451,7 +454,7 @@
                               "<td class=\"text-right\">\$ ".number_format($items['iPrecioExtendido'],2,'.',',')." ".$items['sCveMoneda']."</td>". 
                               "<td>".
                                 "<div class=\"btn-icon edit btn-left\" title=\"Edit\"><i class=\"fa fa-pencil-square-o\"></i></div>".
-                                "<div class=\"btn-icon trash btn-left\" title=\"Delete\"><i class=\"fa fa-trash\"></i></div>";
+                                $btn_delete.
                               "</td>".
                               "</tr>";
                 $iFolio++;
@@ -621,7 +624,7 @@
     $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
     $transaccion_exitosa = true;
     $sql    = "SELECT iConsecutivoDetalle,iConsecutivoInvoice, iConsecutivoServicio, iCantidad,iPrecioUnitario,iPctImpuesto, ".
-              "iImpuesto,iPrecioExtendido,iEndorsementsApply, sComentarios ".
+              "iImpuesto,iPrecioExtendido,iEndorsementsApply, sComentarios, iMostrarEndorsements ".
               "FROM cb_invoice_detalle WHERE iConsecutivoDetalle = '$clave'";
     $result = $conexion->query($sql);
     $items  = $result->num_rows;   
@@ -631,7 +634,7 @@
         $datos  = $items;
         
         foreach($datos as $i => $b){
-            if($i == 'sComentarios'){$fields .= "\$('$domroot [name=".$i."]').val('".utf8_decode($datos[$i])."')";}else
+            if($i == 'sComentarios'){$fields .= "\$('$domroot [name=".$i."]').val('".utf8_decode($datos[$i])."');";}else
             if($i == 'iEndorsementsApply'){
                 $datos[$i] == '1' ? $datos[$i] = 'true' : $datos[$i] = 'false';
                 $fields .= "\$('$domroot :input[name=".$i."]').prop('checked',".$datos[$i].");";
@@ -909,6 +912,8 @@
     include("cn_usuarios.php");
     $conexion->autocommit(FALSE);
     $clave = trim($_POST['iConsecutivoDetalle']);
+    !isset($_POST['iBtnsActive']) ? $_POST['iBtnsActive'] = 'true' : "";
+     
     $query = "SELECT A.iConsecutivo,A.iConsecutivoTipoEndoso,DATE_FORMAT( A.dFechaAplicacion, '%m/%d/%Y' ) AS dFechaAplicacion,C.sDescripcion,A.eStatus,eAccion, A.sVINUnidad AS sVIN,A.sNombreOperador AS sNombre, A.iEndosoMultiple ".
              "FROM       cb_endoso                 AS A ".
              "INNER JOIN cb_invoice_detalle_endoso AS B ON B.iConsecutivoEndoso = A.iConsecutivo ".
@@ -1048,14 +1053,14 @@
                       
           //Revisar si esta marcado como enviado y se envio fuera del sistema:
           $iEnviadoFuera == 1 ? $txtFechaApp = "<span style=\"font-size:9px;display:block;\">Mark As Sent</span>".$items['dFechaAplicacion'] : $txtFechaApp = $items['dFechaAplicacion'];
-             
+          
+          $_POST['iBtnsActive'] == 'true' ? $btnsRight = "<td><div class=\"btn_delete btn-icon trash btn-left\" title=\"Cancel Add\"><i class=\"fa fa-times-circle\"></i></div></td>" : $btnsRight = "";    
           $htmlTabla .= "<tr $class>".
                         "<td id=\"iCve_".$items['iConsecutivo']."\">".$detalle."</td>". 
                         "<td>".$policies."</td>".
                         "<td class=\"text-center\">".$txtFechaApp."</td>". 
                         "<td title='$titleEstatus'>".$estado."</td>".
-                        "<td><div class=\"btn_delete btn-icon trash btn-left\" title=\"Cancel Add\"><i class=\"fa fa-times-circle\"></i></div></td>".                                                                                                                                                                                                                       
-                        "</tr>";
+                        $btnsRight."</tr>";
         }                                                                                                                                                                      
     } 
     

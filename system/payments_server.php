@@ -142,7 +142,7 @@
       $campos   = array(); 
       $msj      = "";
       $_POST["iConsecutivoPago"] == "" ? $edit_mode= 'false' : $edit_mode = 'true';
-    
+      
       //Conexion:
       include("cn_usuarios.php"); 
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
@@ -219,7 +219,7 @@
                   $error = '1';
               }else{
                  foreach($_POST as $campo => $valor){
-                    if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivoPago" ){ //Estos campos no se insertan a la tabla
+                    if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivoPago" && $campo != 'iConsecutivoInvoice'){ //Estos campos no se insertan a la tabla
                         
                         if($campo == 'sNoPago' || $campo == 'sMetodoPago'){$valor = strtoupper($valor);}
                         
@@ -229,7 +229,7 @@
               }
            }else if($_POST["edit_mode"] != 'true'){
              foreach($_POST as $campo => $valor){
-               if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivoPago"){ //Estos campos no se insertan a la tabla
+               if($campo != "accion" && $campo != "edit_mode" && $campo != "iConsecutivoPago" && $campo != 'iConsecutivoInvoice'){ //Estos campos no se insertan a la tabla
                     if($campo == 'sNoPago' || $campo == 'sMetodoPago'){$valor = strtoupper($valor);}
                     array_push($campos ,$campo); 
                     array_push($valores, trim($valor));
@@ -265,8 +265,32 @@
             $sql = "INSERT INTO cb_pago (".implode(",",$campos).") VALUES ('".implode("','",$valores)."')";
             $conexion->query($sql);
             
-            if($conexion->affected_rows < 1){$transaccion_exitosa = false;}
-            else{$msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The data has been saved successfully!</p>';}
+            if($conexion->affected_rows < 1){$transaccion_exitosa = false;$msj = "Error to save the payment data, please try again.";}
+            else{
+                $idPago = $conexion->insert_id;
+                
+                if(isset($_POST['iConsecutivoInvoice']) && $_POST['iConsecutivoInvoice'] != ""){
+                    $sql = "INSERT INTO cb_invoice_pago (iConsecutivoPago,iConsecutivoInvoice) VALUES ('$idPago','".$_POST['iConsecutivoInvoice']."')";
+                    $conexion->query($sql);
+                    if($conexion->affected_rows < 1){$transaccion_exitosa = false;$msj = "Error to link the payment with invoice data, please try again.";} 
+                    else{
+                        /*//VALIDAR SI LA FACTURA YA ESTA CUBIERTA EN SU TOTALIDAD:
+                        $query = "SELECT dTotal FROM cb_invoice WHERE iConsecutivo='".$_POST['iConsecutivoInvoice']."'";
+                        $result= $conexion->query($query);
+                        if($result->num_rows == 0){$transaccion_exitosa = false; $msj = "Error to verify the invoice data, please try again.";}
+                        else{
+                            $invoiceData = $result->fetch_assoc();
+                            if($invoiceData['dTotal'] == $_POST['iMonto']){
+                                $query = "UPDATE cb_invoice SET ";    
+                            }
+                        } */
+                        
+                        if($transaccion_exitosa){
+                        $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>The data has been saved successfully!</p>';    
+                        }
+                    }   
+                }
+            }
             
           }
           
@@ -284,6 +308,9 @@
       echo json_encode($response);
   }
   
-  
+  function delete_data(){
+      print_r($_POST);
+      exit;
+  }
 
 ?>

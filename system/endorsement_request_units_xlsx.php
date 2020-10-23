@@ -49,6 +49,7 @@
   isset($_GET['reporte_policy']) ? $flt_policy   = urldecode($_GET['reporte_policy'])  : $flt_policy = "";
   isset($_GET['name'])           ? $flt_name     = urldecode($_GET['name'])            : $flt_name = "";
   isset($_GET['reporte_broker']) ? $flt_broker   = urldecode($_GET['reporte_broker'])  : $flt_broker = "";
+  isset($_GET['flt_estatus'])    ? $flt_estatus  = urldecode($_GET['flt_estatus'])     : $flt_estatus = "";
   
   $fecha_inicio     = substr($fecha_inicio,6,4).'-'.substr($fecha_inicio,0,2).'-'.substr($fecha_inicio,3,2); 
   $fecha_fin        = substr($fecha_fin,6,4).'-'.substr($fecha_fin,0,2).'-'.substr($fecha_fin,3,2);
@@ -80,6 +81,10 @@
         $filtroQuery     .= "AND C.iConsecutivoBrokers='".$flt_broker."' ";
         $nombre_parametro = strtolower($flt_name)." - "; 
      }     
+  }
+  
+  if($flt_estatus != ""){
+    $filtroQuery .= " AND A.eStatus='".$flt_estatus."' ";
   }
   
   $filtroQuery .= "AND A.dFechaAplicacion BETWEEN '$fecha_inicio' AND '$fecha_fin' ";

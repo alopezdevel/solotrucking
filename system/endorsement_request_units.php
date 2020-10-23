@@ -1238,12 +1238,13 @@
                             var reporte_broker  = $(form+" .flt_broker").val();
                             var flt_dateFrom    = $(form+" #flt_dateFrom").val();   
                             var flt_dateTo      = $(form+" #flt_dateTo").val();
+                            var flt_estatus     = $(form+" select[name=eStatus]").val();
                             
                             if(reporte_tipo == 'company' && reporte_company != ""){var name = $(form+" .flt_company option:selected").text();}
                             else if(reporte_tipo == 'broker' && reporte_broker != ""){var name = $(form+" .flt_broker option:selected").text();}
                             
                     
-                            window.open('endorsement_request_units_xlsx.php?reporte_tipo='+reporte_tipo+'&reporte_company='+reporte_company+'&reporte_policy='+reporte_policy+'&reporte_broker='+reporte_broker+'&flt_dateFrom='+flt_dateFrom+'&flt_dateTo='+flt_dateTo+'&name='+name);
+                            window.open('endorsement_request_units_xlsx.php?reporte_tipo='+reporte_tipo+'&reporte_company='+reporte_company+'&reporte_policy='+reporte_policy+'&reporte_broker='+reporte_broker+'&flt_dateFrom='+flt_dateFrom+'&flt_dateTo='+flt_dateTo+'&name='+name+'&flt_estatus='+flt_estatus);
                                 
                          }
                     } 
@@ -1727,7 +1728,7 @@
                 </div> -->
                 <div class="field_item">
                     <label>General Comments for this Endorsement: <span style="color: #5e8bd4;;">(These comments are only for solo-trucking users)</span></label>
-                    <textarea id="sComentarios" name ="sComentarios" style="resize:none;height:50px;"></textarea> 
+                    <textarea id="sComentarios" name ="sComentarios" style="resize:none;height:50px!important;"></textarea> 
                 </div> 
                 <div class="field_item">
                     <label>General Status for this Endorsement: <span style="color: #5e8bd4;;">(This Status is that will be shown in the data grid.)</span></label>
@@ -1842,6 +1843,17 @@
             <label>Policy Number: </label>
             <select id="reporte_policy" class="flt_type" disabled="disabled"><option>All</option></select>
         </div> 
+        <div class="field_item"> 
+            <label>Endorsement Status: </label>
+            <select id="reporte_estatus" name="eStatus">
+                <option value="">Select an option...</option>
+                <option value="S">NEW APLICATION</option>
+                <option value="SB">SENT TO BROKERS</option>
+                <option value="D">DENIED</option>
+                <option value="P">IN PROGRESS</option>
+                <option value="A">APPROVED</option> 
+            </select>
+        </div>
         <div class="field_item"> 
             <label>App Date: </label>
             <div>

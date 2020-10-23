@@ -230,6 +230,28 @@
         return "AND ($tableAlias.iConsecutivo = '1' OR $tableAlias.iConsecutivo = '2' OR $tableAlias.iConsecutivo = '3' OR $tableAlias.iConsecutivo = '5') ";
     }
     
+    function sumar_dias_fecha($fecha,$dias){
+        $fecha = date('Y-m-d',strtotime(trim($fecha)));
+        $fecha2= date("d-m-Y",strtotime($fecha."+ ".$dias." days"));
+        $fecha2= date('m/d/Y',strtotime($fecha2));
+        return $fecha2;
+    }
+    function verificar_vencimiento($fecha_entrada){
+        $fecha_actual  = strtotime(date("d-m-Y H:i:00",time()));
+        $fecha_entrada = date('Y-m-d 21:00:00',strtotime(trim($fecha_entrada))); 
+        $fecha_entrada = strtotime($fecha_entrada);
+        if($fecha_actual < $fecha_entrada){return true;}else{return false;}  
+    }
+    function calcula_dias_diff($fecha,$fecha2){
+        $fecha = date('Y-m-d',strtotime(trim($fecha)));
+        $fecha2= date('Y-m-d',strtotime(trim($fecha2)));
+        $fecha = new DateTime($fecha);
+        $fecha2= new DateTime($fecha2);
+        $diff  = $fecha->diff($fecha2);
+        // will output 2 days
+        return $diff->days;
+    }
+    
     ## ROUND NUMBERS ##
     function number_round($number, $precision=0) {
 

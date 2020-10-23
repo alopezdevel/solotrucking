@@ -1163,7 +1163,7 @@
                             <label>Show detail of endorsements on the invoice?</label> 
                             <select tabindex="9" id="iMostrarEndorsements" name="iMostrarEndorsements" style="width: 50%;">
                                 <option value="0">NO</option>
-                                <option value="0">YES</option>
+                                <option value="1">YES</option>
                             </select>
                         </div>
                         </td>

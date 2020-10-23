@@ -55,8 +55,8 @@
                                            "<td>".$items['sTelefono']."</td>". 
                                            "<td>".$items['sNombreContacto']."</td>".                                                                                                                                                                                                                       
                                            "<td>
-                                                <div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit Broker\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>
-                                                <div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete Broker\"><i class=\"fa fa-trash\"></i> <span></span></div>
+                                                <div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>
+                                                <div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete\"><i class=\"fa fa-trash\"></i> <span></span></div>
                                            </td></tr>";  
                      }else{$htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";}    
                 }
@@ -110,7 +110,7 @@
       
       if($valida['total'] != '0' || $_POST["edit_mode"] == 'true'){
           if($_POST["edit_mode"] != 'true'){
-              $msj   = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Error: The Broker that you trying to add already exists. Please you verify the data.</p>';
+              $msj   = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Error: The Insurance that you trying to add already exists. Please you verify the data.</p>';
               $error = '1';
           }else{
              foreach($_POST as $campo => $valor){
@@ -181,7 +181,7 @@
         $conexion->commit();
         $conexion->close();
         $msj = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
-                The user has been deleted succesfully!</p>';
+                The data has been deleted succesfully!</p>';
       }else{
         $conexion->rollback();
         $conexion->close();

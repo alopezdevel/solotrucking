@@ -22,6 +22,7 @@
     foreach($array_filtros as $key => $valor){
         if($array_filtros[$key] != ""){
             $campo_valor = explode("|",$array_filtros[$key]);
+            if($campo_valor[0] == 'sNombreCompania'){$campo_valor[1] = htmlspecialchars($campo_valor[1],ENT_QUOTES);}
             $campo_valor[0] == 'iConsecutivo' ? $filtroQuery.= " AND  ".$campo_valor[0]."='".$campo_valor[1]."' " : $filtroQuery == "" ? $filtroQuery.= " AND  ".$campo_valor[0]." LIKE '%".$campo_valor[1]."%'": $filtroQuery.= " AND ".$campo_valor[0]." LIKE '%".$campo_valor[1]."%'";
         }
     }
@@ -129,9 +130,8 @@
             $datos   = $drivers;
             
             foreach($datos as $i => $b){
-                 if($i == 'sNombreCompania'){$datos[$i] = addslashes($datos[$i]);} 
+                 if($i == 'sNombreCompania'){$datos[$i] = addslashes(htmlspecialchars_decode($datos[$i],ENT_QUOTES));} 
                  $fields .= "\$('#$domroot :input[id=".$i."]').val('".$datos[$i]."');"; 
-                 //if($i == 'iEntidad'){$country = $datos[$i];} 
             }  
         } 
     }  
@@ -147,7 +147,7 @@
       $valores = array();
       $campos  = array(); 
       $msj = "";
-      $_POST['sNombreCompania'] = strtoupper($_POST['sNombreCompania']);  
+      $_POST['sNombreCompania'] = strtoupper(htmlspecialchars($_POST['sNombreCompania'],ENT_QUOTES));  
       //Conexion:
       include("cn_usuarios.php"); 
       $conexion->autocommit(FALSE);                                                                                                                                                                                                                                      
@@ -170,7 +170,7 @@
             
              foreach($_POST as $campo => $valor){
                 if($campo != "accion" and $campo != "edit_mode" and $campo != "iConsecutivo" ){ //Estos campos no se insertan a la tabla
-                    if($campo == 'sNombreCompania'){$valor = addslashes($valor);} 
+                    //if($campo == 'sNombreCompania'){$valor = addslashes($valor);} 
                     if($valor != ""){array_push($valores,"$campo='".trim($valor)."'");} 
                 }
              }     
@@ -187,9 +187,9 @@
                if($campo != "accion" and $campo != "edit_mode"){ //Estos campos no se insertan a la tabla
                     if($valor != ""){
                         
-                       if($campo == 'sNombreCompania'){
+                       /*if($campo == 'sNombreCompania'){
                         $valor = addslashes($valor);    
-                       } 
+                       }*/ 
                        array_push($campos ,$campo); 
                        array_push($valores, trim($valor)); 
                     }

@@ -122,7 +122,7 @@ var fn_vehicles = {
                 if($(fn_vehicles.data_grid+" .flt_radio").val() != ""){ fn_vehicles.filtro += "iConsecutivoRadio|"+$(fn_vehicles.data_grid+" .flt_radio").val()+","} 
                 if($(fn_vehicles.data_grid+" .flt_marca").val() != ""){ fn_vehicles.filtro += "iModelo|"+$(fn_vehicles.data_grid+" .flt_marca").val()+","}    
                 if($(fn_vehicles.data_grid+" .flt_peso").val() != ""){ fn_vehicles.filtro += "sPeso|"+$(fn_vehicles.data_grid+" .flt_peso").val()+","} 
-                //if($(fn_vehicles.data_grid+" .flt_status").val() != ""){ fn_vehicles.filtro += "inPoliza|"+$(fn_vehicles.data_grid+" .flt_status").val()+","} 
+                if($(fn_vehicles.data_grid+" .flt_pd").val() != ""){ fn_vehicles.filtro += "iTotalPremiumPD|"+$(fn_vehicles.data_grid+" .flt_pd").val()+","} 
                 fn_vehicles.fillgrid();
        },
        get_list_description : function(policy,type){
@@ -165,10 +165,15 @@ var fn_vehicles = {
                         <option value="1">0-250</option>
                         <option value="2">0-500</option>
                         <option value="3">500+</option> 
+                        <option value="5">0-1500</option>
+                        <option value="5">0-15000</option> 
+                        <option value="7">UNLIMITED MILES</option> 
                     </select>
                 </td> 
                 <td><input class="flt_marca" type="text" placeholder="Make:"></td>  
-                <td style='width:80px;'><input class="flt_peso" type="text" placeholder="Weight:"></td> 
+                <td style='width:80px;'><input class="flt_peso" type="text" placeholder="Weight:"></td>
+                <td style='width:100px;'><input class="flt_pd" type="text" placeholder="Premium PD:"></td>
+                <td style='width:300px;'></td>
                 <td style='width:35px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_vehicles.filtraInformacion();"><i class="fa fa-search"></i></div>
                 </td> 
@@ -177,9 +182,19 @@ var fn_vehicles = {
                 <td class="etiqueta_grid down" onclick="fn_vehicles.ordenamiento('sVIN',this.cellIndex);">VIN</td> 
                 <td class="etiqueta_grid"      onclick="fn_vehicles.ordenamiento('iYear',this.cellIndex);">YEAR</td>
                 <td class="etiqueta_grid"      onclick="fn_vehicles.ordenamiento('sTipo',this.cellIndex);">TYPE</td>
-                <td class="etiqueta_grid"      onclick="fn_vehicles.ordenamiento('iConsecutivoRadio',this.cellIndex);">RADIO</td> 
+                <td class="etiqueta_grid"      onclick="fn_vehicles.ordenamiento('iConsecutivoRadio',this.cellIndex);">RADIUS</td> 
                 <td class="etiqueta_grid"      onclick="fn_vehicles.ordenamiento('iModelo',this.cellIndex);">MAKE</td> 
                 <td class="etiqueta_grid"      onclick="fn_vehicles.ordenamiento('sPeso',this.cellIndex);">WEIGHT</td> 
+                <td class="etiqueta_grid"      onclick="fn_vehicles.ordenamiento('iTotalPremiumPD',this.cellIndex);">PREMIUM PD</td> 
+                <td class="etiqueta_grid" style="padding: 3px 0px 0px!important;width:450px;">
+                    <span style="display: block;padding: 0px 3px;text-align: center;">POLICIES</span>
+                    <table style="width: 100%;text-transform: uppercase;">
+                    <thead><tr>
+                        <td style="width:40%;">No.</td>
+                        <td style="width:10%">Type</td>
+                        <td style="width:50%">Application Date</td>
+                    </tr></thead></table>
+                </td> 
                 <td class="etiqueta_grid"></td>
             </tr>
         </thead>

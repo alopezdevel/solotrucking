@@ -2176,7 +2176,7 @@
                             $success = $conexion->query($query);     
                         }       
                       }
-                      
+              
                       if(!($success)){$transaccion_exitosa = false;}
                       else{
                           //ACTUALIZAMOS LA TABLA DE cb_poliza_operador POR SI HABIA ALGUN REGISTRO REPETIDO PERO EN EL BIND:
@@ -2184,13 +2184,19 @@
                                      "WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoUnidad='$idDetalle' AND eModoIngreso='AMIC' ";
                           $success = $conexion->query($query);
                           if(!($success)){$transaccion_exitosa = false;} 
+                          
                       }
                       
                       // Actualizamos el registro general del vehiculo como "no eliminado".
                       if($eAccion == "ADD" || $eAccion == "ADDSWAP" || $eAccion = 'CHANGEPD'){
-                         $query   = "UPDATE ct_unidades SET iDeleted='0' $iRadio,iTotalPremiumPD='$iTotalPD' WHERE iConsecutivo='$idDetalle'";
+                          
+                         $iRadio   != "" ? $iRadio   = ", iConsecutivoRadio='".$iRadio."'" : ""; 
+                         $iTotalPD != "" ? $iTotalPD = ", iTotalPremiumPD='".$iTotalPD."'" : ""; 
+                          
+                         $query   = "UPDATE ct_unidades SET iDeleted='0' $iRadio $iTotalPD WHERE iConsecutivo='$idDetalle'";
                          $success = $conexion->query($query);
                          if(!($success)){$transaccion_exitosa = false;} 
+                         
                       }
                       else if($eAccion == "DELETE" || $eAccion == "DELETESWAP"){
                           //CONSULTAMOS, SI EL VEHICULO NO ESTA ACTUALMENTE EN NINGUNA POLIZA, LO MARCAREMOS COMO ELIMINADA EN EL CATALOGO:
@@ -2236,6 +2242,8 @@
       // Filtros de informacion //
       $filtroQuery   = "WHERE A.eStatus != 'E' AND iConsecutivoTipoEndoso = '1' AND A.iDeleted='0' ";
       $filtroJoin    = ""; 
+      
+      isset($_POST['reporte_estatus']) && $_POST['reporte_estatus'] != "" ? $filtroQuery.= " AND A.eStatus='".$_POST['reporte_estatus'] ."'" : "";
       
       // X COMPANIA
       if($flt_tipo == 'company'){ 
