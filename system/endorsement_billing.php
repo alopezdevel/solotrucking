@@ -19,7 +19,8 @@
             fn_endorsement_billing.fillgrid();
             $.unblockUI();
             
-            $('#dialog_endorsement_save').dialog({
+
+            $('#dialog_mark_email').dialog({
                 modal: true,
                 autoOpen: false,
                 width : 420,
@@ -28,94 +29,16 @@
                 buttons : {
                     'YES' : function() {
                         $(this).dialog('close');
-                        fn_endorsement_billing.save();             
-                    },
-                     'NO' : function(){
-                        $(this).dialog('close');
-                    }
-                }
-            }); 
-            $('#dialog_upload_files').dialog({
-                modal: true,
-                autoOpen: false,
-                width : 500,
-                height : 450,
-                resizable : false,
-                buttons : {
-                    'SAVE DATA' : function() {
-                        fn_endorsement_billing.files.save();
-                    },
-                     'CANCEL' : function(){
-                        $(this).dialog('close');
-                    }
-                }
-            });
-            $('#dialog_send_email').dialog({
-                modal: true,
-                autoOpen: false,
-                width : 420,
-                height : 200,
-                resizable : false,
-                buttons : {
-                    'YES' : function() {
-                        $(this).dialog('close');
-                        fn_endorsement_billing.email.send();             
-                    },
-                    'NO' : function(){
-                        $(this).dialog('close');
-                    }
-                }
-            }); 
-            $('#dialog_mark_email_unit').dialog({
-                modal: true,
-                autoOpen: false,
-                width : 420,
-                height : 200,
-                resizable : false,
-                buttons : {
-                    'YES' : function() {
-                        $(this).dialog('close');
-                        fn_endorsement_billing.email.mark_sent();             
+                        fn_endorsement_billing.financiamiento.mark_sent();
+                        event.preventDefault();             
                     },
                     'NO' : function(){
                         $(this).dialog('close');
                     }
                 }
             });
-            $('#dialog_delete_endorsement').dialog({
-                modal: true,
-                autoOpen: false,
-                width : 300,
-                height : 200,
-                resizable : false,
-                buttons : {
-                    'YES' : function() {
-                        clave = $('#dialog_delete_endorsement input[name=iConsecutivo]').val();
-                        $(this).dialog('close');
-                        
-                        fn_endorsement_billing.delete_endorsement(clave);             
-                    },
-                     'NO' : function(){
-                        $(this).dialog('close');
-                    }
-                }
-            }); 
-            
-            $('#dialog_report_endorsements').dialog({
-                modal: true,
-                autoOpen: false,
-                width : 650,
-                height : 510,
-                resizable : false,
-                buttons : {
-                    'DOWNLOAD EXCEL FILE' : function() { fn_endorsement_billing.report.open(true);},
-                    'OK' : function(){fn_endorsement_billing.report.open(false);},
-                    'CANCEL' : function(){
-                        $(this).dialog('close');
-                    }
-                }
-            }); 
-            
+          
+          
             //DATEPICKERS
             var dates_rp = $( "#flt_dateFrom, #flt_dateTo" ).datepicker({
                 changeMonth: true,
@@ -192,12 +115,40 @@
                     }
                 });
                 
-                //Archivos:
-                if(window.File && window.FileList && window.FileReader) {
-                      fn_solotrucking.files.form      = "#edit_form_payment";
-                      fn_solotrucking.files.fileinput = "fileselect";
-                      fn_solotrucking.files.add();
-                }
+                new AjaxUpload('#btnsFinancingPDF', {
+                    action: 'endorsement_billing_server.php',
+                    onSubmit : function(file , ext){
+                        if (!(ext && /^(pdf)$/i.test(ext))){
+                            var mensaje = '<p><span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Error: The file format is not valid.</p>';
+                            fn_solotrucking.mensaje(mensaje);
+                            return false;
+                        }else{
+                            this.setData({
+                                'accion'                    : 'financing_upload_pdf',
+                                'iConsecutivoFinanciamiento': $("#endorsements_edit_form .fn_finacing_form input[name=iConsecutivoFinanciamiento]").val(),
+                                'iConsecutivoArchivo'       : $("#endorsements_edit_form .fn_finacing_form #iConsecutivoArchivo ").val(),
+                            });
+                            $('#txtsFinancingPDF').val('loading...');
+                            this.disable(); 
+                        }
+                    },
+                    onComplete : function(file,response){  
+                        var respuesta = JSON.parse(response);
+                        switch(respuesta.error){
+                            case '0':
+                                $('#txtsFinancingPDF').val(respuesta.name_file);
+                                this.enable();
+                                $('#iConsecutivoArchivo').val(respuesta.id_file);
+                                fn_solotrucking.mensaje(respuesta.mensaje);
+                            break;
+                            case '1':
+                               fn_solotrucking.mensaje(respuesta.mensaje);
+                               $('#txtsFinancingPDF').val(''); 
+                               this.enable();
+                            break;
+                        }   
+                    }        
+                }); 
                 
             },
             fillgrid: function(){
@@ -286,7 +237,7 @@
                     
                     fn_endorsement_billing.fillgrid();
             },
-            // INVOICE
+            // INVOICE // FINANCIAMIENTOS
             add : function(){
                 $(fn_endorsement_billing.data_grid + " tbody td .btn_add").bind("click",function(){
                     var clave = $(this).parent().parent().find("td:eq(0)").prop('id');
@@ -299,31 +250,108 @@
                         poliza= poliza.split("_");
                         poliza= poliza[1];
                         
-                    fn_endorsement_billing.summary.endoso_id = endor;
-                    fn_endorsement_billing.summary.company_id= clave;
-                    fn_endorsement_billing.summary.poliza_id = poliza;
+                    var estatEnd = $(this).parent().parent().find("td:eq(8)").prop('id');
+                        estatEnd = estatEnd.split("_");
+                        estatEnd = estatEnd[1];
                     
+                    $("#endorsements_edit_form .fn_invoide_form, #endorsements_edit_form .fn_finacing_form, #endorsements_edit_form .campos-layout").hide();    
                     $('#endorsements_edit_form input, #endorsements_edit_form select, #endorsements_edit_form textarea').val('');
                     $("#endorsements_edit_form .required-field").removeClass("error");
-                    $('#endorsements_edit_form input[name=sNoReferencia]').removeProp('readonly').removeClass("readonly");
-                    $('#endorsements_edit_form button.btn-preview,#endorsements_edit_form button.btn-apply').hide();
-                    $("#endorsements_edit_form select[name=sCveMoneda]").val('USD');   
-                    $("#endorsements_edit_form select[name=iConsecutivoCompania]").val(fn_endorsement_billing.summary.company_id); 
-                    $("#endorsements_edit_form input[name=iConsecutivoEndoso]").val(fn_endorsement_billing.summary.endoso_id);
-                    $("#endorsements_edit_form input[name=iConsecutivoPoliza]").val(fn_endorsement_billing.summary.poliza_id);
-                    $("#endorsements_edit_form select[name=iConsecutivoCompania],#endorsements_edit_form select[name=sCveMoneda], #endorsements_edit_form select[name=iConsecutivoFinanciera]").prop("disabled","disabled");
-                    fn_endorsement_billing.summary.get_services(); 
-                    fn_endorsement_billing.get_policy_data();
                     
-                    // campos financiamiento:
-                    $("#endorsements_edit_form select[name=iFinanciamiento]").val('0');
-                    fn_endorsement_billing.valid_financing();
-                   
-                    //ocultar datagrid detalle:
-                    $("#invoice_detalle").hide();
-                    $("#invoice_detalle .popup-datagrid tbody").empty();
-                   
-                    fn_solotrucking.get_date("#dFechaInvoice");
+                    fn_endorsement_billing.get_policy_data(poliza,endor);
+                            
+                    //REVISAR ESTATUS:
+                    if(estatEnd == 'A'){
+                        //FORMULARIO PRA FINANCIAMIENTO:
+                        $("#endorsements_edit_form .fn_finacing_form").show();
+                        $("#endorsements_edit_form .fn_finacing_form select[name=iConsecutivoCompania]").val(clave); 
+                        $("#endorsements_edit_form .fn_finacing_form input[name=iConsecutivoEndoso]").val(endor);
+                        $("#endorsements_edit_form .fn_finacing_form input[name=iConsecutivoPoliza]").val(poliza);
+                        $("#endorsements_edit_form .fn_finacing_form select[name=iConsecutivoCompania]").prop("disabled","disabled");
+                        fn_solotrucking.get_date("#dFechaAplicacion"); 
+                        
+                        //Ocultar campos para cuando no aplica financiamiento:
+                        $("#endorsements_edit_form .general_fields_2").show();
+                        $("#endorsements_edit_form .general_fields").hide();
+                        
+                        //Deshabilitar campos de financing:
+                        $("#endorsements_edit_form .financing_fields").css('opacity','0.5');
+                        $("#endorsements_edit_form .financing_fields select").prop('disabled','disabled');
+                        $("#endorsements_edit_form .financing_fields input, #endorsements_edit_form .financing_fields textarea").prop('readonly','readonly');
+                        fn_endorsement_billing.financiamiento.valid_aplica();
+                    }
+                    else if(estatEnd == 'UNBILLED'){
+                        
+                        $("#endorsements_edit_form .fn_invoide_form").show();
+                        
+                        fn_endorsement_billing.summary.endoso_id = endor;
+                        fn_endorsement_billing.summary.company_id= clave;
+                        fn_endorsement_billing.summary.poliza_id = poliza;
+                        
+                        
+                        $('#endorsements_edit_form .fn_invoide_form input[name=sNoReferencia]').removeProp('readonly').removeClass("readonly");
+                        $('#endorsements_edit_form .fn_invoide_form button.btn-preview,#endorsements_edit_form .fn_invoide_form button.btn-apply').hide();
+                        $("#endorsements_edit_form .fn_invoide_form select[name=sCveMoneda]").val('USD');   
+                        $("#endorsements_edit_form .fn_invoide_form select[name=iConsecutivoCompania]").val(fn_endorsement_billing.summary.company_id); 
+                        $("#endorsements_edit_form .fn_invoide_form input[name=iConsecutivoEndoso]").val(fn_endorsement_billing.summary.endoso_id);
+                        $("#endorsements_edit_form .fn_invoide_form input[name=iConsecutivoPoliza]").val(fn_endorsement_billing.summary.poliza_id);
+                        $("#endorsements_edit_form .fn_invoide_form select[name=iConsecutivoCompania]").prop("disabled","disabled");
+                        $("#endorsements_edit_form .fn_invoide_form select[name=sCveMoneda]").prop("disabled","disabled");
+                        $("#endorsements_edit_form .fn_invoide_form select[name=iConsecutivoFinanciera]").prop("disabled","disabled");
+                        fn_endorsement_billing.summary.get_services(); 
+                        
+                        // campos financiamiento:
+                        $("#endorsements_edit_form select[name=iFinanciamiento]").val('0');
+                        fn_endorsement_billing.valid_financing();
+                       
+                        //ocultar datagrid detalle:
+                        $("#invoice_detalle").hide();
+                        $("#invoice_detalle .popup-datagrid tbody").empty();
+                       
+                        fn_solotrucking.get_date("#dFechaInvoice"); 
+                        
+                        //Iniciar files:
+                        fn_endorsement_billing.files.clean("#invoice_data",'fileselect2');   
+                    }
+                    else if(estatEnd == 'FINANCING'){
+                        //FORMULARIO PRA FINANCIAMIENTO:
+                        $("#endorsements_edit_form .fn_finacing_form").show();
+                        $("#endorsements_edit_form .fn_finacing_form select[name=iConsecutivoCompania]").val(clave); 
+                        $("#endorsements_edit_form .fn_finacing_form input[name=iConsecutivoEndoso]").val(endor);
+                        $("#endorsements_edit_form .fn_finacing_form input[name=iConsecutivoPoliza]").val(poliza);
+                        $("#endorsements_edit_form .fn_finacing_form select[name=iConsecutivoCompania]").prop("disabled","disabled");
+                        
+                        //Ocultar campos para cuando no aplica financiamiento:
+                        $("#endorsements_edit_form .general_fields, #endorsements_edit_form .general_fields_2").hide();
+                        $("#endorsements_edit_form .financing_fields").css('opacity','0.9');
+                        $("#endorsements_edit_form .financing_fields select").prop('disabled','disabled');
+                        $("#endorsements_edit_form .financing_fields input, #endorsements_edit_form .financing_fields textarea").prop('readonly','readonly'); 
+                        $("#endorsements_edit_form button.btn-save").hide();
+                        $("#endorsements_edit_form button.btn-finance").hide();
+                        $("#endorsements_edit_form .campos-layout").show();
+                        
+                        $.ajax({
+                          type: "POST",
+                          url : "endorsement_billing_server.php",
+                          data: {
+                              'accion'                     : 'financing_get_data',
+                              'iConsecutivoEndoso'         : endor,
+                              'iConsecutivoPoliza'         : poliza,
+                              'domroot'                    : 'endorsements_edit_form',
+                          },
+                          async : true,
+                          dataType : "json",
+                          success : function(data){ 
+                              switch(data.error){
+                                  case '0': if(data.fields != ""){eval(data.fields);}
+                                  break;
+                                  case '1': fn_solotrucking.mensaje(data.msj); break;
+                              }
+                          }
+                        });   
+    
+                       
+                    }
                    
                     //Limpiar campo file:
                     /*$("#endorsements_edit_form .file-message").html("");
@@ -334,14 +362,15 @@
                     
                 }); 
             },
+            // INVOICE
             save : function (ghost_mode){
                
                if(ghost_mode == ''){ghost_mode = false;}
                //Validate Fields:
                var valid = true;
                var message = "";
-               $(fn_endorsement_billing.form+" .required-field").removeClass("error");
-               $(fn_endorsement_billing.form+" .required-field").each(function(){
+               $("#invoice_data .required-field").removeClass("error");
+               $("#invoice_data .required-field").each(function(){
                    if($(this).val() == ""){
                        valid   = false;
                        message = '<li> You must write all required fields.</li>';
@@ -352,13 +381,13 @@
                if(valid){
                    
                     //Removes temporalmente los disabled:
-                    $("#endorsements_edit_form select[name=iConsecutivoCompania],#endorsements_edit_form select[name=sCveMoneda], #endorsements_edit_form select[name=iConsecutivoFinanciera]").removeProp("disabled");
+                    $("#invoice_data select[name=iConsecutivoCompania],#invoice_data select[name=sCveMoneda], #invoice_data select[name=iConsecutivoFinanciera]").removeProp("disabled");
                    
                     var form       = "#invoice_data";
                     var dataForm   = new FormData();
                     var other_data = $(form).serializeArray();
                     dataForm.append('accion','save_data');
-                    //$.each($(form+' input[type=file]')[0].files,function(i, file){dataForm.append('file-'+i, file);});
+                    $.each($(form+' input[type=file]')[0].files,function(i, file){dataForm.append('file-'+i, file);});
                     $.each(other_data,function(key,input){dataForm.append(input.name,input.value);});
                     
                     $.ajax({
@@ -517,9 +546,8 @@
                     }
                 });
             },
-            get_policy_data : function(){
-                var policy = fn_endorsement_billing.summary.poliza_id;
-                var endoso = fn_endorsement_billing.summary.endoso_id;
+            get_policy_data : function(policy,endoso){
+                
                 if(policy != "" && endoso != ''){
                     $.ajax({             
                         type:"POST", 
@@ -806,11 +834,9 @@
                     fn_solotrucking.get_date("#dFechaPago");
                     fn_endorsement_billing.get_invoice_data(); 
                        
-                    //Limpiar campo file:
-                    $("#edit_form_payment .file-message").html("");
-                    $("#edit_form_payment #fileselect").val(null);
-                    $("#edit_form_payment #fileselect").removeClass("fileupload");
-                       
+                    //Iniciar files:
+                    fn_endorsement_billing.files.clean("#edit_form_payment",'fileselect'); 
+                           
                     fn_popups.resaltar_ventana('edit_form_payment');      
                 });
             },
@@ -884,6 +910,162 @@
                     });
                 }    
             },
+            // ----------  FINANCIAMIENTOS ------------//
+            financiamiento : {
+                endoso_id : '',
+                company_id: '',
+                poliza_id : '',
+                valid_aplica : function(){
+                    var value = $("#endorsements_edit_form .fn_finacing_form select[name=iAplicaFinanciamiento]").val();
+                    
+                    
+                    //YES TO FINANCING
+                    if(value == '1'){
+                        //habilitar campos de financing:
+                        $("#endorsements_edit_form .financing_fields").css('opacity','1');
+                        $("#endorsements_edit_form .financing_fields select").removeProp('disabled');
+                        $("#endorsements_edit_form .financing_fields input, #endorsements_edit_form .financing_fields textarea").removeProp('readonly'); 
+                        $("#endorsements_edit_form button.btn-finance").show();
+                        $("#endorsements_edit_form button.btn-save").hide();
+                    }
+                    //NO TO FINANCING
+                    else if(value == '0'){
+                        //Ocultar campos para cuando no aplica financiamiento:
+                        $("#endorsements_edit_form .general_fields").show();
+                        
+                        //Deshabilitar campos de financing:
+                        $("#endorsements_edit_form .financing_fields").css('opacity','0.5');
+                        $("#endorsements_edit_form .financing_fields select").prop('disabled','disabled');
+                        $("#endorsements_edit_form .financing_fields input, #endorsements_edit_form .financing_fields textarea").prop('readonly','readonly');    
+                        $("#endorsements_edit_form button.btn-finance").hide();
+                        $("#endorsements_edit_form button.btn-save").show();
+                    }
+                    // NO SELECT 
+                    else{
+                        //Ocultar campos para cuando no aplica financiamiento:
+                        $("#endorsements_edit_form .general_fields").hide();
+                        //Deshabilitar campos de financing:
+                        $("#endorsements_edit_form .financing_fields").css('opacity','0.5');
+                        $("#endorsements_edit_form .financing_fields select").prop('disabled','disabled');
+                        $("#endorsements_edit_form .financing_fields input, #endorsements_edit_form .financing_fields textarea").prop('readonly','readonly');
+                        $("#endorsements_edit_form button.btn-finance").hide();
+                        $("#endorsements_edit_form button.btn-save").show();
+                    }
+                
+                },
+                save: function(ghost){
+                    
+                    if(!(ghost)){ghost = false;}
+                    
+                    var valid   = true;
+                    var mensaje = "";
+                    $('#finance_data input, #finance_data textarea').removeClass('error');
+
+                    //Revisamos campos obligatorios: (SOLO LOS DEL ENDOSO GENERALES)
+                    $("#finance_data .required-field").each(function(){
+                       if($(this).val() == ""){valid = false; $(this).addClass('error');mensaje = "<li>You must capture the required fields.</li>";}
+                    });
+                    
+                    var financing = $('#finance_data select[name=iAplicaFinanciamiento]').val();
+                    
+                    if(financing == '0' && $('#finance_data textarea[name=sComentariosFinanciamiento]').val() == ''){
+                       valid   = false; 
+                       mensaje = "<li>Please describe the reason that the endorsement can not be financing.</li>"; 
+                       $('#finance_data textarea[name=sComentariosFinanciamiento]').addClass('error');
+                       
+                    }
+                    else if(financing == '1'){
+                        $("#finance_data .financing_fields input, #finance_data .financing_fields select").each(function(){
+                           if($(this).val() == ""){valid = false; $(this).addClass('error');mensaje = "<li>You must capture the required fields.</li>";}
+                        });    
+                    }
+                    
+                    if(valid){
+                        
+                       if($('#finance_data [name=iConsecutivoFinanciamiento]').val() != ""){struct_data_post_new.edit_mode = "true";}else{struct_data_post_new.edit_mode = "false";}
+                    
+                       struct_data_post_new.action  = "financing_save";
+                       struct_data_post_new.domroot = "#finance_data ";
+                               
+                       $.ajax({             
+                            type:"POST", 
+                            url:"endorsement_billing_server.php", 
+                            data: struct_data_post_new.parse(),
+                            async : false,
+                            dataType : "json",
+                            success : function(data){  
+                                $('#finance_data [name=iConsecutivoFinanciamiento]').val(data.iConsecutivoFinanciamiento);                             
+                                if(!(ghost) || data.error == '1'){fn_solotrucking.mensaje(data.msj);return false;} 
+                            }
+                       }); 
+                                   
+                    }else{fn_solotrucking.mensaje(mensaje);}
+                    
+                },
+                mark_sent_confirm : function(){
+                   $('#dialog_mark_email').dialog('open');    
+                },
+                mark_sent : function(){
+                    
+                    fn_endorsement_billing.financiamiento.save(true);
+                    if($('#finance_data [name=iConsecutivoFinanciamiento]').val() != "" && $('#finance_data [name=iConsecutivoFinanciamiento]').val() != "0"){
+                        $.ajax({             
+                            type:"POST", 
+                            url:"endorsement_billing_server.php", 
+                            data:{
+                                'accion' : 'financing_mark_sent',
+                                'iConsecutivoFinanciamiento' : $('#finance_data [name=iConsecutivoFinanciamiento]').val(),
+                                'iConsecutivoEndoso'         : $('#finance_data [name=iConsecutivoEndoso]').val(),
+                                'iConsecutivoPoliza'         : $('#finance_data [name=iConsecutivoPoliza]').val()
+                            },
+                            async : true,
+                            dataType : "json",
+                            success : function(data){ 
+                                fn_solotrucking.mensaje(data.msj);                              
+                                if(data.error == '0'){
+                                      fn_endorsement_billing.filtraInformacion();
+                                      fn_popups.cerrar_ventana('endorsements_edit_form');
+                                }
+                                
+                            }
+                        });     
+                    }
+                },
+                get_financier_data : function(){
+                    var clave =  $("#finance_data select[name=iConsecutivoFinanciera]").val();
+                    if(clave != ""){
+                        $.ajax({             
+                            type:"POST", 
+                            url:"endorsement_billing_server.php", 
+                            data:{'accion' : 'get_financier_data','clave' : clave},
+                            async : true,
+                            dataType : "json",
+                            success : function(data){ 
+                                $("#finance_data input[name=sNombreContactoFinanciera]").val(data.contacto);
+                                $("#finance_data input[name=sEmailFinanciera]").val(data.emails);
+                            }
+                        });    
+                    }
+                }
+            },
+            // ---- Manejo de archivos --- //
+            files : {
+                clean : function(form_active,file_input){
+                    $(form_active+" .file-message").html("");
+                    $(form_active+" #"+file_input).val(null);
+                    $(form_active+" #"+file_input).removeClass("fileupload");
+                    fn_endorsement_billing.files.active_file_form(form_active,file_input);
+                },
+                active_file_form : function(datagrid,fileinput){
+                    
+                  //inicializar archivo:
+                  if(window.File && window.FileList && window.FileReader) {
+                      fn_solotrucking.files.form      = datagrid;
+                      fn_solotrucking.files.fileinput = fileinput;
+                      fn_solotrucking.files.add(); 
+                  }
+                },
+            }
     }    
 </script> 
 <div id="layer_content" class="main-section">
@@ -897,9 +1079,9 @@
         <thead>
             <tr id="grid-head1">
                 <td style="width:300px;"><input class="flt_company" type="text" placeholder="Company:"></td>
-                <td style="width:200px;"><input class="flt_policy" type="text" placeholder="Policy:"></td>
+                <td style="width:480px;"><input class="flt_policy" type="text" placeholder="Policy:"></td>
                 <td style="width:70px;"><input class="flt_endoso" type="text" placeholder="END#:"></td>
-                <td style="width:330px;">
+                <td style="width:380px;">
                     <input class="flt_desc" type="text" placeholder="Description" style="width: 60%;float: left;">
                     <input class="flt_date" type="text" placeholder="DD/MM/YYYY" style="float: left;width: 30%;margin-left: 4%!important;">
                 </td>
@@ -916,7 +1098,7 @@
                     </select>-->
                 </td>
                 <td style="width:130px;"><input class="flt_amount" type="text" placeholder="Amount:"></td>  
-                <td style='width:110px;'>
+                <td style='min-width: 205px;'>
                     <div class="btn-icon-2 btn-left" title="Search" onclick="fn_endorsement_billing.filtraInformacion();"><i class="fa fa-search"></i></div>
                 </td> 
             </tr>
@@ -966,7 +1148,7 @@
 <!-- INVOICE -->
 <div id="endorsements_edit_form" class="popup-form" style="width: 1300px;padding-bottom: 10px;">
     <div class="p-header">
-            <h2>ENDORSEMENT INVOICE - (EDIT OR ADD)</h2>
+            <h2>ENDORSEMENT BILLING STATUS</h2>
             <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('endorsements_edit_form');fn_endorsement_billing.filtraInformacion();"><i class="fa fa-times"></i></div>
         </div>
         <div class="p-container" style="height: 94%;overflow-y: auto;">
@@ -975,8 +1157,8 @@
             <thead>
                     <tr class="grid-head1">
                         <td class="etiqueta_grid" colspan="6" style="padding: 2px;height: 20px;color: #fff;text-transform: uppercase;font-weight: 700;font-size: 0.9em;">Policy Data</td>
-                        <td class="etiqueta_grid" colspan="3" style="padding: 2px;height: 20px;color: #fff;text-transform: uppercase;font-weight: 700;font-size: 0.9em;">Endorsement Data</td>
-                        <td style="padding: 2px;height: 20px;color: #fff;text-transform: uppercase;font-weight: 700;font-size: 0.9em;"></td>
+                        <td class="etiqueta_grid" colspan="4" style="padding: 2px;height: 20px;color: #fff;text-transform: uppercase;font-weight: 700;font-size: 0.9em;">Endorsement Data</td>
+                        <!-- <td style="padding: 2px;height: 20px;color: #fff;text-transform: uppercase;font-weight: 700;font-size: 0.9em;"></td>-->
                     </tr>
                     <tr class="grid-head2">
                         <td class="etiqueta_grid">Policy No.</td>
@@ -988,12 +1170,119 @@
                         <td class="etiqueta_grid">END No.</td>
                         <td class="etiqueta_grid">Description</td>
                         <td class="etiqueta_grid">Broker Invoice</td>
-                        <td></td>
+                        <td class="etiqueta_grid" style="width: 100px;">END PDF</td>
+                        <!--<td></td>-->
                     </tr>
                 </thead>
                 <tbody></tbody>
             </table>
-            <form id="invoice_data">
+        </div> 
+        <!-- FINANCING -->
+        <div class="fn_finacing_form">
+            <form id="finance_data">
+                <fieldset style="padding-bottom: 5px;">
+                <legend>General Data</legend>
+                <span style="color:#ff0000;font-size:1em;" class="general_fields_2"> &nbsp;<b>Note: </b>Please check before sending that the PDF ENDORSEMENT has been uploaded by customer service correctly.</span>
+                <p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p>
+                <input name="iConsecutivoEndoso" type="hidden" value="">
+                <input name="iConsecutivoPoliza" type="hidden" value="">
+                <input name="iConsecutivoFinanciamiento" type="hidden" value="">
+                <table style="width: 100%;">
+                    <tr>
+                        <td colspan="100%">
+                        <div class="field_item">
+                            <label>Company: <span style="color:#ff0000;">*</span></label> 
+                            <select tabindex="1" name="iConsecutivoCompania" class="required-field" style="width: 100%!important;height: 25px!important;"><option value="">Select an option...</option></select>
+                        </div>
+                        </td>
+                    </tr>
+                    <tr class="general_fields_2">
+                        <td colspan="100%">
+                        <div class="field_item"> 
+                            <label>Apply Financing?: <span style="color:#ff0000;">*</span></label> 
+                            <select tabindex="2" name="iAplicaFinanciamiento" class="required-field" onblur="fn_endorsement_billing.financiamiento.valid_aplica();" style="height: 25px!important;">
+                                <option value="">Select an option...</option>
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>  
+                            </select> 
+                        </div>
+                        </td>
+                    </tr>
+                    <tr class="general_fields">
+                        <td colspan="100%">
+                        <div class="field_item"> 
+                            <label>Why not apply financing (comments): <span style="color:#ff0000;">*</span></label> 
+                            <textarea tabindex="3" name="sComentariosFinanciamiento" style="height: 50px!important;resize: none;"></textarea>
+                        </div>
+                        </td>
+                    </tr>
+                </table>
+                <legend>Financing Data</legend>
+                <table style="width: 100%;">
+                    <tr>
+                        <td>
+                          <div class="field_item financing_fields">
+                                <label>Financing Company: <span style="color:#ff0000;">*</span></label> 
+                                <select tabindex="4" name="iConsecutivoFinanciera" style="height: 25px!important;" onblur="fn_endorsement_billing.financiamiento.get_financier_data();"><option value="">Select an option...</option></select>
+                          </div>
+                        </td>
+                        <td>
+                        <div class="field_item financing_fields"> 
+                            <label>App Date <span style="color:#ff0000;">*</span>:</label> 
+                            <input tabindex="5" name="dFechaAplicacion" id="dFechaAplicacion" type="text" class="fecha required-field" style="width: 90%;position: relative;margin-left:15px;">
+                        </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                        <div class="field_item financing_fields"> 
+                            <label>Contact from financier:  <span style="color:#ff0000;">*</span></label>  
+                            <input tabindex="6" name="sNombreContactoFinanciera" type="text" class="num" maxlenght="250">
+                        </div> 
+                        </td>
+                        <td>
+                        <div class="field_item financing_fields"> 
+                            <label>E-mail to send application:  <span style="color:#ff0000;">*</span></label>  
+                            <input tabindex="7" name="sEmailFinanciera" type="text" class="txt-lowercase" maxlenght="10">
+                        </div>
+                        </td>
+                    </tr> 
+                    <tr>
+                        <td colspan="100%">
+                        <div class="field_item financing_fields">
+                            <label>Additional text on e-mail:</label> 
+                            <textarea tabindex="9" name="sComentarios" style="height: 50px!important;resize: none;"></textarea>
+                        </div>
+                        </td> 
+                    </tr>
+                </table>
+                </fieldset>
+            </form>
+            <fieldset class="campos-layout">
+                <legend>UPLOAD FINANCING FILE (PDF,JPEG,PNG)</legend>
+                <table style="width: 100%;border-collapse: collapse;">
+                    <tr>
+                        <td colspan="100%">
+                        <div class="file_certificate files"> 
+                            <label>Financing Signed Document: <span style="color:#ff0000;">*</span> <span style="color:#9e2e2e;">Please upload a copy of the form in PDF format.</span></label> 
+                            <input  id="txtsFinancingPDF" type="text" readonly="readonly" value="" size="40" style="width:83%;" />
+                            <button id="btnsFinancingPDF" type="button">Upload File</button>
+                            <input  id="iConsecutivoArchivo" type="hidden">
+                        </div> 
+                        </td>
+                    </tr>
+                </table>
+            </fieldset> 
+            <div>
+                <button type="button" class="btn-1 btn-save"    onclick="fn_endorsement_billing.financiamiento.save();"  style="margin-right: 10px;">SAVE</button> 
+                <button type="button" class="btn-1 btn-finance" onclick="fn_endorsement_billing.financiamiento.mark_sent_confirm();" style="margin-right:10px;background: #e8b813;width: 140px;">MARK AS SENT</button> 
+                <button type="button" class="btn-1 btn-finance" onclick="fn_endorsement_billing.financiamiento.send_confirm();" style="margin-right:10px;background: #87c540;width: 140px;">SEND E-MAIL</button>
+                <button type="button" class="btn-1"             onclick="fn_popups.cerrar_ventana('endorsements_edit_form');fn_endorsement_billing.filtraInformacion();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
+            </div>
+        </div>
+        <!-- INVOICES -->
+        <div class="fn_invoide_form">
+            <form id="invoice_data" style="margin-bottom: -5px;">
                 <fieldset style="padding-bottom: 5px;">
                 <legend>General Data</legend>
                 <p class="mensaje_valido">&nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.</p>
@@ -1025,11 +1314,11 @@
                         <td>
                         <div class="field_item"> 
                             <label>Payment Currency <span style="color:#ff0000;">*</span>:</label> 
-                            <select tabindex="4" id="sCveMoneda" name="sCveMoneda" class="required-field" style="height: 25px!important;"><option value="USD" selected>USD</option></select> 
+                            <select tabindex="4" id="sCveMoneda" name="sCveMoneda" class="required-field" style="width: 99%!important;height: 25px!important;"><option value="USD" selected>USD</option></select> 
                         </div>
                         </td> 
                     </tr>
-                    <tr>
+                    <!--<tr>
                         <td>
                         <div class="field_item"> 
                             <label>Is Financing: <span style="color:#ff0000;">*</span>:</label> 
@@ -1059,18 +1348,19 @@
                             <input tabindex="8" id="dFinanciamientoMonto" name="dFinanciamientoMonto" type="text" class="inputdecimals" maxlenght="10" placeholder="$:">
                         </div>
                         </td>
-                    </tr> 
-                    <!--<tr style="display:none;">
+                    </tr>
+                    --> 
+                    <tr>
                         <td colspan="100%">
                             <div class="field_item"> 
                                 <label>File to upload (PDF,JPEG,JPG,PNG):</label>
                                 <div class="file-container">
-                                    <input tabindex="9" id="fileselect" name="fileselect" type="file" style="height: 90px!important;"/>
+                                    <input tabindex="9" id="fileselect2" name="fileselect" type="file" style="height: 90px!important;"/>
                                     <div class="file-message"></div>
                                 </div>
                             </div> 
                         </td>
-                    </tr> -->
+                    </tr> 
                     <tr>
                         <td colspan="100%">
                         <div class="field_item">
@@ -1345,6 +1635,7 @@
     </div>
 </div>
 <!-- FOOTER -->
+<div id="dialog_mark_email" title="SYSTEM ALERT" style="display:none;"><p>Are you sure that want to mark as sent the financing?</p></div>
 <?php include("footer.php"); ?> 
 </body>
 </html>

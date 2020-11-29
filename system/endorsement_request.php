@@ -836,6 +836,11 @@
                                            heightStyle: "content",
                                       });
                                       
+                                      if($("#form_change_estatus select[name=eStatusEndoso]").val() == 'A'){
+                                         $("#form_change_estatus select[name=eStatusEndoso]").prop('disabled','disabled'); 
+                                      }
+                                      else{$("#form_change_estatus select[name=eStatusEndoso]").removeProp('disabled');}
+                                      
                                       fn_endorsement.files.iConsecutivoEndoso = clave;
                                       fn_endorsement.files.fillgrid();
                                     
@@ -868,6 +873,9 @@
                   
                   if(valid){
                      
+                      //Remover temporalmente el disabled:
+                     $("#form_change_estatus select[name=eStatusEndoso]").removeProp('disabled'); 
+                     
                      var form       = "#form_change_estatus .forma";
                      var dataForm   = new FormData();
                      var other_data = $(form).serializeArray();
@@ -886,6 +894,9 @@
                         success : function(data){                               
                             fn_solotrucking.mensaje(data.msj);
                             fn_endorsement.files.fillgrid();
+                            if($("#form_change_estatus select[name=eStatusEndoso]").val() == 'A'){
+                                $("#form_change_estatus select[name=eStatusEndoso]").prop('disabled','disabled'); 
+                            }
                         }
                      });   
                   }else{fn_solotrucking.mensaje('Please first select a status before you press save.');$('#form_change_estatus #eStatus').addClass('error');} 

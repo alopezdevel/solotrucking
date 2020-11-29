@@ -27,8 +27,7 @@
     $ordenQuery = " ORDER BY ".$_POST["ordenInformacion"]." ".$_POST["sortInformacion"];
     
     //contando registros // 
-    $query_rows = "SELECT COUNT(A.iConsecutivo) AS total FROM ct_financieras AS A ".
-                  "LEFT JOIN ct_brokers AS B ON A.iConsecutivoBroker = B.iConsecutivo ".$filtroQuery;
+    $query_rows = "SELECT COUNT(A.iConsecutivo) AS total FROM ct_financieras AS A ".$filtroQuery;
     $Result     = $conexion->query($query_rows);
     $items      = $Result->fetch_assoc();
     $registros  = $items["total"];
@@ -43,9 +42,8 @@
         $pagina_actual == "0" ? $pagina_actual = 1 : false;
         $limite_superior = $registros_por_pagina;
         $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
-        $sql    = "SELECT A.iConsecutivo, A.sName, A.sTelefono,A.sNombreContacto, A.iConsecutivoBroker, A.sEmail, B.sName AS sBrokerName, A.sComentarios ".
-                  "FROM      ct_financieras AS A ".
-                  "LEFT JOIN ct_brokers     AS B ON A.iConsecutivoBroker = B.iConsecutivo ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
+        $sql    = "SELECT A.iConsecutivo, A.sName, A.sTelefono,A.sNombreContacto, A.sEmail ".
+                  "FROM      ct_financieras AS A ".$filtroQuery.$ordenQuery." LIMIT ".$limite_inferior.",".$limite_superior; 
         $result = $conexion->query($sql);
         $rows   = $result->num_rows;   
         if ($rows > 0) { 
@@ -58,8 +56,8 @@
                                        "<td>".$items['sNombreContacto']."</td>".
                                        "<td>".$items['sEmail']."</td>".
                                        "<td>".$items['sTelefono']."</td>". 
-                                       "<td>".$items['sBrokerName']."</td>". 
-                                       "<td>".utf8_encode($items['sComentarios'])."</td>".                                                                                                                                                                                                                      
+                                       "<td></td>". 
+                                       "<td></td>".                                                                                                                                                                                                                      
                                        "<td>
                                             <div class=\"btn_edit btn-icon edit btn-left\" title=\"Edit\"><i class=\"fa fa-pencil-square-o\"></i> <span></span></div>
                                             <div class=\"btn_delete btn-icon trash btn-left\" title=\"Delete\"><i class=\"fa fa-trash\"></i> <span></span></div>
@@ -82,7 +80,7 @@
       $domroot = $_POST['domroot'];
       include("cn_usuarios.php");
       $conexion->autocommit(FALSE);                                                                                                                 
-      $sql    = "SELECT iConsecutivo, sName, sTelefono, sNombreContacto, sEmail, iConsecutivoBroker, sComentarios ".
+      $sql    = "SELECT iConsecutivo, sName, sTelefono, sNombreContacto, sEmail ".
                 "FROM ct_financieras WHERE iConsecutivo = '".$clave."'";
       $result = $conexion->query($sql);
       $items  = $result->num_rows;   

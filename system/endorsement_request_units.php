@@ -289,6 +289,19 @@
                     $('#endorsements_edit_form .p-header h2').empty().text('Endorsement / ' + company + ': ID# ' + clave);
                     fn_endorsement.detalle.add();
                     fn_endorsement.get_data(clave);
+              }); 
+              $(fn_endorsement.data_grid + " tbody td .btn_add_billing").bind("click",function(){
+                    var clave    = $(this).parent().parent().find("td:eq(0)").prop('id');
+                        clave    = clave.split('_');
+                        clave    = clave[1];
+                    var company  = $(this).parent().parent().find("td:eq(0)").text(); 
+                    $('#endorsements_bill_form .p-header h2').empty().text('Endorsement / ' + company + ': ID# ' + clave);
+                    $("#endorsements_bill_form input.required-field").removeClass("error");
+                    fn_endorsement.get_end_billing_data(clave);
+                    $('#endorsements_bill_form input[name=iConsecutivoEndoso]').val(clave);
+                    $('#endorsements_bill_form input[name=sEmailToSend]').val('invoices@solo-trucking.com');
+                    $('#endorsements_bill_form textarea[name=sEmailText]').val('We have a new endorsement to bill, please check it in our system at www.solo-trucking.com');
+                    fn_popups.resaltar_ventana('endorsements_bill_form');
               });  
             },
             get_data : function(clave,ghost_mode){
@@ -969,6 +982,9 @@
                   $('#form_change_estatus input[name=polizas]').val(polizas);
                   
                   if(valid){
+                      
+                     //Remover temporalmente el disabled:
+                     $("#form_change_estatus select[name=eStatusEndoso]").removeProp('disabled');  
                      
                      var form       = "#form_change_estatus .forma";
                      var dataForm   = new FormData();
@@ -1290,7 +1306,58 @@
                     }else{$("#dialog_report_endorsements .flt_type").empty().append("<option value=''>All</option>").prop('disabled','disabled');}
                 }
             },
-            
+            // SENT TO BILLING
+            get_end_billing_data : function(endoso){
+                
+                if(endoso != ''){
+                    $.ajax({             
+                        type:"POST", 
+                        url:"endorsement_billing_server.php", 
+                        data:{'accion':"get_policy_data",'iConsecutivoPoliza':'', 'iConsecutivoEndoso':endoso},
+                        async : true,
+                        dataType : "json",
+                        success : function(data){                               
+                            $("#endorsements_bill_form .data_policy tbody").empty().append(data.html);
+                        }
+                    });
+                }    
+            },
+            billing_save_send : function(){
+                
+                var valid = true;
+                var msj   = "";
+                $("#endorsements_bill_form input.required-field").removeClass("error");
+                
+                //Revisamos campos obligatorios: (SOLO LOS DEL ENDOSO GENERALES)
+                $("#endorsements_bill_form .required-field").each(function(){
+                   if($(this).val() == ""){valid = false; $(this).addClass('error');msj = "<li>You must capture the required fields.</li>";}
+                });
+               
+                if(valid){ 
+                  if($('#endorsements_bill_form input[name=iConsecutivoEndoso]').val() != ""){struct_data_post_new.edit_mode = "true";}else{struct_data_post_new.edit_mode = "false";}
+                  struct_data_post_new.action  = "billing_send_endorsement";
+                  struct_data_post_new.domroot = "#endorsements_bill_form";
+                  $.ajax({             
+                    type  : "POST", 
+                    url   : "endorsement_billing_server.php", 
+                    data  : struct_data_post_new.parse(),
+                    async : true,
+                    dataType : "json",
+                    success  : function(data){                               
+                        switch(data.error){ 
+                         case '0':
+                            fn_solotrucking.mensaje(data.msj);
+                            fn_endorsement.fillgrid();
+                            fn_popups.cerrar_ventana('endorsements_bill_form');
+                         break;
+                         case '1': fn_solotrucking.mensaje(data.msj); break;
+                        }
+                    }
+                  }); 
+                }
+                else{fn_solotrucking.mensaje('<p>Please check the following:</p><ul>'+msj+'</ul>');}     
+                    
+            }
     }    
 </script> 
 <div id="layer_content" class="main-section">
@@ -1909,6 +1976,78 @@
             </fieldset>
             <button type="button" class="btn-1 btns_only_edit" onclick="" style="margin-right:10px;background: #87c540;width: 180px; display: none;">DOWNLOAD EXCEL</button>
             <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('endorsements_frm_report');" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
+        </form> 
+    </div>
+    </div>
+</div>
+<!-- FORM BILLING -->
+<div id="endorsements_bill_form" class="popup-form" style="width: 1300px;">
+    <div class="p-header">
+        <h2>ENDORSEMENTS</h2>
+        <div class="btn-close" title="Close Window" onclick="fn_popups.cerrar_ventana('endorsements_bill_form');fn_endorsement.filtraInformacion();"><i class="fa fa-times"></i></div>
+    </div>
+    <div class="p-container">
+    <div>
+        <br>
+        <form>
+            <p class="mensaje_valido">
+            &nbsp;The fields containing an (<span style="color:#ff0000;">*</span>) are required.<br>
+            <span style="color:#ff0000;font-size:1em;"> &nbsp;<b>Note: </b>Please check before sending to invoices, that PDF ENDORSEMENTS has been uploaded correctly.</span></p>
+           <fieldset>
+                <table style="width:100%" cellpadding="0" cellspacing="0" class="general_information">
+                    <tr>
+                        <td colspan="100%">
+                        <div>
+                            <table class="data_policy popup-datagrid" style="width: 100%;margin-top:0px;margin-bottom: 20px;" cellpadding="0" cellspacing="0">
+                            <thead>
+                                    <tr class="grid-head1">
+                                        <td class="etiqueta_grid" colspan="6" style="padding: 2px;height: 20px;color: #fff;text-transform: uppercase;font-weight: 700;font-size: 0.9em;">Policy Data</td>
+                                        <td class="etiqueta_grid" colspan="4" style="padding: 2px;height: 20px;color: #fff;text-transform: uppercase;font-weight: 700;font-size: 0.9em;">Endorsement Data</td>
+                                        <!-- <td style="padding: 2px;height: 20px;color: #fff;text-transform: uppercase;font-weight: 700;font-size: 0.9em;"></td>-->
+                                    </tr>
+                                    <tr class="grid-head2">
+                                        <td class="etiqueta_grid">Policy No.</td>
+                                        <td class="etiqueta_grid">Type</td>
+                                        <td class="etiqueta_grid">Broker</td>
+                                        <td class="etiqueta_grid">Insurance</td>
+                                        <td class="etiqueta_grid">EFF date</td> 
+                                        <td class="etiqueta_grid">Exp Date</td> 
+                                        <td class="etiqueta_grid">END No.</td>
+                                        <td class="etiqueta_grid">Description</td>
+                                        <td class="etiqueta_grid">Broker Invoice</td>
+                                        <td class="etiqueta_grid" style="width: 100px;">END PDF</td>
+                                        <!--<td></td>-->
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div> 
+                        </td>
+                    </tr>
+                </table>
+                <legend>E-mail to send Data</legend>
+                <input name="iConsecutivoEndoso" type="hidden" value="">
+                <table style="width:100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td colspan="100%">
+                            <div class="field_item">
+                                <label>E-mail to send: <span style="color:#ff0000;">*</span>:</label> 
+                                <input tabindex="1" name="sEmailToSend" class="txt-lowercase required-field" type="text" style="width: 98%;">
+                            </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td colspan="100%">
+                        <div class="field_item">
+                            <label>Text on e-mail:</label> 
+                            <textarea tabindex="10" name="sEmailText" style="height:50px!important;"></textarea>
+                        </div>
+                        </td> 
+                      </tr>
+                </table>
+            </fieldset>
+            <button type="button" class="btn-1" onclick="fn_endorsement.billing_save_send();" style="margin-right: 10px;background: #87c540;width: 170px;">SAVE & SEND TO BILL</button>
+            <button type="button" class="btn-1" onclick="fn_popups.cerrar_ventana('endorsements_bill_form');fn_endorsement.filtraInformacion();" style="margin-right:10px;background:#e8051b;">CLOSE</button> 
         </form> 
     </div>
     </div>

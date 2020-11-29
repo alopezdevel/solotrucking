@@ -222,11 +222,11 @@ if ( !($_SESSION["acceso"] != '2'  && $_SESSION["usuario_actual"] != "" && $_SES
                 fn_finance.filtro        = "";
                 if($(fn_finance.data_grid+" .flt_id").val() != ""){ fn_finance.filtro += "A.iConsecutivo|"+$(fn_finance.data_grid+" .flt_id").val()+","}
                 if($(fn_finance.data_grid+" .flt_name").val() != ""){ fn_finance.filtro += "A.sName|"+$(fn_finance.data_grid+" .flt_name").val()+","} 
-                if($(fn_finance.data_grid+" .flt_broker").val() != ""){ fn_finance.filtro += "B.sName|"+$(fn_finance.data_grid+" .flt_broker").val()+","}
+                //if($(fn_finance.data_grid+" .flt_broker").val() != ""){ fn_finance.filtro += "B.sName|"+$(fn_finance.data_grid+" .flt_broker").val()+","}
                 if($(fn_finance.data_grid+" .flt_email").val() != ""){ fn_finance.filtro += "A.sEmail|"+$(fn_finance.data_grid+" .flt_email").val()+","} 
                 if($(fn_finance.data_grid+" .flt_phone").val() != ""){ fn_finance.filtro += "A.sTelefono|"+$(fn_finance.data_grid+" .flt_phone").val()+","}  
                 if($(fn_finance.data_grid+" .flt_contact").val() != ""){ fn_finance.filtro += "A.sNombreContacto|"+$(fn_finance.data_grid+" .flt_contact").val()+","} 
-                if($(fn_finance.data_grid+" .flt_comment").val() != ""){ fn_finance.filtro += "A.sComentarios|"+$(fn_finance.data_grid+" .flt_comment").val()+","}
+                //if($(fn_finance.data_grid+" .flt_comment").val() != ""){ fn_finance.filtro += "A.sComentarios|"+$(fn_finance.data_grid+" .flt_comment").val()+","}
                 fn_finance.fillgrid();
             },  
                    
@@ -334,7 +334,7 @@ if ( !($_SESSION["acceso"] != '2'  && $_SESSION["usuario_actual"] != "" && $_SES
                         </div>
                         </td>
                     </tr>
-                    <tr>
+                    <!--<tr>
                         <td colspan="100%">
                         <div class="field_item"> 
                             <label>Broker: </label>
@@ -349,7 +349,7 @@ if ( !($_SESSION["acceso"] != '2'  && $_SESSION["usuario_actual"] != "" && $_SES
                             <input id="sComentarios" name="sComentarios" type="text" tabindex="5" maxlength="50" tabindex="6">
                         </div>
                         </td>
-                    </tr>
+                    </tr> -->
                 </table>
                 <br>
                 <button type="button" class="btn-1" onclick="fn_finance.save();">SAVE</button> 

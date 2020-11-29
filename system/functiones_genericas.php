@@ -212,6 +212,10 @@
      $string = str_replace("\"","",$string);
      return $string;
     }
+    function clean_textarea($string){
+        $string = preg_replace("/\r\n|\r|\n/",'\n',trim($string));
+        return $string;
+    }
     
     /*----- POLIZAS ---*/
     function get_policy_type($iTipo){

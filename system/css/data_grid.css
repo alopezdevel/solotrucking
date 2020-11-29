@@ -368,8 +368,8 @@ div.btn-icon span{font-weight: bold;font-size: 13px;}
 .view:hover i{color:#0abdbc!important;}
 .view:hover {background: #e7fdfd!important;border: 1px solid #4af3f1!important;}
 /*--PDF--*/
-.pdf:hover i{color:#de3c3c!important;} 
-.pdf:hover {background: #fff4f4!important;border: 1px solid #991515!important;} 
+.pdf:hover i, .pdf.active i{color:#de3c3c!important;} 
+.pdf:hover, .pdf.active {background: #fff4f4!important;border: 1px solid #991515!important;} 
 /*--SEND EMAIL--*/
 .send-email:hover  i, .btn-green:hover  i, .btn-green.active i ,.send-email.active  i{color:#52bc12!important;}
 .send-email:hover, .btn-green:hover, .btn-green.active, .send-email.active  {background: #e9ffdb!important;border: 1px solid #56cf0c!important;}

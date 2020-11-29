@@ -1853,7 +1853,7 @@
                         }
                         else if($_SERVER["HTTP_HOST"] == "solotrucking.laredo2.net" || $_SERVER["HTTP_HOST"] == "st.websolutionsac.com" || $_SERVER["HTTP_HOST"] == "www.solo-trucking.com"){
                           $mail->Username   = "customerservice@solo-trucking.com";  // GMAIL username
-                          $mail->Password   = "1101W3bSTruck"; 
+                          $mail->Password   = "ST01ACC112"; 
                           $mail->SetFrom('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');  
                         }
                         
@@ -1880,7 +1880,7 @@
                          if($files != ""){
                            $countFiles = count($files);
                            //SI SON MAS DE 10 ARCHIVOS GENERAR ZIP:
-                           if($countFiles > 10){
+                           if($countFiles > 5){
                                $listadoArchivos = array();
                        
                                for($f=0; $f < $countFiles; $f++){

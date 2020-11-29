@@ -8,14 +8,18 @@ if ( !($_SESSION["acceso"] != '2'  && $_SESSION["usuario_actual"] != "" && $_SES
 <script type="text/javascript"> 
 $(document).ready(inicio);
 function inicio(){  
-        $.blockUI();
-        var usuario_actual = <?php echo json_encode($_SESSION['usuario_actual']);?>        
-        var tipo_usuario = <?php echo json_encode($_SESSION['acceso']);?> 
+        //$.blockUI();
+        var usuario_actual = <?php echo json_encode($_SESSION['usuario_actual']).";";?>        
+        var tipo_usuario   = <?php echo json_encode($_SESSION['acceso']).";";?>
+        var clave          = <?php if(isset($_GET["idEndorsement"])   &&  $_GET["idEndorsement"] != ""){echo "'".$_GET["idEndorsement"]."';";}else{ echo "'';";} ?> 
+        var company        = <?php if(isset($_GET["sNombreCompania"]) &&  $_GET["sNombreCompania"] != ""){echo "'".$_GET["sNombreCompania"]."';";}else{ echo "'';";} ?> 
+        
+        
         validapantalla(usuario_actual);
         //if(tipo_usuario != "1"){validarLoginCliente(usuario_actual);}
-        fn_endorsement.init();
+        fn_endorsement.init(clave,company);
         fn_endorsement.fillgrid();
-        $.unblockUI();
+        //$.unblockUI();
         
         $('#dialog_delete_file').dialog({
             modal: true,
@@ -44,7 +48,7 @@ var fn_endorsement = {
         pagina_actual : "",
         sort : "DESC",
         orden : "dFechaAplicacion",
-        init : function(){
+        init : function(clave,company){
             $('.num').keydown(fn_solotrucking.inputnumero); 
             $('.decimals').keydown(fn_solotrucking.inputdecimals);
             //Filtrado con la tecla enter
@@ -58,7 +62,11 @@ var fn_endorsement = {
                    $(this).val(''); 
                    fn_endorsement.filtraInformacion();
                 }
-            });      
+            }); 
+            
+            if(clave != ""){
+                fn_endorsement.get_data(clave,company);    
+            }     
            
         },
         fillgrid: function(){
@@ -97,8 +105,8 @@ var fn_endorsement = {
                 
                 if(type.trim() == 'DRIVER'){var category = '2'}else{var category = '1';}
                 
-                $('#endorsements_edit_form .p-header h2').empty().text('FILES OF ENDORSEMENT ID# ' + clave + ' FROM COMPANY ' + company);
-                $('#endorsements_edit_form .info-endoso > legend').empty().html('ENDORSEMENT ID# ' + clave + ' FROM COMPANY ' + company);
+                $('#endorsements_edit_form .p-header h2').empty().text('FILES OF ENDORSEMENT FROM COMPANY ' + company);
+                $('#endorsements_edit_form .info-endoso > legend').empty().html('ENDORSEMENT FROM COMPANY ' + company);
                 $('#endorsements_edit_form .info-endoso > div').empty().html(decr);
                 $('#endorsements_edit_form .info-endoso > div table').css({"width": "98%","margin": "0 auto"});
                 
@@ -107,6 +115,17 @@ var fn_endorsement = {
                 fn_endorsement.files.init();
                 fn_popups.resaltar_ventana('endorsements_edit_form'); 
           });  
+        },
+        get_data : function(clave,company){
+            $('#endorsements_edit_form .p-header h2').empty().text('FILES OF ENDORSEMENT FROM COMPANY ' + company);
+            $('#endorsements_edit_form .info-endoso > legend').empty().html('ENDORSEMENT FROM COMPANY ' + company);
+            $('#endorsements_edit_form .info-endoso > div').empty().html('');
+            $('#endorsements_edit_form .info-endoso > div table').css({"width": "98%","margin": "0 auto"});
+            
+            fn_endorsement.files.id_endorsement = clave;
+            fn_endorsement.files.tipo           = '1';
+            fn_endorsement.files.init();
+            fn_popups.resaltar_ventana('endorsements_edit_form');      
         },
         firstPage : function(){
             if($(fn_endorsement.data_grid+" #pagina_actual").val() != "1"){

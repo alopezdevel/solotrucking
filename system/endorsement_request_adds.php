@@ -620,6 +620,11 @@
                                       fn_endorsement.files.iConsecutivoEndoso = clave;
                                       fn_endorsement.files.form_father        = "form_change_estatus";
                                       fn_endorsement.files.fillgrid();
+                                      
+                                      if($("#form_change_estatus select[name=eStatusEndoso]").val() == 'A'){
+                                         $("#form_change_estatus select[name=eStatusEndoso]").prop('disabled','disabled'); 
+                                      }
+                                      else{$("#form_change_estatus select[name=eStatusEndoso]").removeProp('disabled');}
                                     
                                       fn_popups.resaltar_ventana('form_change_estatus'); 
                                 }
@@ -650,6 +655,9 @@
                   
                   if(valid){
                      
+                      //Remover temporalmente el disabled:
+                     $("#form_change_estatus select[name=eStatusEndoso]").removeProp('disabled'); 
+                     
                      var form       = "#form_change_estatus .forma";
                      var dataForm   = new FormData();
                      var other_data = $(form).serializeArray();
@@ -670,6 +678,10 @@
                             $("#form_change_estatus .file-message").html("");
                             //$("#form_change_estatus #fileselect2").removeClass("fileupload");
                             fn_endorsement.files.fillgrid();
+                            fn_endorsement.files.fillgrid();
+                            if($("#form_change_estatus select[name=eStatusEndoso]").val() == 'A'){
+                                $("#form_change_estatus select[name=eStatusEndoso]").prop('disabled','disabled'); 
+                            }
                         }
                      });   
                   }else{fn_solotrucking.mensaje('Please first select a status before you press save.');$('#form_change_estatus #eStatus').addClass('error');} 

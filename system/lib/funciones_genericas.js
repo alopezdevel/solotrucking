@@ -221,9 +221,9 @@ var fn_solotrucking = {
          return value;
      },
      btn_tooltip : function(){
-        $( ".btn-icon-2, .btn-icon, button" ).tooltip({
+        /*$( ".btn-icon-2, .btn-icon, button" ).tooltip({
             classes: {"ui-tooltip": "btn-tooltip"}
-        });
+        }); */
      },
      //Archivos:
      files : {

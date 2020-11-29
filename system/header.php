@@ -106,8 +106,8 @@
                   <?php if($_SESSION["usuario_actual"] == "customerservice@solo-trucking.com" || $_SESSION["usuario_actual"] == "elizabeth@solo-trucking.com"){?>
                   <li class="submenu"><a href="#">Endorsements</a>
                    <ul>
-                        <li><a  href="endorsement_request">New for Drivers</a></li>
-                        <li><a  href="endorsement_request_units">New for Units</a></li>
+                        <li><a  href="endorsement_request">Drivers</a></li>
+                        <li><a  href="endorsement_request_units">Vehicles</a></li>
                         <li><a  href="endorsement_request_adds" title="New for Loss Payee or Additional Insured">Loss Payee or Additional Insured</a></li>
                         <li><a  href="endorsement_month">Monthly Report to CRC</a></li>
                         <li><a  href="endorsement_files">Admin Files</a></li>
@@ -129,10 +129,10 @@
                  <?php if($_SESSION["usuario_actual"] == "management@solo-trucking.com" || $_SESSION["usuario_actual"] == "customerservice@solo-trucking.com"){?> 
                  <li class="submenu"><a href="invoices">ACCOUNTING</a>
                     <ul>
-                        <li><a href="services_products">Products & Services</a></li> 
-                        <!--<li><a href="invoices">Invoices</a></li>--> 
+                        <!--<li><a href="services_products">Products & Services</a></li> 
+                        <li><a href="invoices">Invoices</a></li>--> 
                         <li><a href="payments">Payments</a></li> 
-                        <!--<li><a href="endorsement_billing">Endorsements Billing</a></li>-->
+                        <li><a href="endorsement_billing">Endorsements Billing</a></li>
                     </ul>
                  </li> 
                  <?php }?>
@@ -157,8 +157,8 @@
                   <li><a href="policies">POLICIES</a></li>
                   <li class="submenu"><a href="#">Endorsements</a>
                     <ul>
-                        <li><a href="endorsement_request">New for Drivers</a></li>
-                        <li><a href="endorsement_request_units">New for Units</a></li>
+                        <li><a href="endorsement_request">Drivers</a></li>
+                        <li><a href="endorsement_request_units">Vehicles</a></li>
                         <li><a href="endorsement_request_adds" title="New for Loss Payee or Additional Insured">Loss Payee or Additional Insured</a></li>
                         <li><a href="endorsement_month">Monthly Report to CRC</a></li>
                         <li><a href="endorsement_files">Admin Files</a></li>
@@ -178,10 +178,10 @@
                 </li> 
                 <li class="submenu"><a href="invoices">ACCOUNTING</a>
                     <ul>
-                        <li><a href="services_products">Products & Services</a></li> 
-                        <li><a href="invoices">Invoices</a></li> 
-                        <li><a href="payments">Payments</a></li>
-                        <!--<li><a href="endorsement_billing">Endorsements Billing</a></li>-->  
+                        <!--<li><a href="services_products">Products & Services</a></li> 
+                        <li><a href="invoices">Invoices</a></li>--> 
+                        <li><a href="payments">Payments</a></li> 
+                        <li><a href="endorsement_billing">Endorsements Billing</a></li>
                     </ul>
                  </li> 
                 <li style="display:none;" class="submenu"><a href="#">SYSTEM SUPPORT</a>

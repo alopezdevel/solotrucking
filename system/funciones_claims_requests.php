@@ -1095,7 +1095,7 @@
                   $mail->SetFrom('systemsupport@solo-trucking.com', 'Claims Solo-Trucking Insurance');
                 }else if($_SERVER["HTTP_HOST"] == "solotrucking.laredo2.net" || $_SERVER["HTTP_HOST"] == "st.websolutionsac.com" || $_SERVER["HTTP_HOST"] == "www.solo-trucking.com"){
                   $mail->Username   = "claims@solo-trucking.com";  // GMAIL username
-                  $mail->Password   = "1104W3bSTruck";
+                  $mail->Password   = "ST01ACC111";
                   $mail->SetFrom('claims@solo-trucking.com', 'Claims Solo-Trucking Insurance');   
                 }
                 

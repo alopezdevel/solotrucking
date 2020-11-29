@@ -52,7 +52,8 @@
         $limite_superior = 0;
         $limite_inferior = 0;
         $htmlTabla .="<tr><td style=\"text-align:center; font-weight: bold;\" colspan=\"100%\">No data available.</td></tr>";
-    }else{
+    }
+    else{
       $pagina_actual == "0" ? $pagina_actual = 1 : false;
       $limite_superior = $registros_por_pagina;
       $limite_inferior = ($pagina_actual*$registros_por_pagina)-$registros_por_pagina;
@@ -88,7 +89,7 @@
                             $titleEstatus= "Your endorsement has been approved successfully.";
                             $class       = "class = \"green\"";
                             $btn_confirm = "<div class=\"btn_change_status btn-icon edit btn-left\" title=\"Change the status of endorsement\"><i class=\"fa fa-pencil-square-o\"></i></div>";
-                            $btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$items['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>"; 
+                            //$btn_confirm.= "<div class=\"btn-icon send-email btn-left\" title=\"See the e-mail sent\" onclick=\"fn_endorsement.email.preview('".$items['iConsecutivo']."');\"><i class=\"fa fa-external-link\"></i></div>"; 
                          break;
                          case 'D': 
                             $estado      = '<i class="fa fa-times status-error icon-estatus " aria-hidden=\"true\"></i><span style="font-size: 10px;">CANCELED</span>';
@@ -115,10 +116,12 @@
                          break;
                      } 
                      
-                     $color_action = "";
-                     $action       = "";
-                     $detalle      = "";
-                     $polocies     = "";
+                     $color_action       = "";
+                     $action             = "";
+                     $detalle            = "";
+                     $polocies           = "";
+                     $valid_billing      = false;
+                     $iAplicaFacturacion = false;
                      
                      if($items['iEndosoMultiple'] == "0"){
                          switch($items["eAccion"]){
@@ -152,12 +155,13 @@
                                             "<td style='border: 0;width:120px;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['eAccion']."</td>".
                                             "<td style='border: 0;padding: 0!important;min-height: auto!important;height:auto!important;'>".$item['sVIN']."</td>".
                                             "</tr>"; 
+                            if($item['eAccion'] == 'ADD'){$valid_billing = true;} 
                          }
                          $detalle .= $description."</table>";
                      }
                      
                      //Consultar Estatus x poliza:
-                     $query = "SELECT A.iConsecutivoPoliza,P.sNumeroPoliza, T.sDescripcion AS sTipoPoliza, B.sName AS sBrokerName ,A.eStatus, A.sNumeroEndosoBroker, A.rImporteEndosoBroker, A.iEnviadoFuera  
+                     $query = "SELECT A.iConsecutivoPoliza,P.sNumeroPoliza, T.sDescripcion AS sTipoPoliza, B.sName AS sBrokerName ,A.eStatus, A.sNumeroEndosoBroker, A.rImporteEndosoBroker, A.iEnviadoFuera, A.iAplicaFacturacion  
                                 FROM cb_endoso_estatus AS A 
                                 INNER JOIN ct_polizas  AS P ON A.iConsecutivoPoliza = P.iConsecutivo
                                 LEFT  JOIN ct_tipo_poliza AS T ON P.iTipoPoliza = T.iConsecutivo
@@ -180,8 +184,22 @@
                             $policies .= "</tr>"; 
                             
                             $iEnviadoFuera = $item['iEnviadoFuera'];
+                            
+                            if($item['iAplicaFacturacion'] == '1'){$iAplicaFacturacion = true;}
                          }
                          $policies.="</table>";
+                     }
+                     
+                     //Valida si aplica para contabilidad:
+                     if($valid_billing && $items["eStatus"] == 'A'){
+                         if(!($iAplicaFacturacion)){
+                            $btn_confirm.= "<div class=\"btn_add_billing btn-icon btn-green active btn-left\" title=\"Send to Accounting\"><i class=\"fa fa-usd\"></i></div>";    
+                         }
+                         else{
+                             //regeneramos el estatus A:
+                             $estado      = '<i class="fa fa-check-circle status-success icon-estatus " aria-hidden=\"true\"></i><span style="font-size: 10px;">READY TO BILL</span>';
+                             $titleEstatus= "Your endorsement has been approved successfully and has been sent to billing department.";
+                         }
                      }
                      
                       //Redlist:
@@ -1428,7 +1446,7 @@
                           $mail->SetFrom('systemsupport@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');
                         }else if($_SERVER["HTTP_HOST"] == "solotrucking.laredo2.net" || $_SERVER["HTTP_HOST"] == "st.websolutionsac.com" || $_SERVER["HTTP_HOST"] == "www.solo-trucking.com"){
                           $mail->Username   = "customerservice@solo-trucking.com";  // GMAIL username
-                          $mail->Password   = "1101W3bSTruck";
+                          $mail->Password   = "ST01ACC112";
                           $mail->SetFrom('customerservice@solo-trucking.com', 'Customer Service Solo-Trucking Insurance');   
                         }
                         
@@ -2135,7 +2153,7 @@
                   while ($item = $res->fetch_assoc()) { 
                       //Tomamos variables:
                       $eAccion   = $item['eAccion'];
-                      $idDetalle = $item['iConsecutivoUnidad']; 
+                      $idDetalle = $item['iConsecutivoUnidad'];  
                       
                       $item['iConsecutivoRadio'] != "" ? $iRadio   = $item['iConsecutivoRadio'] : $iRadio   = "";
                       $item['iTotalPremiumPD']   != "" ? $iTotalPD = $item['iTotalPremiumPD']   : $iTotalPD = "";
@@ -2148,7 +2166,7 @@
                       
                       // UPDATE REGISTRO
                       if($valida['total'] != 0){
-                        if($eAccion == "ADD" || $eAccion == "ADDSWAP" || $eAccion = 'CHANGEPD'){
+                        if($eAccion == "ADD" || $eAccion == "ADDSWAP" || $eAccion == 'CHANGEPD'){
                             //Agregar registro a la tabla de relacion: 
                             $query   = "UPDATE cb_poliza_unidad SET iDeleted='0',dFechaActualizacion='$dFechaEndoso',sIPActualizacion='".$_SERVER['REMOTE_ADDR']."',sUsuarioActualizacion='".$_SESSION['usuario_actual']."' ".
                                        "WHERE iConsecutivoPoliza='$iConsecutivoPoliza' AND iConsecutivoUnidad='$idDetalle'";
@@ -2163,7 +2181,7 @@
                       }
                       // INSERT REGISTRO
                       else{
-                        if($eAccion == "ADD" || $eAccion == "ADDSWAP" || $eAccion = 'CHANGEPD'){
+                        if($eAccion == "ADD" || $eAccion == "ADDSWAP" || $eAccion == 'CHANGEPD'){
                             //Agregar registro a la tabla de relacion: 
                             $query   = "INSERT INTO cb_poliza_unidad (iConsecutivoPoliza,iConsecutivoUnidad,eModoIngreso,dFechaIngreso,sIPIngreso,sUsuarioIngreso) ".
                                        "VALUES('$iConsecutivoPoliza','$idDetalle','ENDORSEMENT','$dFechaEndoso','".$_SERVER['REMOTE_ADDR']."','".$_SESSION['usuario_actual']."')";
@@ -2188,7 +2206,7 @@
                       }
                       
                       // Actualizamos el registro general del vehiculo como "no eliminado".
-                      if($eAccion == "ADD" || $eAccion == "ADDSWAP" || $eAccion = 'CHANGEPD'){
+                      if($eAccion == "ADD" || $eAccion == "ADDSWAP" || $eAccion == 'CHANGEPD'){
                           
                          $iRadio   != "" ? $iRadio   = ", iConsecutivoRadio='".$iRadio."'" : ""; 
                          $iTotalPD != "" ? $iTotalPD = ", iTotalPremiumPD='".$iTotalPD."'" : ""; 
